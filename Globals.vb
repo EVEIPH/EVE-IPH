@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "April 5, 2022 Release"
+    Public Const SDEVersion As String = "May 10, 2022 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -139,7 +139,7 @@ Public Module Public_Variables
 
     ' Column processing
     Public Const NumManufacturingTabColumns As Integer = 90
-    Public Const NumIndustryJobColumns As Integer = 20
+    Public Const NumIndustryJobColumns As Integer = 21
 
     Public Const AlphaAccountTaxRate As Double = 0.02
 
@@ -1052,7 +1052,6 @@ InvalidDate:
 
         Dim TempString As String = ""
         Dim TempNumber As String = ""
-        Dim FoundQuantity As Boolean = False
 
         ' Format of imported text for items will always be: Name, Quantity, Group, Category, Size, Slot, Volume, Meta Level, Tech Level, Est. Price
         ' Users can remove columns but the general rule is Name and quantity first, they can separate lines by three ways
@@ -1084,18 +1083,11 @@ InvalidDate:
                     ' For example, Capital Armor Plates 33 would be a 4 index array but we want to combine the first 3
                     TempString = ""
                     TempNumber = ""
-                    FoundQuantity = False
 
                     For j = 0 To ItemColumns.Count - 1
                         If Not IsNumeric(ItemColumns(j)) Then
-                            If Not FoundQuantity Then
-                                TempString = TempString & ItemColumns(j) & " "
-                            Else
-                                ' We found the full quanitity and name, so exit
-                                Exit For
-                            End If
+                            TempString = TempString & ItemColumns(j) & " "
                         Else
-                            FoundQuantity = True
                             TempNumber = TempNumber & ItemColumns(j)
                         End If
                     Next
@@ -2302,11 +2294,11 @@ SkipItem:
 
         ' What is the item we are using to invent?
         SQL = "Select blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
-        SQL = SQL & "And typeID = blueprintTypeID And activityID = 8"
+        SQL &= "And typeID = blueprintTypeID And activityID = 8"
 
         If RelicName <> "" Then
             ' Need to add the relic variant to the query for just one item
-            SQL = SQL & " And typeName Like '%" & RelicName & "%'"
+            SQL &= " And typeName Like '%" & RelicName & "%'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -2456,8 +2448,8 @@ SkipItem:
 
             ' Look up the BP first to see if it is scanned
             SQL = "SELECT 'X' FROM OWNED_BLUEPRINTS "
-            SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID) & " AND SCANNED <> 0"
+            SQL &= "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+            SQL &= "AND BLUEPRINT_ID =" & CStr(BPID) & " AND SCANNED <> 0"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
@@ -2467,8 +2459,8 @@ SkipItem:
             If readerBP.HasRows Then
                 ' Update it
                 SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
-                SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL = SQL & "And BLUEPRINT_ID =" & CStr(BPID)
+                SQL &= "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL &= "And BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
@@ -2510,7 +2502,7 @@ SkipItem:
 
             ' See if the BP is in the DB
             SQL = "SELECT TE FROM OWNED_BLUEPRINTS WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-            SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
+            SQL &= "AND BLUEPRINT_ID =" & CStr(BPID)
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader
@@ -2519,17 +2511,17 @@ SkipItem:
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
-                SQL = SQL & "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                SQL = SQL & "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
-                SQL = SQL & CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+                SQL &= "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
+                SQL &= CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Else
                 ' Update it
                 SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
-                SQL = SQL & ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
-                SQL = SQL & "WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL = SQL & "AND BLUEPRINT_ID =" & CStr(BPID)
+                SQL &= ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
+                SQL &= "WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL &= "AND BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
@@ -2631,7 +2623,7 @@ SkipItem:
         Dim ReturnString As String
 
         SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-        SQL = SQL & "WHERE typeID = blueprintTypeID AND activityID = 8 AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
+        SQL &= "WHERE typeID = blueprintTypeID AND activityID = 8 AND productTypeID = " & CStr(BPID) & " AND quantity <= " & BaseRuns
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -2895,6 +2887,7 @@ SkipItem:
 
             ' Get response  
             response = DirectCast(request.GetResponse(), HttpWebResponse)
+            Dim ContentLength As Long = CLng(request.GetResponse.Headers(HttpResponseHeader.ContentLength))
 
             ' Get the response stream into a reader  
             reader = New StreamReader(response.GetResponseStream())
@@ -2906,7 +2899,7 @@ SkipItem:
             End If
 
             ' See if it downloaded a full file
-            If Output.Substring(Len(Output) - 1, 1) <> "]" Then
+            If Len(Output) <> ContentLength Then
                 Application.DoEvents()
                 ' Re-run this function - limit to 10 calls
                 If RecursiveCalls <= 10 Then

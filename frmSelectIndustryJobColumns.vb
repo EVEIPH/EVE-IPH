@@ -160,6 +160,13 @@
                 chkLstBoxColumns.SetItemChecked(18, False)
             End If
 
+            If .LocalCompletionDateTime <> 0 Then
+                chkLstBoxColumns.SetItemChecked(19, True)
+                SetMaxColumnNumber(.LocalCompletionDateTime)
+            Else
+                chkLstBoxColumns.SetItemChecked(19, False)
+            End If
+
             chkLstBoxColumns.Update()
 
         End With
@@ -369,6 +376,15 @@
                 .JobType = 0
             End If
 
+            chkstate = chkLstBoxColumns.GetItemCheckState(19)
+            ' Change to max column order + 1 if checked and not already set
+            If .LocalCompletionDateTime = 0 And chkstate = CheckState.Checked Then
+                .LocalCompletionDateTime = MaxColumnNumber + 1
+                MaxColumnNumber += 1
+            ElseIf chkstate = CheckState.Unchecked Then
+                .LocalCompletionDateTime = 0
+            End If
+
             ' Now in case something was removed, we want to update the indicies
             For i = 0 To ColumnPositions.Count - 1
                 ColumnPositions(i) = ""
@@ -394,6 +410,7 @@
                 ColumnPositions(.BlueprintLocation) = ProgramSettings.BlueprintLocationColumn
                 ColumnPositions(.OutputLocation) = ProgramSettings.OutputLocationColumn
                 ColumnPositions(.JobType) = ProgramSettings.JobTypeColumn
+                ColumnPositions(.LocalCompletionDateTime) = ProgramSettings.LocalCompletionDateTimeColumn
             End With
 
             ' Reset the first one with nothing since the first column is empty
@@ -466,6 +483,8 @@
                             .OutputLocation = i
                         Case ProgramSettings.JobTypeColumn
                             .JobType = i
+                        Case ProgramSettings.LocalCompletionDateTimeColumn
+                            .LocalCompletionDateTime = i
                     End Select
                 Next
             End With

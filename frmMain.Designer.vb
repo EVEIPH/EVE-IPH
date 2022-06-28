@@ -69,6 +69,7 @@ Partial Class frmMain
         Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuViewESIStatus = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuMETECalculator = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuReprocessingPlant = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuOreFlips = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuAnomalyOreBelts = New System.Windows.Forms.ToolStripMenuItem()
@@ -125,6 +126,7 @@ Partial Class frmMain
         Me.IgnoreBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.FavoriteBlueprintToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ttUpdatePrices = New System.Windows.Forms.ToolTip(Me.components)
+        Me.rbtnPriceSourceFW = New System.Windows.Forms.RadioButton()
         Me.ttManufacturing = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttDatacores = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttReactions = New System.Windows.Forms.ToolTip(Me.components)
@@ -724,7 +726,7 @@ Partial Class frmMain
         Me.lblRawPriceModifier = New System.Windows.Forms.Label()
         Me.gbDataSource = New System.Windows.Forms.GroupBox()
         Me.rbtnPriceSourceCCPData = New System.Windows.Forms.RadioButton()
-        Me.rbtnPriceSource3rdparty = New System.Windows.Forms.RadioButton()
+        Me.rbtnPriceSourceEM = New System.Windows.Forms.RadioButton()
         Me.cmbItemsSplitPrices = New System.Windows.Forms.ComboBox()
         Me.cmbRawMatsSplitPrices = New System.Windows.Forms.ComboBox()
         Me.lblItemsSplitPrices = New System.Windows.Forms.Label()
@@ -1327,10 +1329,17 @@ Partial Class frmMain
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuReprocessingPlant, Me.mnuOreFlips})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuMETECalculator, Me.mnuReprocessingPlant, Me.mnuOreFlips})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(46, 20)
         Me.mnuTools.Text = "Tools"
+        '
+        'mnuMETECalculator
+        '
+        Me.mnuMETECalculator.Name = "mnuMETECalculator"
+        Me.mnuMETECalculator.Size = New System.Drawing.Size(219, 22)
+        Me.mnuMETECalculator.Text = "ME/TE Calculator"
+        Me.mnuMETECalculator.Visible = False
         '
         'mnuReprocessingPlant
         '
@@ -1680,6 +1689,17 @@ Partial Class frmMain
         Me.FavoriteBlueprintToolStripMenuItem.Name = "FavoriteBlueprintToolStripMenuItem"
         Me.FavoriteBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
         Me.FavoriteBlueprintToolStripMenuItem.Text = "Favorite Blueprint"
+        '
+        'rbtnPriceSourceFW
+        '
+        Me.rbtnPriceSourceFW.AutoSize = True
+        Me.rbtnPriceSourceFW.Location = New System.Drawing.Point(130, 19)
+        Me.rbtnPriceSourceFW.Name = "rbtnPriceSourceFW"
+        Me.rbtnPriceSourceFW.Size = New System.Drawing.Size(42, 17)
+        Me.rbtnPriceSourceFW.TabIndex = 49
+        Me.rbtnPriceSourceFW.Text = "FW"
+        Me.ttUpdatePrices.SetToolTip(Me.rbtnPriceSourceFW, "Fuzzworks")
+        Me.rbtnPriceSourceFW.UseVisualStyleBackColor = True
         '
         'CalcImageList
         '
@@ -7834,7 +7854,7 @@ Partial Class frmMain
         'rbtnPriceSettingSingleSelect
         '
         Me.rbtnPriceSettingSingleSelect.AutoSize = True
-        Me.rbtnPriceSettingSingleSelect.Location = New System.Drawing.Point(9, 15)
+        Me.rbtnPriceSettingSingleSelect.Location = New System.Drawing.Point(5, 15)
         Me.rbtnPriceSettingSingleSelect.Name = "rbtnPriceSettingSingleSelect"
         Me.rbtnPriceSettingSingleSelect.Size = New System.Drawing.Size(91, 17)
         Me.rbtnPriceSettingSingleSelect.TabIndex = 7
@@ -7860,7 +7880,8 @@ Partial Class frmMain
         'gbDataSource
         '
         Me.gbDataSource.Controls.Add(Me.rbtnPriceSourceCCPData)
-        Me.gbDataSource.Controls.Add(Me.rbtnPriceSource3rdparty)
+        Me.gbDataSource.Controls.Add(Me.rbtnPriceSourceFW)
+        Me.gbDataSource.Controls.Add(Me.rbtnPriceSourceEM)
         Me.gbDataSource.Location = New System.Drawing.Point(271, 7)
         Me.gbDataSource.Name = "gbDataSource"
         Me.gbDataSource.Size = New System.Drawing.Size(180, 41)
@@ -7871,22 +7892,22 @@ Partial Class frmMain
         'rbtnPriceSourceCCPData
         '
         Me.rbtnPriceSourceCCPData.AutoSize = True
-        Me.rbtnPriceSourceCCPData.Location = New System.Drawing.Point(99, 18)
+        Me.rbtnPriceSourceCCPData.Location = New System.Drawing.Point(5, 19)
         Me.rbtnPriceSourceCCPData.Name = "rbtnPriceSourceCCPData"
-        Me.rbtnPriceSourceCCPData.Size = New System.Drawing.Size(72, 17)
+        Me.rbtnPriceSourceCCPData.Size = New System.Drawing.Size(46, 17)
         Me.rbtnPriceSourceCCPData.TabIndex = 6
-        Me.rbtnPriceSourceCCPData.Text = "CCP Data"
+        Me.rbtnPriceSourceCCPData.Text = "CCP"
         Me.rbtnPriceSourceCCPData.UseVisualStyleBackColor = True
         '
-        'rbtnPriceSource3rdparty
+        'rbtnPriceSourceEM
         '
-        Me.rbtnPriceSource3rdparty.AutoSize = True
-        Me.rbtnPriceSource3rdparty.Location = New System.Drawing.Point(9, 18)
-        Me.rbtnPriceSource3rdparty.Name = "rbtnPriceSource3rdparty"
-        Me.rbtnPriceSource3rdparty.Size = New System.Drawing.Size(75, 17)
-        Me.rbtnPriceSource3rdparty.TabIndex = 5
-        Me.rbtnPriceSource3rdparty.Text = "Fuzzworks"
-        Me.rbtnPriceSource3rdparty.UseVisualStyleBackColor = True
+        Me.rbtnPriceSourceEM.AutoSize = True
+        Me.rbtnPriceSourceEM.Location = New System.Drawing.Point(57, 19)
+        Me.rbtnPriceSourceEM.Name = "rbtnPriceSourceEM"
+        Me.rbtnPriceSourceEM.Size = New System.Drawing.Size(67, 17)
+        Me.rbtnPriceSourceEM.TabIndex = 5
+        Me.rbtnPriceSourceEM.Text = "Marketer"
+        Me.rbtnPriceSourceEM.UseVisualStyleBackColor = True
         '
         'cmbItemsSplitPrices
         '
@@ -10957,7 +10978,7 @@ Partial Class frmMain
     Friend WithEvents lblRawPriceModifier As Label
     Friend WithEvents gbDataSource As GroupBox
     Friend WithEvents rbtnPriceSourceCCPData As RadioButton
-    Friend WithEvents rbtnPriceSource3rdparty As RadioButton
+    Friend WithEvents rbtnPriceSourceEM As RadioButton
     Friend WithEvents cmbItemsSplitPrices As ComboBox
     Friend WithEvents cmbRawMatsSplitPrices As ComboBox
     Friend WithEvents lblItemsSplitPrices As Label
@@ -11326,4 +11347,6 @@ Partial Class frmMain
     Friend WithEvents cmbOreProcessing12 As ComboBox
     Friend WithEvents lblOreProcessing12 As Label
     Friend WithEvents chkOreProcessing12 As CheckBox
+    Friend WithEvents mnuMETECalculator As ToolStripMenuItem
+    Friend WithEvents rbtnPriceSourceFW As RadioButton
 End Class

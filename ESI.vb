@@ -500,7 +500,7 @@ Public Class ESI
 
         Catch ex As WebException
 
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PublicData, SupressErrorMsgs, URL)
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.PrivateAuthData, SupressErrorMsgs, URL)
 
             ' Retry call
             If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
@@ -1295,6 +1295,9 @@ Public Class ESI
             Dim tag2 As String
             Dim tag3 As String
 
+            Dim rsUpdate As SQLiteDataReader
+            Dim SQL As String
+
             If IsNothing(UpdateLabel) Then
                 TempLabel = New Label
             Else
@@ -1318,7 +1321,9 @@ Public Class ESI
                     StatusItems = JsonConvert.DeserializeObject(Of List(Of ESIStatusItem))(RawData)
                     EVEDB.BeginSQLiteTransaction()
 
-                    EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_STATUS_ITEMS")
+                    ' Set all to red first - if one goes down or is removed from the list (e.g., assets) then we will see it as down
+                    EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET status = 'red'"))
+
                     ' Add all to status table incase we use one in the future that's not used now
                     For Each item In StatusItems
                         With item
@@ -1337,7 +1342,19 @@ Public Class ESI
                                     tag3 = .tags(2)
                             End Select
 
-                            EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')", .endpoint, .method, .route, .status, tag1, tag2, tag3))
+                            ' Look up each entry and if not in there, insert, if there, update
+                            SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & item.route & "'"
+                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                            rsUpdate = DBCommand.ExecuteReader
+                            rsUpdate.Read()
+
+                            If rsUpdate.HasRows Then
+                                ' just update the values
+                                EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET endpoint='{0}', method='{1}', status='{2}', tag1='{3}',tag2='{4}',tag3='{5}' WHERE route = '{6}'", .endpoint, .method, .status, tag1, tag2, tag3, .route))
+                            Else
+                                EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')", .endpoint, .method, .route, .status, tag1, tag2, tag3))
+                            End If
+                            rsUpdate.Close()
 
                         End With
                     Next
@@ -1419,7 +1436,6 @@ Public Class ESI
                             SQL &= CStr(IssueDate) & "'," & .duration & "," & CStr(CInt(.is_buy_order)) & "," & .price & "," & .volume_total & ","
                             SQL &= .min_volume & "," & .volume_remain & ",'" & .range & "')"
                             Call MHDB.ExecuteNonQuerySQL(SQL)
-
                         End With
 
                         Application.DoEvents()
@@ -1977,7 +1993,7 @@ Public Class ESIErrorProcessor
             Exit Sub
         End If
 
-        If ErrorCode = 403 And ErrorResponse = "The given character doesn't have the required role(s)" And URL.Contains("/corporations/") Then
+        If ErrorCode = 403 And ErrorResponse.Contains("required role(s)") And URL.Contains("/corporations/") Then
             'This is a call to corporation roles that now errors if you don't have any roles. The response will return all roles for the characters in the corp and you 
             ' need personel manager or director to really do it so don't error if it's just a character with those roles only
             Exit Sub

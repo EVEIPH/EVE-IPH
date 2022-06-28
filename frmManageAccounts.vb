@@ -41,7 +41,7 @@ Public Class frmManageAccounts
 
         Application.UseWaitCursor = True
 
-        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN "
+        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN, ECHD.CORPORATION_ID "
         SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
         SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
         SQL &= "AND CHARACTER_ID <> " & CStr(DummyCharacterID)
@@ -71,6 +71,7 @@ Public Class frmManageAccounts
             lstViewRow.SubItems.Add(rsAccounts.GetString(8)) ' Refresh Token (Hidden)
             lstViewRow.SubItems.Add(Convert.ToDateTime(rsAccounts.GetString(6)).ToString) ' Access Token expire date (Hidden)
             lstViewRow.SubItems.Add(rsAccounts.GetString(7)) ' Token type
+            lstViewRow.SubItems.Add(CStr(rsAccounts.GetInt64(9))) ' Corporation ID
 
             Call lstAccounts.Items.Add(lstViewRow)
 
@@ -101,6 +102,9 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub lstAccounts_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As EventArgs) Handles lstAccounts.SelectedIndexChanged
+        chkDirector.Checked = False
+        chkFactoryManager.Checked = False
+
         If lstAccounts.SelectedItems.Count > 0 Then
             ' Load the scopes for the character (hidden in the list of the account)
             Dim ScopeList As String = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
@@ -111,9 +115,28 @@ Public Class frmManageAccounts
             txtAccessTokenExpDate.Text = lstAccounts.SelectedItems.Item(0).SubItems(7).Text
             txtRefreshToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
             txtCharacterID.Text = lstAccounts.SelectedItems.Item(0).SubItems(0).Text
+            txtCorpID.Text = lstAccounts.SelectedItems.Item(0).SubItems(9).Text
             btnRefreshToken.Enabled = True
             btnDeleteCharacter.Enabled = True
             btnCopyAll.Enabled = True
+
+            ' Get Director and Factory Manager roles.
+            Dim rsRoles As SQLiteDataReader
+            Dim SQL As String = String.Format("SELECT ROLE FROM ESI_CORPORATION_ROLES WHERE CHARACTER_ID = {0} AND CORPORATION_ID = {1} AND ROLE IN ('Director','Factory_Manager')", CLng(txtCharacterID.Text), CLng(txtCorpID.Text))
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsRoles = DBCommand.ExecuteReader
+
+            While rsRoles.Read
+                Select Case rsRoles.GetString(0)
+                    Case "Director"
+                        chkDirector.Checked = True
+                    Case "Factory_Manager"
+                        chkFactoryManager.Checked = True
+                End Select
+            End While
+
+            rsRoles.Close()
+
         Else
             lstScopes.Items.Clear()
             txtAccessToken.Text = ""
@@ -288,6 +311,11 @@ Public Class frmManageAccounts
     Private Sub btnCopyCharacterID_Click(sender As Object, e As EventArgs) Handles btnCopyCharacterID.Click
         ' Paste to clipboard
         Call CopyTextToClipboard(txtCharacterID.Text)
+    End Sub
+
+    Private Sub btnCopyCorpID_Click(sender As Object, e As EventArgs) Handles btnCopyCorpID.Click
+        ' Paste to clipboard
+        Call CopyTextToClipboard(txtCorpID.Text)
     End Sub
 
     Private Sub btnCopyAccesToken_Click(sender As Object, e As EventArgs) Handles btnCopyAccesToken.Click

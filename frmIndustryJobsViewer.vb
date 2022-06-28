@@ -200,54 +200,54 @@ Public Class frmIndustryJobsViewer
 
         ' Load up the charcters from the table (instead of objects) for speed and ease of loading
         SQL = "SELECT CHARACTER_NAME AS Installer, activityName AS Activity, ABS.BLUEPRINT_NAME as Blueprint, "
-        SQL = SQL & "ABS.ITEM_NAME AS 'Output Item', status, startDate, endDate, ABS.ITEM_GROUP AS 'Output Item Type', "
-        SQL = SQL & " CASE WHEN SOLAR_SYSTEMS.solarSystemName IS NOT NULL THEN SOLAR_SYSTEMS.solarSystemName ELSE 'Unknown System' END AS 'Install System', "
-        SQL = SQL & "CASE WHEN REGIONS.regionName Is Not NULL THEN REGIONS.regionName ELSE 'Unknown Region' END AS 'Install Region',”
-        SQL = SQL & "licensedRuns, runs, successfulRuns, "
-        SQL = SQL & "CASE WHEN S1.STATION_NAME IS NOT NULL THEN S1.STATION_NAME ELSE "
-        SQL = SQL & "(CASE WHEN C1.STATION_NAME IS NOT NULL THEN C1.STATION_NAME || ' Container' ELSE "
-        SQL = SQL & "(CASE WHEN IT2.typeName IS NOT NULL THEN IT2.typeName ELSE "
-        SQL = SQL & "(CASE WHEN S3.STATION_NAME IS NOT NULL THEN S3.STATION_NAME ELSE 'Unknown' END) END) END) END AS 'Blueprint Location', "
-        SQL = SQL & "CASE WHEN S2.STATION_NAME IS NOT NULL THEN S2.STATION_NAME ELSE "
-        SQL = SQL & "(CASE WHEN C2.STATION_NAME IS NOT NULL THEN C2.STATION_NAME || ' Container' ELSE "
-        SQL = SQL & "(CASE WHEN IT3.typeName IS NOT NULL THEN IT3.typeName ELSE "
-        SQL = SQL & "(CASE WHEN S3.STATION_NAME IS NOT NULL THEN S3.STATION_NAME ELSE 'Unknown' END) END) END) END AS 'Output Location', "
-        SQL = SQL & "CASE WHEN jobType =1 THEN 'Corporation' ELSE 'Personal' END AS 'Job Type' "
-        SQL = SQL & "FROM INDUSTRY_JOBS, INDUSTRY_ACTIVITIES, ESI_CHARACTER_DATA, ALL_BLUEPRINTS AS ABS "
-        SQL = SQL & "LEFT JOIN STATIONS ON STATIONS.STATION_ID = INDUSTRY_JOBS.locationID “
-        SQL = SQL & "LEFT JOIN SOLAR_SYSTEMS ON STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID “
-        SQL = SQL & "LEFT JOIN REGIONS ON SOLAR_SYSTEMS.regionID = REGIONS.regionID “
+        SQL &= "ABS.ITEM_NAME AS 'Output Item', status, startDate, endDate, ABS.ITEM_GROUP AS 'Output Item Type', "
+        SQL &= " CASE WHEN SOLAR_SYSTEMS.solarSystemName IS NOT NULL THEN SOLAR_SYSTEMS.solarSystemName ELSE 'Unknown System' END AS 'Install System', "
+        SQL &= "CASE WHEN REGIONS.regionName Is Not NULL THEN REGIONS.regionName ELSE 'Unknown Region' END AS 'Install Region',”
+        SQL &= "licensedRuns, runs, successfulRuns, "
+        SQL &= "CASE WHEN S1.STATION_NAME IS NOT NULL THEN S1.STATION_NAME ELSE "
+        SQL &= "(CASE WHEN C1.STATION_NAME IS NOT NULL THEN C1.STATION_NAME || ' Container' ELSE "
+        SQL &= "(CASE WHEN IT2.typeName IS NOT NULL THEN IT2.typeName ELSE "
+        SQL &= "(CASE WHEN S3.STATION_NAME IS NOT NULL THEN S3.STATION_NAME ELSE 'Unknown' END) END) END) END AS 'Blueprint Location', "
+        SQL &= "CASE WHEN S2.STATION_NAME IS NOT NULL THEN S2.STATION_NAME ELSE "
+        SQL &= "(CASE WHEN C2.STATION_NAME IS NOT NULL THEN C2.STATION_NAME || ' Container' ELSE "
+        SQL &= "(CASE WHEN IT3.typeName IS NOT NULL THEN IT3.typeName ELSE "
+        SQL &= "(CASE WHEN S3.STATION_NAME IS NOT NULL THEN S3.STATION_NAME ELSE 'Unknown' END) END) END) END AS 'Output Location', "
+        SQL &= "CASE WHEN jobType =1 THEN 'Corporation' ELSE 'Personal' END AS 'Job Type' "
+        SQL &= "FROM INDUSTRY_JOBS, INDUSTRY_ACTIVITIES, ESI_CHARACTER_DATA, ALL_BLUEPRINTS AS ABS "
+        SQL &= "LEFT JOIN STATIONS ON STATIONS.STATION_ID = INDUSTRY_JOBS.locationID “
+        SQL &= "LEFT JOIN SOLAR_SYSTEMS ON STATIONS.SOLAR_SYSTEM_ID = SOLAR_SYSTEMS.solarSystemID “
+        SQL &= "LEFT JOIN REGIONS ON SOLAR_SYSTEMS.regionID = REGIONS.regionID “
 
         ' Stations
-        SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S1 ON S1.STATION_ID = INDUSTRY_JOBS.blueprintLocationID "
-        SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S2 ON S2.STATION_ID = INDUSTRY_JOBS.outputLocationID "
-        SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S3 ON S3.STATION_ID = INDUSTRY_JOBS.locationID "
+        SQL &= "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S1 ON S1.STATION_ID = INDUSTRY_JOBS.blueprintLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S2 ON S2.STATION_ID = INDUSTRY_JOBS.outputLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME FROM STATIONS) AS S3 ON S3.STATION_ID = INDUSTRY_JOBS.locationID "
         ' Containers in stations
-        SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME, A1.ItemID FROM STATIONS LEFT OUTER JOIN (SELECT LocationID, ItemID FROM ASSETS WHERE ID = " & SelectedCharacter.ID & ") "
-        SQL = SQL & "AS A1 ON A1.LocationID = STATION_ID) AS C1 ON C1.ItemID = INDUSTRY_JOBS.blueprintLocationID "
-        SQL = SQL & "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME, A2.ItemID FROM STATIONS LEFT OUTER JOIN (SELECT LocationID, ItemID FROM ASSETS WHERE ID = " & SelectedCharacter.ID & ") "
-        SQL = SQL & "AS A2 ON A2.LocationID = STATION_ID) AS C2 ON C2.ItemID = INDUSTRY_JOBS.blueprintLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME, A1.ItemID FROM STATIONS LEFT OUTER JOIN (SELECT LocationID, ItemID FROM ASSETS WHERE ID = " & SelectedCharacter.ID & ") "
+        SQL &= "AS A1 ON A1.LocationID = STATION_ID) AS C1 ON C1.ItemID = INDUSTRY_JOBS.blueprintLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT STATION_ID, STATION_NAME, A2.ItemID FROM STATIONS LEFT OUTER JOIN (SELECT LocationID, ItemID FROM ASSETS WHERE ID = " & SelectedCharacter.ID & ") "
+        SQL &= "AS A2 ON A2.LocationID = STATION_ID) AS C2 ON C2.ItemID = INDUSTRY_JOBS.blueprintLocationID "
         ' POS modules
-        SQL = SQL & "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT2 ON IT2.typeID = INDUSTRY_JOBS.blueprintLocationID "
-        SQL = SQL & "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT3 ON IT3.typeID = INDUSTRY_JOBS.outputLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT2 ON IT2.typeID = INDUSTRY_JOBS.blueprintLocationID "
+        SQL &= "LEFT OUTER JOIN (SELECT typeID, typeName FROM INVENTORY_TYPES) AS IT3 ON IT3.typeID = INDUSTRY_JOBS.outputLocationID "
 
-        SQL = SQL & "WHERE INDUSTRY_JOBS.activityID = INDUSTRY_ACTIVITIES.activityID  "
-        SQL = SQL & "AND INDUSTRY_JOBS.blueprintTypeID = ABS.BLUEPRINT_ID "
-        SQL = SQL & "AND ESI_CHARACTER_DATA.CHARACTER_ID = INDUSTRY_JOBS.installerID "
+        SQL &= "WHERE INDUSTRY_JOBS.activityID = INDUSTRY_ACTIVITIES.activityID  "
+        SQL &= "AND INDUSTRY_JOBS.blueprintTypeID = ABS.BLUEPRINT_ID "
+        SQL &= "AND ESI_CHARACTER_DATA.CHARACTER_ID = INDUSTRY_JOBS.installerID "
 
         If rbtnCurrentJobs.Checked Then
             ' Only check status for current jobs
-            SQL = SQL & "AND status = 'active' "
+            SQL &= "AND status = 'active' "
         End If
 
         ' Add the charids
-        SQL = SQL & CHAR_ID_SQL
+        SQL &= CHAR_ID_SQL
 
         ' For both just ignore the selections
         If rbtnCorpJobs.Checked Then
-            SQL = SQL & "AND JobType = " & CStr(ScanType.Corporation) & " "
+            SQL &= "AND JobType = " & CStr(ScanType.Corporation) & " "
         ElseIf rbtnPersonalJobs.Checked Then
-            SQL = SQL & CHAR_ID_SQL & "AND JobType = " & CStr(ScanType.Personal) & " "
+            SQL &= CHAR_ID_SQL & "AND JobType = " & CStr(ScanType.Personal) & " "
         End If
 
         ' Add sorting options here
@@ -316,6 +316,12 @@ Public Class frmIndustryJobsViewer
                         Case ProgramSettings.TimetoCompleteColumn
                             If JobState <> "Complete" And JobState <> "Completed" Then
                                 lstJobRow.SubItems.Add(GetTimeToComplete(EndDate, CurrentDateTime))
+                            Else
+                                lstJobRow.SubItems.Add("")
+                            End If
+                        Case ProgramSettings.LocalCompletionDateTimeColumn
+                            If JobState <> "Complete" And JobState <> "Completed" Then
+                                lstJobRow.SubItems.Add("Calculating...")
                             Else
                                 lstJobRow.SubItems.Add("")
                             End If
@@ -402,20 +408,20 @@ ExitSub:
 
         ' Now jobs and skills should show correctly
         SQL = "SELECT CHARACTER_NAME, CORPORATION_NAME, ECD.CHARACTER_ID, "
-        SQL = SQL & "ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES, "
-        SQL = SQL & "CASE WHEN RESEARCH_JOBS IS NULL THEN 0 ELSE RESEARCH_JOBS END AS RESEARCH_JOBS, "
-        SQL = SQL & "CASE WHEN RESEARCH_LINES IS NULL THEN 1 ELSE RESEARCH_LINES END AS RESEARCH_LINES, "
-        SQL = SQL & "CASE WHEN JOB_COUNT IS NULL THEN 0 ELSE JOB_COUNT END AS JOB_COUNT, "
-        SQL = SQL & "CASE WHEN INDUSTRY_LINES IS NULL THEN 1 ELSE INDUSTRY_LINES END AS INDUSTRY_LINES, "
-        SQL = SQL & "CASE WHEN REACTION_JOBS IS NULL THEN 0 ELSE REACTION_JOBS END AS REACTION_JOBS, "
-        SQL = SQL & "CASE WHEN REACTION_LINES IS NULL THEN 1 ELSE REACTION_LINES END AS REACTION_LINES "
-        SQL = SQL & "FROM ESI_CHARACTER_DATA AS ECD, ESI_CORPORATION_DATA AS ECPD "
-        SQL = SQL & "LEFT JOIN (SELECT SUM({0}) + 1 AS RESEARCH_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3406,24624) GROUP BY CHARACTER_ID) AS I ON I.CHARACTER_ID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID NOT IN (1,11) GROUP BY installerID) AS J ON J.installerID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT SUM({0}) + 1 AS INDUSTRY_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS K ON K.CHARACTER_ID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 1 GROUP BY installerID) AS L ON L.installerID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT SUM({0}) + 1 AS REACTION_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (45748,45749) GROUP BY CHARACTER_ID) AS M ON M.CHARACTER_ID = ECD.CHARACTER_ID "
-        SQL = SQL & "LEFT JOIN (SELECT installerID, COUNT(*) AS REACTION_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 11 GROUP BY installerID) AS N ON N.installerID = ECD.CHARACTER_ID "
+        SQL &= "ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES, "
+        SQL &= "CASE WHEN RESEARCH_JOBS IS NULL THEN 0 ELSE RESEARCH_JOBS END AS RESEARCH_JOBS, "
+        SQL &= "CASE WHEN RESEARCH_LINES IS NULL THEN 1 ELSE RESEARCH_LINES END AS RESEARCH_LINES, "
+        SQL &= "CASE WHEN JOB_COUNT IS NULL THEN 0 ELSE JOB_COUNT END AS JOB_COUNT, "
+        SQL &= "CASE WHEN INDUSTRY_LINES IS NULL THEN 1 ELSE INDUSTRY_LINES END AS INDUSTRY_LINES, "
+        SQL &= "CASE WHEN REACTION_JOBS IS NULL THEN 0 ELSE REACTION_JOBS END AS REACTION_JOBS, "
+        SQL &= "CASE WHEN REACTION_LINES IS NULL THEN 1 ELSE REACTION_LINES END AS REACTION_LINES "
+        SQL &= "FROM ESI_CHARACTER_DATA AS ECD, ESI_CORPORATION_DATA AS ECPD "
+        SQL &= "LEFT JOIN (SELECT SUM({0}) + 1 AS RESEARCH_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3406,24624) GROUP BY CHARACTER_ID) AS I ON I.CHARACTER_ID = ECD.CHARACTER_ID "
+        SQL &= "LEFT JOIN (SELECT installerID, COUNT(*) AS RESEARCH_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID NOT IN (1,11) GROUP BY installerID) AS J ON J.installerID = ECD.CHARACTER_ID "
+        SQL &= "LEFT JOIN (SELECT SUM({0}) + 1 AS INDUSTRY_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (3387,24625) GROUP BY CHARACTER_ID) AS K ON K.CHARACTER_ID = ECD.CHARACTER_ID "
+        SQL &= "LEFT JOIN (SELECT installerID, COUNT(*) AS JOB_COUNT FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 1 GROUP BY installerID) AS L ON L.installerID = ECD.CHARACTER_ID "
+        SQL &= "LEFT JOIN (SELECT SUM({0}) + 1 AS REACTION_LINES, CHARACTER_ID FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (45748,45749) GROUP BY CHARACTER_ID) AS M ON M.CHARACTER_ID = ECD.CHARACTER_ID "
+        SQL &= "LEFT JOIN (SELECT installerID, COUNT(*) AS REACTION_JOBS FROM INDUSTRY_JOBS WHERE STATUS = 'active' AND activityID = 11 GROUP BY installerID) AS N ON N.installerID = ECD.CHARACTER_ID "
         SQL &= "WHERE ECD.CORPORATION_ID = ECPD.CORPORATION_ID AND ECD.CHARACTER_ID <> " & CStr(DummyCharacterID)
 
         Dim SkillLevelField As String = ""
@@ -584,7 +590,7 @@ ExitSub:
         Try
             ' On each tick just update the time column manually
             With UserIndustryJobsColumnSettings
-                If .TimeToComplete <> 0 Then ' only if the time to complete column is visible
+                If .TimeToComplete <> 0 Or .LocalCompletionDateTime <> 0 Then ' only if the time to complete column or local complete date column is visible
                     CurrentDateTime = DateAdd(DateInterval.Second, 1, CurrentDateTime)
                     Application.DoEvents()
 
@@ -600,20 +606,37 @@ ExitSub:
                                 TimeToComplete = "0"
                             End If
 
-                            If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
-                                myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
-                                myJobList.Items(i).SubItems(.JobState).Text = "Complete"
-                                myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
-                            Else
-                                myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
+                            ' Update time to complete
+                            If .TimeToComplete <> 0 Then
+                                If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
+                                    myJobList.Items(i).SubItems(.TimeToComplete).Text = ""
+                                    myJobList.Items(i).SubItems(.JobState).Text = "Complete"
+                                    myJobList.Items(i).SubItems(.JobState).ForeColor = Color.Green
+                                Else
+                                    myJobList.Items(i).SubItems(.TimeToComplete).Text = TimeToComplete
+                                End If
+                            End If
+
+                            ' Update local completion time
+                            If .LocalCompletionDateTime <> 0 Then
+                                If TimeToComplete.Substring(0, 1) = "-" Or TimeToComplete = "0" Then
+                                    myJobList.Items(i).SubItems(.LocalCompletionDateTime).Text = ""
+                                Else
+                                    myJobList.Items(i).SubItems(.LocalCompletionDateTime).Text = DateAdd(DateInterval.Second, DateDiff(DateInterval.Second, CurrentDateTime, EndDate), Now).ToString
+                                End If
                             End If
 
                             myJobList.Update()
                             Application.DoEvents()
+
+                            If myJobList.Items(i).SubItems(.LocalCompletionDateTime).Text = TimeToComplete Then
+                                Application.DoEvents()
+                            End If
                         End If
                     Next
                 End If
             End With
+
         Catch ex As Exception
             ' Don't do anything, just let it update next go around
         End Try
@@ -691,6 +714,7 @@ ExitSub:
             ColumnPositions(.BlueprintLocation) = ProgramSettings.BlueprintLocationColumn
             ColumnPositions(.OutputLocation) = ProgramSettings.OutputLocationColumn
             ColumnPositions(.JobType) = ProgramSettings.JobTypeColumn
+            ColumnPositions(.LocalCompletionDateTime) = ProgramSettings.LocalCompletionDateTimeColumn
         End With
 
         ' Reset the first one with nothing since the first column is empty
@@ -741,6 +765,8 @@ ExitSub:
                     Return .OutputLocationWidth
                 Case ProgramSettings.JobTypeColumn
                     Return .JobTypeWidth
+                Case ProgramSettings.LocalCompletionDateTimeColumn
+                    Return .LocalCompletionDateTimeWidth
                 Case Else
                     Return 0
             End Select
@@ -886,6 +912,8 @@ ExitSub:
                         .OutputLocation = i
                     Case ProgramSettings.JobTypeColumn
                         .JobType = i
+                    Case ProgramSettings.LocalCompletionDateTimeColumn
+                        .LocalCompletionDateTime = i
                 End Select
             Next
         End With
@@ -940,6 +968,8 @@ ExitSub:
                         .OutputLocationWidth = NewWidth
                     Case ProgramSettings.JobTypeColumn
                         .JobTypeWidth = NewWidth
+                    Case ProgramSettings.LocalCompletionDateTimeColumn
+                        .LocalCompletionDateTimeWidth = NewWidth
                 End Select
             End With
         End If

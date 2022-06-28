@@ -35,7 +35,7 @@ Public Class ConvertToOre
         Dim OreColumns() As Integer
         Dim MineralRows() As Double
         Dim Outputs() As Double
-        Dim OutputQuantity As Integer
+        Dim OutputQuantity As Long
         Dim TempMaterial As Material
 
         ' For inserting into final LP matrix later 
@@ -219,7 +219,7 @@ NextOre:
         ' Add all the items we converted in LP Solve
         For CI = 1 To OreData.Count
             With OreData(CI)
-                OutputQuantity = CInt(Math.Ceiling(Outputs(CI - 1))) * .RefineUnits
+                OutputQuantity = CLng(Math.Ceiling(Outputs(CI - 1))) * .RefineUnits
                 If OutputQuantity <> 0 Then
                     BuildMaterialList.InsertMaterial(New Material(.ID, .Name, .Group, OutputQuantity, .Volume, .Price, "", ""))
 

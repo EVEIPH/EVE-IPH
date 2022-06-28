@@ -408,9 +408,10 @@ Public Class frmShoppingList
 
                     readerItemPrices.Close()
 
-                    ' Load the Min Sell and Max Buy prices from cache
+                    ' Load the Min Sell and Max Buy prices from cache - source is based off of update prices price selection
+
                     SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
-                    SQL = SQL & " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
+                    SQL &= " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerItemPrices = DBCommand.ExecuteReader
                     readerItemPrices.Read()
@@ -728,11 +729,11 @@ Public Class frmShoppingList
                                     TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
 
                                     SQL = "SELECT typeName, SUM(Quantity) FROM "
-                                    SQL = SQL & "ASSETS, INVENTORY_TYPES "
-                                    SQL = SQL & "WHERE (" & TempAssetWhereList & ") "
-                                    SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
-                                    SQL = SQL & " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
-                                    SQL = SQL & " AND ID IN (" & IDString & ")"
+                                    SQL &= "ASSETS, INVENTORY_TYPES "
+                                    SQL &= "WHERE (" & TempAssetWhereList & ") "
+                                    SQL &= " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
+                                    SQL &= " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
+                                    SQL &= " AND ID IN (" & IDString & ")"
 
                                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                     readerAssets = DBCommand.ExecuteReader
@@ -897,19 +898,19 @@ Public Class frmShoppingList
         If UserQuantity <= UsedQuantity Then
             ' Need to just delete the records because we are using everything we have in all locations
             SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID IN"
-            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
-            SQL = SQL & " AND ID IN (" & IDString & ")"
+            SQL &= " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
+            SQL &= " AND ID IN (" & IDString & ")"
 
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
             SQL = "SELECT Quantity, LocationID FROM ASSETS, INVENTORY_TYPES WHERE LocationID IN"
-            SQL = SQL & " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
-            SQL = SQL & " AND ID IN (" & IDString & ")"
-            SQL = SQL & " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
-            SQL = SQL & " AND ASSETS.TypeID = " & MaterialTypeID
-            SQL = SQL & " ORDER BY Quantity DESC"
+            SQL &= " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
+            SQL &= " AND ID IN (" & IDString & ")"
+            SQL &= " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
+            SQL &= " AND ASSETS.TypeID = " & MaterialTypeID
+            SQL &= " ORDER BY Quantity DESC"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerAssets = DBCommand.ExecuteReader
@@ -924,15 +925,15 @@ Public Class frmShoppingList
                 If LocUserQuantity > UsedQuantityRemaining Then
                     ' Whatever we have in this location is greater than the quantity remaining, so update this and leave loop
                     SQL = "UPDATE ASSETS SET Quantity = " & LocUserQuantity - UsedQuantityRemaining
-                    SQL = SQL & " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
-                    SQL = SQL & " AND ID IN (" & IDString & ")"
+                    SQL &= " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
+                    SQL &= " AND ID IN (" & IDString & ")"
 
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                     Exit While
                 Else
                     ' Its less than or equal to the quantity so we need to delete this location's value and update the used quantity
                     SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID)
-                    SQL = SQL & " AND ID IN (" & IDString & ")"
+                    SQL &= " AND ID IN (" & IDString & ")"
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Update used quantity

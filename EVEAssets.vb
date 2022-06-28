@@ -90,9 +90,9 @@ Public Class EVEAssets
 
             ' Look up the type name
             SQL = "SELECT typeName, groupName, categoryName "
-            SQL = SQL & "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
-            SQL = SQL & "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-            SQL = SQL & "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
+            SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
+            SQL &= "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
+            SQL &= "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
@@ -910,7 +910,7 @@ Public Class EVEAssets
 
         ' Since a lot of locations will bog down the settings loading, load locations from a table
         SQL = "SELECT ID, LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(Location)
-        SQL = SQL & " AND ID IN (" & CStr(ID) & "," & CStr(CharacterCorporation.CorporationID) & ")"
+        SQL &= " AND ID IN (" & CStr(ID) & "," & CStr(CharacterCorporation.CorporationID) & ")"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLocations = DBCommand.ExecuteReader

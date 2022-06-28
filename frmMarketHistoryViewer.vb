@@ -235,11 +235,11 @@ Public Class frmMarketHistoryViewer
         End With
 
         SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE, LOW_PRICE, HIGH_PRICE, TOTAL_VOLUME_FILLED FROM MARKET_HISTORY "
-        SQL = SQL & "WHERE TYPE_ID = " & ItemID & " AND REGION_ID = " & RegionID & " "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(StartDate, SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(EndDate, SQLiteDateFormat) & "') "
-        SQL = SQL & "AND TOTAL_VOLUME_FILLED IS NOT NULL "
-        SQL = SQL & "ORDER BY PRICE_HISTORY_DATE"
+        SQL &= "WHERE TYPE_ID = " & ItemID & " AND REGION_ID = " & RegionID & " "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(StartDate, SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(EndDate, SQLiteDateFormat) & "') "
+        SQL &= "AND TOTAL_VOLUME_FILLED IS NOT NULL "
+        SQL &= "ORDER BY PRICE_HISTORY_DATE"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsHistory = DBCommand.ExecuteReader

@@ -121,9 +121,9 @@ Public Class DecryptorList
 
         ' Set the Decryptor first
         SQL = "SELECT INVENTORY_TYPES.typeID, attributeID, value "
-        SQL = SQL & "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES "
-        SQL = SQL & "WHERE TYPE_ATTRIBUTES.typeID = INVENTORY_TYPES.typeID "
-        SQL = SQL & "AND INVENTORY_TYPES.typeName = '" & DecryptorName & "'"
+        SQL &= "FROM INVENTORY_TYPES, TYPE_ATTRIBUTES "
+        SQL &= "WHERE TYPE_ATTRIBUTES.typeID = INVENTORY_TYPES.typeID "
+        SQL &= "AND INVENTORY_TYPES.typeName = '" & DecryptorName & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerDecryptor = DBCommand.ExecuteReader

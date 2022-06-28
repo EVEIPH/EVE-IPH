@@ -5,95 +5,102 @@ Imports Newtonsoft.Json
 
 Public Class FuzzworksMarket
 
+    Implements ICloneable
+
     Private ErrorData As MyError
 
     Private Structure PriceQuery
         Dim ItemList As String
-        Dim RegionOrSystem As String
+        Dim Items As List(Of Long)
+        Dim PriceLocation As String
+        Dim RegionOrSystemHeader As String
     End Structure
 
+    Private PriceLocationToFind As String
+
+    ' Predicate for searching a list of pricequery
+    Private Function FindPriceQuery(ByVal ItemPrice As PriceQuery) As Boolean
+        If ItemPrice.PriceLocation = PriceLocationToFind Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     ' Function takes an array of strings for Regions and a TypeID list, returns an array of EVE Marketeer prices
-    Public Function GetPrices(ByVal TypeIDList As List(Of Long), RegionID As Integer, Optional SystemID As Integer = 0, Optional TypeIDBatchCount As Integer = 100) As List(Of FuzzworksMarketPrice)
+    Public Function GetPrices(ByVal TypeIDList As List(Of PriceItem)) As List(Of FuzzworksMarketPrice)
         Dim PriceRecords As New List(Of FuzzworksMarketPrice)
         Dim TempRecord As FuzzworksMarketPrice
         Dim PriceOutput As New Dictionary(Of Long, FuzzworksMarketType)
         Dim FuzzworksMarketMainQuery As String = "https://market.fuzzwork.co.uk/aggregates/?"
 
-        Dim QueryTypeIDList As New List(Of PriceQuery)
-        Dim TempPQ As New PriceQuery
-        Dim ItemCount As Integer = 0 ' For breaking it into sets of 100 for query
+        Dim ProcessQueryList As New List(Of PriceQuery)
+        Dim FinalQueryList As New List(Of PriceQuery)
+        Dim FindPQ As New PriceQuery
+        Dim InsertPQ As New PriceQuery
 
         Dim ItemListHeader As String = "types="
         Dim RegionHeader As String = "region="
         Dim SystemHeader As String = "system="
         Dim StationHeader As String = "station="
-        Dim RegionOrSystem As String = ""
-        Dim PriceLocationUsed As Integer = 0
+        Dim PriceLocationUsed As String = ""
+        Dim PriceLocationHeaderUsed As String = ""
 
-        Dim TempSystemID As Integer = 0
+        ' Set up for each region/system and item combos to be queried
+        For Each Item In TypeIDList
+            ' Search the main query list for the region, if there add typeid to the list, else add new list 
+            PriceLocationHeaderUsed = RegionHeader ' Always use region header for now
+            If Item.SystemID = "" Then
+                PriceLocationUsed = CStr(Item.RegionID)
+            Else
+                PriceLocationUsed = CStr(Item.SystemID)
+            End If
 
-        If SystemID = 0 Then
-            RegionOrSystem = RegionHeader & CStr(RegionID)
-            PriceLocationUsed = RegionID
-        Else
-            ' Use station ID's for the hub systems except Perimeter
-            Select Case SystemID
-                Case 30002187 ' Amarr
-                    TempSystemID = 60008494
-                    RegionOrSystem = StationHeader & CStr(TempSystemID)
-                Case 30002659 ' Dodixie
-                    TempSystemID = 60011866
-                    RegionOrSystem = StationHeader & CStr(TempSystemID)
-                Case 30002053 ' Hek
-                    TempSystemID = 60005686
-                    RegionOrSystem = StationHeader & CStr(TempSystemID)
-                Case 30002510 ' Rens
-                    TempSystemID = 60004588
-                    RegionOrSystem = StationHeader & CStr(TempSystemID)
-                Case 30000142 ' Jita
-                    TempSystemID = 60003760
-                    RegionOrSystem = StationHeader & CStr(TempSystemID)
-                Case Else
-                    RegionOrSystem = SystemHeader & CStr(SystemID) ' Perimeter - no others should come in as I disabled the system combo
-            End Select
-            PriceLocationUsed = SystemID
-        End If
+            PriceLocationToFind = PriceLocationUsed
+            FindPQ = ProcessQueryList.Find(AddressOf FindPriceQuery)
+            If FindPQ.PriceLocation = "" Then
+                ' Add it
+                InsertPQ.PriceLocation = PriceLocationUsed
+                InsertPQ.RegionOrSystemHeader = PriceLocationHeaderUsed
+                InsertPQ.ItemList = ItemListHeader & CStr(Item.TypeID) & ","
+                InsertPQ.Items = New List(Of Long)
+                InsertPQ.Items.Add(Item.TypeID) ' for counting
+                FindPQ = InsertPQ ' set them to the same now
+                ProcessQueryList.Add(InsertPQ)
+            Else
+                ' Found, so update
+                Call ProcessQueryList.Remove(FindPQ)
+                FindPQ.ItemList &= CStr(Item.TypeID) & ","
+                FindPQ.Items.Add(Item.TypeID)
+                Call ProcessQueryList.Add(FindPQ)
+            End If
 
-        TempPQ.RegionOrSystem = RegionOrSystem
-
-        ' Query each set of 100 prices at time. So build query of 100 items or if Len(FuzzworksMarketMainQuery & RegionOrSystem & "&" & TempPQ.ItemList) > 1900 (will get a too long error at 2000)
-        For Each ID In TypeIDList
-            ItemCount += 1
-            TempPQ.ItemList &= CStr(ID) & ","
-
-            If ItemCount = TypeIDBatchCount Or ItemCount = TypeIDList.Count Or
-                Len(FuzzworksMarketMainQuery & RegionOrSystem & "&" & TempPQ.ItemList) > 1900 Then
-                ' Insert the item
-                ' Add the header to the item list
-                TempPQ.ItemList = ItemListHeader & TempPQ.ItemList
-                ' Strip comma
-                TempPQ.ItemList = TempPQ.ItemList.Substring(0, Len(TempPQ.ItemList) - 1)
-                QueryTypeIDList.Add(TempPQ)
-                TempPQ.ItemList = ""
-
-                ItemCount = 0
+            ' if Len(EVEMarketerMainQuery & ItemList & RegionOrSystem) > 1900 (will get a too long error at 2000) or over 100 items at a time
+            If Len(FuzzworksMarketMainQuery & FindPQ.RegionOrSystemHeader & FindPQ.PriceLocation & FindPQ.ItemList) > 1900 Or FindPQ.Items.Count >= 100 Then
+                Call ProcessQueryList.Remove(FindPQ) ' remove from process list
+                ' Insert the item to the final list
+                Call FinalQueryList.Add(FindPQ)
             End If
         Next
 
-        For Each Record In QueryTypeIDList
+        ' Add whatever is left in the process lists
+        Call FinalQueryList.AddRange(ProcessQueryList)
+
+        For Each Record In FinalQueryList
             Try
                 ' Example get
                 'https://market.fuzzwork.co.uk/aggregates/?region=10000002&types=34,35,36,37,38,39,40
 
-                Dim Output As String = GetJSONFile(FuzzworksMarketMainQuery & Record.RegionOrSystem & "&" & Record.ItemList, "Fuzzwork Market Prices")
+                Dim Output As String = GetJSONFile(FuzzworksMarketMainQuery & Record.RegionOrSystemHeader & Record.PriceLocation & "&" & Record.ItemList.Substring(0, Len(Record.ItemList) - 1), "Fuzzwork Market Prices")
                 ' Parse the out put into the object and process
                 PriceOutput = JsonConvert.DeserializeObject(Of Dictionary(Of Long, FuzzworksMarketType))(Output)
 
                 If Not IsNothing(PriceOutput) Then
                     For Each Price In PriceOutput
                         With Price.Value
+                            TempRecord = New FuzzworksMarketPrice
                             TempRecord.TypeID = Price.Key
-                            TempRecord.PriceLocation = CStr(PriceLocationUsed)
+                            TempRecord.PriceLocation = CLng(Record.PriceLocation)
 
                             TempRecord.BuyMaxPrice = .buy.max
                             TempRecord.BuyMedian = .buy.median
@@ -174,10 +181,14 @@ Public Class FuzzworksMarket
         Return ErrorData
     End Function
 
+    Public Function Clone() As Object Implements ICloneable.Clone
+        Throw New NotImplementedException()
+    End Function
 End Class
 
 Public Structure FuzzworksMarketPrice
     Dim TypeID As Long
+    Dim PriceLocation As Long
     Dim BuyVolume As Double
     Dim BuyWeightedAveragePrice As Double
     Dim BuyMaxPrice As Double
@@ -192,7 +203,6 @@ Public Structure FuzzworksMarketPrice
     Dim SellStdDev As Double
     Dim SellMedian As Double
     Dim SellPercentile As Double
-    Dim PriceLocation As String
 End Structure
 
 Public Class FuzzworksMarketTypeStat

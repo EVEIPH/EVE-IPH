@@ -50,7 +50,7 @@ Public Class frmESIStatus
                     lstViewrow.BackColor = Color.Yellow
                 Case Else
                     lstViewrow.SubItems.Add("Down")
-                    lstViewrow.BackColor = Color.Red
+                    lstViewrow.BackColor = Color.IndianRed
             End Select
 
             Call lstStatus.Items.Add(lstViewrow)

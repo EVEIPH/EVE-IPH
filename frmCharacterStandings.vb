@@ -37,17 +37,17 @@ Public Class frmCharacterStandings
         Dim lstViewRow As ListViewItem
 
         SQL = "SELECT NPC_TYPE, NPC_NAME, STANDING FROM CHARACTER_STANDINGS "
-        SQL = SQL & "WHERE CHARACTER_ID = " & SelectedCharacter.ID & " "
+        SQL &= "WHERE CHARACTER_ID = " & SelectedCharacter.ID & " "
         If rbtnNegative.Checked Then
-            SQL = SQL & "AND STANDING < 0 "
+            SQL &= "AND STANDING < 0 "
         ElseIf rbtnPostive.Checked Then
-            SQL = SQL & "AND STANDING >= 0 "
+            SQL &= "AND STANDING >= 0 "
         End If
 
         If rbtnSortName.Checked Then
-            SQL = SQL & "ORDER BY NPC_TYPE DESC, NPC_NAME"
+            SQL &= "ORDER BY NPC_TYPE DESC, NPC_NAME"
         ElseIf rbtnSortStanding.Checked Then
-            SQL = SQL & "ORDER BY NPC_TYPE DESC, STANDING DESC"
+            SQL &= "ORDER BY NPC_TYPE DESC, STANDING DESC"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

@@ -274,6 +274,8 @@ Public Class frmMain
     Private Const JitaID As String = "30000142"
     Private Const PerimeterID As String = "30000144"
 
+    Private UpdatePricesDataSource As String
+
 #Region "Initialization Code"
 
     ' Set default window theme so tabs in invention window display correctly on all systems
@@ -978,7 +980,7 @@ Public Class frmMain
 
         Dim CharacterTokenData As SavedTokenData = SelectedCharacter.CharacterTokenData
 
-        SQL = "Select scope, status, purpose FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route"
+        SQL = "SELECT scope, status, purpose FROM ESI_STATUS_ITEMS, ESI_ENDPOINT_ROUTE_TO_SCOPE WHERE route = endpoint_route"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsStatus = DBCommand.ExecuteReader
 
@@ -1157,10 +1159,10 @@ Public Class frmMain
         ' The data is stored as a record per day, so just count up the number of records in the time period (days - might not be the same as days shown)
         ' and divide by the sum of the volumes over that time period
         SQL = "SELECT SUM(TOTAL_VOLUME_FILLED)/COUNT(PRICE_HISTORY_DATE) FROM MARKET_HISTORY "
-        SQL = SQL & "WHERE TYPE_ID = " & TypeID & " AND REGION_ID = " & RegionID & " "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(AvgDays + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
-        SQL = SQL & "AND TOTAL_VOLUME_FILLED IS NOT NULL "
+        SQL &= "WHERE TYPE_ID = " & TypeID & " AND REGION_ID = " & RegionID & " "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(AvgDays + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
+        SQL &= "AND TOTAL_VOLUME_FILLED IS NOT NULL "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAverage = DBCommand.ExecuteReader
@@ -1226,7 +1228,7 @@ Public Class frmMain
         ' Also, load all characters we have
         Dim rsCharacters As SQLiteDataReader
         Dim SQL As String = "SELECT CHARACTER_NAME, CASE WHEN GENDER IS NULL THEN 'male' ELSE GENDER END AS GENDER "
-        SQL = SQL & "FROM ESI_CHARACTER_DATA ORDER BY CHARACTER_NAME"
+        SQL &= "FROM ESI_CHARACTER_DATA ORDER BY CHARACTER_NAME"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCharacters = DBCommand.ExecuteReader
 
@@ -1534,7 +1536,7 @@ Public Class frmMain
                 End If
 
                 SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
-                SQL = SQL & "And typeID = blueprintTypeID And activityID = 8 And typeName Like '%" & TempRelic & "%'"
+                SQL &= "And typeID = blueprintTypeID And activityID = 8 And typeName Like '%" & TempRelic & "%'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 Dim readerRelic As SQLiteDataReader
@@ -1866,6 +1868,13 @@ Public Class frmMain
 
         Call frmRepoPlant.Show()
         ReprocessingPlantOpen = True
+
+    End Sub
+
+    Private Sub mnuMETECalculator_Click(sender As Object, e As EventArgs) Handles mnuMETECalculator.Click
+        frmMETE = New frmMETE
+
+        Call frmMETE.Show()
 
     End Sub
 
@@ -2346,9 +2355,9 @@ Public Class frmMain
     End Sub
 
     Private Sub btnOpenMarketBrowser_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOpenMarketBrowser.Click
-        Call Process.Start("https://evetycoon.com/market")
+        'Call Process.Start("https://evetycoon.com/market")
         ' Take them to eve marketer page
-        'Call Process.Start("https://evemarketer.com/")
+        Call Process.Start("https://evemarketer.com/")
     End Sub
 
     Private Sub mnuSelectionExit_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles mnuSelectionExit.Click
@@ -2904,10 +2913,10 @@ Public Class frmMain
                 If MEUpdate Then
                     ' First we need to look up the Blueprint ID
                     SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
-                    SQL = SQL & "CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NULL THEN 0 ELSE ALL_BLUEPRINTS.FAVORITE END AS FAVORITE, IGNORE, "
-                    SQL = SQL & "CASE WHEN TE IS NULL THEN 0 ELSE TE END AS BP_TE "
-                    SQL = SQL & "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
-                    SQL = SQL & "WHERE ITEM_NAME = '" & RemoveItemNameRuns(CurrentRow.SubItems(0).Text) & "'"
+                    SQL &= "CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NULL THEN 0 ELSE ALL_BLUEPRINTS.FAVORITE END AS FAVORITE, IGNORE, "
+                    SQL &= "CASE WHEN TE IS NULL THEN 0 ELSE TE END AS BP_TE "
+                    SQL &= "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
+                    SQL &= "WHERE ITEM_NAME = '" & RemoveItemNameRuns(CurrentRow.SubItems(0).Text) & "'"
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsData = DBCommand.ExecuteReader
@@ -2988,8 +2997,8 @@ Public Class frmMain
 
                 ' See if they have the profile set already
                 SQL = "SELECT 'X' FROM PRICE_PROFILES WHERE ID = " & CStr(SelectedCharacter.ID) & " "
-                SQL = SQL & "AND GROUP_NAME = '" & CurrentRow.SubItems(0).Text & "' "
-                SQL = SQL & "AND RAW_MATERIAL = " & RawMat
+                SQL &= "AND GROUP_NAME = '" & CurrentRow.SubItems(0).Text & "' "
+                SQL &= "AND RAW_MATERIAL = " & RawMat
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsData = DBCommand.ExecuteReader
@@ -2999,26 +3008,26 @@ Public Class frmMain
                     SQL = "UPDATE PRICE_PROFILES SET "
                     If PriceTypeUpdate Then
                         ' Save current region/system
-                        SQL = SQL & "PRICE_TYPE = '" & cmbEdit.Text & "' "
+                        SQL &= "PRICE_TYPE = '" & cmbEdit.Text & "' "
                         CurrentRow.SubItems(1).Text = cmbEdit.Text
                     ElseIf PriceSystemUpdate Then
                         ' Just update system, save others
-                        SQL = SQL & "SOLAR_SYSTEM_NAME = '" & cmbEdit.Text & "' "
+                        SQL &= "SOLAR_SYSTEM_NAME = '" & cmbEdit.Text & "' "
                         CurrentRow.SubItems(3).Text = cmbEdit.Text
                     ElseIf PriceRegionUpdate Then
                         ' Set region, but set system to all systems (blank)
-                        SQL = SQL & "REGION_NAME ='" & cmbEdit.Text & "', SOLAR_SYSTEM_NAME = 'All Systems' "
+                        SQL &= "REGION_NAME ='" & cmbEdit.Text & "', SOLAR_SYSTEM_NAME = 'All Systems' "
                         CurrentRow.SubItems(2).Text = cmbEdit.Text
                         CurrentRow.SubItems(3).Text = AllSystems
                     ElseIf PriceModifierUpdate Then
                         Dim PM As Double = CDbl(txtListEdit.Text.Replace("%", "")) / 100
-                        SQL = SQL & "PRICE_MODIFIER = " & CStr(PM) & " "
+                        SQL &= "PRICE_MODIFIER = " & CStr(PM) & " "
                         CurrentRow.SubItems(4).Text = FormatPercent(PM, 1)
                     End If
 
-                    SQL = SQL & "WHERE ID = " & CStr(SelectedCharacter.ID) & " "
-                    SQL = SQL & "AND GROUP_NAME ='" & CurrentRow.SubItems(0).Text & "' "
-                    SQL = SQL & "AND RAW_MATERIAL = " & RawMat
+                    SQL &= "WHERE ID = " & CStr(SelectedCharacter.ID) & " "
+                    SQL &= "AND GROUP_NAME ='" & CurrentRow.SubItems(0).Text & "' "
+                    SQL &= "AND RAW_MATERIAL = " & RawMat
 
                     rsData.Close()
 
@@ -3028,23 +3037,23 @@ Public Class frmMain
                     SQL = "INSERT INTO PRICE_PROFILES VALUES (" & CStr(SelectedCharacter.ID) & ",'" & CurrentRow.SubItems(0).Text & "','"
                     If PriceTypeUpdate Then
                         ' Save current region/system
-                        SQL = SQL & FormatDBString(cmbEdit.Text) & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "'," & TempPercent & "," & RawMat & ")"
+                        SQL &= FormatDBString(cmbEdit.Text) & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "'," & TempPercent & "," & RawMat & ")"
                         CurrentRow.SubItems(1).Text = cmbEdit.Text
                     ElseIf PriceSystemUpdate Then
                         ' Just update system, save others
-                        SQL = SQL & CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & FormatDBString(cmbEdit.Text) & "'," & TempPercent & "," & RawMat & ")"
+                        SQL &= CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & FormatDBString(cmbEdit.Text) & "'," & TempPercent & "," & RawMat & ")"
                         CurrentRow.SubItems(3).Text = cmbEdit.Text
                     ElseIf PriceRegionUpdate Then
                         ' Set region, but set system to all systems (blank)
-                        SQL = SQL & CurrentRow.SubItems(1).Text & "','" & FormatDBString(cmbEdit.Text) & "','All Systems'," & TempPercent & "," & RawMat & ")"
+                        SQL &= CurrentRow.SubItems(1).Text & "','" & FormatDBString(cmbEdit.Text) & "','All Systems'," & TempPercent & "," & RawMat & ")"
                         ' Set the text
                         CurrentRow.SubItems(2).Text = cmbEdit.Text
                         CurrentRow.SubItems(3).Text = AllSystems
                     ElseIf PriceModifierUpdate Then
                         ' Save current region/system/type
-                        SQL = SQL & CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "',"
+                        SQL &= CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "',"
                         Dim PM As Double = CDbl(txtListEdit.Text.Replace("%", "")) / 100
-                        SQL = SQL & CStr(PM) & "," & RawMat & ")"
+                        SQL &= CStr(PM) & "," & RawMat & ")"
                         CurrentRow.SubItems(4).Text = FormatPercent(PM, 1)
                     End If
 
@@ -3323,9 +3332,9 @@ Tabs:
                     If PriceSystemUpdate Then
                         ' Base it off the data in the region cell
                         SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
-                        SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                        SQL = SQL & "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
-                        SQL = SQL & "ORDER BY solarSystemName"
+                        SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+                        SQL &= "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
+                        SQL &= "ORDER BY solarSystemName"
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         rsData = DBCommand.ExecuteReader
 
@@ -4195,7 +4204,7 @@ Tabs:
         LoadingRelics = True
 
         SQL = "SELECT typeName FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID =" & BPID & " "
-        SQL = SQL & "AND typeID = blueprintTypeID AND activityID = 8"
+        SQL &= "AND typeID = blueprintTypeID AND activityID = 8"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerRelic = DBCommand.ExecuteReader
@@ -4768,7 +4777,7 @@ Tabs:
                 End If
 
                 SQL = "SELECT BLUEPRINT_ID, PORTION_SIZE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_NAME FROM ALL_BLUEPRINTS WHERE ITEM_NAME ="
-                SQL = SQL & "'" & TempItemName & "'"
+                SQL &= "'" & TempItemName & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsBP = DBCommand.ExecuteReader()
@@ -5038,8 +5047,8 @@ Tabs:
                 SQL = BuildBPSelectQuery()
             Else
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2 "
-                SQL = SQL & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
-                SQL = SQL & BuildBPSelectQuery()
+                SQL &= "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+                SQL &= BuildBPSelectQuery()
             End If
 
             If SQL = "" Then
@@ -5047,7 +5056,7 @@ Tabs:
                 Exit Sub
             End If
 
-            SQL = SQL & " ORDER BY X"
+            SQL &= " ORDER BY X"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBPs = DBCommand.ExecuteReader
@@ -5128,50 +5137,50 @@ Tabs:
         ' Find what type of blueprint we want
         With Me
             If .rbtnBPAmmoChargeBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Charge' "
+                SQL &= "AND ITEM_CATEGORY = 'Charge' "
             ElseIf .rbtnBPDroneBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
+                SQL &= "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
             ElseIf .rbtnBPModuleBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
+                SQL &= "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
             ElseIf .rbtnBPShipBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Ship' "
+                SQL &= "AND ITEM_CATEGORY = 'Ship' "
             ElseIf .rbtnBPSubsystemBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Subsystem' "
+                SQL &= "AND ITEM_CATEGORY = 'Subsystem' "
             ElseIf .rbtnBPBoosterBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Implant' "
+                SQL &= "AND ITEM_CATEGORY = 'Implant' "
             ElseIf .rbtnBPComponentBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
+                SQL &= "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
             ElseIf .rbtnBPMiscBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
+                SQL &= "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
             ElseIf .rbtnBPDeployableBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Deployable' "
+                SQL &= "AND ITEM_CATEGORY = 'Deployable' "
             ElseIf .rbtnBPCelestialsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
+                SQL &= "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
             ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components') "
+                SQL &= "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components') "
             ElseIf .rbtnBPStructureRigsBlueprints.Checked Then
-                SQL = SQL & "AND ITEM_CATEGORY = 'Structure Rigs' "
+                SQL &= "AND ITEM_CATEGORY = 'Structure Rigs' "
             ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
-                SQL = SQL & "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
+                SQL &= "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
             ElseIf .rbtnBPReactionsBlueprints.Checked Then
-                SQL = SQL & "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas'"
+                SQL &= "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas'"
             ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL = SQL & "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
+                SQL &= "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
             ElseIf .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
-                SQL = SQL & "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL = SQL & "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
-                SQL = SQL & "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+                SQL &= "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
+                SQL &= "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL &= "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
+                SQL &= "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
                 SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
-                SQL = SQL & "CASE WHEN OWNED_BLUEPRINTS.FAVORITE IS NOT NULL THEN OWNED_BLUEPRINTS.FAVORITE ELSE "
-                SQL = SQL & "CASE WHEN ALL_BLUEPRINTS.FAVORITE Is Not NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS MY_FAVORITE "
-                SQL = SQL & "FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
-                SQL = SQL & "OWNED_BLUEPRINTS WHERE OWNED <> 0  "
-                SQL = SQL & "And OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL = SQL & "And ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID And MY_FAVORITE = 1 "
-                SQL = SQL & "And ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+                SQL &= "CASE WHEN OWNED_BLUEPRINTS.FAVORITE IS NOT NULL THEN OWNED_BLUEPRINTS.FAVORITE ELSE "
+                SQL &= "CASE WHEN ALL_BLUEPRINTS.FAVORITE Is Not NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS MY_FAVORITE "
+                SQL &= "FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
+                SQL &= "OWNED_BLUEPRINTS WHERE OWNED <> 0  "
+                SQL &= "And OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
+                SQL &= "And ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID And MY_FAVORITE = 1 "
+                SQL &= "And ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             End If
         End With
 
@@ -5229,7 +5238,7 @@ Tabs:
         End If
 
         ' Add the item types
-        SQL = SQL & " And " & SQLItemType
+        SQL &= " And " & SQLItemType
 
         Dim SizesClause As String = ""
 
@@ -5260,11 +5269,11 @@ Tabs:
             NPCBPOsClause = " AND IT2.marketGroupID IS NOT NULL AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 
-        SQL = SQL & SizesClause & NPCBPOsClause
+        SQL &= SizesClause & NPCBPOsClause
 
         '' Ignore flag
         'If chkBPIncludeIgnoredBPs.Checked = False Then
-        '    SQL = SQL & " AND IGNORE = 0 "
+        '    SQL &= " AND IGNORE = 0 "
         'End If
 
         BuildBPSelectQuery = SQL
@@ -5909,14 +5918,14 @@ Tabs:
         txtBPTE.Enabled = True
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_GROUP "
-        SQL = SQL & "FROM ALL_BLUEPRINTS "
-        SQL = SQL & "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
+        SQL &= "FROM ALL_BLUEPRINTS "
+        SQL &= "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
 
         If SelectedBPText = "" Then
             SelectedBPText = cmbBPBlueprintSelection.Text
         End If
 
-        SQL = SQL & "'" & FormatDBString(SelectedBPText) & "'"
+        SQL &= "'" & FormatDBString(SelectedBPText) & "'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -6064,8 +6073,8 @@ Tabs:
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-        SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
-        SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintID & " AND OWNED <> 0 " ' Only load user or api owned bps
+        SQL &= " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
+        SQL &= " AND BLUEPRINT_ID = " & BlueprintID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -6085,8 +6094,8 @@ Tabs:
             ' Try again with corp
             readerBP.Close()
             SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-            SQL = SQL & " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL = SQL & " AND BLUEPRINT_ID = " & BlueprintID & " AND SCANNED <> 0 AND OWNED <> 0 "
+            SQL &= " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
+            SQL &= " AND BLUEPRINT_ID = " & BlueprintID & " AND SCANNED <> 0 AND OWNED <> 0 "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -7220,7 +7229,7 @@ ExitForm:
             Dim readerBP As SQLiteDataReader
 
             SQL = "SELECT quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-            SQL = SQL & "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
+            SQL &= "WHERE typeID = blueprintTypeID AND productTypeID = " & CStr(BlueprintTypeID) & " AND typeName = '" & cmbBPRelic.Text & "'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -7356,7 +7365,7 @@ ExitForm:
         Dim SelectedActivityID As String = CStr(GetActivityID(SelectedFacility.Activity))
 
         SQL = "SELECT * FROM INDUSTRY_SYSTEMS_COST_INDICIES WHERE SOLAR_SYSTEM_ID = " & SSID & " "
-        SQL = SQL & "AND ACTIVITY_ID = " & SelectedActivityID
+        SQL &= "AND ACTIVITY_ID = " & SelectedActivityID
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsCheck = DBCommand.ExecuteReader
         rsCheck.Read()
@@ -7365,7 +7374,7 @@ ExitForm:
         If rsCheck.HasRows Then
             ' Update
             SQL = "UPDATE INDUSTRY_SYSTEMS_COST_INDICIES SET COST_INDEX = " & CostIndex
-            SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & SelectedActivityID
+            SQL &= " WHERE SOLAR_SYSTEM_ID = " & SSID & " AND ACTIVITY_ID = " & SelectedActivityID
         Else
             ' Insert 
             SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES (" & SSID & ",'" & SSName & "',"
@@ -7402,6 +7411,7 @@ ExitForm:
     End Sub
 
 #End Region
+
 
 #Region "Update Prices Tab"
 
@@ -7809,15 +7819,13 @@ ExitForm:
 
     End Function
 
-    Private Sub rbtnPriceSourceEVEMarketer_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSource3rdparty.CheckedChanged, rbtnPriceSourceCCPData.CheckedChanged
+    Private Sub PriceSourceSelection_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnPriceSourceEM.CheckedChanged, rbtnPriceSourceCCPData.CheckedChanged, rbtnPriceSourceFW.CheckedChanged
         If rbtnPriceSourceCCPData.Checked Then
             btnAddStructureIDs.Visible = True
-            cmbPriceSystems.Enabled = True
+            btnViewSavedStructures.Visible = True
         Else
             btnAddStructureIDs.Visible = False
             btnViewSavedStructures.Visible = False
-            cmbPriceSystems.Enabled = False ' For Fuzzwork, only allow region selection or main hubs
-            cmbPriceSystems.Text = AllSystems
         End If
     End Sub
 
@@ -7911,6 +7919,7 @@ ExitForm:
 
             cmbPriceRegions.Text = DefaultRegionPriceCombo
             cmbPriceSystems.Text = DefaultSystemPriceCombo
+
             PreviousPriceRegion = ""
 
             UpdatingCheck = False
@@ -8029,7 +8038,7 @@ ExitForm:
 
     Private Sub cmbPriceRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbPriceRegions.DropDown
         If Not PriceRegionsLoaded Then
-            Call LoadRegionCombo(cmbPriceRegions, cmbPriceSystems.Text)
+            Call LoadRegionCombo(cmbPriceRegions, cmbPriceRegions.Text)
             PriceRegionsLoaded = True
         End If
     End Sub
@@ -8084,13 +8093,13 @@ ExitForm:
         Dim SQL As String = ""
 
         SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(cmbPPDefaultsPriceType.Text) & "', REGION_NAME = '" & FormatDBString(cmbPPDefaultsRegion.Text) & "', "
-        SQL = SQL & "SOLAR_SYSTEM_NAME = '" & FormatDBString(cmbPPDefaultsSystem.Text) & "', PRICE_MODIFIER = " & CStr(CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100) & " "
-        SQL = SQL & "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
+        SQL &= "SOLAR_SYSTEM_NAME = '" & FormatDBString(cmbPPDefaultsSystem.Text) & "', PRICE_MODIFIER = " & CStr(CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100) & " "
+        SQL &= "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
 
         If tabPriceProfile.SelectedTab.TabIndex = 0 Then
-            SQL = SQL & "1"
+            SQL &= "1"
         Else
-            SQL = SQL & "0"
+            SQL &= "0"
         End If
 
         EVEDB.ExecuteNonQuerySQL(SQL)
@@ -8182,11 +8191,15 @@ ExitForm:
             txtRawPriceModifier.Text = FormatPercent(.RawPriceModifier, 1)
             txtItemsPriceModifier.Text = FormatPercent(.ItemsPriceModifier, 1)
 
-            If .UseESIData Then
-                rbtnPriceSourceCCPData.Checked = True
-            Else
-                rbtnPriceSource3rdparty.Checked = True
-            End If
+            Select Case .PriceDataSource
+                Case DataSource.CCP
+                    rbtnPriceSourceCCPData.Checked = True
+                Case DataSource.EVEMarketer
+                    rbtnPriceSourceEM.Checked = True
+                Case DataSource.Fuzzworks
+                    rbtnPriceSourceFW.Checked = True
+            End Select
+
             If .UsePriceProfile Then
                 rbtnPriceSettingPriceProfile.Checked = True
                 gbSingleSource.Enabled = False
@@ -8255,6 +8268,10 @@ ExitForm:
                     chkSystems1.Checked = True
                     chkSystems6.Checked = True
             End Select
+            ' Set these to default
+            cmbPriceRegions.Text = DefaultRegionPriceCombo
+            cmbPriceSystems.Text = DefaultSystemPriceCombo
+
         Else ' They set a region and/or system
             cmbPriceRegions.Text = UserUpdatePricesTabSettings.SelectedRegion
             ' Preload the systems combo
@@ -8307,7 +8324,7 @@ ExitForm:
             End If
         Next
 
-        If Not RegionChecked And Not SystemChecked Then
+        If Not RegionChecked And Not SystemChecked And Not rbtnPriceSettingPriceProfile.Checked Then
             MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
             Exit Sub
         End If
@@ -8325,7 +8342,7 @@ ExitForm:
 
         ' Search for a set system first
         TempSettings.SelectedSystem = ""
-        If cmbPriceSystems.Text <> DefaultSystemPriceCombo Then
+        If cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
             TempSettings.SelectedSystem = cmbPriceSystems.Text
         Else
             For i = 1 To SystemCheckBoxes.Count - 1
@@ -8406,10 +8423,13 @@ ExitForm:
             .Pirate = chkPricesT6.Checked
 
             If rbtnPriceSourceCCPData.Checked Then
-                .UseESIData = True
-            Else
-                .UseESIData = False
+                .PriceDataSource = DataSource.CCP
+            ElseIf rbtnPriceSourceEM.Checked Then
+                .PriceDataSource = DataSource.EVEMarketer
+            ElseIf rbtnPriceSourceFW.Checked Then
+                .PriceDataSource = DataSource.Fuzzworks
             End If
+
             If rbtnPriceSettingPriceProfile.Checked Then
                 .UsePriceProfile = True
             Else
@@ -8508,25 +8528,27 @@ ExitForm:
     ' Loads the price profiles system combo
     Private Sub LoadSystemCombo(ByRef SystemCombo As ComboBox, ByVal Region As String, ByVal System As String)
 
-        Dim SQL As String = ""
-        Dim rsData As SQLiteDataReader
+        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+            Dim SQL As String = ""
+            Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
-        SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-        SQL = SQL & "AND REGIONS.regionName = '" & Region & "' ORDER BY solarSystemName"
+            SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
+            SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+            SQL &= "AND REGIONS.regionName = '" & Region & "' ORDER BY solarSystemName"
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsData = DBCommand.ExecuteReader
-        SystemCombo.BeginUpdate()
-        SystemCombo.Items.Clear()
-        ' Add the all systems item
-        SystemCombo.Items.Add(AllSystems)
-        While rsData.Read
-            SystemCombo.Items.Add(rsData.GetString(0))
-        End While
-        SystemCombo.EndUpdate()
-        rsData.Close()
-        SystemCombo.Text = System
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsData = DBCommand.ExecuteReader
+            SystemCombo.BeginUpdate()
+            SystemCombo.Items.Clear()
+            ' Add the all systems item
+            SystemCombo.Items.Add(AllSystems)
+            While rsData.Read
+                SystemCombo.Items.Add(rsData.GetString(0))
+            End While
+            SystemCombo.EndUpdate()
+            rsData.Close()
+            SystemCombo.Text = System
+        End If
 
     End Sub
 
@@ -8539,7 +8561,7 @@ ExitForm:
         Dim TempProfile As PriceProfile
 
         SQL = "SELECT GROUP_NAME, PRICE_TYPE, REGION_NAME, SOLAR_SYSTEM_NAME, PRICE_MODIFIER, RAW_MATERIAL "
-        SQL = SQL & "FROM PRICE_PROFILES WHERE ID = " & CStr(SelectedCharacter.ID)
+        SQL &= "FROM PRICE_PROFILES WHERE ID = " & CStr(SelectedCharacter.ID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsPP = DBCommand.ExecuteReader
 
@@ -8560,7 +8582,7 @@ ExitForm:
 
         ' Now get everything we don't have
         SQL = "SELECT GROUP_NAME, PRICE_TYPE, REGION_NAME, SOLAR_SYSTEM_NAME, PRICE_MODIFIER, RAW_MATERIAL "
-        SQL = SQL & "FROM PRICE_PROFILES WHERE ID = 0 " & GroupRawFlagList & ""
+        SQL &= "FROM PRICE_PROFILES WHERE ID = 0 " & GroupRawFlagList & ""
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsPP = DBCommand.ExecuteReader
 
@@ -8630,8 +8652,8 @@ ExitForm:
 
     ' Checks the user entry and then sends the type ids and regions to the cache update
     Private Sub btnImportPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDownloadPrices.Click
-        Dim RegionChecked As Boolean
-        Dim SystemChecked As Boolean
+        Dim RegionSelected As Boolean
+        Dim SystemSelected As Boolean
         Dim readerSystems As SQLiteDataReader
         Dim SQL As String
 
@@ -8643,8 +8665,8 @@ ExitForm:
         Dim SearchStructureID As String = ""
         Dim NumSystems As Integer = 0
 
-        RegionChecked = False
-        SystemChecked = False
+        RegionSelected = False
+        SystemSelected = False
 
         Dim DataErrors As Boolean = True
 
@@ -8653,11 +8675,10 @@ ExitForm:
 
         Dim RegionSelectedCount As Integer = 0
         Dim JitaPerimeterChecked As Boolean = False
-        Dim JitaPerimeterPriceProfileItem As Boolean = False
 
         ' Check region
         If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
-            RegionChecked = True
+            RegionSelected = True
         End If
 
         ' Check systems too
@@ -8665,23 +8686,23 @@ ExitForm:
             If SystemCheckBoxes(i).Checked = True Then
                 ' Save the checked system (can only be one)
                 SearchSystem = SystemCheckBoxes(i).Text
-                SystemChecked = True
+                SystemSelected = True
                 Exit For
             End If
         Next
 
         If chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked Then
-            ' Need to run for both
+            ' Need to run for both for non-price profile 
             JitaPerimeterChecked = True
         End If
 
         ' Finally check system combo
-        If Not SystemChecked And cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
-            SystemChecked = True
+        If Not SystemSelected And cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
+            SystemSelected = True
             SearchSystem = cmbPriceSystems.Text
         End If
 
-        If Not RegionChecked And Not SystemChecked And Not rbtnPriceSettingPriceProfile.Checked Then
+        If Not RegionSelected And Not SystemSelected And Not rbtnPriceSettingPriceProfile.Checked Then
             MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
             GoTo ExitSub
         End If
@@ -8715,14 +8736,23 @@ ExitForm:
         ' Enable cancel
         btnCancelUpdate.Enabled = True
 
+        ' Set the source for the entire update
+        If rbtnPriceSourceEM.Checked Then
+            UpdatePricesDataSource = CStr(CInt(DataSource.EVEMarketer))
+        ElseIf rbtnPriceSourceFW.Checked Then
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
+        ElseIf rbtnPriceSourceCCPData.Checked Then
+            UpdatePricesDataSource = CStr(CInt(DataSource.CCP))
+        End If
+
         Me.Refresh()
         Me.Cursor = Cursors.WaitCursor
         pnlStatus.Text = "Initializing Query..."
         Application.DoEvents()
 
-        ' Find the checked region - single select
+        ' Find the selected region - single select
         If rbtnPriceSettingSingleSelect.Checked Then
-            If RegionChecked And Not SystemChecked Then ' If they selected a combosystem and checked a region, look up combo
+            If RegionSelected And Not SystemSelected Then ' If they selected a region but not a system, look up region data
                 ' Get the search list string
                 SQL = "SELECT regionID FROM REGIONS "
                 SQL &= "WHERE regionName = '" & cmbPriceRegions.Text & "'"
@@ -8738,7 +8768,7 @@ ExitForm:
 
                 readerSystems.Close()
 
-            ElseIf SystemChecked Then
+            ElseIf SystemSelected Then
                 ' Get the system list string
                 SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
                 SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
@@ -8781,7 +8811,7 @@ ExitForm:
                             TempItem.PriceType = cmbRawMatsSplitPrices.Text
                             TempItem.PriceModifier = CDbl(txtRawPriceModifier.Text.Replace("%", "")) / 100
                         End If
-                    Else
+                    Else ' *** PRICE PROFILES ***
                         ' Using price profiles, so look up all the data per group name
                         Dim rsPP As SQLiteDataReader
                         SQL = "SELECT PRICE_TYPE, regionID, SOLAR_SYSTEM_NAME, PRICE_MODIFIER FROM PRICE_PROFILES, REGIONS "
@@ -8805,11 +8835,10 @@ ExitForm:
                             Else
                                 ' Look up the system name
                                 If rsPP.GetString(2) = "Jita/Perim" Then
-                                    JitaPerimeterPriceProfileItem = True
-                                    ' Add Jita first
-                                    TempItem.SystemID = CStr(GetSolarSystemID("Jita"))
+                                    ' System name set below
+                                    JitaPerimeterChecked = True
                                 Else
-                                    JitaPerimeterPriceProfileItem = False
+                                    JitaPerimeterChecked = False
                                     TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
                                 End If
                             End If
@@ -8820,13 +8849,16 @@ ExitForm:
 
                     ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
                     If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
-                        If JitaPerimeterChecked Or JitaPerimeterPriceProfileItem Then
+                        If JitaPerimeterChecked Then
                             ' Add Jita first with flag
                             TempItem.JitaPerimeterPrice = True
+                            TempItem.SystemID = JitaID
                             Items.Add(TempItem)
                             ' Perimeter will always be after Jita but add both temp items to get prices for both
-                            TempItem.SystemID = PerimeterID
-                            Items.Add(TempItem)
+                            Dim TempItem2 As New PriceItem
+                            TempItem2 = CType(TempItem.Clone, PriceItem)
+                            TempItem2.SystemID = PerimeterID
+                            Items.Add(TempItem2)
                         Else
                             ' Just basic add
                             TempItem.JitaPerimeterPrice = False
@@ -8868,6 +8900,22 @@ ExitSub:
 
     End Sub
 
+    Private RegiontoFind As String
+    Private TypeIDRegiontoFind As String
+
+    ' Predicate for searching a list items
+    Private Function FindTypeIDRegion(ByVal Item As TypeIDRegion) As Boolean
+        If Item.RegionString = RegiontoFind Then
+            ' Go through the list to see if the id is already in there
+            If Item.TypeIDs.Contains(TypeIDRegiontoFind) Then
+                Return True
+            End If
+        End If
+
+        Return False
+
+    End Function
+
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
     Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem))
         Dim readerPrices As SQLiteDataReader
@@ -8877,7 +8925,6 @@ ExitSub:
         Dim SelectedPrice As Double
         Dim MP As New MarketPriceInterface(pnlProgressBar)
         Dim ESIData As New ESI
-        Dim ItemTypeIDs = New List(Of String)
         Dim RegionID As String = ""
         Dim PriceRegions As New List(Of String)
         Dim PriceSystem As String = ""
@@ -8908,15 +8955,19 @@ ExitSub:
                 ' Set the region
                 Temp.RegionString = RegionID
 
-                ' Save the ItemID in the list
-                ItemTypeIDs.Add(CStr(SentItems(i).TypeID))
                 ' Save the regionID in the list
                 If Not PriceRegions.Contains(RegionID) Then
                     PriceRegions.Add(RegionID)
                 End If
 
-                ' Save the item with the region on it
-                Items.Add(Temp)
+                ' If not in the main list, add it
+                Dim TempItem As New TypeIDRegion
+                RegiontoFind = RegionID
+                TypeIDRegiontoFind = CStr(SentItems(i).TypeID)
+                TempItem = Items.Find(AddressOf FindTypeIDRegion)
+                If IsNothing(TempItem) Then
+                    Items.Add(Temp)
+                End If
             Next
 
             pnlStatus.Text = "Downloading Station Prices..."
@@ -8963,7 +9014,7 @@ ExitSub:
                 pnlStatus.Text = ""
             End If
         Else
-            ' Update the EVE Marketer cache
+            ' Update the cache with EVE Marketer or Fuzzworks selected
             If Not UpdatePricesCache(SentItems) Then
                 ' Update Failed, don't reload everything
                 Exit Sub
@@ -9020,15 +9071,14 @@ ExitSub:
             RegionorSystemList = ""
             If SentItems(i).JitaPerimeterPrice Then
                 RegionorSystemList = JitaID & "," & PerimeterID
-                ' TODO Add flag if this is run once, we can skip again - need to add item to array and if already in there, don't run it again - put in a goto and remove item from list?
             ElseIf SentItems(i).SystemID = "" Then
                 RegionorSystemList = SentItems(i).RegionID
             Else
-                ' Regions are only one
                 RegionorSystemList = SentItems(i).SystemID
             End If
 
-            If rbtnPriceSource3rdparty.Checked Then
+            ' Third Party data pull
+            If rbtnPriceSourceEM.Checked Or rbtnPriceSourceFW.Checked Then
                 Dim SQLPricetype As String = ""
                 If PriceType <> "splitPrice" Then
                     ' If it's Jita Perimeter, we need to do functions on the values - just take averages of non-min/max values
@@ -9061,7 +9111,17 @@ ExitSub:
                 Else
                     SQLPricetype = "((buyMax + sellMin) / 2)"
                 End If
-                SQL = "SELECT " & SQLPricetype & " FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID) & " AND RegionOrSystem IN (" & RegionorSystemList & ") ORDER BY DateTime(UPDATEDATE) DESC"
+
+                SQL = "SELECT " & SQLPricetype & ", RegionORSystem FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(SentItems(i).TypeID)
+                SQL &= " AND RegionOrSystem IN (" & RegionorSystemList & ") AND PRICE_SOURCE = " & UpdatePricesDataSource
+                If SentItems(i).JitaPerimeterPrice Then
+                    If PriceType = "sellMin" Then
+                        SQL &= " AND sellMin > 0"
+                    ElseIf PriceType = "buyMin0" Then
+                        SQL &= " AND buyMin > 0"
+                    End If
+                End If
+                SQL &= " ORDER BY DateTime(UPDATEDATE) DESC"
             Else
                 Dim LimittoBuy As Boolean = False
                 Dim LimittoSell As Boolean = False
@@ -9079,51 +9139,56 @@ ExitSub:
                 SQL = "SELECT "
                 Select Case PriceType
                     Case "buyAvg"
-                        SQL = SQL & "AVG(PRICE)"
+                        SQL &= "AVG(PRICE)"
                         LimittoBuy = True
                     Case "buyMax"
-                        SQL = SQL & "MAX(PRICE)"
+                        SQL &= "MAX(PRICE)"
                         LimittoBuy = True
                     Case "buyMedian"
-                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, True)
+                        SQL &= CalcMedian(SentItems(i).TypeID, RegionID, SystemID, True)
                     Case "buyMin"
-                        SQL = SQL & "MIN(PRICE)"
+                        SQL &= "MIN(PRICE)"
                         LimittoBuy = True
                     Case "buyPercentile"
-                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, True)
+                        SQL &= CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, True)
                     Case "sellAvg"
-                        SQL = SQL & "AVG(PRICE)"
+                        SQL &= "AVG(PRICE)"
                         LimittoSell = True
                     Case "sellMax"
-                        SQL = SQL & "MAX(PRICE)"
+                        SQL &= "MAX(PRICE)"
                         LimittoSell = True
                     Case "sellMedian"
-                        SQL = SQL & CalcMedian(SentItems(i).TypeID, RegionID, SystemID, False)
+                        SQL &= CalcMedian(SentItems(i).TypeID, RegionID, SystemID, False)
                     Case "sellMin"
-                        SQL = SQL & "MIN(PRICE)"
+                        SQL &= "MIN(PRICE)"
                         LimittoSell = True
                     Case "sellPercentile"
-                        SQL = SQL & CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, False)
+                        SQL &= CalcPercentile(SentItems(i).TypeID, RegionID, SystemID, False)
                     Case "splitPrice"
-                        SQL = SQL & CalcSplit(SentItems(i).TypeID, RegionID, SystemID)
+                        SQL &= CalcSplit(SentItems(i).TypeID, RegionID, SystemID)
                 End Select
 
-                ' Set the main from using both price locations
-                SQL = SQL & " FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
                 ' If they want a system, then limit all the data to that system id
                 If SentItems(i).SystemID <> "" Then
-                    SQL = SQL & "AND SOLAR_SYSTEM_ID IN (" & RegionorSystemList & ") "
+                    ' Set the main from using both CCP Data price locations
+                    SQL &= ", SOLAR_SYSTEM_ID FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
+                    SQL &= "And SOLAR_SYSTEM_ID In (" & RegionorSystemList & ") "
                 Else
                     ' Use the region
-                    SQL = SQL & "AND REGION_ID = " & RegionorSystemList & " "
+                    ' Set the main from using both CCP Data price locations
+                    SQL &= ", REGION_ID FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
+                    SQL &= "And REGION_ID = " & RegionorSystemList & " "
                 End If
 
                 ' See if we limit to buy/sell only
                 If LimittoBuy Then
-                    SQL = SQL & "AND IS_BUY_ORDER <> 0"
+                    SQL &= "AND IS_BUY_ORDER <> 0 "
                 ElseIf LimittoSell Then
-                    SQL = SQL & "AND IS_BUY_ORDER = 0"
+                    SQL &= "AND IS_BUY_ORDER = 0 "
                 End If
+
+                SQL &= "AND PRICE > 0 "
+
             End If
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -9135,8 +9200,10 @@ ExitSub:
                     ' Modify the price depending on modifier
                     SelectedPrice = readerPrices.GetDouble(0) * (1 + SentItems(i).PriceModifier)
 
-                    ' Now Update the ITEM_PRICES table, set price and price type
-                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
+                    ' Now Update the ITEM_PRICES table, set price, price type, Data source, and RegionORSystem used for the price
+                    SQL = "UPDATE ITEM_PRICES_FACT Set PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' "
+                    SQL &= ", RegionORSystem = " & CStr(readerPrices.GetInt64(1)) & ", PRICE_SOURCE = " & UpdatePricesDataSource
+                    SQL &= " WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
                 readerPrices.Close()
@@ -9169,10 +9236,10 @@ ExitSub:
 
         SQL = "SELECT MIN(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
         Else
             ' Use the region
-            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+            SQL &= "AND REGION_ID = " & RegionID & " "
         End If
 
         ' Look up the min sell price
@@ -9190,10 +9257,10 @@ ExitSub:
 
         SQL = "SELECT MAX(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
         Else
             ' Use the region
-            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+            SQL &= "AND REGION_ID = " & RegionID & " "
         End If
 
         ' Look up the max buy order
@@ -9266,19 +9333,19 @@ ExitSub:
 
         SQL = "SELECT PRICE FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL = SQL & "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
         Else
             ' Use the region
-            SQL = SQL & "AND REGION_ID = " & RegionID & " "
+            SQL &= "AND REGION_ID = " & RegionID & " "
         End If
 
         If IsBuyOrder Then
-            SQL = SQL & "AND IS_BUY_ORDER <> 0 "
+            SQL &= "AND IS_BUY_ORDER <> 0 "
         Else
-            SQL = SQL & "AND IS_BUY_ORDER = 0 "
+            SQL &= "AND IS_BUY_ORDER = 0 "
         End If
 
-        SQL = SQL & "ORDER BY PRICE ASC"
+        SQL &= "ORDER BY PRICE ASC"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
@@ -9425,20 +9492,23 @@ ExitSub:
 
     ' Adds prices for each type id and region to the cache 
     Private Function UpdatePricesCache(ByVal CacheItems As List(Of PriceItem)) As Boolean
-        Dim TypeIDUpdatePriceList As New List(Of Long)
+        Dim TypeIDUpdatePriceList As New List(Of PriceItem)
         Dim i As Integer
         Dim SQL As String = ""
-        Dim PriceRecords As List(Of FuzzworksMarketPrice)
+        Dim FWPriceRecords As List(Of FuzzworksMarketPrice)
         Dim FuzzworksMarketPrices = New FuzzworksMarket
-        Dim EVEMarketerError As MyError
+        Dim EMPriceRecords As List(Of EVEMarketerPrice)
+        Dim EVEMarketerPrices As New EVEMarketer
+        Dim PriceDLError As MyError
 
         Dim RegionSystem As String = "" ' Used for querying the Price Cache for regions
-        Dim RegionID As Integer = 0
-        Dim SystemID As Integer = 0
         Dim TotalUpdateItems As Integer = 0 ' For progress bar, only count the ones we update
         Dim InsertRecord As Boolean = False
-        Dim QueryEVEMarketer As Boolean = False
+        Dim Query3rdPartySource As Boolean = False
         Dim readerPriceCheck As SQLiteDataReader
+
+        Dim SystemID As Long
+        Dim RegionID As Long
 
         ' Reset the value of the progress bar
         pnlProgressBar.Value = 0
@@ -9464,17 +9534,17 @@ ExitSub:
             ' Reset Insert
             InsertRecord = False
 
-            ' Get the region/system list since they will always be the same, use the first one for EVE Marketer
+            ' Get the region/system list since they will always be the same, use the first one for EVE Marketer/Fuzzworks
             If CacheItems(i).SystemID <> "" Then
                 RegionSystem = CacheItems(i).SystemID
-                SystemID = CInt(RegionSystem)
+                SystemID = CLng(CacheItems(i).SystemID)
             Else
                 RegionSystem = CacheItems(i).RegionID
-                RegionID = CInt(RegionSystem)
+                RegionID = CLng(CacheItems(i).RegionID)
             End If
 
             ' See if the record is in the cache first
-            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = '" & RegionSystem & "'"
+            SQL = "SELECT * FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = " & RegionSystem & " AND PRICE_SOURCE = " & UpdatePricesDataSource
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPriceCheck = DBCommand.ExecuteReader
@@ -9484,15 +9554,15 @@ ExitSub:
                 InsertRecord = True
             Else
                 readerPriceCheck.Close()
-                ' There is a record, see if it needs to be updated (only update every 6 hours)
-                SQL = "SELECT UPDATEDATE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = '" & RegionSystem & "'"
+                ' There is a record, see if it needs to be updated
+                SQL = "SELECT UPDATEDATE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(CacheItems(i).TypeID) & " AND RegionOrSystem = " & RegionSystem & " AND PRICE_SOURCE = " & UpdatePricesDataSource
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerPriceCheck = DBCommand.ExecuteReader
 
                 ' If no record or the max date
                 If readerPriceCheck.Read Then
                     ' If older than the interval, add a new record
-                    If DateTime.ParseExact(readerPriceCheck.GetString(0), SQLiteDateFormat, LocalCulture) < DateAdd(DateInterval.Minute, -1 * UserApplicationSettings.FuzzworksMarketRefreshInterval, Now) Then
+                    If DateTime.ParseExact(readerPriceCheck.GetString(0), SQLiteDateFormat, LocalCulture) < DateAdd(DateInterval.Minute, -1 * UserApplicationSettings.UpdatePricesRefreshInterval, Now) Then
                         InsertRecord = True
                     End If
                 End If
@@ -9500,15 +9570,15 @@ ExitSub:
 
             readerPriceCheck.Close()
 
-            ' Add to query item list for EVE Central
+            ' Add to query item list for EVE Marketer
             If InsertRecord Then
                 ' Add to the list
-                TypeIDUpdatePriceList.Add(CacheItems(i).TypeID)
+                TypeIDUpdatePriceList.Add(CacheItems(i))
 
                 ' Count up the update items
                 TotalUpdateItems = TotalUpdateItems + 1
-                ' We are inserting at least one record, so query eve central
-                QueryEVEMarketer = True
+                ' We are inserting at least one record, so query eve marketer/FW
+                Query3rdPartySource = True
 
             End If
 
@@ -9525,60 +9595,114 @@ ExitSub:
         ' Set the maximum updates for the progress bar
         pnlProgressBar.Maximum = TotalUpdateItems + 1
 
-        If QueryEVEMarketer Then
+        If Query3rdPartySource Then
             pnlStatus.Text = "Downloading Item Prices..."
             Application.DoEvents()
 
             ' Get the list of records to insert
-            PriceRecords = FuzzworksMarketPrices.GetPrices(TypeIDUpdatePriceList, RegionID, SystemID)
+            ' *** Fuzzworks ***
+            If rbtnPriceSourceFW.Checked Then
 
-            If IsNothing(PriceRecords) Then
-                ' There was an error in the request 
-                EVEMarketerError = FuzzworksMarketPrices.GetErrorData
-                MsgBox("Fuzzworks Market Server is Unavailable" & Chr(13) & EVEMarketerError.Description & Chr(13) & "Please try again later", vbExclamation, Me.Text)
-                UpdatePricesCache = False
-                Exit Function
-            End If
+                FWPriceRecords = FuzzworksMarketPrices.GetPrices(TypeIDUpdatePriceList)
 
-            ' Show the progress bar now and update status
-            pnlProgressBar.Visible = True
-            pnlStatus.Text = "Updating Price Cache..."
-            Application.DoEvents()
-
-            Call EVEDB.BeginSQLiteTransaction()
-
-            ' Loop through the price records and insert each one
-            For i = 0 To PriceRecords.Count - 1
-
-                If CancelUpdatePrices Then
-                    Exit For
+                If IsNothing(FWPriceRecords) Then
+                    ' There was an error in the request 
+                    PriceDLError = FuzzworksMarketPrices.GetErrorData
+                    MsgBox("Fuzzworks Market Server is Unavailable" & Chr(13) & PriceDLError.Description & Chr(13) & "Please try again later", vbExclamation, Me.Text)
+                    UpdatePricesCache = False
+                    Exit Function
                 End If
 
-                ' Insert record in Cache
-                With PriceRecords(i)
-                    ' First, delete the record
-                    SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND RegionOrSystem = '" & .PriceLocation & "'"
+                ' Show the progress bar now and update status
+                pnlProgressBar.Visible = True
+                pnlStatus.Text = "Updating Price Cache..."
+                Application.DoEvents()
+
+                Call EVEDB.BeginSQLiteTransaction()
+
+                ' Loop through the price records and insert each one
+                For i = 0 To FWPriceRecords.Count - 1
+
+                    If CancelUpdatePrices Then
+                        Exit For
+                    End If
+
+                    ' Insert record in Cache
+                    With FWPriceRecords(i)
+                        ' First, delete the record
+                        SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND RegionOrSystem = " & .PriceLocation & " AND PRICE_SOURCE = " & UpdatePricesDataSource
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                        ' Insert new data
+                        SQL = "INSERT INTO ITEM_PRICES_CACHE (typeID, buyVolume, buyAvg, buyweightedAvg, buyMax, buyMin, buyStdDev, buyMedian, buyPercentile, buyVariance, "
+                        SQL &= "sellVolume, sellAvg, sellweightedAvg, sellMax, sellMin, sellStdDev, sellMedian, sellPercentile, sellVariance, RegionOrSystem, UpdateDate, PRICE_SOURCE) VALUES "
+                        SQL &= "(" & CStr(.TypeID) & "," & CStr(.BuyVolume) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyMaxPrice) & "," & CStr(.BuyMinPrice) & "," & CStr(.BuyStdDev) & "," & CStr(.BuyMedian) & "," & CStr(.BuyPercentile) & "," & "0" & ","
+                        SQL &= CStr(.SellVolume) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellMaxPrice) & "," & CStr(.SellMinPrice) & "," & CStr(.SellStdDev) & "," & CStr(.SellMedian) & "," & CStr(.SellPercentile) & "," & "0" & ","
+                        SQL &= .PriceLocation & ",'" & Format(Now, SQLiteDateFormat) & "'," & UpdatePricesDataSource & ")"
+
+                    End With
+
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    ' Insert new data
-                    SQL = "INSERT INTO ITEM_PRICES_CACHE (typeID, buyVolume, buyAvg, buyweightedAvg, buyMax, buyMin, buyStdDev, buyMedian, buyPercentile, buyVariance, "
-                    SQL = SQL & "sellVolume, sellAvg, sellweightedAvg, sellMax, sellMin, sellStdDev, sellMedian, sellPercentile, sellVariance, RegionOrSystem, UpdateDate) VALUES "
-                    SQL = SQL & "(" & CStr(.TypeID) & "," & CStr(.BuyVolume) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyMaxPrice) & "," & CStr(.BuyMinPrice) & "," & CStr(.BuyStdDev) & "," & CStr(.BuyMedian) & "," & CStr(.BuyPercentile) & "," & "0" & ","
-                    SQL = SQL & CStr(.SellVolume) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellMaxPrice) & "," & CStr(.SellMinPrice) & "," & CStr(.SellStdDev) & "," & CStr(.SellMedian) & "," & CStr(.SellPercentile) & "," & "0" & ","
-                    SQL = SQL & "'" & .PriceLocation & "','" & Format(Now, SQLiteDateFormat) & "')"
+                    ' For each record, update the progress bar
+                    Call IncrementToolStripProgressBar(pnlProgressBar)
 
-                End With
+                    Application.DoEvents()
+                Next
 
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.CommitSQLiteTransaction()
 
-                ' For each record, update the progress bar
-                Call IncrementToolStripProgressBar(pnlProgressBar)
+            Else ' *** EVE Marketer ***
+                EMPriceRecords = EVEMarketerPrices.GetPrices(TypeIDUpdatePriceList)
 
+                If IsNothing(EMPriceRecords) Then
+                    ' There was an error in the request 
+                    PriceDLError = EVEMarketerPrices.GetErrorData
+                    MsgBox("EVE Marketer Server is Unavailable" & Chr(13) & PriceDLError.Description & Chr(13) & "Please try again later", vbExclamation, Me.Text)
+                    UpdatePricesCache = False
+                    Exit Function
+                End If
+
+                ' Show the progress bar now and update status
+                pnlProgressBar.Visible = True
+                pnlStatus.Text = "Updating Price Cache..."
                 Application.DoEvents()
-            Next
 
-            Call EVEDB.CommitSQLiteTransaction()
+                Call EVEDB.BeginSQLiteTransaction()
 
+                ' Loop through the price records and insert each one
+                For i = 0 To EMPriceRecords.Count - 1
+
+                    If CancelUpdatePrices Then
+                        Exit For
+                    End If
+
+                    ' Insert record in Cache
+                    With EMPriceRecords(i)
+                        ' First, delete the record 
+                        SQL = "DELETE FROM ITEM_PRICES_CACHE WHERE TYPEID = " & CStr(.TypeID) & " AND RegionOrSystem = " & .PriceLocation & " AND PRICE_SOURCE = " & UpdatePricesDataSource
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                        ' Insert new data
+                        SQL = "INSERT INTO ITEM_PRICES_CACHE (typeID, buyVolume, buyAvg, buyweightedAvg, buyMax, buyMin, buyStdDev, buyMedian, buyPercentile, buyVariance, sellVolume, "
+                        SQL &= " sellAvg, sellweightedAvg, sellMax, sellMin, sellStdDev, sellMedian, sellPercentile, sellVariance, RegionOrSystem, UpdateDate, PRICE_SOURCE) VALUES "
+                        SQL &= "(" & CStr(.TypeID) & "," & CStr(.BuyVolume) & "," & CStr(.BuyAvgPrice) & "," & CStr(.BuyWeightedAveragePrice) & "," & CStr(.BuyMaxPrice) & "," & CStr(.BuyMinPrice) & "," & CStr(.BuyStdDev) & "," & CStr(.BuyMedian) & "," & CStr(.BuyPercentile) & "," & CStr(.BuyVariance) & ","
+                        SQL &= CStr(.SellVolume) & "," & CStr(.SellAvgPrice) & "," & CStr(.SellWeightedAveragePrice) & "," & CStr(.SellMaxPrice) & "," & CStr(.SellMinPrice) & "," & CStr(.SellStdDev) & "," & CStr(.SellMedian) & "," & CStr(.SellPercentile) & "," & CStr(.SellVariance) & ","
+                        SQL &= "'" & .PriceLocation & "','" & Format(Now, SQLiteDateFormat) & "'," & UpdatePricesDataSource & ")"
+
+                    End With
+
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    ' For each record, update the progress bar
+                    Call IncrementToolStripProgressBar(pnlProgressBar)
+
+                    Application.DoEvents()
+                Next
+
+                Call EVEDB.CommitSQLiteTransaction()
+
+            End If
         End If
 
         If CancelUpdatePrices Then
@@ -10003,11 +10127,11 @@ ExitSub:
 
         ' Load the select systems combobox with systems
         SQL = "SELECT groupName from inventory_types, inventory_groups, inventory_categories "
-        SQL = SQL & "WHERE  inventory_types.groupID = inventory_groups.groupID "
-        SQL = SQL & "AND inventory_groups.categoryID = inventory_categories.categoryID "
-        SQL = SQL & "AND categoryname = 'Ship' AND groupName NOT IN ('Rookie ship','Prototype Exploration Ship') "
-        SQL = SQL & "AND inventory_types.published <> 0  "
-        SQL = SQL & "GROUP BY groupName "
+        SQL &= "WHERE  inventory_types.groupID = inventory_groups.groupID "
+        SQL &= "AND inventory_groups.categoryID = inventory_categories.categoryID "
+        SQL &= "AND categoryname = 'Ship' AND groupName NOT IN ('Rookie ship','Prototype Exploration Ship') "
+        SQL &= "AND inventory_types.published <> 0  "
+        SQL &= "GROUP BY groupName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerShipType = DBCommand.ExecuteReader
@@ -10030,11 +10154,11 @@ ExitSub:
 
         ' Load the select systems combobox with systems
         SQL = "SELECT groupName from inventory_types, inventory_groups, inventory_categories "
-        SQL = SQL & "WHERE  inventory_types.groupID = inventory_groups.groupID "
-        SQL = SQL & "AND inventory_groups.categoryID = inventory_categories.categoryID "
-        SQL = SQL & "AND categoryname = 'Charge' "
-        SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
-        SQL = SQL & "GROUP BY groupName "
+        SQL &= "WHERE  inventory_types.groupID = inventory_groups.groupID "
+        SQL &= "AND inventory_groups.categoryID = inventory_categories.categoryID "
+        SQL &= "AND categoryname = 'Charge' "
+        SQL &= "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
+        SQL &= "GROUP BY groupName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerChargeType = DBCommand.ExecuteReader
@@ -10239,9 +10363,9 @@ ExitSub:
                         Else
                             ParsedLine(2) = ParsedLine(2).Replace(",", "") ' Make sure we format correctly, strip out any commas
                         End If
-                        SQL = SQL & "PRICE = " & ParsedLine(2) & ","
-                        SQL = SQL & "PRICE_TYPE = '" & ParsedLine(3) & "' "
-                        SQL = SQL & "WHERE ITEM_ID = " & ParsedLine(5)
+                        SQL &= "PRICE = " & ParsedLine(2) & ","
+                        SQL &= "PRICE_TYPE = '" & ParsedLine(3) & "' "
+                        SQL &= "WHERE ITEM_ID = " & ParsedLine(5)
 
                         ' Update the record
                         Call EVEDB.ExecuteNonQuerySQL(SQL)
@@ -14637,8 +14761,8 @@ ExitCalc:
         Dim Volume As Long = 0
 
         SQL = "SELECT SUM(TOTAL_VOLUME_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
@@ -14659,8 +14783,8 @@ ExitCalc:
         Dim Volume As Long = 0
 
         SQL = "SELECT SUM(TOTAL_ORDERS_FILLED) FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
@@ -14681,7 +14805,7 @@ ExitCalc:
 
         SQL = "SELECT IS_BUY_ORDER, SUM(VOLUME_REMAINING) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) "
         SQL &= "WHERE TYPE_ID = " & CStr(TypeID) & " And REGION_ID = " & CStr(RegionID) & " "
-        SQL = SQL & "GROUP BY IS_BUY_ORDER"
+        SQL &= "GROUP BY IS_BUY_ORDER"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
@@ -14756,7 +14880,7 @@ ExitCalc:
             TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
 
             SQL = "SELECT SUM(Quantity) FROM ASSETS WHERE (" & TempAssetWhereList & ") "
-            SQL = SQL & " And ASSETS.TypeID = " & CStr(TypeID) & " And ID IN (" & IDString & ")"
+            SQL &= " And ASSETS.TypeID = " & CStr(TypeID) & " And ID IN (" & IDString & ")"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerAssets = DBCommand.ExecuteReader
@@ -14779,8 +14903,8 @@ ExitCalc:
         Dim Volume As Integer = 0
 
         SQL = "SELECT SUM(runs * PORTION_SIZE) FROM INDUSTRY_JOBS, ALL_BLUEPRINTS WHERE INDUSTRY_JOBS.productTypeID = ALL_BLUEPRINTS.ITEM_ID "
-        SQL = SQL & "And productTypeID = " & CStr(TypeID) & " And status = 'active' And activityID IN (1,11) "
-        'SQL = SQL & "And installerID = " & CStr(SelectedCharacter.ID) & " "
+        SQL &= "And productTypeID = " & CStr(TypeID) & " And status = 'active' And activityID IN (1,11) "
+        'SQL &= "And installerID = " & CStr(SelectedCharacter.ID) & " "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
@@ -14836,7 +14960,7 @@ ExitCalc:
             WhereClause = WhereClause & "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
         End If
 
-        SQL = SQL & WhereClause & "GROUP BY ITEM_GROUP"
+        SQL &= WhereClause & "GROUP BY ITEM_GROUP"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
@@ -15054,6 +15178,8 @@ ExitCalc:
                 ExportData = Format(DataText, "Fixed") & Separator
             Case ProgramSettings.TotalCostColumnName
                 ExportData = Format(DataText, "Fixed") & Separator
+            Case ProgramSettings.MaterialCostColumnName
+                ExportData = Format(DataText, "Fixed") & Separator
             Case ProgramSettings.BaseJobCostColumnName
                 ExportData = Format(DataText, "Fixed") & Separator
             Case ProgramSettings.ManufacturingJobFeeColumnName
@@ -15231,14 +15357,14 @@ ExitCalc:
                     InventedBPs = New List(Of Long)
                     ' Select all the T2 bps that we can invent from our owned bps and save them
                     SQL = "SELECT productTypeID FROM INDUSTRY_ACTIVITY_PRODUCTS "
-                    SQL = SQL & "WHERE activityID = 8 AND blueprintTypeID IN "
-                    SQL = SQL & "(SELECT BP_ID FROM " & USER_BLUEPRINTS & " WHERE "
+                    SQL &= "WHERE activityID = 8 AND blueprintTypeID IN "
+                    SQL &= "(SELECT BP_ID FROM " & USER_BLUEPRINTS & " WHERE "
                     If rbtnCalcBPFavorites.Checked Then
-                        SQL = SQL & " X.FAVORITE = 1 AND "
+                        SQL &= " X.FAVORITE = 1 AND "
                     Else
-                        SQL = SQL & " X.OWNED <> 0 AND "
+                        SQL &= " X.OWNED <> 0 AND "
                     End If
-                    SQL = SQL & "X.ITEM_TYPE = 1) GROUP BY productTypeID"
+                    SQL &= "X.ITEM_TYPE = 1) GROUP BY productTypeID"
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     DBCommand.Parameters.AddWithValue("@USERBP_USERID", GetBPUserID(SelectedCharacter.ID)) ' need to search for corp ID too
@@ -15922,9 +16048,9 @@ ExitCalc:
 
         ' Now get all the prices for the time period
         SQL = "SELECT PRICE_HISTORY_DATE, AVG_PRICE FROM MARKET_HISTORY WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID) & " "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
-        SQL = SQL & "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
-        SQL = SQL & "ORDER BY PRICE_HISTORY_DATE ASC"
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) >= " & " DateTime('" & Format(DateAdd(DateInterval.Day, -(DaysfromToday + 1), Date.UtcNow.Date), SQLiteDateFormat) & "') "
+        SQL &= "AND DATETIME(PRICE_HISTORY_DATE) < " & " DateTime('" & Format(Date.UtcNow.Date, SQLiteDateFormat) & "') "
+        SQL &= "ORDER BY PRICE_HISTORY_DATE ASC"
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsMarketHistory = DBCommand.ExecuteReader
 
@@ -16890,11 +17016,11 @@ ExitCalc:
 
         ' Read the settings and stats to make the query
         SQL = "SELECT FACTION, CORPORATION_ID, CORPORATION_NAME, AGENT_NAME, LEVEL, 'QUALITY', RESEARCH_TYPE_ID, "
-        SQL = SQL & "RESEARCH_TYPE, REGION_ID, REGION_NAME, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_NAME, SECURITY, STATION "
-        SQL = SQL & "FROM RESEARCH_AGENTS, FACTIONS, REGIONS "
-        SQL = SQL & "WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "
-        SQL = SQL & "AND REGIONS.factionID = FACTIONS.factionID "
-        SQL = SQL & "AND RESEARCH_TYPE IN " & ResearchTypeList & " AND CORPORATION_NAME IN " & CorporationList & SystemSecurityCheck
+        SQL &= "RESEARCH_TYPE, REGION_ID, REGION_NAME, SOLAR_SYSTEM_ID, SOLAR_SYSTEM_NAME, SECURITY, STATION "
+        SQL &= "FROM RESEARCH_AGENTS, FACTIONS, REGIONS "
+        SQL &= "WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "
+        SQL &= "AND REGIONS.factionID = FACTIONS.factionID "
+        SQL &= "AND RESEARCH_TYPE IN " & ResearchTypeList & " AND CORPORATION_NAME IN " & CorporationList & SystemSecurityCheck
 
         FactionString = "AND FACTIONS.factionName in ("
 
@@ -16927,7 +17053,7 @@ ExitCalc:
         If FactionString <> "AND FACTIONS.factionName in (" Then
             FactionString = FactionString.Substring(0, Len(FactionString) - 1) & ") "
             ' Add the faction string
-            SQL = SQL & FactionString
+            SQL &= FactionString
         Else
             ' Clear
             MsgBox("No Datacore Agents for Selected Options", vbInformation, Application.ProductName)
@@ -16936,7 +17062,7 @@ ExitCalc:
         End If
 
         If cmbDCRegions.Text <> "All Regions" Then
-            SQL = SQL & " AND regionName = '" & cmbDCRegions.Text & "'"
+            SQL &= " AND regionName = '" & cmbDCRegions.Text & "'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -17143,7 +17269,7 @@ ExitCalc:
 
             ' Now search for each item's price in the cache with its region and pull up the max buy order
             For i = 0 To DCAgentList.Count - 1
-                SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionOrSystem ='" & DCAgentList(i).RegionID & "'"
+                SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionOrSystem =" & DCAgentList(i).RegionID & " AND PRICE_SOURCE = " & UpdatePricesDataSource
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDC2 = DBCommand.ExecuteReader()
@@ -17195,7 +17321,7 @@ ExitCalc:
 
             ' Now search for each item's price in the cache with its solar system and pull up the max buy order
             For i = 0 To DCAgentList.Count - 1
-                SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionOrSystem ='" & DCAgentList(i).SystemID & "'"
+                SQL = "SELECT buyMax FROM ITEM_PRICES_CACHE WHERE typeID =" & DCAgentList(i).DataCoreID & " AND RegionOrSystem =" & DCAgentList(i).SystemID & " AND PRICE_SOURCE = " & UpdatePricesDataSource
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerDC2 = DBCommand.ExecuteReader()
@@ -17486,7 +17612,7 @@ Leave:
 
             ' Load the select systems combobox with systems
             SQL = "SELECT regionName FROM RESEARCH_AGENTS, REGIONS WHERE RESEARCH_AGENTS.REGION_ID = REGIONS.regionID "
-            SQL = SQL & "GROUP BY regionName"
+            SQL &= "GROUP BY regionName"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerReg = DBCommand.ExecuteReader
@@ -18761,6 +18887,14 @@ Leave:
         ModuleResidueVolumeMuliplier = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.miningWastedVolumeMultiplier)
         MiningLaserBaseCycleTime = AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.duration)
 
+        ' Boosters use one module and charges for boosting 
+        Dim GangBurstBonusCycle As Double = 0
+        Dim GangBurstBonusRange As Double = 0
+        If chkMineUseFleetBooster.Checked Then
+            GangBurstBonusCycle = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
+            GangBurstBonusRange = CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost)
+        End If
+
         ' Loop through all the ores and determine ore amount, refine, 
         While readerMine.Read
             ' For each crystal type and tech, calculate a row
@@ -18772,6 +18906,8 @@ Leave:
                 ResidueVolumeMuliplier = ModuleResidueVolumeMuliplier
 
                 ' DB Data
+                TempOre = New MiningOre
+                ReprocessingYield = 0
                 TempOre.OreID = readerMine.GetInt64(0)
                 TempOre.OreName = readerMine.GetString(1)
                 TempOre.OreVolume = readerMine.GetDouble(2)
@@ -18821,7 +18957,7 @@ Leave:
                 If MiningShipSelected() Then
                     ShipMiningYield = CalculateMiningAmount()
                     ' Duration is in milliseconds - add in crystal bonus too
-                    CycletimeNoCrystal = CalculateMiningCycleTime(MiningLaserBaseCycleTime / 1000)
+                    CycletimeNoCrystal = CalculateMiningCycleTime(MiningLaserBaseCycleTime / 1000, GangBurstBonusCycle)
                     BaseCycleTime = CycletimeNoCrystal * CrystalAsteroidDurationMultiplier
                     If CrystalAsteroidDurationMultiplier = 1 Then
                         CycleTimeLabel = FormatNumber(BaseCycleTime, 1) & " s"
@@ -18984,6 +19120,11 @@ Leave:
                                                                             TempOre.UnitsToRefine, chkMineIncludeTaxes.Checked, BFI, ReprocessingYield, Nothing)
                     TempOre.OreUnitPrice = ReprocessedMaterials.GetTotalMaterialsCost / TempOre.UnitsToRefine
                     TempOre.RefineType = "Refined"
+
+                    If TempOre.RefineYield = 0 Then
+                        TempOre.RefineYield = ReprocessingYield
+                    End If
+
                     ' For each record, update the progress bar
                     Call IncrementToolStripProgressBar(pnlProgressBar)
                     OreList.Add(TempOre)
@@ -19134,7 +19275,7 @@ Leave:
         lstMineGrid.EndUpdate()
 
         ' Update the mining range of the mining lasers selected
-        lblMineRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text) / 1000, 2) & " km"
+        lblMineRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text, GangBurstBonusRange) / 1000, 2) & " km"
         lblMineCycleTime.Text = CycleTimeLabel
 
         i = 0
@@ -19648,6 +19789,8 @@ Leave:
         If UpdateEquipment Or cmbMineShipName.Text = Orca Or cmbMineShipName.Text = Rorqual Or cmbMineShipName.Text = Porpoise Then
             ' Finally load all the ship equipment
             Call UpdateMiningShipEquipment()
+            ' Refresh drone stats
+            Call UpdateShipMiningDroneStats()
         End If
 
     End Sub
@@ -21158,14 +21301,14 @@ ProcExit:
     End Function
 
     ' Calculates the range for the miner selected and boosts applied
-    Private Function CalculateMiningRange(BaseRange As Double, OreType As String) As Double
+    Private Function CalculateMiningRange(BaseRange As Double, OreType As String, BurstBonus As Double) As Double
         Dim CalculatedRange As Double
         Dim Attriblookup As New EVEAttributes
         Dim BaseShipLevel As Integer = CInt(cmbMineBaseShipSkill.Text)
 
         ' Calc range with bursts
         If chkMineUseFleetBooster.Checked Then
-            CalculatedRange = BaseRange * (1 + CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost))
+            CalculatedRange = BaseRange * (1 + BurstBonus)
         Else
             CalculatedRange = BaseRange
         End If
@@ -21231,20 +21374,12 @@ ProcExit:
     End Function
 
     ' Returns the cycle time of the mining laser cycle time sent
-    Private Function CalculateMiningCycleTime(ByVal BaseCycleTime As Double) As Double
-        Dim GangBurstBonus As Double
+    Private Function CalculateMiningCycleTime(ByVal BaseCycleTime As Double, ByVal GangBurstBonus As Double) As Double
         Dim TempCycleTime As Double
         Dim AttribLookup As New EVEAttributes
 
         Dim BaseShipLevel As Integer = CInt(cmbMineBaseShipSkill.Text)
         Dim AdvShipLevel As Integer = CInt(cmbMineAdvShipSkill.Text)
-
-        ' Boosters use one module and charges for boosting - Ascension
-        If chkMineUseFleetBooster.Checked Then
-            GangBurstBonus = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
-        Else
-            GangBurstBonus = 0
-        End If
 
         ' Get the adjusted time with bursts
         TempCycleTime = BaseCycleTime * (1 + GangBurstBonus)

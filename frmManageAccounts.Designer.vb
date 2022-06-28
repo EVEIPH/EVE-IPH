@@ -40,24 +40,30 @@ Partial Class frmManageAccounts
         Me.lstScopes = New System.Windows.Forms.ListView()
         Me.colScopes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gbAccountData = New System.Windows.Forms.GroupBox()
-        Me.Label1 = New System.Windows.Forms.Label()
+        Me.btnCopyCorpID = New System.Windows.Forms.Button()
+        Me.lblCorpID = New System.Windows.Forms.Label()
+        Me.txtCorpID = New System.Windows.Forms.TextBox()
+        Me.lblCharacterID = New System.Windows.Forms.Label()
+        Me.txtCharacterID = New System.Windows.Forms.TextBox()
+        Me.btnCopyCharacterID = New System.Windows.Forms.Button()
+        Me.btnCopyAccesToken = New System.Windows.Forms.Button()
         Me.btnCopyAll = New System.Windows.Forms.Button()
+        Me.Label1 = New System.Windows.Forms.Label()
         Me.lblRefreshToken = New System.Windows.Forms.Label()
         Me.lblAccessToken = New System.Windows.Forms.Label()
         Me.txtRefreshToken = New System.Windows.Forms.TextBox()
         Me.txtAccessTokenExpDate = New System.Windows.Forms.TextBox()
         Me.txtAccessToken = New System.Windows.Forms.TextBox()
         Me.btnRefreshToken = New System.Windows.Forms.Button()
-        Me.btnCopyAccesToken = New System.Windows.Forms.Button()
-        Me.btnCopyCharacterID = New System.Windows.Forms.Button()
-        Me.txtCharacterID = New System.Windows.Forms.TextBox()
-        Me.lblCharacterID = New System.Windows.Forms.Label()
+        Me.chkDirector = New System.Windows.Forms.CheckBox()
+        Me.chkFactoryManager = New System.Windows.Forms.CheckBox()
+        Me.colCorpID = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.gbAccountData.SuspendLayout()
         Me.SuspendLayout()
         '
         'lstAccounts
         '
-        Me.lstAccounts.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colCharacterID, Me.colCharacterName, Me.colCorporationName, Me.colIsDefault, Me.colAccountScopes, Me.colAccessToken, Me.colRefreshToken, Me.colAccessTokenExpireDate, Me.colTokenType})
+        Me.lstAccounts.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.colCharacterID, Me.colCharacterName, Me.colCorporationName, Me.colIsDefault, Me.colAccountScopes, Me.colAccessToken, Me.colRefreshToken, Me.colAccessTokenExpireDate, Me.colTokenType, Me.colCorpID})
         Me.lstAccounts.FullRowSelect = True
         Me.lstAccounts.GridLines = True
         Me.lstAccounts.HideSelection = False
@@ -111,7 +117,7 @@ Partial Class frmManageAccounts
         '
         'btnClose
         '
-        Me.btnClose.Location = New System.Drawing.Point(762, 391)
+        Me.btnClose.Location = New System.Drawing.Point(735, 391)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(122, 30)
         Me.btnClose.TabIndex = 4
@@ -121,7 +127,7 @@ Partial Class frmManageAccounts
         'btnDeleteCharacter
         '
         Me.btnDeleteCharacter.Enabled = False
-        Me.btnDeleteCharacter.Location = New System.Drawing.Point(378, 391)
+        Me.btnDeleteCharacter.Location = New System.Drawing.Point(351, 391)
         Me.btnDeleteCharacter.Name = "btnDeleteCharacter"
         Me.btnDeleteCharacter.Size = New System.Drawing.Size(122, 30)
         Me.btnDeleteCharacter.TabIndex = 6
@@ -130,7 +136,7 @@ Partial Class frmManageAccounts
         '
         'btnAddCharacter
         '
-        Me.btnAddCharacter.Location = New System.Drawing.Point(250, 391)
+        Me.btnAddCharacter.Location = New System.Drawing.Point(223, 391)
         Me.btnAddCharacter.Name = "btnAddCharacter"
         Me.btnAddCharacter.Size = New System.Drawing.Size(122, 30)
         Me.btnAddCharacter.TabIndex = 7
@@ -140,7 +146,7 @@ Partial Class frmManageAccounts
         'btnSelectDefaultChar
         '
         Me.btnSelectDefaultChar.Enabled = False
-        Me.btnSelectDefaultChar.Location = New System.Drawing.Point(506, 391)
+        Me.btnSelectDefaultChar.Location = New System.Drawing.Point(479, 391)
         Me.btnSelectDefaultChar.Name = "btnSelectDefaultChar"
         Me.btnSelectDefaultChar.Size = New System.Drawing.Size(122, 30)
         Me.btnSelectDefaultChar.TabIndex = 8
@@ -156,7 +162,7 @@ Partial Class frmManageAccounts
         Me.lstScopes.Location = New System.Drawing.Point(612, 12)
         Me.lstScopes.MultiSelect = False
         Me.lstScopes.Name = "lstScopes"
-        Me.lstScopes.Size = New System.Drawing.Size(516, 231)
+        Me.lstScopes.Size = New System.Drawing.Size(458, 215)
         Me.lstScopes.TabIndex = 9
         Me.lstScopes.UseCompatibleStateImageBehavior = False
         Me.lstScopes.View = System.Windows.Forms.View.Details
@@ -164,16 +170,19 @@ Partial Class frmManageAccounts
         'colScopes
         '
         Me.colScopes.Text = "Scopes"
-        Me.colScopes.Width = 345
+        Me.colScopes.Width = 437
         '
         'gbAccountData
         '
+        Me.gbAccountData.Controls.Add(Me.btnCopyCorpID)
+        Me.gbAccountData.Controls.Add(Me.lblCorpID)
+        Me.gbAccountData.Controls.Add(Me.txtCorpID)
         Me.gbAccountData.Controls.Add(Me.lblCharacterID)
         Me.gbAccountData.Controls.Add(Me.txtCharacterID)
         Me.gbAccountData.Controls.Add(Me.btnCopyCharacterID)
         Me.gbAccountData.Controls.Add(Me.btnCopyAccesToken)
-        Me.gbAccountData.Controls.Add(Me.Label1)
         Me.gbAccountData.Controls.Add(Me.btnCopyAll)
+        Me.gbAccountData.Controls.Add(Me.Label1)
         Me.gbAccountData.Controls.Add(Me.lblRefreshToken)
         Me.gbAccountData.Controls.Add(Me.lblAccessToken)
         Me.gbAccountData.Controls.Add(Me.txtRefreshToken)
@@ -181,9 +190,79 @@ Partial Class frmManageAccounts
         Me.gbAccountData.Controls.Add(Me.txtAccessToken)
         Me.gbAccountData.Location = New System.Drawing.Point(612, 249)
         Me.gbAccountData.Name = "gbAccountData"
-        Me.gbAccountData.Size = New System.Drawing.Size(516, 133)
+        Me.gbAccountData.Size = New System.Drawing.Size(458, 133)
         Me.gbAccountData.TabIndex = 11
         Me.gbAccountData.TabStop = False
+        '
+        'btnCopyCorpID
+        '
+        Me.btnCopyCorpID.Location = New System.Drawing.Point(336, 56)
+        Me.btnCopyCorpID.Name = "btnCopyCorpID"
+        Me.btnCopyCorpID.Size = New System.Drawing.Size(116, 21)
+        Me.btnCopyCorpID.TabIndex = 20
+        Me.btnCopyCorpID.Text = "Copy Corporation ID"
+        Me.btnCopyCorpID.UseVisualStyleBackColor = True
+        '
+        'lblCorpID
+        '
+        Me.lblCorpID.AutoSize = True
+        Me.lblCorpID.Location = New System.Drawing.Point(247, 61)
+        Me.lblCorpID.Name = "lblCorpID"
+        Me.lblCorpID.Size = New System.Drawing.Size(78, 13)
+        Me.lblCorpID.TabIndex = 19
+        Me.lblCorpID.Text = "Corporation ID:"
+        '
+        'txtCorpID
+        '
+        Me.txtCorpID.Location = New System.Drawing.Point(250, 77)
+        Me.txtCorpID.Name = "txtCorpID"
+        Me.txtCorpID.ReadOnly = True
+        Me.txtCorpID.Size = New System.Drawing.Size(80, 20)
+        Me.txtCorpID.TabIndex = 18
+        '
+        'lblCharacterID
+        '
+        Me.lblCharacterID.AutoSize = True
+        Me.lblCharacterID.Location = New System.Drawing.Point(160, 61)
+        Me.lblCharacterID.Name = "lblCharacterID"
+        Me.lblCharacterID.Size = New System.Drawing.Size(70, 13)
+        Me.lblCharacterID.TabIndex = 17
+        Me.lblCharacterID.Text = "Character ID:"
+        '
+        'txtCharacterID
+        '
+        Me.txtCharacterID.Location = New System.Drawing.Point(163, 77)
+        Me.txtCharacterID.Name = "txtCharacterID"
+        Me.txtCharacterID.ReadOnly = True
+        Me.txtCharacterID.Size = New System.Drawing.Size(80, 20)
+        Me.txtCharacterID.TabIndex = 16
+        '
+        'btnCopyCharacterID
+        '
+        Me.btnCopyCharacterID.Location = New System.Drawing.Point(336, 79)
+        Me.btnCopyCharacterID.Name = "btnCopyCharacterID"
+        Me.btnCopyCharacterID.Size = New System.Drawing.Size(116, 21)
+        Me.btnCopyCharacterID.TabIndex = 15
+        Me.btnCopyCharacterID.Text = "Copy Character ID"
+        Me.btnCopyCharacterID.UseVisualStyleBackColor = True
+        '
+        'btnCopyAccesToken
+        '
+        Me.btnCopyAccesToken.Location = New System.Drawing.Point(336, 33)
+        Me.btnCopyAccesToken.Name = "btnCopyAccesToken"
+        Me.btnCopyAccesToken.Size = New System.Drawing.Size(116, 21)
+        Me.btnCopyAccesToken.TabIndex = 14
+        Me.btnCopyAccesToken.Text = "Copy Acces Token"
+        Me.btnCopyAccesToken.UseVisualStyleBackColor = True
+        '
+        'btnCopyAll
+        '
+        Me.btnCopyAll.Location = New System.Drawing.Point(336, 102)
+        Me.btnCopyAll.Name = "btnCopyAll"
+        Me.btnCopyAll.Size = New System.Drawing.Size(116, 21)
+        Me.btnCopyAll.TabIndex = 12
+        Me.btnCopyAll.Text = "Copy Token Data"
+        Me.btnCopyAll.UseVisualStyleBackColor = True
         '
         'Label1
         '
@@ -193,15 +272,6 @@ Partial Class frmManageAccounts
         Me.Label1.Size = New System.Drawing.Size(154, 13)
         Me.Label1.TabIndex = 13
         Me.Label1.Text = "Access Token Expiration Date:"
-        '
-        'btnCopyAll
-        '
-        Me.btnCopyAll.Location = New System.Drawing.Point(402, 103)
-        Me.btnCopyAll.Name = "btnCopyAll"
-        Me.btnCopyAll.Size = New System.Drawing.Size(108, 21)
-        Me.btnCopyAll.TabIndex = 12
-        Me.btnCopyAll.Text = "Copy Token Data"
-        Me.btnCopyAll.UseVisualStyleBackColor = True
         '
         'lblRefreshToken
         '
@@ -226,7 +296,7 @@ Partial Class frmManageAccounts
         Me.txtRefreshToken.Location = New System.Drawing.Point(6, 77)
         Me.txtRefreshToken.Name = "txtRefreshToken"
         Me.txtRefreshToken.ReadOnly = True
-        Me.txtRefreshToken.Size = New System.Drawing.Size(279, 20)
+        Me.txtRefreshToken.Size = New System.Drawing.Size(151, 20)
         Me.txtRefreshToken.TabIndex = 2
         '
         'txtAccessTokenExpDate
@@ -234,67 +304,61 @@ Partial Class frmManageAccounts
         Me.txtAccessTokenExpDate.Location = New System.Drawing.Point(163, 103)
         Me.txtAccessTokenExpDate.Name = "txtAccessTokenExpDate"
         Me.txtAccessTokenExpDate.ReadOnly = True
-        Me.txtAccessTokenExpDate.Size = New System.Drawing.Size(122, 20)
+        Me.txtAccessTokenExpDate.Size = New System.Drawing.Size(167, 20)
         Me.txtAccessTokenExpDate.TabIndex = 1
+        Me.txtAccessTokenExpDate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
         '
         'txtAccessToken
         '
         Me.txtAccessToken.Location = New System.Drawing.Point(6, 34)
         Me.txtAccessToken.Name = "txtAccessToken"
         Me.txtAccessToken.ReadOnly = True
-        Me.txtAccessToken.Size = New System.Drawing.Size(390, 20)
+        Me.txtAccessToken.Size = New System.Drawing.Size(324, 20)
         Me.txtAccessToken.TabIndex = 0
         '
         'btnRefreshToken
         '
-        Me.btnRefreshToken.Location = New System.Drawing.Point(634, 391)
+        Me.btnRefreshToken.Location = New System.Drawing.Point(607, 391)
         Me.btnRefreshToken.Name = "btnRefreshToken"
         Me.btnRefreshToken.Size = New System.Drawing.Size(122, 30)
         Me.btnRefreshToken.TabIndex = 12
         Me.btnRefreshToken.Text = "Refresh Token Data"
         Me.btnRefreshToken.UseVisualStyleBackColor = True
         '
-        'btnCopyAccesToken
+        'chkDirector
         '
-        Me.btnCopyAccesToken.Location = New System.Drawing.Point(402, 33)
-        Me.btnCopyAccesToken.Name = "btnCopyAccesToken"
-        Me.btnCopyAccesToken.Size = New System.Drawing.Size(108, 21)
-        Me.btnCopyAccesToken.TabIndex = 14
-        Me.btnCopyAccesToken.Text = "Copy Acces Token"
-        Me.btnCopyAccesToken.UseVisualStyleBackColor = True
+        Me.chkDirector.AutoCheck = False
+        Me.chkDirector.AutoSize = True
+        Me.chkDirector.Location = New System.Drawing.Point(618, 233)
+        Me.chkDirector.Name = "chkDirector"
+        Me.chkDirector.Size = New System.Drawing.Size(88, 17)
+        Me.chkDirector.TabIndex = 13
+        Me.chkDirector.Text = "Director Role"
+        Me.chkDirector.UseVisualStyleBackColor = True
         '
-        'btnCopyCharacterID
+        'chkFactoryManager
         '
-        Me.btnCopyCharacterID.Location = New System.Drawing.Point(402, 76)
-        Me.btnCopyCharacterID.Name = "btnCopyCharacterID"
-        Me.btnCopyCharacterID.Size = New System.Drawing.Size(108, 21)
-        Me.btnCopyCharacterID.TabIndex = 15
-        Me.btnCopyCharacterID.Text = "Copy Character ID"
-        Me.btnCopyCharacterID.UseVisualStyleBackColor = True
+        Me.chkFactoryManager.AutoCheck = False
+        Me.chkFactoryManager.AutoSize = True
+        Me.chkFactoryManager.Location = New System.Drawing.Point(725, 233)
+        Me.chkFactoryManager.Name = "chkFactoryManager"
+        Me.chkFactoryManager.Size = New System.Drawing.Size(131, 17)
+        Me.chkFactoryManager.TabIndex = 14
+        Me.chkFactoryManager.Text = "Factory Manager Role"
+        Me.chkFactoryManager.UseVisualStyleBackColor = True
         '
-        'txtCharacterID
+        'colCorpID
         '
-        Me.txtCharacterID.Location = New System.Drawing.Point(291, 77)
-        Me.txtCharacterID.Name = "txtCharacterID"
-        Me.txtCharacterID.ReadOnly = True
-        Me.txtCharacterID.Size = New System.Drawing.Size(105, 20)
-        Me.txtCharacterID.TabIndex = 16
-        '
-        'lblCharacterID
-        '
-        Me.lblCharacterID.AutoSize = True
-        Me.lblCharacterID.Location = New System.Drawing.Point(291, 61)
-        Me.lblCharacterID.Name = "lblCharacterID"
-        Me.lblCharacterID.Size = New System.Drawing.Size(70, 13)
-        Me.lblCharacterID.TabIndex = 17
-        Me.lblCharacterID.Text = "Character ID:"
+        Me.colCorpID.Width = 0
         '
         'frmManageAccounts
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(1134, 430)
+        Me.ClientSize = New System.Drawing.Size(1080, 430)
+        Me.Controls.Add(Me.chkFactoryManager)
+        Me.Controls.Add(Me.chkDirector)
         Me.Controls.Add(Me.btnRefreshToken)
         Me.Controls.Add(Me.gbAccountData)
         Me.Controls.Add(Me.lstScopes)
@@ -313,6 +377,7 @@ Partial Class frmManageAccounts
         Me.gbAccountData.ResumeLayout(False)
         Me.gbAccountData.PerformLayout()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
     Friend WithEvents lstAccounts As System.Windows.Forms.ListView
@@ -344,4 +409,10 @@ Partial Class frmManageAccounts
     Friend WithEvents txtCharacterID As TextBox
     Friend WithEvents btnCopyCharacterID As Button
     Friend WithEvents btnCopyAccesToken As Button
+    Friend WithEvents chkDirector As CheckBox
+    Friend WithEvents chkFactoryManager As CheckBox
+    Friend WithEvents btnCopyCorpID As Button
+    Friend WithEvents lblCorpID As Label
+    Friend WithEvents txtCorpID As TextBox
+    Friend WithEvents colCorpID As ColumnHeader
 End Class

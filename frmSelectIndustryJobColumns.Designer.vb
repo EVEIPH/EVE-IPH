@@ -63,13 +63,13 @@ Partial Class frmSelectIndustryJobColumns
         Me.lblTip.Name = "lblTip"
         Me.lblTip.Size = New System.Drawing.Size(260, 30)
         Me.lblTip.TabIndex = 71
-        Me.lblTip.Text = "You can change the order of the columns by dragging them into location in the Ind" & _
+        Me.lblTip.Text = "You can change the order of the columns by dragging them into location in the Ind" &
     "ustry Jobs list"
         '
         'chkLstBoxColumns
         '
         Me.chkLstBoxColumns.FormattingEnabled = True
-        Me.chkLstBoxColumns.Items.AddRange(New Object() {"Job State", "Installer", "Time to Complete", "Activity", "Status", "Start Time", "End Time", "Completed Time", "Blueprint", "Output Item", "Output Item Type", "Install Solar System", "Install Region", "Licensed Runs", "Runs", "Successful Runs", "Blueprint Location", "Output Location", "Job Type"})
+        Me.chkLstBoxColumns.Items.AddRange(New Object() {"Job State", "Installer", "Time to Complete", "Activity", "Status", "Start Time", "End Time", "Completed Time", "Blueprint", "Output Item", "Output Item Type", "Install Solar System", "Install Region", "Licensed Runs", "Runs", "Successful Runs", "Blueprint Location", "Output Location", "Job Type", "Local Completion Time"})
         Me.chkLstBoxColumns.Location = New System.Drawing.Point(15, 31)
         Me.chkLstBoxColumns.Name = "chkLstBoxColumns"
         Me.chkLstBoxColumns.Size = New System.Drawing.Size(257, 289)
@@ -86,6 +86,7 @@ Partial Class frmSelectIndustryJobColumns
         '
         'frmSelectIndustryJobColumns
         '
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(287, 423)

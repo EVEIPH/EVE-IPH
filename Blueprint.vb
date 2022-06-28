@@ -192,9 +192,9 @@ Public Class Blueprint
         Dim SQL As String = ""
 
         SQL = "SELECT BLUEPRINT_ID, BLUEPRINT_GROUP_ID, ITEM_ID, ITEM_GROUP_ID, ITEM_CATEGORY_ID, "
-        SQL = SQL & "TECH_LEVEL, PORTION_SIZE, BASE_PRODUCTION_TIME, MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, packagedVolume "
-        SQL = SQL & "FROM ALL_BLUEPRINTS_FACT INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS_FACT.ITEM_ID = INVENTORY_TYPES.typeID "
-        SQL = SQL & "WHERE BLUEPRINT_ID =" & BPBlueprintID
+        SQL &= "TECH_LEVEL, PORTION_SIZE, BASE_PRODUCTION_TIME, MAX_PRODUCTION_LIMIT, ITEM_TYPE, RACE_ID, packagedVolume "
+        SQL &= "FROM ALL_BLUEPRINTS_FACT INNER JOIN INVENTORY_TYPES ON ALL_BLUEPRINTS_FACT.ITEM_ID = INVENTORY_TYPES.typeID "
+        SQL &= "WHERE BLUEPRINT_ID =" & BPBlueprintID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -693,8 +693,8 @@ Public Class Blueprint
                     Application.DoEvents()
 
                     SQL = "SELECT ALL_BLUEPRINTS_FACT.ITEM_GROUP_ID, ALL_BLUEPRINTS_FACT.ITEM_CATEGORY_ID, ITEM_PRICES_FACT.PRICE, PORTION_SIZE "
-                    SQL = SQL & "FROM ALL_BLUEPRINTS_FACT, ITEM_PRICES_FACT WHERE ALL_BLUEPRINTS_FACT.ITEM_ID = ITEM_PRICES_FACT.ITEM_ID "
-                    SQL = SQL & "AND ALL_BLUEPRINTS_FACT.ITEM_ID = " & .ItemTypeID
+                    SQL &= "FROM ALL_BLUEPRINTS_FACT, ITEM_PRICES_FACT WHERE ALL_BLUEPRINTS_FACT.ITEM_ID = ITEM_PRICES_FACT.ITEM_ID "
+                    SQL &= "AND ALL_BLUEPRINTS_FACT.ITEM_ID = " & .ItemTypeID
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsCheck = DBCommand.ExecuteReader
@@ -912,12 +912,12 @@ Public Class Blueprint
 
         ' Select all materials to buid this BP
         SQL = "SELECT ABM.BLUEPRINT_ID, MATERIAL_ID, QUANTITY, MATERIAL, MATERIAL_GROUP_ID, MATERIAL_CATEGORY_ID,  "
-        SQL = SQL & "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE, groupName "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES, INVENTORY_GROUPS "
-        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL = SQL & "LEFT OUTER JOIN ALL_BLUEPRINTS_FACT ON ALL_BLUEPRINTS_FACT.ITEM_ID = ABM.MATERIAL_ID "
-        SQL = SQL & "WHERE ABM.BLUEPRINT_ID =" & CStr(BlueprintID) & " And ACTIVITY IN (1,11) "
-        SQL = SQL & "AND MATERIAL_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID"
+        SQL &= "ACTIVITY, MATERIAL_VOLUME, PRICE, ADJUSTED_PRICE, PORTION_SIZE, groupName "
+        SQL &= "FROM ALL_BLUEPRINT_MATERIALS_FACT AS ABM, INVENTORY_TYPES, INVENTORY_GROUPS "
+        SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ABM.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
+        SQL &= "LEFT OUTER JOIN ALL_BLUEPRINTS_FACT ON ALL_BLUEPRINTS_FACT.ITEM_ID = ABM.MATERIAL_ID "
+        SQL &= "WHERE ABM.BLUEPRINT_ID =" & CStr(BlueprintID) & " And ACTIVITY IN (1,11) "
+        SQL &= "AND MATERIAL_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader
@@ -1927,7 +1927,7 @@ SkipProcessing:
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
         SQL = "Select ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID In (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
-        SQL = SQL & " And BLUEPRINT_ID =" & CStr(BlueprintID) & " And OWNED <> 0 "
+        SQL &= " And BLUEPRINT_ID =" & CStr(BlueprintID) & " And OWNED <> 0 "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
@@ -2157,9 +2157,9 @@ SkipProcessing:
 
         ' First select the datacores needed
         SQL = "Select MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
-        SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT On ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " And PRODUCT_ID = " & BlueprintID & " "
-        SQL = SQL & "And ACTIVITY = 8 And MATERIAL_GROUP = 'Datacores'"
+        SQL &= "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT On ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
+        SQL &= "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " And PRODUCT_ID = " & BlueprintID & " "
+        SQL &= "And ACTIVITY = 8 And MATERIAL_GROUP = 'Datacores'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -2206,7 +2206,7 @@ SkipProcessing:
         Else
             ' Base it off of the relic type - need to look it up based on the TypeID
             SQL = "SELECT typeName, quantity FROM INVENTORY_TYPES, INDUSTRY_ACTIVITY_PRODUCTS "
-            SQL = SQL & "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionBPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
+            SQL &= "WHERE typeID = blueprintTypeID And typeID = " & CStr(InventionBPCTypeID) & " AND productTypeID = " & CStr(BlueprintID)
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -2251,9 +2251,9 @@ SkipProcessing:
         If IncludeCopyCosts And TechLevel <> BPTechLevel.T3 Then
             ' Get the copy materials and update
             SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
-            SQL = SQL & "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-            SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & InventionBPCTypeID & " "
-            SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY <> 'Skill'"
+            SQL &= "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
+            SQL &= "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " AND PRODUCT_ID = " & InventionBPCTypeID & " "
+            SQL &= "AND ACTIVITY = 5 AND MATERIAL_CATEGORY <> 'Skill'"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -2368,7 +2368,7 @@ SkipProcessing:
 
         ' Get the base invention chance from the activities for the T1 BPO
         SQL = "SELECT probability FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & InventionBPCTypeID
-        SQL = SQL & " AND activityID = 8 AND productTypeID = " & BlueprintID
+        SQL &= " AND activityID = 8 AND productTypeID = " & BlueprintID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader()
@@ -2503,8 +2503,8 @@ SkipProcessing:
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
         SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS_FACT "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
-        SQL = SQL & "AND ACTIVITY = 8 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
+        SQL &= "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
+        SQL &= "AND ACTIVITY = 8 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader
@@ -2526,8 +2526,8 @@ SkipProcessing:
         ' Tech 2 items are invented from T1 blueprint copies, so take the T1 component ID and look it up for
         ' the invention skill requirements (for datacores and data interface)
         SQL = "SELECT MATERIAL_ID, QUANTITY FROM ALL_BLUEPRINT_MATERIALS_FACT "
-        SQL = SQL & "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
-        SQL = SQL & "AND ACTIVITY = 5 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
+        SQL &= "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " "
+        SQL &= "AND ACTIVITY = 5 AND MATERIAL_CATEGORY_ID = 16" ' 16 is Skill Category
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerItems = DBCommand.ExecuteReader
@@ -2549,8 +2549,8 @@ SkipProcessing:
 
         ' Look up the sum of the quantity from the sent BPC ID 
         SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS_FACT "
-        SQL = SQL & "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL = SQL & "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY IN (1,11) "
+        SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
+        SQL &= "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY IN (1,11) "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader

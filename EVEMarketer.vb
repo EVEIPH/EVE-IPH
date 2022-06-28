@@ -4,74 +4,103 @@ Imports Newtonsoft.Json
 ' Class for querying data from EVE Markterer prices
 
 Public Class EVEMarketer
+
+    Implements ICloneable
+
     Private ErrorData As MyError
 
     Private Structure PriceQuery
         Dim ItemList As String
-        Dim RegionOrSystem As String
+        Dim Items As List(Of Long)
+        Dim PriceLocation As String
+        Dim PriceLocationHeader As String
     End Structure
 
+    Private RegionOrSystemToFind As String
+
+    ' Predicate for searching a list of pricequery
+    Private Function FindPriceQuery(ByVal ItemPrice As PriceQuery) As Boolean
+        If ItemPrice.PriceLocation = RegionOrSystemToFind Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
     ' Function takes an array of strings for Regions and a TypeID list, returns an array of EVE Marketeer prices
-    Public Function GetPrices(ByVal TypeIDList As List(Of Long), RegionID As Integer, Optional SystemID As Integer = 0, Optional TypeIDBatchCount As Integer = 100) As List(Of EVEMarketerPrice)
+    Public Function GetPrices(ByVal TypeIDList As List(Of PriceItem)) As List(Of EVEMarketerPrice)
         Dim PriceRecords As New List(Of EVEMarketerPrice)
         Dim TempRecord As EVEMarketerPrice
         Dim PriceOutput As New List(Of EMType)
         Dim EVEMarketerMainQuery As String = "https://api.evemarketer.com/ec/marketstat/json?"
 
-        Dim QueryTypeIDList As New List(Of PriceQuery)
-        Dim TempPQ As New PriceQuery
-        Dim ItemCount As Integer = 0 ' For breaking it into sets of 100 for query
+        Dim ProcessQueryList As New List(Of PriceQuery)
+        Dim FinalQueryList As New List(Of PriceQuery)
+        Dim FindPQ As New PriceQuery
+        Dim InsertPQ As New PriceQuery
 
-        Dim EVECentralItem As String = ""
         Dim ItemListHeader As String = "typeid="
         Dim RegionHeader As String = "&regionlimit="
         Dim SystemHeader As String = "&usesystem="
-        Dim RegionOrSystem As String = ""
-        Dim RegionOrSystemUsed As Integer = 0
+        Dim RegionSystemUsed As String = ""
+        Dim PriceLocationHeaderUsed As String = ""
 
-        If SystemID = 0 Then
-            RegionOrSystem = RegionHeader & CStr(RegionID)
-            RegionOrSystemUsed = RegionID
-        Else
-            RegionOrSystem = SystemHeader & CStr(SystemID)
-            RegionOrSystemUsed = SystemID
-        End If
+        ' Set up for each region/system and item combos to be queried
+        For Each Item In TypeIDList
+            ' Search the main query list for the region, if there add typeid to the list, else add new list 
+            If Item.SystemID = "" Then
+                RegionSystemUsed = CStr(Item.RegionID)
+                PriceLocationHeaderUsed = RegionHeader
+            Else
+                RegionSystemUsed = CStr(Item.SystemID)
+                PriceLocationHeaderUsed = SystemHeader
+            End If
 
-        TempPQ.RegionOrSystem = RegionOrSystem
+            RegionOrSystemToFind = RegionSystemUsed
+            FindPQ = ProcessQueryList.Find(AddressOf FindPriceQuery)
+            If FindPQ.PriceLocation = "" Then
+                ' Add it
+                InsertPQ.PriceLocation = RegionSystemUsed
+                InsertPQ.PriceLocationHeader = PriceLocationHeaderUsed
+                InsertPQ.ItemList = ItemListHeader & CStr(Item.TypeID) & ","
+                InsertPQ.Items = New List(Of Long)
+                InsertPQ.Items.Add(Item.TypeID) ' for counting
+                FindPQ = InsertPQ ' set them to the same now
+                ProcessQueryList.Add(InsertPQ)
+            Else
+                ' Found, so update
+                Call ProcessQueryList.Remove(FindPQ)
+                FindPQ.ItemList &= CStr(Item.TypeID) & ","
+                FindPQ.Items.Add(Item.TypeID)
+                Call ProcessQueryList.Add(FindPQ)
+            End If
 
-        ' Query each set of 100 prices at time. So build query of 100 items or if Len(EVEMarketerMainQuery & ItemList & RegionOrSystem) > 1900 (will get a too long error at 2000)
-        For Each ID In TypeIDList
-            ItemCount += 1
-            TempPQ.ItemList &= CStr(ID) & ","
-
-            If ItemCount = TypeIDBatchCount Or ItemCount = TypeIDList.Count Or
-                Len(EVEMarketerMainQuery & TempPQ.ItemList & RegionOrSystem) > 1900 Then
-                ' Insert the item
-                ' Add the header to the item list
-                TempPQ.ItemList = ItemListHeader & TempPQ.ItemList
-                ' Strip comma
-                TempPQ.ItemList = TempPQ.ItemList.Substring(0, Len(TempPQ.ItemList) - 1)
-                QueryTypeIDList.Add(TempPQ)
-                TempPQ.ItemList = ""
-
-                ItemCount = 0
+            ' if Len(EVEMarketerMainQuery & ItemList & RegionOrSystem) > 1900 (will get a too long error at 2000) or over 100 items at a time
+            If Len(EVEMarketerMainQuery & FindPQ.ItemList & FindPQ.PriceLocationHeader & FindPQ.PriceLocation) > 1900 Or FindPQ.Items.Count >= 100 Then
+                Call ProcessQueryList.Remove(FindPQ) ' remove from process list
+                ' Insert the item to the final list
+                Call FinalQueryList.Add(FindPQ)
             End If
         Next
 
-        For Each Record In QueryTypeIDList
+        ' Add whatever is left in the process lists
+        Call FinalQueryList.AddRange(ProcessQueryList)
+
+        For Each Record In FinalQueryList
             Try
                 ' Example get
                 'https://api.evemarketer.com/ec/marketstat/json?typeid=34,35&usesystem=30002659
 
-                Dim Output As String = GetJSONFile(EVEMarketerMainQuery & Record.ItemList & Record.RegionOrSystem, "EVE Marketer Prices")
+                Dim Output As String = GetJSONFile(EVEMarketerMainQuery & Record.ItemList.Substring(0, Len(Record.ItemList) - 1) & Record.PriceLocationHeader & Record.PriceLocation, "EVE Marketer Prices")
                 ' Parse the out put into the object and process
                 PriceOutput = JsonConvert.DeserializeObject(Of List(Of EMType))(Output)
 
                 If Not IsNothing(PriceOutput) Then
                     For Each Price In PriceOutput
                         With Price
+                            TempRecord = New EVEMarketerPrice
                             TempRecord.TypeID = .buy.forQuery.types(0)
-                            TempRecord.RegionOrSystem = CStr(RegionOrSystemUsed)
+                            TempRecord.PriceLocation = CLng(Record.PriceLocation)
                             TempRecord.BuyAvgPrice = .buy.avg
                             TempRecord.BuyMaxPrice = .buy.max
                             TempRecord.BuyMedian = .buy.median
@@ -146,8 +175,6 @@ Public Class EVEMarketer
 
         Return PriceRecords
 
-        Exit Function
-
     End Function
 
     ' Allow the users to access the error data returned if an error occurs for processing outside class
@@ -155,6 +182,9 @@ Public Class EVEMarketer
         Return ErrorData
     End Function
 
+    Public Function Clone() As Object Implements ICloneable.Clone
+        Throw New NotImplementedException()
+    End Function
 End Class
 
 Public Structure EVEMarketerPrice
@@ -177,11 +207,13 @@ Public Structure EVEMarketerPrice
     Dim SellMedian As Double
     Dim SellPercentile As Double
     Dim SellVariance As Double
-    Dim RegionOrSystem As String
+    Dim PriceLocation As Long
     Dim Errored As Boolean
 End Structure
 
 Public Class PriceItem
+    Implements ICloneable
+
     Public TypeID As Long
     Public Manufacture As Boolean
     Public RegionID As String
@@ -191,6 +223,23 @@ Public Class PriceItem
     Public PriceModifier As Double
     Public PriceType As String
     Public JitaPerimeterPrice As Boolean
+
+    Public Function Clone() As Object Implements ICloneable.Clone
+        Dim CopyOfMe = New PriceItem
+
+        CopyOfMe.TypeID = TypeID
+        CopyOfMe.Manufacture = Manufacture
+        CopyOfMe.RegionID = RegionID
+        CopyOfMe.SystemID = SystemID
+        CopyOfMe.StructureID = StructureID
+        CopyOfMe.GroupName = GroupName
+        CopyOfMe.PriceModifier = PriceModifier
+        CopyOfMe.PriceType = PriceType
+        CopyOfMe.JitaPerimeterPrice = JitaPerimeterPrice
+
+        Return CopyOfMe
+
+    End Function
 End Class
 
 Public Class EMforQuery

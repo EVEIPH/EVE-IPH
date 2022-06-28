@@ -159,7 +159,7 @@ Public Class ProgramSettings
     Public FacilityDefaultIncludeTime As Boolean = False ' Only for Invention, Copy, and RE so let this get set 
 
     ' Set here, but use in Update Prices - 10 minutes
-    Public DefaultFuzzworksMarketRefreshInterval As Integer = 10
+    Public DefaultUpdatePricesRefreshInterval As Integer = 10
 
     Public DefaultBuiltMatsType As Integer = 1 ' use enum BuildMatType - both BP and Manufacturing tabs
 
@@ -211,7 +211,7 @@ Public Class ProgramSettings
     Public DefaultUPColumnSortType As String = "Ascending"
     Public DefaultRawPriceModifier As Double = 0
     Public DefaultItemsPriceModifier As Double = 0
-    Public DefaultUseESIData As Boolean = False
+    Public DefaultUseESIData As Integer = 0
     Public DefaultUsePriceProfile As Boolean = False
     Public DefaultPPRawPriceType As String = "Max Buy"
     Public DefaultPPRawRegion As String = "The Forge"
@@ -443,6 +443,7 @@ Public Class ProgramSettings
     Public DefaultBlueprintLocation As Integer = 9
     Public DefaultOutputLocation As Integer = 10
     Public DefaultJobType As Integer = 11
+    Public DefaultLocalCompletionDateTime As Integer = 0
     Public DefaultViewJobType As String = "Personal"
     Public DefaultJobTimes As String = "Current Jobs"
     Public DefaultSelectedCharacterIDs As String = ""
@@ -471,6 +472,7 @@ Public Class ProgramSettings
     Public Const BlueprintLocationColumn As String = "Blueprint Location"
     Public Const OutputLocationColumn As String = "Output Location"
     Public Const JobTypeColumn As String = "Job Type"
+    Public Const LocalCompletionDateTimeColumn As String = "Local Completion Time"
 
     ' Manufacturing Tab column settings - index 0 is for hidden id column
     Dim DefaultMTItemCategory As Integer = 3
@@ -1258,7 +1260,7 @@ Public Class ProgramSettings
                     .ShopListIncludeInventMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
-                    .FuzzworksMarketRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "FuzzworksMarketRefreshInterval", DefaultFuzzworksMarketRefreshInterval))
+                    .UpdatePricesRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "UpdatePricesRefreshInterval", DefaultUpdatePricesRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                     .AlwaysBuyFuelBlocks = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyFuelBlocks", DefaultAlwaysBuyFuelBlocks))
@@ -1341,7 +1343,7 @@ Public Class ProgramSettings
             .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
             .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
 
-            .FuzzworksMarketRefreshInterval = DefaultFuzzworksMarketRefreshInterval
+            .UpdatePricesRefreshInterval = DefaultUpdatePricesRefreshInterval
 
             .IgnoreSVRThresholdValue = DefaultIgnoreSVRThresholdValue
             .SVRAveragePriceRegion = DefaultSVRAveragePriceRegion
@@ -1384,7 +1386,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(13) = New Setting("ShopListIncludeInventMats", CStr(SentSettings.ShopListIncludeInventMats))
             ApplicationSettingsList(14) = New Setting("ShopListIncludeCopyMats", CStr(SentSettings.ShopListIncludeCopyMats))
             ApplicationSettingsList(15) = New Setting("SuggestBuildBPNotOwned", CStr(SentSettings.SuggestBuildBPNotOwned))
-            ApplicationSettingsList(16) = New Setting("FuzzworksMarketRefreshInterval", CStr(SentSettings.FuzzworksMarketRefreshInterval))
+            ApplicationSettingsList(16) = New Setting("UpdatePricesRefreshInterval", CStr(SentSettings.UpdatePricesRefreshInterval))
             ApplicationSettingsList(17) = New Setting("LoadAssetsonStartup", CStr(SentSettings.LoadAssetsonStartup))
             ApplicationSettingsList(18) = New Setting("DisableSound", CStr(SentSettings.DisableSound))
             ApplicationSettingsList(19) = New Setting("LoadbpsonStartup", CStr(SentSettings.LoadBPsonStartup))
@@ -1801,7 +1803,7 @@ Public Class ProgramSettings
                     .RawPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "RawPriceModifier", DefaultRawPriceModifier))
                     .ItemsPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "ItemsPriceModifier", DefaultItemsPriceModifier))
 
-                    .UseESIData = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UseESIData", DefaultUseESIData))
+                    .PriceDataSource = CType(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "PriceDataSource", DefaultUseESIData), DataSource)
                     .UsePriceProfile = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UsePriceProfile", DefaultUsePriceProfile))
 
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "ColumnSort", DefaultUPColumnSort))
@@ -1910,7 +1912,7 @@ Public Class ProgramSettings
 
             UpdatePricesSettingsList(57) = New Setting("RawPriceModifier", CStr(PriceSettings.RawPriceModifier))
             UpdatePricesSettingsList(58) = New Setting("ItemsPriceModifier", CStr(PriceSettings.ItemsPriceModifier))
-            UpdatePricesSettingsList(59) = New Setting("UseESIData", CStr(PriceSettings.UseESIData))
+            UpdatePricesSettingsList(59) = New Setting("PriceDataSource", CStr(PriceSettings.PriceDataSource))
             UpdatePricesSettingsList(60) = New Setting("UsePriceProfile", CStr(PriceSettings.UsePriceProfile))
 
             UpdatePricesSettingsList(61) = New Setting("PPRawPriceType", CStr(PriceSettings.PPRawPriceType))
@@ -2003,7 +2005,7 @@ Public Class ProgramSettings
             .ColumnSortType = DefaultUPColumnSortType
             .RawPriceModifier = DefaultRawPriceModifier
             .ItemsPriceModifier = DefaultItemsPriceModifier
-            .UseESIData = DefaultUseESIData
+            .PriceDataSource = CType(DefaultUseESIData, DataSource)
             .UsePriceProfile = DefaultUsePriceProfile
             .StructureModules = DefaultPriceChecks
 
@@ -2947,6 +2949,7 @@ Public Class ProgramSettings
                     .BlueprintLocation = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "BlueprintLocation", DefaultBlueprintLocation))
                     .OutputLocation = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "OutputLocation", DefaultOutputLocation))
                     .JobType = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "JobType", DefaultJobType))
+                    .LocalCompletionDateTime = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "LocalCompletionDateTime", DefaultLocalCompletionDateTime))
 
                     .JobStateWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "JobStateWidth", DefaultIndustryColumnWidth))
                     .InstallerNameWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "InstallerNameWidth", DefaultIndustryColumnWidth))
@@ -2967,6 +2970,7 @@ Public Class ProgramSettings
                     .BlueprintLocationWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "BlueprintLocationWidth", DefaultIndustryColumnWidth))
                     .OutputLocationWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "OutputLocationWidth", DefaultIndustryColumnWidth))
                     .JobTypeWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "JobTypeWidth", DefaultIndustryColumnWidth))
+                    .LocalCompletionDateTimeWidth = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "LocalCompletionDateTimeWidth", DefaultIndustryColumnWidth))
 
                     .OrderByColumn = CInt(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeInteger, IndustryJobsColumnSettingsFileName, "OrderByColumn", DefaultOrderByColumn))
                     .ViewJobType = CStr(GetSettingValue(SettingsFolder, IndustryJobsColumnSettingsFileName, SettingTypes.TypeString, IndustryJobsColumnSettingsFileName, "ViewJobType", DefaultViewJobType))
@@ -3019,6 +3023,7 @@ Public Class ProgramSettings
             .SuccessfulRuns = DefaultSuccessfulRuns
             .OutputLocation = DefaultOutputLocation
             .JobType = DefaultJobType
+            .LocalCompletionDateTime = DefaultLocalCompletionDateTime
 
             .JobStateWidth = DefaultIndustryColumnWidth
             .InstallerNameWidth = DefaultIndustryColumnWidth
@@ -3039,6 +3044,7 @@ Public Class ProgramSettings
             .BlueprintLocationWidth = DefaultIndustryColumnWidth
             .OutputLocationWidth = DefaultIndustryColumnWidth
             .JobTypeWidth = DefaultIndustryColumnWidth
+            .LocalCompletionDateTimeWidth = DefaultIndustryColumnWidth
 
             .OrderByColumn = DefaultOrderByColumn
             .OrderType = DefaultOrderType
@@ -3059,7 +3065,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveIndustryJobsColumnSettings(SentSettings As IndustryJobsColumnSettings)
-        Dim IndustryJobsColumnSettingsList(43) As Setting
+        Dim IndustryJobsColumnSettingsList(45) As Setting
 
         Try
             IndustryJobsColumnSettingsList(0) = New Setting("JobState", CStr(SentSettings.JobState))
@@ -3111,6 +3117,9 @@ Public Class ProgramSettings
             IndustryJobsColumnSettingsList(42) = New Setting("JobTypeWidth", CStr(SentSettings.JobTypeWidth))
 
             IndustryJobsColumnSettingsList(43) = New Setting("AutoUpdateJobs", CStr(SentSettings.AutoUpdateJobs))
+
+            IndustryJobsColumnSettingsList(44) = New Setting("LocalCompletionDateTime", CStr(SentSettings.LocalCompletionDateTime))
+            IndustryJobsColumnSettingsList(45) = New Setting("LocalCompletionDateTimeWidth", CStr(SentSettings.LocalCompletionDateTimeWidth))
 
             Call WriteSettingsToFile(SettingsFolder, IndustryJobsColumnSettingsFileName, IndustryJobsColumnSettingsList, IndustryJobsColumnSettingsFileName)
 
@@ -5393,8 +5402,8 @@ Public Structure ApplicationSettings
     Dim ShopListIncludeInventMats As Boolean
     Dim ShopListIncludeCopyMats As Boolean
 
-    ' The interval for allowing refresh of prices from EVE Central - 10 min?
-    Dim FuzzworksMarketRefreshInterval As Integer
+    ' The interval for allowing refresh of prices 
+    Dim UpdatePricesRefreshInterval As Integer
 
     ' Filter variables for svr
     Dim IgnoreSVRThresholdValue As Double
@@ -5573,13 +5582,19 @@ Public Structure UpdatePriceTabSettings
     Dim ItemsPriceModifier As Double
     Dim RawPriceModifier As Double
 
-    Dim UseESIData As Boolean
+    Dim PriceDataSource As DataSource
     Dim UsePriceProfile As Boolean
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
 
 End Structure
+
+Public Enum DataSource
+    CCP = 0
+    EVEMarketer = 1
+    Fuzzworks = 2
+End Enum
 
 ' For Manufacturing Tab Settings
 Public Structure ManufacturingTabSettings
@@ -5873,6 +5888,7 @@ Public Structure IndustryJobsColumnSettings
     Dim BlueprintLocation As Integer
     Dim OutputLocation As Integer
     Dim JobType As Integer ' Personal or Corp
+    Dim LocalCompletionDateTime As Integer
 
     Dim JobStateWidth As Integer
     Dim InstallerNameWidth As Integer
@@ -5893,6 +5909,7 @@ Public Structure IndustryJobsColumnSettings
     Dim BlueprintLocationWidth As Integer
     Dim OutputLocationWidth As Integer
     Dim JobTypeWidth As Integer ' Personal or Corp
+    Dim LocalCompletionDateTimeWidth As Integer
 
     Dim OrderByColumn As Integer ' What column index the jobs are sorted
     Dim OrderType As String ' Ascending or Descending

@@ -469,12 +469,12 @@ Public Class AssetViewer
         If SearchAllItems Then
             ' Get the item id from prices, since these are items we can set a price for and will be used in building items
             SQL = "SELECT typeID AS ITEM_ID FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES "
-            SQL = SQL & "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-            SQL = SQL & "AND INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID "
+            SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
+            SQL &= "AND INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID "
 
             ' Search based on text
             If txtItemFilter.Text <> "" Then
-                SQL = SQL & " AND typeName LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
+                SQL &= " AND typeName LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
             End If
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -510,7 +510,7 @@ Public Class AssetViewer
                 SQL &= GroupSQL & ")"
                 ' Search based on text
                 If txtItemFilter.Text <> "" Then
-                    SQL = SQL & " AND ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
+                    SQL &= " AND ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
                 End If
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -531,7 +531,7 @@ Public Class AssetViewer
                 SQL = "SELECT BLUEPRINT_ID, ITEM_NAME FROM ALL_BLUEPRINTS "
                 ' Search based on text
                 If txtItemFilter.Text <> "" Then
-                    SQL = SQL & " WHERE ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
+                    SQL &= " WHERE ITEM_NAME LIKE '%" & FormatDBString(Trim(txtItemFilter.Text)) & "%' "
                 End If
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -771,12 +771,12 @@ Public Class AssetViewer
 
             ' First clear out any records in there for both the account and corp assets on the account
             SQL = "DELETE FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(WindowForm)
-            SQL = SQL & " AND ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID) & ")"
+            SQL &= " AND ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID) & ")"
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             For i = 0 To SavedLocationIDs.Count - 1
                 SQL = "INSERT INTO ASSET_LOCATIONS (EnumAssetType, ID, LocationID, FlagID) VALUES "
-                SQL = SQL & "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
+                SQL &= "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
@@ -1251,11 +1251,11 @@ Public Class AssetViewer
 
         ' Load the select systems combobox with systems
         SQL = "SELECT groupName from inventory_types, inventory_groups, inventory_categories "
-        SQL = SQL & "WHERE  inventory_types.groupID = inventory_groups.groupID "
-        SQL = SQL & "AND inventory_groups.categoryID = inventory_categories.categoryID "
-        SQL = SQL & "AND categoryname = 'Ship' AND groupName NOT IN ('Rookie ship','Prototype Exploration Ship') "
-        SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
-        SQL = SQL & "GROUP BY groupName "
+        SQL &= "WHERE  inventory_types.groupID = inventory_groups.groupID "
+        SQL &= "AND inventory_groups.categoryID = inventory_categories.categoryID "
+        SQL &= "AND categoryname = 'Ship' AND groupName NOT IN ('Rookie ship','Prototype Exploration Ship') "
+        SQL &= "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
+        SQL &= "GROUP BY groupName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerShipType = DBCommand.ExecuteReader
@@ -1278,11 +1278,11 @@ Public Class AssetViewer
 
         ' Load the select systems combobox with systems
         SQL = "SELECT groupName from inventory_types, inventory_groups, inventory_categories "
-        SQL = SQL & "WHERE  inventory_types.groupID = inventory_groups.groupID "
-        SQL = SQL & "AND inventory_groups.categoryID = inventory_categories.categoryID "
-        SQL = SQL & "AND categoryname = 'Charge' "
-        SQL = SQL & "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
-        SQL = SQL & "GROUP BY groupName "
+        SQL &= "WHERE  inventory_types.groupID = inventory_groups.groupID "
+        SQL &= "AND inventory_groups.categoryID = inventory_categories.categoryID "
+        SQL &= "AND categoryname = 'Charge' "
+        SQL &= "AND inventory_types.published <> 0 and inventory_groups.published <> 0 and inventory_categories.published <> 0 "
+        SQL &= "GROUP BY groupName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerChargeType = DBCommand.ExecuteReader

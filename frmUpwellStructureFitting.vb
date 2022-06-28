@@ -2418,10 +2418,10 @@ Public Class frmUpwellStructureFitting
         Me.Cursor = Cursors.WaitCursor
 
         SQL = "SELECT ITEM_PRICES.ITEM_ID, ITEM_PRICES.PRICE "
-        SQL = SQL & "FROM ITEM_PRICES "
-        SQL = SQL & "WHERE ITEM_PRICES.ITEM_ID IN "
-        SQL = SQL & "(9832, 44, 16272, 16274, 17889, 16273, 3689, 17888, 3683, 17887, 9848, 16275)" ' Mats
-        SQL = SQL & "OR ITEM_PRICES.ITEM_ID IN (" & CStr(FuelBlocks.Nitrogen) & "," & CStr(FuelBlocks.Hydrogen) & "," & CStr(FuelBlocks.Helium) & "," & CStr(FuelBlocks.Oxygen) & ")"
+        SQL &= "FROM ITEM_PRICES "
+        SQL &= "WHERE ITEM_PRICES.ITEM_ID IN "
+        SQL &= "(9832, 44, 16272, 16274, 17889, 16273, 3689, 17888, 3683, 17887, 9848, 16275)" ' Mats
+        SQL &= "OR ITEM_PRICES.ITEM_ID IN (" & CStr(FuelBlocks.Nitrogen) & "," & CStr(FuelBlocks.Hydrogen) & "," & CStr(FuelBlocks.Helium) & "," & CStr(FuelBlocks.Oxygen) & ")"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         reader = DBCommand.ExecuteReader()

@@ -306,38 +306,38 @@ Public Class frmIndustryBeltFlip
         End If
 
         SQL = "SELECT ORE, AMOUNT, NUMBER_ASTEROIDS FROM INDUSTRY_UPGRADE_BELTS "
-        SQL = SQL & "WHERE ( BELT_NAME = "
+        SQL &= "WHERE ( BELT_NAME = "
 
         Select Case Belt
             Case BeltType.Small
-                SQL = SQL & "'Small' "
+                SQL &= "'Small' "
                 CurrentList = lstOresLevel1
             Case BeltType.Medium
-                SQL = SQL & "'Medium' "
+                SQL &= "'Medium' "
                 CurrentList = lstOresLevel2
             Case BeltType.Large
-                SQL = SQL & "'Large' "
+                SQL &= "'Large' "
                 CurrentList = lstOresLevel3
             Case BeltType.Enormous
-                SQL = SQL & "'Enormous' "
+                SQL &= "'Enormous' "
                 CurrentList = lstOresLevel4
             Case BeltType.Colossal
-                SQL = SQL & "'Colossal' "
+                SQL &= "'Colossal' "
                 CurrentList = lstOresLevel5
         End Select
 
-        SQL = SQL & ") "
+        SQL &= ") "
 
         ' Select ore type based on truesec bonus
         If rbtn0percent.Checked Or Belt = BeltType.Small Or Belt = BeltType.Medium Then ' Small and Medium belts are always base ores
-            SQL = SQL & "AND TRUESEC_BONUS = 0 "
+            SQL &= "AND TRUESEC_BONUS = 0 "
         ElseIf rbtn5percent.Checked Then
-            SQL = SQL & "AND TRUESEC_BONUS = 5 "
+            SQL &= "AND TRUESEC_BONUS = 5 "
         ElseIf rbtn10percent.Checked Then
-            SQL = SQL & "AND TRUESEC_BONUS = 10 "
+            SQL &= "AND TRUESEC_BONUS = 10 "
         End If
 
-        SQL = SQL & "ORDER BY ORE"
+        SQL &= "ORDER BY ORE"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBelts = DBCommand.ExecuteReader
@@ -527,7 +527,7 @@ Public Class frmIndustryBeltFlip
 
         Select Case Belt
             Case BeltType.Small
-                SQL = SQL & "'Small' "
+                SQL &= "'Small' "
                 CurrentOreList = lstOresLevel1
                 CurrentMineralList = lstMineralsLevel1
 
@@ -542,7 +542,7 @@ Public Class frmIndustryBeltFlip
                 TotalVolumeSum = lblTotalBeltVolume1Sum
 
             Case BeltType.Medium
-                SQL = SQL & "'Medium' "
+                SQL &= "'Medium' "
                 CurrentOreList = lstOresLevel2
                 CurrentMineralList = lstMineralsLevel2
 
@@ -557,7 +557,7 @@ Public Class frmIndustryBeltFlip
                 TotalVolumeSum = lblTotalBeltVolume2Sum
 
             Case BeltType.Large
-                SQL = SQL & "'Large' "
+                SQL &= "'Large' "
                 CurrentOreList = lstOresLevel3
                 CurrentMineralList = lstMineralsLevel3
 
@@ -572,7 +572,7 @@ Public Class frmIndustryBeltFlip
                 TotalVolumeSum = lblTotalBeltVolume3Sum
 
             Case BeltType.Enormous
-                SQL = SQL & "'Extra Large' "
+                SQL &= "'Extra Large' "
                 CurrentOreList = lstOresLevel4
                 CurrentMineralList = lstMineralsLevel4
 
@@ -587,7 +587,7 @@ Public Class frmIndustryBeltFlip
                 TotalVolumeSum = lblTotalBeltVolume4Sum
 
             Case BeltType.Colossal
-                SQL = SQL & "'Giant' "
+                SQL &= "'Giant' "
                 CurrentOreList = lstOresLevel5
                 CurrentMineralList = lstMineralsLevel5
 
@@ -755,11 +755,11 @@ Public Class frmIndustryBeltFlip
                 OreUnits = CType(item.SubItems(3).Text, Integer)
 
                 SQL = "SELECT ORE_VOLUME "
-                SQL = SQL & "FROM ORES WHERE BELT_TYPE = 'Ore' "
+                SQL &= "FROM ORES WHERE BELT_TYPE = 'Ore' "
                 If Compress Then
-                    SQL = SQL & "AND ORE_NAME ='Compressed " & OreName & "'"
+                    SQL &= "AND ORE_NAME ='Compressed " & OreName & "'"
                 Else
-                    SQL = SQL & "AND ORE_NAME = '" & OreName & "'"
+                    SQL &= "AND ORE_NAME = '" & OreName & "'"
                 End If
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerBelts = DBCommand.ExecuteReader

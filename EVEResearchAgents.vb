@@ -24,11 +24,11 @@ Public Class EVEResearchAgents
 
         ' Load the data from the DB
         SQL = "SELECT AGENT_NAME, typeName AS RESEARCH_FIELD, RP_PER_DAY, LEVEL, STATION, RESEARCH_START_DATE, REMAINDER_POINTS "
-        SQL = SQL & "FROM RESEARCH_AGENTS, INVENTORY_TYPES, CURRENT_RESEARCH_AGENTS  "
-        SQL = SQL & "WHERE CURRENT_RESEARCH_AGENTS.AGENT_ID = RESEARCH_AGENTS.AGENT_ID "
-        SQL = SQL & "AND CURRENT_RESEARCH_AGENTS.SKILL_TYPE_ID= INVENTORY_TYPES.typeID "
-        SQL = SQL & "AND CHARACTER_ID = " & CStr(CharacterID) & " "
-        SQL = SQL & "GROUP BY AGENT_NAME, typeName, RP_PER_DAY, LEVEL, STATION, RESEARCH_START_DATE, REMAINDER_POINTS "
+        SQL &= "FROM RESEARCH_AGENTS, INVENTORY_TYPES, CURRENT_RESEARCH_AGENTS  "
+        SQL &= "WHERE CURRENT_RESEARCH_AGENTS.AGENT_ID = RESEARCH_AGENTS.AGENT_ID "
+        SQL &= "AND CURRENT_RESEARCH_AGENTS.SKILL_TYPE_ID= INVENTORY_TYPES.typeID "
+        SQL &= "AND CHARACTER_ID = " & CStr(CharacterID) & " "
+        SQL &= "GROUP BY AGENT_NAME, typeName, RP_PER_DAY, LEVEL, STATION, RESEARCH_START_DATE, REMAINDER_POINTS "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerResearch = DBCommand.ExecuteReader
@@ -87,10 +87,10 @@ Public Class EVEResearchAgents
                     For i = 0 To CurrentAgents.Count - 1
                         With CurrentAgents(i)
                             SQL = "INSERT INTO CURRENT_RESEARCH_AGENTS (AGENT_ID, SKILL_TYPE_ID, "
-                            SQL = SQL & "RP_PER_DAY, RESEARCH_START_DATE, REMAINDER_POINTS, CHARACTER_ID) VALUES "
-                            SQL = SQL & "(" & CStr(.agent_id) & "," & CStr(.skill_type_id) & "," & CStr(.points_per_day) & ",'"
-                            SQL = SQL & Format(CDate(CurrentAgents(i).started_at.Replace("T", " ").Replace("Z", "")), SQLiteDateFormat) & "',"
-                            SQL = SQL & CStr(.remainder_points) & "," & CStr(CharacterID) & ")"
+                            SQL &= "RP_PER_DAY, RESEARCH_START_DATE, REMAINDER_POINTS, CHARACTER_ID) VALUES "
+                            SQL &= "(" & CStr(.agent_id) & "," & CStr(.skill_type_id) & "," & CStr(.points_per_day) & ",'"
+                            SQL &= Format(CDate(CurrentAgents(i).started_at.Replace("T", " ").Replace("Z", "")), SQLiteDateFormat) & "',"
+                            SQL &= CStr(.remainder_points) & "," & CStr(CharacterID) & ")"
                         End With
 
                         EVEDB.ExecuteNonQuerySQL(SQL)

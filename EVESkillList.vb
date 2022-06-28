@@ -33,18 +33,18 @@ Public Class EVESkillList
 
         ' Get all skills and set skill to 0 if they don't have it
         SQL = "SELECT SKILLS.SKILL_TYPE_ID,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.TRAINED_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.TRAINED_SKILL_LEVEL END AS TRAINED_SKILL_LEVEL,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.ACTIVE_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.ACTIVE_SKILL_LEVEL END AS ACTIVE_SKILL_LEVEL,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.SKILL_POINTS IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_POINTS END AS SKILL_POINTS,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
-        SQL = SQL & "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
-        SQL = SQL & "FROM SKILLS LEFT OUTER JOIN "
-        SQL = SQL & "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & ID & ") AS CHAR_SKILLS "
-        SQL = SQL & "ON (SKILLS.SKILL_TYPE_ID = CHAR_SKILLS.SKILL_TYPE_ID) "
+        SQL &= "CASE WHEN CHAR_SKILLS.TRAINED_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.TRAINED_SKILL_LEVEL END AS TRAINED_SKILL_LEVEL,"
+        SQL &= "CASE WHEN CHAR_SKILLS.ACTIVE_SKILL_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.ACTIVE_SKILL_LEVEL END AS ACTIVE_SKILL_LEVEL,"
+        SQL &= "CASE WHEN CHAR_SKILLS.SKILL_POINTS IS NULL THEN 0 ELSE CHAR_SKILLS.SKILL_POINTS END AS SKILL_POINTS,"
+        SQL &= "CASE WHEN CHAR_SKILLS.OVERRIDE_SKILL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_SKILL END AS OVERRIDE_SKILL,"
+        SQL &= "CASE WHEN CHAR_SKILLS.OVERRIDE_LEVEL IS NULL THEN 0 ELSE CHAR_SKILLS.OVERRIDE_LEVEL END AS OVERRIDE_LEVEL "
+        SQL &= "FROM SKILLS LEFT OUTER JOIN "
+        SQL &= "(SELECT * FROM CHARACTER_SKILLS WHERE CHARACTER_SKILLS.CHARACTER_ID=" & ID & ") AS CHAR_SKILLS "
+        SQL &= "ON (SKILLS.SKILL_TYPE_ID = CHAR_SKILLS.SKILL_TYPE_ID) "
         If SkillNameFilter <> "" Then
-            SQL = SQL & " WHERE SKILLS.SKILL_TYPE_ID IN (SELECT SKILL_TYPE_ID FROM SKILLS WHERE SKILL_NAME LIKE '%" & FormatDBString(SkillNameFilter) & "%') "
+            SQL &= " WHERE SKILLS.SKILL_TYPE_ID IN (SELECT SKILL_TYPE_ID FROM SKILLS WHERE SKILL_NAME LIKE '%" & FormatDBString(SkillNameFilter) & "%') "
         End If
-        SQL = SQL & "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
+        SQL &= "ORDER BY SKILLS.SKILL_GROUP, SKILLS.SKILL_NAME "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
@@ -100,7 +100,7 @@ Public Class EVESkillList
 
                 ' Delete the temp skills but not any that are overridden
                 SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID IN (" & SkillList & ") AND CHARACTER_ID =" & CStr(ID)
-                SQL = SQL & " AND OVERRIDE_SKILL <> -1"
+                SQL &= " AND OVERRIDE_SKILL <> -1"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 If OpenTransaction Then
@@ -279,7 +279,7 @@ Public Class EVESkillList
             If SentSkill.Name = "" Then
                 ' Look up skill name
                 SQL = "SELECT typeName, groupName FROM INVENTORY_TYPES, INVENTORY_GROUPS "
-                SQL = SQL & "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND typeID = " & SentSkill.TypeID
+                SQL &= "WHERE INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND typeID = " & SentSkill.TypeID
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSkills = DBCommand.ExecuteReader()
@@ -426,14 +426,14 @@ Public Class EVESkillList
                         SQL = "DELETE FROM CHARACTER_SKILLS WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
                     Else ' It's here and we need to update it
                         SQL = "UPDATE CHARACTER_SKILLS SET "
-                        SQL = SQL & "OVERRIDE_SKILL = " & CInt(OverRideSkills.Skills(i).Overridden) & ", OVERRIDE_LEVEL = " & OverRideSkills.Skills(i).OverriddenLevel & " "
-                        SQL = SQL & "WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
+                        SQL &= "OVERRIDE_SKILL = " & CInt(OverRideSkills.Skills(i).Overridden) & ", OVERRIDE_LEVEL = " & OverRideSkills.Skills(i).OverriddenLevel & " "
+                        SQL &= "WHERE SKILL_TYPE_ID = " & OverRideSkills.Skills(i).TypeID & " AND CHARACTER_ID =" & SelectedCharacter.ID
                     End If
                 Else
                     ' Insert the skill but since the user didn't have this, set the skill level to 0
                     SQL = "INSERT INTO CHARACTER_SKILLS (CHARACTER_ID, SKILL_TYPE_ID, SKILL_NAME, SKILL_POINTS, TRAINED_SKILL_LEVEL, ACTIVE_SKILL_LEVEL, OVERRIDE_SKILL, OVERRIDE_LEVEL) "
-                    SQL = SQL & " VALUES (" & SelectedCharacter.ID & "," & OverRideSkills.Skills(i).TypeID & ",'" & OverRideSkills.Skills(i).Name & "',"
-                    SQL = SQL & OverRideSkills.Skills(i).SkillPoints & ",0,0," & CInt(OverRideSkills.Skills(i).Overridden) & "," & OverRideSkills.Skills(i).OverriddenLevel & ")"
+                    SQL &= " VALUES (" & SelectedCharacter.ID & "," & OverRideSkills.Skills(i).TypeID & ",'" & OverRideSkills.Skills(i).Name & "',"
+                    SQL &= OverRideSkills.Skills(i).SkillPoints & ",0,0," & CInt(OverRideSkills.Skills(i).Overridden) & "," & OverRideSkills.Skills(i).OverriddenLevel & ")"
                 End If
 
                 readerSkills.Close()
@@ -714,14 +714,14 @@ Public Class EVESkill
         Dim readerSkills As SQLiteDataReader
 
         SQL = "SELECT TYPE_ATTRIBUTES.value, INVENTORY_TYPES_1.typeName, INVENTORY_GROUPS.groupName, TYPE_ATTRIBUTES_1.value "
-        SQL = SQL & "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_TYPES AS INVENTORY_TYPES_1, TYPE_ATTRIBUTES, TYPE_ATTRIBUTES AS TYPE_ATTRIBUTES_1, ATTRIBUTE_TYPES "
-        SQL = SQL & "WHERE INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
-        SQL = SQL & "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
-        SQL = SQL & "AND INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES_1.typeID "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.value = INVENTORY_TYPES_1.typeID "
-        SQL = SQL & "AND TYPE_ATTRIBUTES.attributeID > 181 AND TYPE_ATTRIBUTES.attributeID < 185 AND TYPE_ATTRIBUTES_1.attributeID = TYPE_ATTRIBUTES.attributeID + 95 "
-        SQL = SQL & "AND INVENTORY_TYPES.typeID = " & CStr(TypeID)
+        SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_TYPES AS INVENTORY_TYPES_1, TYPE_ATTRIBUTES, TYPE_ATTRIBUTES AS TYPE_ATTRIBUTES_1, ATTRIBUTE_TYPES "
+        SQL &= "WHERE INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES.typeID "
+        SQL &= "AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
+        SQL &= "AND TYPE_ATTRIBUTES.attributeID = ATTRIBUTE_TYPES.attributeID "
+        SQL &= "AND INVENTORY_TYPES.typeID = TYPE_ATTRIBUTES_1.typeID "
+        SQL &= "AND TYPE_ATTRIBUTES.value = INVENTORY_TYPES_1.typeID "
+        SQL &= "AND TYPE_ATTRIBUTES.attributeID > 181 AND TYPE_ATTRIBUTES.attributeID < 185 AND TYPE_ATTRIBUTES_1.attributeID = TYPE_ATTRIBUTES.attributeID + 95 "
+        SQL &= "AND INVENTORY_TYPES.typeID = " & CStr(TypeID)
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerSkills = DBCommand.ExecuteReader

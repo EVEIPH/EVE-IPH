@@ -259,10 +259,10 @@ Public Class EVENPCStandings
                         ' Insert new standings data
                         For i = 0 To TempStandings.NumStandings - 1
                             SQL = "INSERT INTO CHARACTER_STANDINGS (CHARACTER_ID, NPC_TYPE_ID, NPC_TYPE, NPC_NAME, STANDING) "
-                            SQL = SQL & " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
-                            SQL = SQL & ",'" & TempStandings.GetStandingsList(i).NPCType
-                            SQL = SQL & "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
-                            SQL = SQL & "'," & TempStandings.GetStandingsList(i).Standing & ")"
+                            SQL &= " VALUES (" & ID & "," & TempStandings.GetStandingsList(i).NPCID
+                            SQL &= ",'" & TempStandings.GetStandingsList(i).NPCType
+                            SQL &= "','" & FormatDBString(TempStandings.GetStandingsList(i).NPCName)
+                            SQL &= "'," & TempStandings.GetStandingsList(i).Standing & ")"
                             Call EVEDB.ExecuteNonQuerySQL(SQL)
                         Next
 

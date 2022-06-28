@@ -1205,38 +1205,38 @@ Public Class ManufacturingFacility
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.Factory)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.Factory)
                     Case ActivityCopying, ActivityInvention
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.Laboratory)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.Laboratory)
                     Case ActivityReprocessing
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.ReprocessingPlant)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.ReprocessingPlant)
                 End Select
 
             Case StructureFacility
                 ' For Upwell Structures, load all regions as options, but adding only one wormhole region option and don't show Jove regions
                 SQL = "SELECT DISTINCT CASE WHEN (REGIONS.regionID >=11000000 and REGIONS.regionid <=11000030) THEN 'Wormhole Space' ELSE regionName END AS REGION_NAME "
-                SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
-                SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                SQL = SQL & "AND (factionID <> 500005 OR factionID IS NULL) "
-                SQL = SQL & "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
+                SQL &= "FROM REGIONS, SOLAR_SYSTEMS "
+                SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+                SQL &= "AND (factionID <> 500005 OR factionID IS NULL) "
+                SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
 
                 ' Make sure the region listed has at least one system not in the disallowed anchoring lists
                 ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
                 ' Check both disallowable anchor tables
-                SQL = SQL & "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
-                SQL = SQL & "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
+                SQL &= "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
+                SQL &= "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
                 If ItemGroupID = ItemIDs.SupercarrierGroupID Or ItemGroupID = ItemIDs.TitanGroupID Then
-                    SQL = SQL & " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
+                    SQL &= " AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Or IsReaction(ItemGroupID) Then
                     ' For caps and reactions, only show low sec
-                    SQL = SQL & " AND security < .45"
+                    SQL &= " AND security < .45"
                 End If
 
         End Select
 
-        SQL = SQL & " GROUP BY REGION_NAME "
+        SQL &= " GROUP BY REGION_NAME "
 
         Dim rsLoader As SQLiteDataReader
 
@@ -1388,18 +1388,18 @@ Public Class ManufacturingFacility
             Case StructureFacility
                 If FacilityActivity <> ActivityReprocessing Then
                     SQL = "SELECT DISTINCT solarSystemName AS SSN, CASE WHEN COST_INDEX IS NOT NULL THEN COST_INDEX ELSE 0 END AS CI "
-                    SQL = SQL & "FROM REGIONS, SOLAR_SYSTEMS "
-                    SQL = SQL & "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
+                    SQL &= "FROM REGIONS, SOLAR_SYSTEMS "
+                    SQL &= "LEFT JOIN INDUSTRY_SYSTEMS_COST_INDICIES ON solarSystemID = SOLAR_SYSTEM_ID "
 
                     Select Case FacilityActivity
                         Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                            SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                            SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                         Case ActivityCopying
-                            SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                            SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
                         Case ActivityInvention
-                            SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                            SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                         Case ActivityReactions
-                            SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reactions) & " "
+                            SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reactions) & " "
                     End Select
                 Else
                     ' Refining doesn't have a cost index so just build a different query
@@ -1407,33 +1407,33 @@ Public Class ManufacturingFacility
                     SQL &= "FROM REGIONS, SOLAR_SYSTEMS "
                 End If
 
-                SQL = SQL & "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+                SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
 
                 ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
                 ' Check both disallowable anchor tables
-                SQL = SQL & "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
-                SQL = SQL & "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
+                SQL &= "AND (solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_CATEGORIES WHERE CATEGORY_ID = 65) AND "
+                SQL &= "solarSystemID NOT IN (SELECT SOLAR_SYSTEM_ID FROM MAP_DISALLOWED_ANCHOR_GROUPS WHERE GROUP_ID = 65)) "
 
                 If cmbFacilityRegion.Text = "Wormhole Space" Then
-                    SQL = SQL & "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
+                    SQL &= "AND SOLAR_SYSTEMS.regionID >=11000000 and SOLAR_SYSTEMS.regionid <=11000030 "
                 Else
                     ' For an upwell, load all systems that have records linked
-                    SQL = SQL & "AND regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
+                    SQL &= "AND regionName = '" & FormatDBString(cmbFacilityRegion.Text) & "' "
                 End If
 
                 ' For supers, only show null regions where you can have sov (no factionID excludes NPC null, etc)
                 If ItemGroupID = ItemIDs.SupercarrierGroupID Or ItemGroupID = ItemIDs.TitanGroupID Then
-                    SQL = SQL & "AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
+                    SQL &= "AND security <= 0.0 AND factionID IS NULL AND regionName <> 'Wormhole Space' "
                 ElseIf (ItemGroupID = ItemIDs.DreadnoughtGroupID Or ItemGroupID = ItemIDs.CarrierGroupID Or
                     ItemGroupID = ItemIDs.CapitalIndustrialShipGroupID Or ItemGroupID = ItemIDs.FAXGroupID Or
                     IsReaction(ItemGroupID)) And FacilityActivity = ActivityManufacturing Or FacilityActivity = ActivityReactions Then
                     ' For caps and reactions, only show low sec
-                    SQL = SQL & "AND security < .45 "
+                    SQL &= "AND security < .45 "
                 End If
 
         End Select
 
-        SQL = SQL & " GROUP BY SSN, CI"
+        SQL &= " GROUP BY SSN, CI"
 
         Dim rsLoader As SQLiteDataReader
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -1565,15 +1565,15 @@ Public Class ManufacturingFacility
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.Factory)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.Factory)
                     Case ActivityCopying, ActivityInvention
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.Laboratory)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.Laboratory)
                     Case ActivityReprocessing
-                        SQL = SQL & "AND SERVICE_ID = " & CStr(StationServices.ReprocessingPlant)
+                        SQL &= "AND SERVICE_ID = " & CStr(StationServices.ReprocessingPlant)
                 End Select
 
-                SQL = SQL & " AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text))
-                SQL = SQL & " AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName))
+                SQL &= " AND REGION_ID = " & CStr(GetRegionID(cmbFacilityRegion.Text))
+                SQL &= " AND SOLAR_SYSTEM_ID = " & CStr(GetSolarSystemID(SystemName))
 
             Case FacilityTypes.UpwellStructure
                 ' Load all the upwell structures based on the production type
@@ -1615,7 +1615,7 @@ Public Class ManufacturingFacility
         End Select
 
         ' This is helpful if we auto-load (Capital array before super capital, equipment array before rapid equipment) to choose the one more likely
-        SQL = SQL & " ORDER BY FACILITY_NAME"
+        SQL &= " ORDER BY FACILITY_NAME"
 
         Dim rsLoader As SQLiteDataReader
         Dim rsCheck As SQLiteDataReader
@@ -1930,15 +1930,15 @@ Public Class ManufacturingFacility
 
                         Select Case Activity
                             Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
-                                SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
+                                SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Manufacturing) & " "
                             Case ActivityCopying
-                                SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
+                                SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Copying) & " "
                             Case ActivityInvention
-                                SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
+                                SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Invention) & " "
                             Case ActivityReactions
-                                SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reactions) & " "
+                                SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reactions) & " "
                             Case ActivityReprocessing
-                                SQL = SQL & "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reprocessing) & " "
+                                SQL &= "AND ACTIVITY_ID = " & CStr(IndustryActivities.Reprocessing) & " "
                         End Select
 
                         Dim rsStats As SQLiteDataReader
@@ -4115,7 +4115,7 @@ Public Class IndustryFacility
                     Else
                         SQL = "SELECT STATION_NAME," & CStr(DefaultStationTaxRate) & ", 1, 1, 1 "
                     End If
-                    SQL = SQL & "FROM STATIONS WHERE STATION_ID = " & CStr(FacilityID) & " "
+                    SQL &= "FROM STATIONS WHERE STATION_ID = " & CStr(FacilityID) & " "
                 ElseIf FacilityType = FacilityTypes.UpwellStructure Then
                     SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, " & CStr(DefaultStructureTaxRate) & " AS FACILITY_TAX, "
                     SQL &= "CASE WHEN ACTIVITY_ID = -2 THEN " & CStr(BaseRefineRate) & " * (1 + MATERIAL_MULTIPLIER) ELSE MATERIAL_MULTIPLIER END, TIME_MULTIPLIER, COST_MULTIPLIER "
@@ -4374,7 +4374,7 @@ ExitBlock:
 
                     If rsCheck.HasRows Then
                         SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
-                        SQL = SQL & " WHERE SOLAR_SYSTEM_ID = " & SolarSystemID
+                        SQL &= " WHERE SOLAR_SYSTEM_ID = " & SolarSystemID
                     Else
                         SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SolarSystemID & "," & CStr(FWUpgradeLevel) & ")"
                     End If
@@ -4529,21 +4529,23 @@ ExitBlock:
         End Select
     End Function
 
-    ' Refreshes the MM/TM/CM bonuses for all three for the information sent
+    ' Refreshes the MM/TM/CM bonuses for all three for the information sent if it's a structure
     Public Sub RefreshMMTMCMBonuses(ItemGroupID As Integer, ItemCategoryID As Integer)
-        ' Cost
-        If Not ManualCost Then
-            CostMultiplier = BaseCost * (1 - GetFacilityBonusMulitiplier(ModifierType.CostModifier, ActivityID, ItemGroupID, ItemCategoryID))
-        End If
+        If FacilityType <> FacilityTypes.Station Then
+            ' Cost
+            If Not ManualCost Then
+                CostMultiplier = BaseCost * (1 - GetFacilityBonusMulitiplier(ModifierType.CostModifier, ActivityID, ItemGroupID, ItemCategoryID))
+            End If
 
-        ' Material
-        If Not ManualME Then
-            MaterialMultiplier = BaseME * (1 - GetFacilityBonusMulitiplier(ModifierType.MaterialModifier, ActivityID, ItemGroupID, ItemCategoryID))
-        End If
+            ' Material
+            If Not ManualME Then
+                MaterialMultiplier = BaseME * (1 - GetFacilityBonusMulitiplier(ModifierType.MaterialModifier, ActivityID, ItemGroupID, ItemCategoryID))
+            End If
 
-        ' Time
-        If Not ManualTE Then
-            TimeMultiplier = BaseTE * (1 - GetFacilityBonusMulitiplier(ModifierType.TimeModifier, ActivityID, ItemGroupID, ItemCategoryID))
+            ' Time
+            If Not ManualTE Then
+                TimeMultiplier = BaseTE * (1 - GetFacilityBonusMulitiplier(ModifierType.TimeModifier, ActivityID, ItemGroupID, ItemCategoryID))
+            End If
         End If
     End Sub
 

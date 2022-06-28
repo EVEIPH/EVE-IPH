@@ -329,9 +329,9 @@ Public Class ShoppingList
                 Else
                     ' Need to calculate the new amount
                     SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS "
-                    SQL = SQL & "WHERE BLUEPRINT_ID = " & FoundItem.BPTypeID
-                    SQL = SQL & " AND ACTIVITY IN (1,11)"
-                    SQL = SQL & " AND MATERIAL_ID = " & FoundItem.ComponentBuildList(i).ItemTypeID
+                    SQL &= "WHERE BLUEPRINT_ID = " & FoundItem.BPTypeID
+                    SQL &= " AND ACTIVITY IN (1,11)"
+                    SQL &= " AND MATERIAL_ID = " & FoundItem.ComponentBuildList(i).ItemTypeID
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     rsMatCheck = DBCommand.ExecuteReader
@@ -741,10 +741,10 @@ Public Class ShoppingList
         ' Look up the cost for the material
         If Activity = IndustryActivities.Invention Or Activity = IndustryActivities.Copying Then
             SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & ItemData.BlueprintTypeID & " AND MATERIAL_ID = " & UpdateMaterial.GetMaterialTypeID
-            SQL = SQL & " AND ACTIVITY = 8"
+            SQL &= " AND ACTIVITY = 8"
         Else
             SQL = "SELECT QUANTITY FROM ALL_BLUEPRINT_MATERIALS WHERE PRODUCT_ID = " & ItemData.TypeID & " AND MATERIAL_ID = " & UpdateMaterial.GetMaterialTypeID
-            SQL = SQL & " AND ACTIVITY IN (1,11)"
+            SQL &= " AND ACTIVITY IN (1,11)"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

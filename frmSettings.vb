@@ -145,7 +145,7 @@ Public Class frmSettings
             txtFuzzworksMarketInterval.Focus()
         Else
             txtFuzzworksMarketInterval.Enabled = False
-            txtFuzzworksMarketInterval.Text = FormatNumber(Defaults.DefaultFuzzworksMarketRefreshInterval, 0)
+            txtFuzzworksMarketInterval.Text = FormatNumber(Defaults.DefaultUpdatePricesRefreshInterval, 0)
         End If
         btnSave.Text = "Save"
     End Sub
@@ -512,14 +512,14 @@ Public Class frmSettings
                 txtDefaultTE.Enabled = True
             End If
 
-            If .FuzzworksMarketRefreshInterval <> Defaults.DefaultFuzzworksMarketRefreshInterval Then
+            If .UpdatePricesRefreshInterval <> Defaults.DefaultUpdatePricesRefreshInterval Then
                 chkFuzzworksMarketInterval.Checked = True
                 txtFuzzworksMarketInterval.Enabled = True
-                txtFuzzworksMarketInterval.Text = CStr(.FuzzworksMarketRefreshInterval)
+                txtFuzzworksMarketInterval.Text = CStr(.UpdatePricesRefreshInterval)
             Else
                 chkFuzzworksMarketInterval.Checked = False
                 txtFuzzworksMarketInterval.Enabled = False
-                txtFuzzworksMarketInterval.Text = CStr(Defaults.DefaultFuzzworksMarketRefreshInterval)
+                txtFuzzworksMarketInterval.Text = CStr(Defaults.DefaultUpdatePricesRefreshInterval)
             End If
 
             cmbSVRRegion.Text = .SVRAveragePriceRegion
@@ -687,7 +687,7 @@ Public Class frmSettings
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
 
-                .FuzzworksMarketRefreshInterval = CInt(txtFuzzworksMarketInterval.Text)
+                .UpdatePricesRefreshInterval = CInt(txtFuzzworksMarketInterval.Text)
 
                 .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 

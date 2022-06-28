@@ -66,8 +66,8 @@ Public Class frmManualPriceUpdate
         Me.Cursor = Cursors.WaitCursor
 
         SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
-        SQL = SQL & "FROM ITEM_PRICES "
-        SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME IN ('Tritanium','Pyerite','Mexallon','Nocxium','Isogen','Zydrine','Megacyte','Morphite')"
+        SQL &= "FROM ITEM_PRICES "
+        SQL &= "WHERE ITEM_PRICES.ITEM_NAME IN ('Tritanium','Pyerite','Mexallon','Nocxium','Isogen','Zydrine','Megacyte','Morphite')"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMinerals = DBCommand.ExecuteReader()
@@ -302,10 +302,10 @@ Public Class frmManualPriceUpdate
         Me.Cursor = Cursors.WaitCursor
 
         SQL = "SELECT ITEM_PRICES.ITEM_NAME, ITEM_PRICES.PRICE "
-        SQL = SQL & "FROM ITEM_PRICES "
-        SQL = SQL & "WHERE ITEM_PRICES.ITEM_NAME IN "
-        SQL = SQL & "('Ferrogel','Crystalline Carbonide','Fermionic Condensates','Titanium Carbide','Fullerides',"
-        SQL = SQL & "'Hypersynaptic Fibers','Nanotransistors','Phenolic Composites','Tungsten Carbide','Sylramic Fibers','Fernite Carbide')"
+        SQL &= "FROM ITEM_PRICES "
+        SQL &= "WHERE ITEM_PRICES.ITEM_NAME IN "
+        SQL &= "('Ferrogel','Crystalline Carbonide','Fermionic Condensates','Titanium Carbide','Fullerides',"
+        SQL &= "'Hypersynaptic Fibers','Nanotransistors','Phenolic Composites','Tungsten Carbide','Sylramic Fibers','Fernite Carbide')"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerMoon = DBCommand.ExecuteReader()

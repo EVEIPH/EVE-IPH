@@ -37,8 +37,8 @@ Public Class EVEAttributes
         Dim ReturnValue As Double
 
         SQL = "SELECT value FROM TYPE_ATTRIBUTES "
-        SQL = SQL & "WHERE typeID = " & TypeID & " "
-        SQL = SQL & "AND attributeID = " & AttributeCode
+        SQL &= "WHERE typeID = " & TypeID & " "
+        SQL &= "AND attributeID = " & AttributeCode
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAttribute = DBCommand.ExecuteReader
@@ -87,7 +87,7 @@ Public Class EVEAttributes
         Dim ReturnList As New List(Of AttributeRecord)
 
         SQL = "SELECT ATTRIBUTE_TYPES.attributeID, attributeName, value FROM TYPE_ATTRIBUTES, ATTRIBUTE_TYPES "
-        SQL = SQL & "WHERE TYPE_ATTRIBUTES.typeID = " & TypeID & " AND ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID"
+        SQL &= "WHERE TYPE_ATTRIBUTES.typeID = " & TypeID & " AND ATTRIBUTE_TYPES.attributeID = TYPE_ATTRIBUTES.attributeID"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAttribute = DBCommand.ExecuteReader
@@ -2726,7 +2726,8 @@ Public Enum ItemAttributes
     ignoreMiningWaste = 3236
     miningFrigateBonusGasCloudHarvestingDuration = 3237
     shipRoleBonusGasHarvestingYield = 3239
-    miningFrigateBonusIceHarvestingDuration = 3240
+    miningFrigateBonusIceHarvestingDuration = 3240
+
 End Enum
 
 Public Structure AttributeRecord

@@ -741,7 +741,7 @@ Public Class frmBlueprintManagement
                         Dim BPIDLookup As Long
                         BPIDLookup = GetInventItemTypeID(readerBP.GetInt64(0), "Wrecked")
                         SQL = "SELECT quantity FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE blueprintTypeID = " & CStr(BPIDLookup) & " AND activityID = 8 "
-                        SQL = SQL & "AND productTypeID = " & CStr(readerBP.GetInt64(0))
+                        SQL &= "AND productTypeID = " & CStr(readerBP.GetInt64(0))
                     End If
 
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -1101,9 +1101,9 @@ Public Class frmBlueprintManagement
 
         ' No where clause means we are selecting all
         If WhereClause <> "" Then
-            SQL = SQL & WhereClause & "AND " & SQLItemType & RaceClause & TextClause & ComboType & Copies & SizesClause & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
+            SQL &= WhereClause & "AND " & SQLItemType & RaceClause & TextClause & ComboType & Copies & SizesClause & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
         Else
-            SQL = SQL & "WHERE " & SQLItemType & RaceClause & TextClause & ComboType & Copies & SizesClause & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
+            SQL &= "WHERE " & SQLItemType & RaceClause & TextClause & ComboType & Copies & SizesClause & " ORDER BY BLUEPRINT_GROUP, BLUEPRINT_NAME"
         End If
 
         BuildBPSelectQuery = SQL
@@ -1328,7 +1328,7 @@ Public Class frmBlueprintManagement
 
         End If
 
-        SQL = SQL & WhereClause & " AND IGNORE = 0 GROUP BY ITEM_GROUP"
+        SQL &= WhereClause & " AND IGNORE = 0 GROUP BY ITEM_GROUP"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
 
@@ -1714,20 +1714,20 @@ your developer scopes.", vbExclamation, Application.ProductName)
                             Dim TempID As Long = 0
                             If UserApplicationSettings.LoadBPsbyChar Then
                                 ' Use the ID sent
-                                SQL = SQL & ParsedLine(0) & "," ' API ID
+                                SQL &= ParsedLine(0) & "," ' API ID
                             Else
-                                SQL = SQL & CommonLoadBPsID & "," ' API ID
+                                SQL &= CommonLoadBPsID & "," ' API ID
                             End If
 
-                            SQL = SQL & ParsedLine(1) & "," ' Location ID
-                            SQL = SQL & ParsedLine(2) & "," ' Item ID
-                            SQL = SQL & ParsedLine(3) & "," ' Blueprint ID
-                            SQL = SQL & "'" & FormatDBString(ParsedLine(5)) & "'," ' Blueprint Name
-                            SQL = SQL & ParsedLine(6) & "," ' Quantity
-                            SQL = SQL & ParsedLine(7) & "," ' Flag ID
-                            SQL = SQL & ParsedLine(8) & "," ' ME
-                            SQL = SQL & ParsedLine(9) & "," ' TE
-                            SQL = SQL & ParsedLine(10) & "," ' Runs
+                            SQL &= ParsedLine(1) & "," ' Location ID
+                            SQL &= ParsedLine(2) & "," ' Item ID
+                            SQL &= ParsedLine(3) & "," ' Blueprint ID
+                            SQL &= "'" & FormatDBString(ParsedLine(5)) & "'," ' Blueprint Name
+                            SQL &= ParsedLine(6) & "," ' Quantity
+                            SQL &= ParsedLine(7) & "," ' Flag ID
+                            SQL &= ParsedLine(8) & "," ' ME
+                            SQL &= ParsedLine(9) & "," ' TE
+                            SQL &= ParsedLine(10) & "," ' Runs
 
                             Dim TempBPType As BPType
                             Dim TempOwned As Boolean
@@ -1746,38 +1746,38 @@ your developer scopes.", vbExclamation, Application.ProductName)
                             End If
 
                             ' BP Type SQL
-                            SQL = SQL & CStr(TempBPType) & ","
+                            SQL &= CStr(TempBPType) & ","
                             ' Owned SQL
                             If TempOwned Then
                                 If TempScanned Then
-                                    SQL = SQL & "1,"
+                                    SQL &= "1,"
                                 Else
-                                    SQL = SQL & "-1,"
+                                    SQL &= "-1,"
                                 End If
                             Else
-                                SQL = SQL & "0,"
+                                SQL &= "0,"
                             End If
 
                             ' Scanned SQL
                             If TempScanned Then
                                 If CLng(ParsedLine(0)) = SelectedCharacter.CharacterCorporation.CorporationID Then
-                                    SQL = SQL & "2," ' Corp BP
+                                    SQL &= "2," ' Corp BP
                                 Else
-                                    SQL = SQL & "1,"
+                                    SQL &= "1,"
                                 End If
                             Else
-                                SQL = SQL & "0,"
+                                SQL &= "0,"
                             End If
 
                             ' Favorite
                             If UCase(ParsedLine(14)) = "TRUE" Then
-                                SQL = SQL & "1,"
+                                SQL &= "1,"
                             Else
-                                SQL = SQL & "0,"
+                                SQL &= "0,"
                             End If
 
-                            SQL = SQL & ParsedLine(15) ' Additional Costs
-                            SQL = SQL & ")"
+                            SQL &= ParsedLine(15) ' Additional Costs
+                            SQL &= ")"
 
                             ' Insert the record
                             Call EVEDB.ExecuteNonQuerySQL(SQL)
