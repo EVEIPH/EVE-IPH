@@ -224,6 +224,8 @@ Public Class frmManageAccounts
 
         lstAccounts.Items.Clear()
 
+        Call frmMain.LoadCharacterNamesinMenu()
+
         ' Reload accounts
         Call LoadAccountGrid()
 

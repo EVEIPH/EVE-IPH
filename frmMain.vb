@@ -5916,6 +5916,8 @@ Tabs:
 
         txtBPME.Enabled = True
         txtBPTE.Enabled = True
+        'txtBPME.Text = "0"
+        'txtBPTE.Text = "0"
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_GROUP "
         SQL &= "FROM ALL_BLUEPRINTS "
@@ -6116,7 +6118,7 @@ Tabs:
 
         If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
             ' Use owned settings
-            If chkBPIgnoreInvention.Checked Then
+            If chkBPIgnoreInvention.Checked Or BPTech = 1 Then
                 txtBPME.Text = CStr(readerBP.GetInt32(0))
                 OwnedBPME = txtBPME.Text
                 txtBPTE.Text = CStr(readerBP.GetInt32(1))

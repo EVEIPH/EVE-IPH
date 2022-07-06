@@ -343,6 +343,8 @@ Public Class frmShoppingList
         Dim BuyOrderFees As Double
         Dim TotalPrice As Double
         Dim PriceType As String
+        Dim PriceSource As String
+        Dim RegionSystem As String
         Dim StoredPrice As Double
         Dim MinSellUnitPrice As Double
         Dim MaxBuyUnitPrice As Double
@@ -393,7 +395,7 @@ Public Class frmShoppingList
                     ' Look up the price of buying directly off the market (min sell - no tax, no broker fee) and compare it to the price
                     ' of max buy (buy order) plus the brokers fees to set up that order (no tax). Then show the value in the grid of what they should do
                     ' First find out what price and type we have stored
-                    SQL = "SELECT PRICE, PRICE_TYPE FROM ITEM_PRICES WHERE ITEM_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                    SQL = "SELECT PRICE, PRICE_TYPE, PRICE_SOURCE, RegionORSystem FROM ITEM_PRICES WHERE ITEM_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                     readerItemPrices = DBCommand.ExecuteReader
                     readerItemPrices.Read()
@@ -402,27 +404,61 @@ Public Class frmShoppingList
                         ' Figure out what they have stored so we know what type of price we need to get
                         StoredPrice = CDbl(readerItemPrices.GetValue(0))
                         PriceType = readerItemPrices.GetString(1)
+                        PriceSource = CStr(readerItemPrices.GetInt32(2))
+                        RegionSystem = CStr(readerItemPrices.GetInt64(3))
                     Else
                         PriceType = None
+                        PriceSource = "-1"
+                        RegionSystem = "0"
                     End If
 
                     readerItemPrices.Close()
 
                     ' Load the Min Sell and Max Buy prices from cache - source is based off of update prices price selection
+                    If PriceSource = CStr(DataSource.CCP) Then
+                        SQL = "SELECT MIN(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                        SQL &= " AND (REGION_ID = " & RegionSystem & " OR SOLAR_SYSTEM_ID = " & RegionSystem & ") AND IS_BUY_ORDER = 0"
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        readerItemPrices = DBCommand.ExecuteReader
+                        readerItemPrices.Read()
 
-                    SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
-                    SQL &= " AND sellMin IS NOT NULL and buyMax IS NOT NULL"
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    readerItemPrices = DBCommand.ExecuteReader
-                    readerItemPrices.Read()
+                        ' Get the buy and sell prices
+                        If readerItemPrices.HasRows Then
+                            MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
 
-                    ' Get the buy and sell prices
-                    If readerItemPrices.HasRows Then
-                        MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
-                        MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
+                            SQL = "SELECT MAX(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                            SQL &= " AND (REGION_ID = " & RegionSystem & " OR SOLAR_SYSTEM_ID = " & RegionSystem & ") AND IS_BUY_ORDER <> 0"
+                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                            readerItemPrices = DBCommand.ExecuteReader
+                            readerItemPrices.Read()
+
+                            ' Get the buy and sell prices
+                            If readerItemPrices.HasRows Then
+                                MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(0))
+                            Else
+                                ' Something went wrong, so mark as none
+                                PriceType = None
+                            End If
+                        Else
+                            ' Something went wrong, so mark as none
+                            PriceType = None
+                        End If
                     Else
-                        ' Something went wrong, so re-mark as none
-                        PriceType = None
+                        SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
+                        SQL &= " AND sellMin IS NOT NULL AND buyMax IS NOT NULL AND PRICE_SOURCE = " & PriceSource & " AND RegionORSystem = " & RegionSystem
+
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        readerItemPrices = DBCommand.ExecuteReader
+                        readerItemPrices.Read()
+
+                        ' Get the buy and sell prices
+                        If readerItemPrices.HasRows Then
+                            MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
+                            MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
+                        Else
+                            ' Something went wrong, so mark as none
+                            PriceType = None
+                        End If
                     End If
 
                     readerItemPrices.Close()

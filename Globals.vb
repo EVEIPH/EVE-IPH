@@ -2899,10 +2899,10 @@ SkipItem:
             End If
 
             ' See if it downloaded a full file
-            If Len(Output) <> ContentLength Then
+            If (Len(Output) <> ContentLength And ContentLength <> 0) Or (Output.Substring(Len(Output) - 1, 1) <> "]" And ContentLength = 0) Then
                 Application.DoEvents()
-                ' Re-run this function - limit to 10 calls
-                If RecursiveCalls <= 10 Then
+                ' Re-run this function - limit to 5 calls
+                If RecursiveCalls <= 5 Then
                     Dim NumCalls As Integer = RecursiveCalls + 1
                     Output = GetJSONFile(URL, UpdateType, IgnoreExceptions, NumCalls)
                 End If
