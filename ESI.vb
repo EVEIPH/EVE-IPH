@@ -1707,9 +1707,10 @@ Public Class ESI
                                         SQL = "INSERT INTO INDUSTRY_SYSTEMS_COST_INDICIES VALUES(" & CStr(SolarSystemID) & ",'" & FormatDBString(SolarSystemName) & "',"
                                         SQL &= CStr(ActivityID) & ",'" & FormatDBString(.activity) & "'," & CStr(.cost_index) & ")"
                                     End If
+                                    rsLookup.Close()
 
                                     Call EVEDB.ExecuteNonQuerySQL(SQL)
-                                    rsLookup.Close()
+
                                 End With
                             Next
 
