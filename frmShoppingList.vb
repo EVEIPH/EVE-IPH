@@ -423,7 +423,7 @@ Public Class frmShoppingList
                         readerItemPrices.Read()
 
                         ' Get the buy and sell prices
-                        If readerItemPrices.HasRows Then
+                        If Not IsDBNull(readerItemPrices.GetValue(0)) Then
                             MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
 
                             SQL = "SELECT MAX(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
@@ -433,7 +433,7 @@ Public Class frmShoppingList
                             readerItemPrices.Read()
 
                             ' Get the buy and sell prices
-                            If readerItemPrices.HasRows Then
+                            If Not IsDBNull(readerItemPrices.GetValue(0)) Then
                                 MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(0))
                             Else
                                 ' Something went wrong, so mark as none
@@ -452,7 +452,7 @@ Public Class frmShoppingList
                         readerItemPrices.Read()
 
                         ' Get the buy and sell prices
-                        If readerItemPrices.HasRows Then
+                        If Not IsDBNull(readerItemPrices.GetValue(0)) And Not IsDBNull(readerItemPrices.GetValue(0)) Then
                             MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
                             MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
                         Else

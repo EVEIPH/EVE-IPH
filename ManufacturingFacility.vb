@@ -2152,7 +2152,7 @@ Public Class ManufacturingFacility
                     Case ProgramLocation.MiningTab
                         Call CType(SelectedControlForm, frmMain).RefreshMiningTabRefiningRates()
                     Case ProgramLocation.ReprocessingPlant
-                        '    Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
+                        Call CType(SelectedControlForm, frmReprocessingPlant).RefreshRefiningRates()
                         'Case ProgramLocation.SovBelts
                         '    Call CType(SelectedControlForm, frmIndustryBeltFlip).LoadAllTables()
                         'Case ProgramLocation.IceBelts

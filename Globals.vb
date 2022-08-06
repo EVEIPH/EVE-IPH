@@ -138,7 +138,7 @@ Public Module Public_Variables
     Public CancelThreading As Boolean
 
     ' Column processing
-    Public Const NumManufacturingTabColumns As Integer = 90
+    Public Const NumManufacturingTabColumns As Integer = 110
     Public Const NumIndustryJobColumns As Integer = 21
 
     Public Const AlphaAccountTaxRate As Double = 0.02
@@ -1061,6 +1061,10 @@ InvalidDate:
             ItemLines = SentText.Split(New [Char]() {CChar(vbCr)}, StringSplitOptions.RemoveEmptyEntries) ' Get all the item lines
         ElseIf SentText.Contains(vbLf) Then
             ItemLines = SentText.Split(New [Char]() {CChar(vbLf)}, StringSplitOptions.RemoveEmptyEntries) ' Get all the item lines
+        Else
+            ' Add a vbcrlf to the end and then split - only one line
+            SentText &= vbCrLf
+            ItemLines = SentText.Split(New [Char]() {CChar(vbCrLf)}, StringSplitOptions.RemoveEmptyEntries)
         End If
 
         ' Loop through the lines

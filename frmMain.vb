@@ -7414,7 +7414,6 @@ ExitForm:
 
 #End Region
 
-
 #Region "Update Prices Tab"
 
 #Region "Update Prices Tab User Object (Check boxes, Text, Buttons) Functions/Procedures "
@@ -8240,7 +8239,7 @@ ExitForm:
             ' Now that we have the default region, load up the systems based on that
             Call LoadSystemCombo(cmbPPDefaultsSystem, .PPRawRegion, .PPRawSystem)
             txtPPDefaultsPriceMod.Text = FormatPercent(.PPRawPriceMod, 1)
-            PPSystemsLoaded = True
+            PPSystemsLoaded = False
 
         End With
 
@@ -14654,19 +14653,19 @@ DisplayResults:
                         BPList.SubItems.Add(CStr(FinalItemList(i).ReactionFacility.FWUpgradeLevel))
 
                     Case ProgramSettings.ReprocessingFacilityNameColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.FacilityName)
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), FinalItemList(i).ReprocessingFacility.FacilityName, ""))
                     Case ProgramSettings.ReprocessingFacilitySystemColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.SolarSystemName)
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), FinalItemList(i).ReprocessingFacility.SolarSystemName, ""))
                     Case ProgramSettings.ReprocessingFacilityTaxColumnName
-                        BPList.SubItems.Add(FormatPercent(FinalItemList(i).ReprocessingFacility.TaxRate, 1))
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), FormatPercent(FinalItemList(i).ReprocessingFacility.TaxRate, 1), ""))
                     Case ProgramSettings.ReprocessingFacilityRegionColumnName
-                        BPList.SubItems.Add(FinalItemList(i).ReprocessingFacility.RegionName)
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), FinalItemList(i).ReprocessingFacility.RegionName, ""))
                     Case ProgramSettings.ReprocessingFacilityOreRefineRateColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.OreFacilityRefineRate))
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), CStr(FinalItemList(i).ReprocessingFacility.OreFacilityRefineRate), ""))
                     Case ProgramSettings.ReprocessingFacilityIceRefineRateColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.IceFacilityRefineRate))
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), CStr(FinalItemList(i).ReprocessingFacility.IceFacilityRefineRate), ""))
                     Case ProgramSettings.ReprocessingFacilityMoonRefineRateColumnName
-                        BPList.SubItems.Add(CStr(FinalItemList(i).ReprocessingFacility.MoonOreFacilityRefineRate))
+                        BPList.SubItems.Add(If(Not IsNothing(FinalItemList(i).ReprocessingFacility), CStr(FinalItemList(i).ReprocessingFacility.MoonOreFacilityRefineRate), ""))
                     Case ProgramSettings.ReprocessingFacilityUsageColumnName
                         BPList.SubItems.Add(FormatNumber(FinalItemList(i).ReprocessingFacilityUsage / FinalItemList(i).DivideUnits, 2))
 

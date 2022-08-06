@@ -339,7 +339,7 @@ Public Class frmBlueprintList
         If rbtnBPOwnedBlueprints.Checked Then
             ownedJoin = $"{baseJoin} {ownedFilter}"
         ElseIf rbtnBPFavoriteBlueprints.Checked Then
-            ownedJoin = $"{baseJoin} {ownedFilter} AND FAVORITE = 1"
+            ownedJoin = $"{baseJoin} {ownedFilter} AND o.FAVORITE = 1"
         End If
 
         Return ownedJoin

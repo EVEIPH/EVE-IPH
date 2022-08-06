@@ -105,6 +105,7 @@ Public Class frmReprocessingPlant
         Call UpdateProcessingSkills()
 
         Call InitializeReprocessingFacility()
+        Call RefreshRefiningRates()
 
         ItemsColumnClicked = 1
         ItemsColumnSortType = SortOrder.Ascending
