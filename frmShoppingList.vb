@@ -415,15 +415,17 @@ Public Class frmShoppingList
                     readerItemPrices.Close()
 
                     ' Load the Min Sell and Max Buy prices from cache - source is based off of update prices price selection
-                    If PriceSource = CStr(DataSource.CCP) Then
+                    If PriceSource = CStr(DataSource.CCP) And PriceType <> None Then
                         SQL = "SELECT MIN(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
                         SQL &= " AND (REGION_ID = " & RegionSystem & " OR SOLAR_SYSTEM_ID = " & RegionSystem & ") AND IS_BUY_ORDER = 0"
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                         readerItemPrices = DBCommand.ExecuteReader
                         readerItemPrices.Read()
 
+                        PriceType = GoodPriceData(readerItemPrices, 1, PriceType)
+
                         ' Get the buy and sell prices
-                        If Not IsDBNull(readerItemPrices.GetValue(0)) Then
+                        If PriceType <> None Then
                             MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
 
                             SQL = "SELECT MAX(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
@@ -432,16 +434,12 @@ Public Class frmShoppingList
                             readerItemPrices = DBCommand.ExecuteReader
                             readerItemPrices.Read()
 
+                            PriceType = GoodPriceData(readerItemPrices, 1, PriceType)
+
                             ' Get the buy and sell prices
-                            If Not IsDBNull(readerItemPrices.GetValue(0)) Then
+                            If PriceType <> None Then
                                 MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(0))
-                            Else
-                                ' Something went wrong, so mark as none
-                                PriceType = None
                             End If
-                        Else
-                            ' Something went wrong, so mark as none
-                            PriceType = None
                         End If
                     Else
                         SQL = "SELECT sellMin, buyMax FROM ITEM_PRICES_CACHE WHERE typeID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
@@ -451,13 +449,12 @@ Public Class frmShoppingList
                         readerItemPrices = DBCommand.ExecuteReader
                         readerItemPrices.Read()
 
+                        PriceType = GoodPriceData(readerItemPrices, 2, PriceType)
+
                         ' Get the buy and sell prices
-                        If Not IsDBNull(readerItemPrices.GetValue(0)) And Not IsDBNull(readerItemPrices.GetValue(0)) Then
+                        If PriceType <> None Then
                             MinSellUnitPrice = CDbl(readerItemPrices.GetValue(0))
                             MaxBuyUnitPrice = CDbl(readerItemPrices.GetValue(1))
-                        Else
-                            ' Something went wrong, so mark as none
-                            PriceType = None
                         End If
                     End If
 
@@ -552,6 +549,27 @@ Public Class frmShoppingList
         lstBuy.EndUpdate()
 
     End Sub
+
+    ' Returns price type None if not good data
+    Public Function GoodPriceData(ByRef rsPriceData As SQLiteDataReader, ByVal NumFieldCheck As Integer, ByVal DefaultData As String) As String
+        If rsPriceData.HasRows Then
+            If NumFieldCheck = 2 Then
+                If IsDBNull(rsPriceData.GetValue(0)) Or IsDBNull(rsPriceData.GetValue(1)) Then
+                    Return None
+                End If
+            ElseIf NumFieldCheck <> 2 Then
+                If IsDBNull(rsPriceData.GetValue(0)) Then
+                    Return None
+                End If
+            End If
+        Else
+            Return None
+        End If
+
+        ' All good, keep what they have
+        Return DefaultData
+
+    End Function
 
     ' Loads the list of items into the items list
     Private Sub LoadItemList()

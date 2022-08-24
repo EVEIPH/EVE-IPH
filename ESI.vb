@@ -919,6 +919,120 @@ Public Class ESI
 
     End Function
 
+    Public Structure AssetNamePairs
+        Dim AssetID As Double
+        Dim AssetName As String
+    End Structure
+
+    Public Function GetAssetNames(ByVal ItemIDs As List(Of Double), ByVal ID As Long, ByVal TokenData As SavedTokenData,
+                                  ByVal JobType As ScanType, ByRef AssetNamesCacheDate As Date) As List(Of ESICharacterAssetName)
+        Dim Output As New List(Of ESICharacterAssetName)
+        Dim TempOutput As New List(Of ESICharacterAssetName)
+        Dim Success As Boolean = False
+        Dim Data As String = ""
+        Dim Token As ESITokenData = FormatTokenData(TokenData)
+
+        Dim WC As New WebClient
+        Dim Address As String = ""
+        Dim PostParameters As New NameValueCollection
+        Dim IDList As String = ""
+
+        Try
+
+            '' See if we update the token data first
+            'If TokenData.TokenExpiration <= DateTime.UtcNow Then
+
+            '    ' Update the token
+            '    Token = GetAccessToken(Token.refresh_token, True, Nothing, Nothing)
+
+            '    If IsNothing(TokenData) Then
+            '        Return Nothing
+            '    End If
+
+            '    ' Update the token data in the DB for this character/corporation
+            '    Dim SQL As String = ""
+            '    ' Update data - only stuff that could (reasonably) change
+            '    SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+            '    SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+
+            '    With Token
+            '        TokenData.TokenExpiration = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
+            '        SQL = String.Format(SQL, FormatDBString(.access_token),
+            '        Format(TokenData.TokenExpiration, SQLiteDateFormat),
+            '        FormatDBString(.token_type), FormatDBString(.refresh_token), ID)
+            '    End With
+
+            '    ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
+            '    If EVEDB.TransactionActive Then
+            '        EVEDB.CommitSQLiteTransaction()
+            '        EVEDB.ExecuteNonQuerySQL(SQL)
+            '        EVEDB.BeginSQLiteTransaction()
+            '    Else
+            '        EVEDB.ExecuteNonQuerySQL(SQL)
+            '    End If
+
+            '    ' Now update the copy used in IPH so we don't re-query
+            '    SelectedCharacter.CharacterTokenData.AccessToken = Token.access_token
+            '    SelectedCharacter.CharacterTokenData.RefreshToken = Token.refresh_token
+            '    SelectedCharacter.CharacterTokenData.TokenExpiration = TokenData.TokenExpiration
+
+            'End If
+
+            ' See if we are in an error limited state
+            'If ESIErrorHandler.ErrorLimitReached Then
+            '    ' Need to wait until we are ready to continue
+            '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            'End If
+
+            '' See if we are in an error limited state
+            'If ESIErrorHandler.ErrorLimitReached Then
+            '    ' Need to wait until we are ready to continue
+            '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            'End If
+
+            If JobType = ScanType.Corporation Then
+                Address = ESIURL & "corporations/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
+            Else
+                Address = ESIURL & "characters/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
+            End If
+
+            WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {Token.access_token}"
+            Dim counter As Integer = 0
+
+            For Each item In ItemIDs
+                IDList &= CStr(item) & ","
+                counter += 1
+
+                ' Run every 1000
+                If counter = 1000 Then
+                    ' Post data and get response, and parse the data to the class
+                    TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+                    Call Output.AddRange(TempOutput)
+                    IDList = ""
+                    counter = 0
+                End If
+            Next
+
+            ' Add the remainder of items
+            TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+            Call Output.AddRange(TempOutput)
+
+            Success = True
+
+        Catch ex As WebException
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
+        Catch ex As Exception
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+        End Try
+
+        If Success Then
+            Return Output
+        Else
+            Return Nothing
+        End If
+
+    End Function
+
     Public Function GetCorporationRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
         Dim ReturnData As String
 
@@ -1036,7 +1150,7 @@ Public Class ESI
 
         If PriceSystem <> "" Then
             ' Only look up structures in this system
-            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & PriceSystem & " AND STATION_ID >70000000"
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & PriceSystem & " And STATION_ID >70000000"
         Else
             For Each ID In RegionIDs
                 RegionList &= ID & ","
@@ -1045,7 +1159,7 @@ Public Class ESI
             RegionList = RegionList.Substring(0, Len(RegionList) - 1)
 
             ' Get all the structures in that region
-            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") AND STATION_ID >70000000"
+            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") And STATION_ID >70000000"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -2453,6 +2567,11 @@ Public Class ESIPostion
     <JsonProperty("x")> Public x As Double
     <JsonProperty("y")> Public y As Double
     <JsonProperty("z")> Public z As Double
+End Class
+
+Public Class ESICharacterAssetName
+    <JsonProperty("item_id")> Public item_id As Double
+    <JsonProperty("name")> Public name As String
 End Class
 
 #End Region

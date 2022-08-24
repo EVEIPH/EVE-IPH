@@ -3344,7 +3344,7 @@ Tabs:
                             .Items.Add(rsData.GetString(0))
                             ' Special processing for The Forge
                             If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
-                                .Items.Add("Jita/Perim")
+                                .Items.Add(JitaPerimeter)
                             End If
                         End While
 
@@ -8529,9 +8529,10 @@ ExitForm:
     ' Loads the price profiles system combo
     Private Sub LoadSystemCombo(ByRef SystemCombo As ComboBox, ByVal Region As String, ByVal System As String)
 
-        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+        If Region <> DefaultRegionPriceCombo Then
             Dim SQL As String = ""
             Dim rsData As SQLiteDataReader
+            Dim SystemName As String
 
             SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
             SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
@@ -8544,7 +8545,12 @@ ExitForm:
             ' Add the all systems item
             SystemCombo.Items.Add(AllSystems)
             While rsData.Read
-                SystemCombo.Items.Add(rsData.GetString(0))
+                SystemName = rsData.GetString(0)
+                SystemCombo.Items.Add(SystemName)
+                If SystemName = "Jita" Then
+                    ' Add Jita/Perimeter
+                    SystemCombo.Items.Add(JitaPerimeter)
+                End If
             End While
             SystemCombo.EndUpdate()
             rsData.Close()
@@ -8692,7 +8698,7 @@ ExitForm:
             End If
         Next
 
-        If chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked Then
+        If (chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked) Or cmbPriceSystems.Text = JitaPerimeter Then
             ' Need to run for both for non-price profile 
             JitaPerimeterChecked = True
         End If
@@ -8770,7 +8776,11 @@ ExitForm:
                 readerSystems.Close()
 
             ElseIf SystemSelected Then
-                ' Get the system list string
+                If SearchSystem = JitaPerimeter Then
+                    SearchSystem = "Jita"
+                End If
+
+                ' Get the system ID string
                 SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
                 SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
@@ -8835,7 +8845,7 @@ ExitForm:
                                 TempItem.SystemID = ""
                             Else
                                 ' Look up the system name
-                                If rsPP.GetString(2) = "Jita/Perim" Then
+                                If rsPP.GetString(2) = JitaPerimeter Then
                                     ' System name set below
                                     JitaPerimeterChecked = True
                                 Else
@@ -9203,7 +9213,7 @@ ExitSub:
 
                     ' Now Update the ITEM_PRICES table, set price, price type, Data source, and RegionORSystem used for the price
                     SQL = "UPDATE ITEM_PRICES_FACT Set PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' "
-                    SQL &= ", RegionORSystem = " & CStr(readerPrices.GetInt64(1)) & ", PRICE_SOURCE = " & UpdatePricesDataSource
+                    SQL &= ", RegionORSystem = " & CStr(readerPrices.GetValue(1)) & ", PRICE_SOURCE = " & UpdatePricesDataSource
                     SQL &= " WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
@@ -9237,7 +9247,11 @@ ExitSub:
 
         SQL = "SELECT MIN(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            If SystemID.Contains(",") Then
+                SQL &= "AND SOLAR_SYSTEM_ID IN (" & SystemID & ") "
+            Else
+                SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            End If
         Else
             ' Use the region
             SQL &= "AND REGION_ID = " & RegionID & " "
@@ -9258,7 +9272,11 @@ ExitSub:
 
         SQL = "SELECT MAX(PRICE) FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            If SystemID.Contains(",") Then
+                SQL &= "AND SOLAR_SYSTEM_ID IN (" & SystemID & ") "
+            Else
+                SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            End If
         Else
             ' Use the region
             SQL &= "AND REGION_ID = " & RegionID & " "
@@ -9334,7 +9352,11 @@ ExitSub:
 
         SQL = "SELECT PRICE FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(TypeID) & " "
         If SystemID <> "" Then
-            SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            If SystemID.Contains(",") Then
+                SQL &= "AND SOLAR_SYSTEM_ID IN (" & SystemID & ") "
+            Else
+                SQL &= "AND SOLAR_SYSTEM_ID = " & SystemID & " "
+            End If
         Else
             ' Use the region
             SQL &= "AND REGION_ID = " & RegionID & " "

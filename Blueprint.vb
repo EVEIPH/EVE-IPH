@@ -122,7 +122,6 @@ Public Class Blueprint
     Private IncludeCopyCosts As Boolean
     Private IncludeCopyUsage As Boolean
 
-    Private TotalInventionCost As Double ' Total cost for all the invention runs to get enough successful inventions for these runs
     Private InventionCost As Double ' Cost for the runs given 
     Private InventionTime As Double ' Total time in seconds to invent this bp
     Private InventionUsage As Double ' Total cost to do this activity in a facility
@@ -378,7 +377,6 @@ Public Class Blueprint
         CopyTime = 0
         CopyUsage = 0
 
-        TotalInventionCost = 0
         InventionTime = 0
         InventionUsage = 0
 
@@ -2156,10 +2154,10 @@ SkipProcessing:
         Dim NumInventionSessions As Integer = 0 ' How many sessions (runs per set of lines) ie. 10 runs 5 lines = 2 sessions
 
         ' First select the datacores needed
-        SQL = "Select MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
+        SQL = "SELECT MATERIAL_ID, MATERIAL, MATERIAL_CATEGORY, QUANTITY, MATERIAL_VOLUME, PRICE, MATERIAL_GROUP "
         SQL &= "FROM ALL_BLUEPRINT_MATERIALS LEFT OUTER JOIN ITEM_PRICES_FACT On ALL_BLUEPRINT_MATERIALS.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
         SQL &= "WHERE BLUEPRINT_ID = " & InventionBPCTypeID & " And PRODUCT_ID = " & BlueprintID & " "
-        SQL &= "And ACTIVITY = 8 And MATERIAL_GROUP = 'Datacores'"
+        SQL &= "AND ACTIVITY = 8 And MATERIAL_GROUP = 'Datacores'"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -2195,6 +2193,25 @@ SkipProcessing:
 
             readerCost.Close()
 
+        ElseIf TechLevel = BPTechLevel.T2 Then
+            SQL = "SELECT typeName, PRICE FROM INVENTORY_TYPES "
+            SQL &= "LEFT OUTER JOIN ITEM_PRICES ON typeID = ITEM_ID "
+            SQL &= "WHERE typeID = " & CStr(InventionBPCTypeID)
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerBP = DBCommand.ExecuteReader()
+            readerBP.Read()
+
+            If Not IsNothing(readerBP.GetValue(0)) Then
+                Dim Price As Double = 0
+                If Not IsNothing(readerBP.GetValue(1)) Then
+                    Price = readerBP.GetDouble(1)
+                End If
+                ' Add the T2 blueprint and cost
+                Dim TempMat = New Material(InventionBPCTypeID, readerBP.GetString(0) & " Copy", "Blueprint", 1, 0.1, Price, "", "")
+                SingleInventionMats.InsertMaterial(TempMat)
+            End If
+            readerBP.Close()
         End If
 
         ' Get and set the invention chance
@@ -2294,7 +2311,8 @@ SkipProcessing:
         ' Finally set the total invention cost for just inventing
         If IncludeInventionCosts Then
 
-            ' Before updating the materials, use the cost of a single run to determine a single run invention cost. This is an accurate cost based on the probability of success with a large number of runs
+            ' Before updating the materials, use the cost of a single run to determine a single run invention cost. 
+            ' This Is an accurate cost based on the probability of success with a large number of runs
             PerInventionRunCost = (SingleInventionMats.GetTotalMaterialsCost() / InventionChance) / SingleInventedBPCRuns
 
             ' Update the invention mats to reflect the number of invention runs we will do and save into the final list
@@ -2306,23 +2324,6 @@ SkipProcessing:
             For i = 0 To SingleInventionMats.GetMaterialList.Count - 1
                 InventionMaterials.InsertMaterial(SingleInventionMats.GetMaterialList(i))
             Next
-
-            ' Insert the BPC used
-            If TechLevel = BPTechLevel.T2 Then
-                SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(InventionBPCTypeID)
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerBP = DBCommand.ExecuteReader()
-                readerBP.Read()
-
-                If Not IsNothing(readerBP.GetValue(0)) Then
-                    Dim TempMat = New Material(InventionBPCTypeID, readerBP.GetString(0) & " Copy", "Blueprint", 1, 0.1, 0, "", "")
-                    InventionMaterials.InsertMaterial(TempMat)
-                End If
-                readerBP.Close()
-            End If
-
-            TotalInventionCost = InventionMaterials.GetTotalMaterialsCost
 
         End If
 

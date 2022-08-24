@@ -146,6 +146,7 @@ Public Class EVEAssets
     Public Sub UpdateAssets(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData,
                             ByVal AssetType As ScanType, ByVal UpdateAssets As Boolean)
         Dim Assets As New List(Of ESIAsset)
+        Dim AssetIDs As New List(Of Double) ' For getting names
         Dim SQL As String = ""
 
         Dim ESIData As New ESI
@@ -196,19 +197,33 @@ Public Class EVEAssets
                             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                         End If
+
+                        ' Save the ID for looking up the names
+                        Call AssetIDs.Add(Assets(i).item_id)
+
                     Next
 
-                    ' Finally, update all the asset flags to negative values if they are base nodes
+                    ' Update all the asset flags to negative values if they are base nodes
                     SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    Call EVEDB.CommitSQLiteTransaction()
+                    '' Finally, get all the names and update the Assets table
+                    'Dim AssetItemNames As New List(Of ESICharacterAssetName)
+                    'AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
 
+                    '' Update the names in the asset table for each itemID
+                    'For Each item In AssetItemNames
+                    '    If item.name <> None Then
+                    '        Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE ItemID=" & CStr(item.item_id))
+                    '    End If
+                    'Next
+
+                    'Update cache date since it's all set now
+                    Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+
+                    Call EVEDB.CommitSQLiteTransaction()
                     DBCommand = Nothing
                 End If
-
-                ' Update cache date since it's all set now
-                Call CB.UpdateCacheDate(CDType, CacheDate, ID)
             End If
         End If
 
