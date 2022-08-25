@@ -7492,8 +7492,14 @@ ExitForm:
         chkPlanetary.Checked = BoolToggle
         chkRawMaterials.Checked = BoolToggle
         chkSalvage.Checked = BoolToggle
-        chkBPCs.Checked = BoolToggle
         chkMisc.Checked = BoolToggle
+
+        ' Checked only lets the refresh with data currently in the list
+        If BoolToggle Then
+            chkBPCs.Checked = True
+        Else
+            chkBPCs.Checked = False
+        End If
 
         chkAncientRelics.Checked = BoolToggle
         chkDatacores.Checked = BoolToggle
@@ -8140,7 +8146,7 @@ ExitForm:
             chkRawMaterials.Checked = .RawMaterials
             chkSalvage.Checked = .Salvage
             chkMisc.Checked = .Misc
-            chkBPCs.Checked = .BPCs
+            'chkBPCs.Checked = .BPCs ' No longer set unless they physically check it and run update
 
             chkAncientRelics.Checked = .AncientRelics
             chkDatacores.Checked = .Datacores
@@ -8376,7 +8382,7 @@ ExitForm:
             .RawMaterials = chkRawMaterials.Checked
             .Salvage = chkSalvage.Checked
             .Misc = chkMisc.Checked
-            .BPCs = chkBPCs.Checked
+            ' .BPCs = chkBPCs.Checked
 
             .AncientRelics = chkAncientRelics.Checked
             .Datacores = chkDatacores.Checked
@@ -9855,7 +9861,7 @@ ExitSub:
             ItemChecked = True
         End If
 
-        ' Misc and Blueprints
+        ' Blueprints
         If chkBPCs.Checked Then
             SQL &= "ITEM_CATEGORY = 'Blueprint' OR "
             ItemChecked = True
@@ -18416,6 +18422,7 @@ Leave:
             chkMineGallente.Checked = .CheckSovGallente
             chkMineMinmatar.Checked = .CheckSovMinmatar
             chkMineTriglavian.Checked = .CheckSovTriglavian
+            chkMineEdenCom.Checked = .CheckEDENCOM
 
             chkMineC1.Checked = .CheckSovC1
             chkMineC2.Checked = .CheckSovC2
@@ -19619,6 +19626,7 @@ Leave:
             .CheckSovTriglavian = chkMineTriglavian.Checked
             .CheckSovWormhole = chkMineWH.Checked
             .CheckSovMoon = chkMineMoonMining.Checked
+            .CheckEDENCOM = chkMineEdenCom.Checked
 
             .CheckSovC1 = chkMineC1.Checked
             .CheckSovC2 = chkMineC2.Checked
@@ -21228,6 +21236,10 @@ ProcExit:
             m3YieldperCycle *= (1 + (BaseShipBonus / 100))
             m3YieldperCycle *= (1 + (AdvancedShipBonus / 100))
             m3YieldperCycle *= RoleBonus
+
+            If chkMineEdenCom.Checked Then
+                m3YieldperCycle *= 1.1
+            End If
 
             Return m3YieldperCycle
 

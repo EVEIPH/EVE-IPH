@@ -131,6 +131,7 @@ Partial Class frmMain
         Me.ttDatacores = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttReactions = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttMining = New System.Windows.Forms.ToolTip(Me.components)
+        Me.chkMineEdenCom = New System.Windows.Forms.CheckBox()
         Me.ttPI = New System.Windows.Forms.ToolTip(Me.components)
         Me.CalcImageList = New System.Windows.Forms.ImageList(Me.components)
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
@@ -1116,6 +1117,7 @@ Partial Class frmMain
         Me.mnuItemUpdatePrices.Name = "mnuItemUpdatePrices"
         Me.mnuItemUpdatePrices.Size = New System.Drawing.Size(173, 22)
         Me.mnuItemUpdatePrices.Text = "Prices"
+        Me.mnuItemUpdatePrices.Visible = False
         '
         'SetPOSDataToolStripMenuItem
         '
@@ -1700,6 +1702,17 @@ Partial Class frmMain
         Me.rbtnPriceSourceFW.Text = "FW"
         Me.ttUpdatePrices.SetToolTip(Me.rbtnPriceSourceFW, "Fuzzworks")
         Me.rbtnPriceSourceFW.UseVisualStyleBackColor = True
+        '
+        'chkMineEdenCom
+        '
+        Me.chkMineEdenCom.AutoSize = True
+        Me.chkMineEdenCom.Location = New System.Drawing.Point(119, 75)
+        Me.chkMineEdenCom.Name = "chkMineEdenCom"
+        Me.chkMineEdenCom.Size = New System.Drawing.Size(117, 17)
+        Me.chkMineEdenCom.TabIndex = 7
+        Me.chkMineEdenCom.Text = "EDENCOM System"
+        Me.ttMining.SetToolTip(Me.chkMineEdenCom, "10% mining bonus when mining in an EDENCOM System")
+        Me.chkMineEdenCom.UseVisualStyleBackColor = True
         '
         'CalcImageList
         '
@@ -3727,6 +3740,7 @@ Partial Class frmMain
         '
         'gbMineOreLocSov
         '
+        Me.gbMineOreLocSov.Controls.Add(Me.chkMineEdenCom)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineMoonMining)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineTriglavian)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineWH)
@@ -7379,6 +7393,7 @@ Partial Class frmMain
         Me.chkBPCs.Size = New System.Drawing.Size(102, 17)
         Me.chkBPCs.TabIndex = 19
         Me.chkBPCs.Text = "Blueprint Copies"
+        Me.chkBPCs.ThreeState = True
         Me.chkBPCs.UseVisualStyleBackColor = True
         '
         'chkRawMaterials
@@ -11349,4 +11364,5 @@ Partial Class frmMain
     Friend WithEvents chkOreProcessing12 As CheckBox
     Friend WithEvents mnuMETECalculator As ToolStripMenuItem
     Friend WithEvents rbtnPriceSourceFW As RadioButton
+    Friend WithEvents chkMineEdenCom As CheckBox
 End Class

@@ -68,7 +68,6 @@ Public Module Public_Variables
     ' Only request ESI scopes I need - if I add a scope, the user will need to re-authorize for the new scopes.
     Public ESIScopesString As String = ""
 
-    ' Just because
     Public Const TheForgeTypeID As Long = 10000002
     Public Const JitaPerimeter As String = "Jita/Perimeter"
 

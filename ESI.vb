@@ -1963,6 +1963,200 @@ Public Class ESI
 
     End Function
 
+    ' Downloads all public contracts for the Region ID sent
+    Public Function UpdatePublicContracts(ByVal RegionID As Long, Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+
+        Try
+            Dim TempLabel As Label
+            Dim TempPB As ProgressBar
+
+            Dim PublicData As String
+            Dim ContractData As New List(Of ESIContract)
+            Dim CB As New CacheBox
+            Dim CacheDate As Date
+            Dim SQL As String
+
+            Dim Threads As New ThreadingArray
+
+            If IsNothing(UpdateLabel) Then
+                TempLabel = New Label
+            Else
+                TempLabel = UpdateLabel
+            End If
+
+            If IsNothing(PB) Then
+                TempPB = New ProgressBar
+            Else
+                TempPB = PB
+            End If
+
+            If CB.DataUpdateable(CacheDateType.PublicContracts) Then
+
+                TempLabel.Text = "Downloading Public Contracts..."
+                Application.DoEvents()
+
+                ' Get all the contracts for the selected region
+                PublicData = GetPublicData(ESIURL & "contracts/public/" & CStr(RegionID) & "/" & TranquilityDataSource, CacheDate)
+
+                If Not IsNothing(PublicData) Then
+                    ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContract))(PublicData)
+
+                    If Not IsNothing(ContractData) Then
+                        If ContractData.Count > 0 Then
+
+                            Call EVEDB.BeginSQLiteTransaction()
+
+                            ' Reset the data
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACTS")
+
+                            ' Set the labels and progress bar if needed
+                            TempLabel.Text = "Saving Public Contracts..."
+                            TempPB.Minimum = 0
+                            TempPB.Maximum = ContractData.Count - 1
+                            TempPB.Visible = True
+
+                            ' Save all the contracts
+                            For Each contract In ContractData
+                                Application.DoEvents()
+                                ' Insert the new record
+                                With contract
+                                    ' Only add item exchange - auction prices are in the bids esi (if any) and not final, and couriers aren't helpful for prices
+                                    ' Also, only items with 0 reward and greater than 0 price, meaning these are not want_to_buy orders - only sell, which won't give money back (alternately we could look at is_included)
+                                    ' on the items data, but this is the best for now with just the base contract order
+                                    If .contract_type = "item_exchange" And .reward = 0 And .price > 0 Then
+                                        SQL = "INSERT INTO PUBLIC_CONTRACTS VALUES (" & CStr(.contract_id) & "," & CStr(.collateral) & ",'" & FormatESIDate(.date_expired) & "','"
+                                        SQL &= FormatESIDate(.date_issued) & "'," & CStr(.days_to_complete) & "," & CStr(.end_location_id) & "," & CStr(.issuer_corporation_id) & ","
+                                        SQL &= CStr(.issuer_id) & "," & CStr(.price) & "," & CStr(.reward) & "," & CStr(.start_location_id) & ",'" & FormatDBString(.title) & "','"
+                                        SQL &= .contract_type & "'," & CStr(.volume) & "," & CStr(RegionID) & ")"
+
+                                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                    End If
+                                End With
+                                Call IncrementProgressBar(TempPB)
+                            Next
+                            TempPB.Visible = False
+                            TempLabel.Text = ""
+
+                            ' Reset the data
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACT_ITEMS")
+
+                            ' Set the label and progress bar
+                            TempLabel.Text = "Saving Public Contract Data..."
+                            TempPB.Minimum = 0
+                            TempPB.Maximum = ContractData.Count - 1
+                            TempPB.Visible = True
+
+                            Dim Params As UpdatePCIParameters
+                            Params.RefPG = TempPB
+
+                            For Each contract In ContractData
+                                Params.ContractID = CStr(contract.contract_id)
+                                ' Launch each item update as a thread
+                                Dim UPCI As New Thread(AddressOf UpdatePublicContractItems)
+                                UPCI.Start(Params)
+
+                                ' Save the thread 
+                                Threads.AddThread(UPCI)
+                            Next
+
+                            ' Wait until all threads are done
+                            While Not Threads.Complete
+                                Application.DoEvents()
+                            End While
+
+                            ' Make sure all threads are not running
+                            Call Threads.StopAllThreads()
+                            ' Reset the error handler
+                            ESIErrorHandler = New ESIErrorProcessor
+                            TempPB.Visible = False
+                            TempLabel.Text = ""
+
+                            ' All set, update cache date before leaving
+                            Call CB.UpdateCacheDate(CacheDateType.PublicContracts, CacheDate)
+
+                            ' Done updating 
+                            Call EVEDB.CommitSQLiteTransaction()
+
+                            Return True
+
+                        End If
+                    End If
+                End If
+
+                ' Data didn't download
+                Return False
+            End If
+
+            Return True
+
+        Catch ex As Exception
+            MsgBox("Failed to update public contract data: " & ex.Message, vbInformation, Application.ProductName)
+            Call EVEDB.CommitSQLiteTransaction()
+
+            Return False
+
+        End Try
+
+    End Function
+
+    Private Structure UpdatePCIParameters
+        Dim ContractID As String
+        Dim RefPG As ProgressBar
+    End Structure
+
+    ' Downloads all items on the contract ID sent (Public contract)
+    Private Function UpdatePublicContractItems(ByVal UpdateParameters As Object) As Boolean
+
+        Try
+            Dim PublicData As String
+            Dim ContractData As New List(Of ESIContractItem)
+            Dim Threads As New ThreadingArray
+            Dim CB As New CacheBox
+            Dim CacheDate As Date
+            Dim SQL As String
+            Dim Parameters As UpdatePCIParameters = CType(UpdateParameters, UpdatePCIParameters)
+
+            PublicData = GetPublicData(ESIURL & "contracts/public/items/" & Parameters.ContractID & "/" & TranquilityDataSource, CacheDate)
+
+            If Not IsNothing(PublicData) Then
+                ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContractItem))(PublicData)
+
+                If Not IsNothing(ContractData) Then
+                    If ContractData.Count > 0 Then
+
+                        ' Save all the contract items for this contract
+                        For Each contract In ContractData
+                            Application.DoEvents()
+                            ' Insert the new record
+                            With contract
+                                SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & Parameters.ContractID & "," & CStr(.is_included) & "," & CStr(.item_id) & ","
+                                SQL &= CStr(.quantity) & "," & CStr(.record_id) & "," & CStr(.type_id) & "," & CStr(.is_blueprint_copy) & "," & CStr(.material_efficiency) & ","
+                                SQL &= CStr(.time_efficiency) & "," & CStr(.runs) & ")"
+
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                            End With
+                        Next
+
+                        Call IncrementProgressBar(Parameters.RefPG)
+
+                        ' Done
+                        Return True
+
+                    End If
+                End If
+            End If
+
+            Return False
+
+        Catch ex As Exception
+            ' Ignore errors
+            Return False
+        End Try
+
+    End Function
+
+
 #End Region
 
 #Region "Supporting Functions"
@@ -2114,7 +2308,11 @@ Public Class ESIErrorProcessor
             Exit Sub
         End If
 
-        If ErrorCode = 404 And ErrorResponse = "Type not found!" Then
+        If ErrorCode = 404 And ErrorResponse = "Type not found!" Or ErrorResponse = "Contract not found" Then
+            Exit Sub
+        End If
+
+        If ErrorCode = 400 And ErrorResponse = "Contract is not an item exchange or auction" Then
             Exit Sub
         End If
 
@@ -2290,6 +2488,35 @@ Public Class ESIStatusItem
     <JsonProperty("route")> Public route As String
     <JsonProperty("status")> Public status As String
     <JsonProperty("tags")> Public tags As List(Of String)
+End Class
+
+Public Class ESIContract
+    <JsonProperty("collateral")> Public collateral As Double
+    <JsonProperty("contract_id")> Public contract_id As Long
+    <JsonProperty("date_expired")> Public date_expired As String
+    <JsonProperty("date_issued")> Public date_issued As String
+    <JsonProperty("days_to_complete")> Public days_to_complete As Integer
+    <JsonProperty("end_location_id")> Public end_location_id As Long
+    <JsonProperty("issuer_corporation_id")> Public issuer_corporation_id As Long
+    <JsonProperty("issuer_id")> Public issuer_id As Long
+    <JsonProperty("price")> Public price As Double
+    <JsonProperty("reward")> Public reward As Double
+    <JsonProperty("start_location_id")> Public start_location_id As Long
+    <JsonProperty("title")> Public title As String
+    <JsonProperty("type")> Public contract_type As String
+    <JsonProperty("volume")> Public volume As Double
+End Class
+
+Public Class ESIContractItem
+    <JsonProperty("is_included")> Public is_included As Boolean
+    <JsonProperty("item_id")> Public item_id As Double
+    <JsonProperty("quantity")> Public quantity As Long
+    <JsonProperty("record_id")> Public record_id As Long
+    <JsonProperty("type_id")> Public type_id As Long
+    <JsonProperty("is_blueprint_copy")> Public is_blueprint_copy As Boolean
+    <JsonProperty("material_efficiency")> Public material_efficiency As Integer
+    <JsonProperty("runs")> Public runs As Integer
+    <JsonProperty("time_efficiency")> Public time_efficiency As Integer
 End Class
 
 Public Class ESIError

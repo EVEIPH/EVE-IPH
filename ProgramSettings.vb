@@ -353,6 +353,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckSovGallente As Boolean = True
     Public DefaultMiningCheckSovMinmatar As Boolean = True
     Public DefaultMiningCheckSovTriglavian As Boolean = True
+    Public DefaultMiningCheckEDENCOM As Boolean = False
     Public DefaultMiningCheckSovWormhole As Boolean = True
     Public DefaultMiningCheckSovMoon As Boolean = True
     Public DefaultMiningCheckSovC1 As Boolean = True
@@ -2569,6 +2570,7 @@ Public Class ProgramSettings
                     .CheckSovGallente = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovGallente", DefaultMiningCheckSovGallente))
                     .CheckSovMinmatar = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovMinmatar", DefaultMiningCheckSovMinmatar))
                     .CheckSovTriglavian = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovTriglavian", DefaultMiningCheckSovTriglavian))
+                    .CheckEDENCOM = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckEDENCOM", DefaultMiningCheckEDENCOM))
                     .CheckIncludeFees = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeFees", DefaultMiningCheckIncludeFees))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeDouble, MiningSettingsFileName, "BrokerFeeRate", DefaultMiningBrokerFeeRate))
                     .CheckIncludeTaxes = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckIncludeTaxes", DefaultMiningCheckIncludeTaxes))
@@ -2692,6 +2694,7 @@ Public Class ProgramSettings
             .CheckSovGallente = DefaultMiningCheckSovGallente
             .CheckSovMinmatar = DefaultMiningCheckSovMinmatar
             .CheckSovTriglavian = DefaultMiningCheckSovTriglavian
+            .CheckEDENCOM = DefaultMiningCheckEDENCOM
             .CheckSovWormhole = DefaultMiningCheckSovWormhole
             .CheckSovMoon = DefaultMiningCheckSovMoon
             .CheckSovC1 = DefaultMiningCheckSovC1
@@ -2794,7 +2797,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(97) As Setting
+        Dim MiningSettingsList(98) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2904,6 +2907,8 @@ Public Class ProgramSettings
             MiningSettingsList(95) = New Setting("CrystalTypeA", CStr(SentSettings.CrystalTypeA))
             MiningSettingsList(96) = New Setting("CrystalTypeB", CStr(SentSettings.CrystalTypeB))
             MiningSettingsList(97) = New Setting("CrystalTypeC", CStr(SentSettings.CrystalTypeC))
+
+            MiningSettingsList(98) = New Setting("CheckEDENCOM", CStr(SentSettings.CheckEDENCOM))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5764,6 +5769,7 @@ Public Structure MiningTabSettings
     Dim CheckSovTriglavian As Boolean
     Dim CheckSovWormhole As Boolean
     Dim CheckSovMoon As Boolean
+    Dim CheckEDENCOM As Boolean
     Dim CheckSovC1 As Boolean
     Dim CheckSovC2 As Boolean
     Dim CheckSovC3 As Boolean
