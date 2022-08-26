@@ -23,7 +23,7 @@ Public Class CacheBox
 
             If Not rsCheck.HasRows Then
                 ' Insert a record
-                EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_PUBLIC_CACHE_DATES VALUES (NULL,NULL,NULL,NULL)")
+                EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_PUBLIC_CACHE_DATES VALUES (NULL,NULL,NULL,NULL,NULL)")
             End If
             rsCheck.Close()
         End If

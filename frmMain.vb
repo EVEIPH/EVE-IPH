@@ -18416,6 +18416,7 @@ Leave:
             chkMineGallente.Checked = .CheckSovGallente
             chkMineMinmatar.Checked = .CheckSovMinmatar
             chkMineTriglavian.Checked = .CheckSovTriglavian
+            chkMineEDENCOM.Checked = .CheckEDENCOM
 
             chkMineC1.Checked = .CheckSovC1
             chkMineC2.Checked = .CheckSovC2
@@ -19617,6 +19618,7 @@ Leave:
             .CheckSovGallente = chkMineGallente.Checked
             .CheckSovMinmatar = chkMineMinmatar.Checked
             .CheckSovTriglavian = chkMineTriglavian.Checked
+            .CheckEDENCOM = chkMineEDENCOM.Checked
             .CheckSovWormhole = chkMineWH.Checked
             .CheckSovMoon = chkMineMoonMining.Checked
 
@@ -21228,6 +21230,10 @@ ProcExit:
             m3YieldperCycle *= (1 + (BaseShipBonus / 100))
             m3YieldperCycle *= (1 + (AdvancedShipBonus / 100))
             m3YieldperCycle *= RoleBonus
+
+            If chkMineEDENCOM.Checked Then
+                m3YieldperCycle *= 1.1
+            End If
 
             Return m3YieldperCycle
 
