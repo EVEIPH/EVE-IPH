@@ -131,7 +131,7 @@ Partial Class frmMain
         Me.ttDatacores = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttReactions = New System.Windows.Forms.ToolTip(Me.components)
         Me.ttMining = New System.Windows.Forms.ToolTip(Me.components)
-        Me.chkMineEdenCom = New System.Windows.Forms.CheckBox()
+        Me.chkMineEDENCOM = New System.Windows.Forms.CheckBox()
         Me.ttPI = New System.Windows.Forms.ToolTip(Me.components)
         Me.CalcImageList = New System.Windows.Forms.ImageList(Me.components)
         Me.cmbEdit = New System.Windows.Forms.ComboBox()
@@ -939,7 +939,6 @@ Partial Class frmMain
         Me.CalcBoostersFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.CalcReactionsFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.MineRefineFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
-        Me.chkMineEDENCOM = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout()
         Me.pnlMain.SuspendLayout()
         Me.ListOptionsMenu.SuspendLayout()
@@ -1704,17 +1703,7 @@ Partial Class frmMain
         Me.ttUpdatePrices.SetToolTip(Me.rbtnPriceSourceFW, "Fuzzworks")
         Me.rbtnPriceSourceFW.UseVisualStyleBackColor = True
         '
-        'chkMineEdenCom
-        '
-        Me.chkMineEdenCom.AutoSize = True
-        Me.chkMineEdenCom.Location = New System.Drawing.Point(119, 75)
-        Me.chkMineEdenCom.Name = "chkMineEdenCom"
-        Me.chkMineEdenCom.Size = New System.Drawing.Size(117, 17)
-        Me.chkMineEdenCom.TabIndex = 7
-        Me.chkMineEdenCom.Text = "EDENCOM System"
-        Me.ttMining.SetToolTip(Me.chkMineEdenCom, "10% mining bonus when mining in an EDENCOM System")
-        Me.chkMineEdenCom.UseVisualStyleBackColor = True
-        '
+
         'CalcImageList
         '
         Me.CalcImageList.ImageStream = CType(resources.GetObject("CalcImageList.ImageStream"), System.Windows.Forms.ImageListStreamer)
@@ -3733,7 +3722,7 @@ Partial Class frmMain
         '
         'gbMineOreLocSov
         '
-        Me.gbMineOreLocSov.Controls.Add(Me.chkMineEdenCom)
+        Me.gbMineOreLocSov.Controls.Add(Me.chkMineEDENCOM)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineMoonMining)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineTriglavian)
         Me.gbMineOreLocSov.Controls.Add(Me.chkMineWH)
@@ -10226,17 +10215,6 @@ Partial Class frmMain
         Me.MineRefineFacility.Size = New System.Drawing.Size(303, 108)
         Me.MineRefineFacility.TabIndex = 122
         '
-        'chkMineEDENCOM
-        '
-        Me.chkMineEDENCOM.AutoSize = True
-        Me.chkMineEDENCOM.Location = New System.Drawing.Point(119, 75)
-        Me.chkMineEDENCOM.Name = "chkMineEDENCOM"
-        Me.chkMineEDENCOM.Size = New System.Drawing.Size(117, 17)
-        Me.chkMineEDENCOM.TabIndex = 7
-        Me.chkMineEDENCOM.Text = "EDENCOM System"
-        Me.ttMining.SetToolTip(Me.chkMineEDENCOM, "Mining in an EDENCOM system provides 10% mining bonus.")
-        Me.chkMineEDENCOM.UseVisualStyleBackColor = True
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11376,5 +11354,5 @@ Partial Class frmMain
     Friend WithEvents chkOreProcessing12 As CheckBox
     Friend WithEvents mnuMETECalculator As ToolStripMenuItem
     Friend WithEvents rbtnPriceSourceFW As RadioButton
-    Friend WithEvents chkMineEdenCom As CheckBox
+    Friend WithEvents chkMineEDENCOM As CheckBox
 End Class
