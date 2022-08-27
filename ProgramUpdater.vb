@@ -63,6 +63,8 @@ Public Class ProgramUpdater
         Dim UpdaterServerFileURL As String = ""
         Dim UpdaterServerFileMD5 As String = ""
 
+        Dim LaunchSQLiteDLLUpdater As Boolean = False
+
         Dim fi As FileInfo
 
         On Error GoTo DownloadError
@@ -75,20 +77,27 @@ Public Class ProgramUpdater
         m_nodelist = m_xmld.SelectNodes("/EVEIPH/result/rowset/row")
 
         ' Loop through the nodes and find the MD5 and download URL for the updater and any other files necessary to load and run the updater program
+        ' Below for the dll updates, if I push new ones, put in this fix to launch a small copy program to copy the files over since it will error if they are used by the applications
         For Each m_node In m_nodelist
             Select Case m_node.Attributes.GetNamedItem("Name").Value
-                Case UpdaterFileName, "System.Data.SQLite.dll", "SQLite.Interop.dll"
+                Case UpdaterFileName
                     ' Add the file to the update list 
                     TempUpdateFile.MD5 = m_node.Attributes.GetNamedItem("MD5").Value
                     TempUpdateFile.URL = m_node.Attributes.GetNamedItem("URL").Value
                     TempUpdateFile.FileName = m_node.Attributes.GetNamedItem("Name").Value
                     UpdateFiles.Add(TempUpdateFile)
+                    'Case "System.Data.SQLite.dll", "SQLite.Interop.dll"
+                    '    ' These require a quick copy over first before launching the updater (which presumably will use the same libraries)
+                    '    ' Check MD5 hash and if different, copy
+                    '    If m_node.Attributes.GetNamedItem("MD5").Value <> MD5CalcFile(Path.Combine(DynamicFilePath, m_node.Attributes.GetNamedItem("Name").Value)) Then
+                    '        ' If either or doesn't match, update both because they are dependent files
+                    '        LaunchSQLiteDLLUpdater = True
+                    '    End If
             End Select
         Next
 
-        ' Download the two files if necessary
+        ' Download the updater file if needed
         For Each UpdateFile In UpdateFiles
-            ' Download each file needed
             If DownloadUpdatedFile(UpdateFile.MD5, UpdateFile.URL, UpdateFile.FileName) = "Download Error" Then
                 GoTo DownloadError
             End If
@@ -98,10 +107,16 @@ Public Class ProgramUpdater
         ' Don't delete the update file or folder (it will get deleted on startup of this or updater anyway
         ' Perserve the old XML file until we finish the updater - if only the updater needs to be updated, 
         ' then it will copy over the new xml file when it closes
-
-        ' Open the updater
         Dim Proc As New Process
-        Proc.StartInfo.FileName = Path.Combine(DynamicFilePath, UpdaterFileName)
+
+        If LaunchSQLiteDLLUpdater Then
+            ' Need to launch the DLL copy process first, then it will launch the updater - this is needed if the file is locked by the programs using it
+            Proc.StartInfo.FileName = Path.Combine(DynamicFilePath, SQLiteDLLUpdater)
+        Else
+            ' Launch the updater process only
+            Proc.StartInfo.FileName = Path.Combine(DynamicFilePath, UpdaterFileName)
+        End If
+
         Proc.StartInfo.WindowStyle = ProcessWindowStyle.Normal
         Proc.StartInfo.Arguments = Path.GetDirectoryName(Application.ExecutablePath)
         Proc.Start()
