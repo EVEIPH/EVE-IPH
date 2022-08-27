@@ -5767,9 +5767,9 @@ Public Structure MiningTabSettings
     Dim CheckSovGallente As Boolean
     Dim CheckSovMinmatar As Boolean
     Dim CheckSovTriglavian As Boolean
+    Dim CheckEDENCOM As Boolean
     Dim CheckSovWormhole As Boolean
     Dim CheckSovMoon As Boolean
-    Dim CheckEDENCOM As Boolean
     Dim CheckSovC1 As Boolean
     Dim CheckSovC2 As Boolean
     Dim CheckSovC3 As Boolean

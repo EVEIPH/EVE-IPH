@@ -19624,9 +19624,9 @@ Leave:
             .CheckSovGallente = chkMineGallente.Checked
             .CheckSovMinmatar = chkMineMinmatar.Checked
             .CheckSovTriglavian = chkMineTriglavian.Checked
+            .CheckEDENCOM = chkMineEdenCom.Checked
             .CheckSovWormhole = chkMineWH.Checked
             .CheckSovMoon = chkMineMoonMining.Checked
-            .CheckEDENCOM = chkMineEdenCom.Checked
 
             .CheckSovC1 = chkMineC1.Checked
             .CheckSovC2 = chkMineC2.Checked

@@ -2297,8 +2297,8 @@ SkipItem:
         Dim InventItemTypeID As Long = 0
 
         ' What is the item we are using to invent?
-        SQL = "Select blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
-        SQL &= "And typeID = blueprintTypeID And activityID = 8"
+        SQL = "SELECT blueprintTypeID from INDUSTRY_ACTIVITY_PRODUCTS, INVENTORY_TYPES WHERE productTypeID = " & BlueprintTypeID & " "
+        SQL &= "AND typeID = blueprintTypeID And activityID = 8"
 
         If RelicName <> "" Then
             ' Need to add the relic variant to the query for just one item

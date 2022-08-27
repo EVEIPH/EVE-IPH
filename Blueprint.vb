@@ -1007,8 +1007,13 @@ Public Class Blueprint
 
                 IgnoreBuild = False
 
+                ' For molecular forged materials, these are reactions but are like advanced T2 components, so don't build them if advanced selected to match other components
+                If T2T3MaterialType = BuildMatType.AdvMaterials And CurrentMaterialGroupID = ItemIDs.ReactionMolecularForgedGroupID Then
+                    IgnoreBuild = True
+                End If
+
                 ' If this is an advanced composite reaction, and the advanced option is selected, then don't build anything and add as raw material
-                If ItemGroupID = ItemIDs.ReactionCompositesGroupID And T2T3MaterialType = BuildMatType.AdvMaterials Then
+                If (ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionMolecularForgedGroupID) And T2T3MaterialType = BuildMatType.AdvMaterials Then
                     IgnoreBuild = True
                 ElseIf (BlueprintName.Contains("Standard") Or BlueprintName.Contains("Synth")) And T2T3MaterialType = BuildMatType.ProcessedMaterials And CurrentMaterialGroupID <> ItemIDs.ReactionBiochemicalsGroupID Then
                     IgnoreBuild = True
@@ -1020,7 +1025,7 @@ Public Class Blueprint
 
                 ' See what material type this is and if we want to build it (reactions)
                 Select Case CurrentMaterialGroupID
-                    Case ItemIDs.ReactionCompositesGroupID
+                    Case ItemIDs.ReactionCompositesGroupID, ItemIDs.ReactionMolecularForgedGroupID
                         If T2T3MaterialType = BuildMatType.ProcessedMaterials Or T2T3MaterialType = BuildMatType.RawMaterials Then
                             UsesReactions = True
                         End If
@@ -1043,7 +1048,7 @@ Public Class Blueprint
                 End Select
 
                 If Not UsesReactions Then
-                    SQLAdd = " AND BLUEPRINT_GROUP_ID NOT IN (1888,1889,1890)"
+                    SQLAdd = " AND BLUEPRINT_GROUP_ID NOT IN (1888,1889,1890,4097)"
                 Else
                     SQLAdd = ""
                 End If
