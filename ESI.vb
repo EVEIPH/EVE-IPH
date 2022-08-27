@@ -1226,7 +1226,7 @@ Public Class ESI
                 While Not Threads.Complete
                     ' Update the progress bar with current count every time we check (only if we finished at least one run)
                     If StructureCount > PrevCount Then
-                        Call IncrementToolStripProgressBar(StructureCount, refPG)
+                        Call IncrementToolStripProgressBarCounter(StructureCount, refPG)
                     End If
                     PrevCount = StructureCount
                     Application.DoEvents()
@@ -1267,7 +1267,7 @@ Public Class ESI
     End Structure
 
     ' Updates the class referenced toolbar 
-    Private Sub IncrementToolStripProgressBar(inValue As Integer, ByRef PG As ToolStripProgressBar)
+    Private Sub IncrementToolStripProgressBarCounter(inValue As Integer, ByRef PG As ToolStripProgressBar)
 
         If IsNothing(PG) Then
             Exit Sub
@@ -1964,32 +1964,31 @@ Public Class ESI
     End Function
 
     ' Downloads all public contracts for the Region ID sent
-    Public Function UpdatePublicContracts(ByVal RegionID As Long, Optional ByRef UpdateLabel As Label = Nothing, Optional ByRef PB As ProgressBar = Nothing) As Boolean
+    Public Function UpdatePublicContracts(ByVal RegionID As String, Optional ByRef SP As ToolStripStatusLabel = Nothing, Optional ByRef PB As ToolStripProgressBar = Nothing) As Boolean
+        Dim TempPB As ToolStripProgressBar
+        Dim TempLabel As ToolStripStatusLabel
+
+        Dim PublicData As String
+        Dim ContractData As New List(Of ESIContract)
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
+        Dim SQL As String
+
+        Dim Threads As New ThreadingArray
+
+        If IsNothing(SP) Then
+            TempLabel = New ToolStripStatusLabel
+        Else
+            TempLabel = SP
+        End If
+
+        If IsNothing(PB) Then
+            TempPB = New ToolStripProgressBar
+        Else
+            TempPB = PB
+        End If
 
         Try
-            Dim TempLabel As Label
-            Dim TempPB As ProgressBar
-
-            Dim PublicData As String
-            Dim ContractData As New List(Of ESIContract)
-            Dim CB As New CacheBox
-            Dim CacheDate As Date
-            Dim SQL As String
-
-            Dim Threads As New ThreadingArray
-
-            If IsNothing(UpdateLabel) Then
-                TempLabel = New Label
-            Else
-                TempLabel = UpdateLabel
-            End If
-
-            If IsNothing(PB) Then
-                TempPB = New ProgressBar
-            Else
-                TempPB = PB
-            End If
-
             If CB.DataUpdateable(CacheDateType.PublicContracts) Then
 
                 TempLabel.Text = "Downloading Public Contracts..."
@@ -2032,7 +2031,7 @@ Public Class ESI
                                         Call EVEDB.ExecuteNonQuerySQL(SQL)
                                     End If
                                 End With
-                                Call IncrementProgressBar(TempPB)
+                                Call IncrementToolStripProgressBar(TempPB)
                             Next
                             TempPB.Visible = False
                             TempLabel.Text = ""
@@ -2043,20 +2042,18 @@ Public Class ESI
                             ' Set the label and progress bar
                             TempLabel.Text = "Saving Public Contract Data..."
                             TempPB.Minimum = 0
-                            TempPB.Maximum = ContractData.Count - 1
+                            TempPB.Value = 0
                             TempPB.Visible = True
-
-                            Dim Params As UpdatePCIParameters
-                            Params.RefPG = TempPB
+                            Application.DoEvents()
 
                             For Each contract In ContractData
-                                Params.ContractID = CStr(contract.contract_id)
                                 ' Launch each item update as a thread
                                 Dim UPCI As New Thread(AddressOf UpdatePublicContractItems)
-                                UPCI.Start(Params)
+                                UPCI.Start(contract.contract_id)
 
                                 ' Save the thread 
                                 Threads.AddThread(UPCI)
+                                Call IncrementToolStripProgressBar(TempPB)
                             Next
 
                             ' Wait until all threads are done
@@ -2084,6 +2081,8 @@ Public Class ESI
                 End If
 
                 ' Data didn't download
+                TempPB.Visible = False
+                TempLabel.Text = ""
                 Return False
             End If
 
@@ -2093,19 +2092,16 @@ Public Class ESI
             MsgBox("Failed to update public contract data: " & ex.Message, vbInformation, Application.ProductName)
             Call EVEDB.CommitSQLiteTransaction()
 
+            TempPB.Visible = False
+            TempLabel.Text = ""
             Return False
 
         End Try
 
     End Function
 
-    Private Structure UpdatePCIParameters
-        Dim ContractID As String
-        Dim RefPG As ProgressBar
-    End Structure
-
     ' Downloads all items on the contract ID sent (Public contract)
-    Private Function UpdatePublicContractItems(ByVal UpdateParameters As Object) As Boolean
+    Private Function UpdatePublicContractItems(ByVal SentContractID As Object) As Boolean
 
         Try
             Dim PublicData As String
@@ -2114,9 +2110,8 @@ Public Class ESI
             Dim CB As New CacheBox
             Dim CacheDate As Date
             Dim SQL As String
-            Dim Parameters As UpdatePCIParameters = CType(UpdateParameters, UpdatePCIParameters)
 
-            PublicData = GetPublicData(ESIURL & "contracts/public/items/" & Parameters.ContractID & "/" & TranquilityDataSource, CacheDate)
+            PublicData = GetPublicData(ESIURL & "contracts/public/items/" & CStr(SentContractID) & "/" & TranquilityDataSource, CacheDate)
 
             If Not IsNothing(PublicData) Then
                 ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContractItem))(PublicData)
@@ -2129,7 +2124,7 @@ Public Class ESI
                             Application.DoEvents()
                             ' Insert the new record
                             With contract
-                                SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & Parameters.ContractID & "," & CStr(.is_included) & "," & CStr(.item_id) & ","
+                                SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & CStr(SentContractID) & "," & CStr(.is_included) & "," & CStr(.item_id) & ","
                                 SQL &= CStr(.quantity) & "," & CStr(.record_id) & "," & CStr(.type_id) & "," & CStr(.is_blueprint_copy) & "," & CStr(.material_efficiency) & ","
                                 SQL &= CStr(.time_efficiency) & "," & CStr(.runs) & ")"
 
@@ -2137,8 +2132,6 @@ Public Class ESI
 
                             End With
                         Next
-
-                        Call IncrementProgressBar(Parameters.RefPG)
 
                         ' Done
                         Return True

@@ -1987,6 +1987,7 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
+        Application.DoEvents()
     End Sub
 
     ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
@@ -1996,6 +1997,7 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
+        Application.DoEvents()
     End Sub
 
     ' Checks for program updates

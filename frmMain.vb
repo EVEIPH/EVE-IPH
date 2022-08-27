@@ -7493,13 +7493,7 @@ ExitForm:
         chkRawMaterials.Checked = BoolToggle
         chkSalvage.Checked = BoolToggle
         chkMisc.Checked = BoolToggle
-
-        ' Checked only lets the refresh with data currently in the list
-        If BoolToggle Then
-            chkBPCs.Checked = True
-        Else
-            chkBPCs.Checked = False
-        End If
+        chkBPCs.Checked = BoolToggle
 
         chkAncientRelics.Checked = BoolToggle
         chkDatacores.Checked = BoolToggle
@@ -8146,8 +8140,14 @@ ExitForm:
             chkRawMaterials.Checked = .RawMaterials
             chkSalvage.Checked = .Salvage
             chkMisc.Checked = .Misc
-            'chkBPCs.Checked = .BPCs ' No longer set unless they physically check it and run update
-
+            Select Case .BPCs
+                Case 2
+                    chkBPCs.CheckState = CheckState.Indeterminate
+                Case 1
+                    chkBPCs.CheckState = CheckState.Checked
+                Case 0
+                    chkBPCs.CheckState = CheckState.Unchecked
+            End Select
             chkAncientRelics.Checked = .AncientRelics
             chkDatacores.Checked = .Datacores
             chkDecryptors.Checked = .Decryptors
@@ -8382,8 +8382,13 @@ ExitForm:
             .RawMaterials = chkRawMaterials.Checked
             .Salvage = chkSalvage.Checked
             .Misc = chkMisc.Checked
-            ' .BPCs = chkBPCs.Checked
-
+            If chkBPCs.CheckState = CheckState.Indeterminate Then
+                .BPCs = 2
+            ElseIf chkBPCs.CheckState = CheckState.Checked Then
+                .BPCs = 1
+            ElseIf chkBPCs.CheckState = CheckState.Unchecked Then
+                .BPCs = 0
+            End If
             .AncientRelics = chkAncientRelics.Checked
             .Datacores = chkDatacores.Checked
             .Decryptors = chkDecryptors.Checked
@@ -8675,6 +8680,7 @@ ExitForm:
         Dim TempItem As PriceItem
         Dim SearchRegion As String = ""
         Dim SearchSystem As String = ""
+        Dim BPCRegion As String = "" ' Region to use for BPC Contract price updates
         Dim SearchStructureID As String = ""
         Dim NumSystems As Integer = 0
 
@@ -8774,6 +8780,7 @@ ExitForm:
                 readerSystems = DBCommand.ExecuteReader
                 If readerSystems.Read Then
                     SearchRegion = CStr(readerSystems.GetValue(0))
+                    SearchSystem = ""
                 Else
                     MsgBox("Invalid Region Name", vbCritical, Application.ProductName)
                     GoTo ExitSub
@@ -8784,16 +8791,18 @@ ExitForm:
             ElseIf SystemSelected Then
                 If SearchSystem = JitaPerimeter Then
                     SearchSystem = "Jita"
+                    SearchRegion = CStr(TheForgeTypeID)
                 End If
 
                 ' Get the system ID string
-                SQL = "SELECT solarSystemID, regionName FROM SOLAR_SYSTEMS, REGIONS "
+                SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS, REGIONS "
                 SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerSystems = DBCommand.ExecuteReader
                 If readerSystems.Read Then
                     SearchSystem = CStr(readerSystems.GetValue(0))
+                    SearchRegion = CStr(readerSystems.GetValue(1))
                 Else
                     MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
                     GoTo ExitSub
@@ -8802,6 +8811,8 @@ ExitForm:
                 readerSystems.Close()
             End If
         End If
+
+        BPCRegion = SearchRegion
 
         ' Build the list of types we want to update and include the type, region/system
         For i = 0 To lstPricesView.Items.Count - 1
@@ -8856,6 +8867,7 @@ ExitForm:
                                     JitaPerimeterChecked = True
                                 Else
                                     JitaPerimeterChecked = False
+                                    TempItem.RegionID = CStr(rsPP.GetInt64(1))
                                     TempItem.SystemID = CStr(GetSolarSystemID(rsPP.GetString(2)))
                                 End If
                             End If
@@ -8864,12 +8876,13 @@ ExitForm:
                         rsPP.Close()
                     End If
 
-                    ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
+                    ' Add the item to the list if not there and it's not a blueprint since we'll look this up later
                     If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
                         If JitaPerimeterChecked Then
                             ' Add Jita first with flag
                             TempItem.JitaPerimeterPrice = True
                             TempItem.SystemID = JitaID
+                            TempItem.RegionID = CStr(TheForgeTypeID)
                             Items.Add(TempItem)
                             ' Perimeter will always be after Jita but add both temp items to get prices for both
                             Dim TempItem2 As New PriceItem
@@ -8882,12 +8895,18 @@ ExitForm:
                             Items.Add(TempItem)
                         End If
                     End If
+
+                    ' If this is the BPC profile, save the region they want used
+                    If TempItem.GroupName = "Blueprint Copies" Then
+                        BPCRegion = TempItem.RegionID
+                    End If
+
                 End If
             End If
         Next
 
         ' Load the prices
-        Call LoadPrices(Items)
+        Call LoadPrices(Items, BPCRegion)
 
 UpdateProgramPrices:
 
@@ -8934,7 +8953,7 @@ ExitSub:
     End Function
 
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem))
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPCRegionID As String)
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
@@ -9039,6 +9058,12 @@ ExitSub:
 
         End If
 
+        ' Blueprint Copies - if they have the intermediate selected for bpcs,
+        ' then update all the data from contracts for all BPCs from the region selected
+        If chkBPCs.CheckState = CheckState.Indeterminate Then
+            Call ESIData.UpdatePublicContracts(BPCRegionID, pnlStatus, pnlProgressBar) ' Contracts only available for a region
+        End If
+
         ' Working
         pnlStatus.Text = "Updating Item Prices..."
         RegionorSystemList = ""
@@ -9139,7 +9164,8 @@ ExitSub:
                     End If
                 End If
                 SQL &= " ORDER BY DateTime(UPDATEDATE) DESC"
-            Else
+
+            Else ' CCP Data pull
                 Dim LimittoBuy As Boolean = False
                 Dim LimittoSell As Boolean = False
                 Dim SystemID As String = ""
@@ -9152,7 +9178,7 @@ ExitSub:
                     RegionID = RegionorSystemList
                 End If
 
-                ' Get the data from ESI so we need to do some calcuations depending on the type they want
+                ' Got the data from ESI so we need to do some calcuations depending on the type they want
                 SQL = "SELECT "
                 Select Case PriceType
                     Case "buyAvg"
@@ -9475,7 +9501,7 @@ ExitSub:
                     ElseIf CN.Contains("Planetary") Or ITN = "Oxygen" Or ITN = "Water" Then
                         RGN = "Planetary Materials"
                     ElseIf CN = "Blueprint" Then
-                        RGN = "Blueprints"
+                        RGN = "Blueprint Copies"
                     ElseIf CN = "Ancient Relics" Then
                         RGN = "Ancient Relics"
                     ElseIf CN = "Deployable" Then
@@ -9861,9 +9887,9 @@ ExitSub:
             ItemChecked = True
         End If
 
-        ' Blueprints
+        ' Blueprint Copies
         If chkBPCs.Checked Then
-            SQL &= "ITEM_CATEGORY = 'Blueprint' OR "
+            SQL &= "ITEM_CATEGORY = 'Blueprint Copies' OR "
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel

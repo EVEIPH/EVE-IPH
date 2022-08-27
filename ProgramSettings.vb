@@ -203,6 +203,7 @@ Public Class ProgramSettings
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = True
+    Public DefaultBPCCheck As Integer = 1 ' Start with true
     Public DefaultPriceSystem As String = "Jita"
     Public DefaultPriceRegion As String = "The Forge"
     Public DefaultPriceRawMatsCombo As String = "Min Sell"
@@ -1749,7 +1750,7 @@ Public Class ProgramSettings
                     .RawMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMaterials", DefaultPriceChecks))
                     .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
                     .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
-                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
+                    .BPCs = CInt(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "BPCs", DefaultBPCCheck))
 
                     .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMoonMats", DefaultPriceChecks))
                     .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
@@ -1952,7 +1953,7 @@ Public Class ProgramSettings
             .RawMaterials = DefaultPriceChecks
             .Salvage = DefaultPriceChecks
             .Misc = DefaultPriceChecks
-            .BPCs = DefaultPriceChecks
+            .BPCs = DefaultBPCCheck
 
             .AdvancedMoonMats = DefaultPriceChecks
             .BoosterMats = DefaultPriceChecks
@@ -5520,7 +5521,7 @@ Public Structure UpdatePriceTabSettings
     Dim RawMaterials As Boolean
     Dim Salvage As Boolean
     Dim Misc As Boolean
-    Dim BPCs As Boolean
+    Dim BPCs As Integer ' Tri-check
 
     Dim AdvancedMoonMats As Boolean
     Dim BoosterMats As Boolean
