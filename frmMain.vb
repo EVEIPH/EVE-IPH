@@ -8666,6 +8666,7 @@ ExitForm:
 
         Dim RegionName As String = ""
         Dim Items As New List(Of PriceItem)
+        Dim BlueprintItems As New List(Of PriceItem)
         Dim TempItem As PriceItem
         Dim SearchRegion As String = ""
         Dim SearchSystem As String = ""
@@ -8799,9 +8800,8 @@ ExitForm:
 
         ' Build the list of types we want to update and include the type, region/system
         For i = 0 To lstPricesView.Items.Count - 1
-
-            ' Only include items that are in the market (Market ID not null in Inventory Types)
-            If lstPricesView.Items(i).SubItems(5).Text <> "" Then
+            ' Only include items that are in the market (Market ID not null in Inventory Types) or blueprints/reactions
+            If lstPricesView.Items(i).SubItems(5).Text <> "" Or (lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Or lstPricesView.Items(i).SubItems(1).Text.Contains("Reaction")) Then
                 TempItem = New PriceItem
                 TempItem.TypeID = CLng(lstPricesView.Items(i).SubItems(0).Text)
                 TempItem.GroupName = GetPriceGroupName(TempItem.TypeID)
@@ -8858,8 +8858,8 @@ ExitForm:
                         rsPP.Close()
                     End If
 
-                    ' Add the item to the list if not there and it's not a blueprint (we don't want to query blueprints since it will return bpo price and we are using this for bpc
-                    If Not Items.Contains(TempItem) And Not lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Then
+                    ' Add the item to the list if not there 
+                    If Not Items.Contains(TempItem) And TempItem.GroupName <> "Blueprint" And Not TempItem.GroupName.Contains("Reaction") Then
                         If JitaPerimeterChecked Then
                             ' Add Jita first with flag
                             TempItem.JitaPerimeterPrice = True
@@ -8875,13 +8875,17 @@ ExitForm:
                             TempItem.JitaPerimeterPrice = False
                             Items.Add(TempItem)
                         End If
+                    ElseIf TempItem.GroupName = "Blueprint" Or TempItem.GroupName.Contains("Reaction") Then
+                        ' Put this in the blueprints list and we will look at contracts for prices
+                        ' Jita/Perimeter won't matter since they are in the same region and we can only query regions for contracts
+                        Call BlueprintItems.Add(TempItem)
                     End If
                 End If
             End If
         Next
 
         ' Load the prices
-        Call LoadPrices(Items)
+        Call LoadPrices(Items, BlueprintItems)
 
 UpdateProgramPrices:
 
@@ -8928,7 +8932,7 @@ ExitSub:
     End Function
 
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem))
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem))
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
@@ -9030,7 +9034,6 @@ ExitSub:
                 ' Update Failed, don't reload everything
                 Exit Sub
             End If
-
         End If
 
         ' Working
@@ -9455,9 +9458,9 @@ ExitSub:
                     ' Do if checks or select on category
                     If GN.Contains("Decryptor") Then
                         RGN = "Decryptors"
-                    ElseIf ITN.Contains("R.Db") Then
+                    ElseIf ITN.Contains("R.Db") And Not ITN.Contains("Blueprint") Then
                         RGN = "R.Db."
-                    ElseIf ITN.Contains("R.A.M.") Then
+                    ElseIf ITN.Contains("R.A.M.") And Not ITN.Contains("Blueprint") Then
                         RGN = "R.A.M.s"
                     ElseIf (GN = "General" Or GN = "Livestock" Or GN = "Radioactive" Or GN = "Biohazard" Or GN = "Commodities" _
                         Or GN = "Empire Insignia Drops" Or GN = "Criminal Tags" Or GN = "Miscellaneous" Or GN = "Unknown Components" Or GN = "Lease") Then
@@ -9468,8 +9471,8 @@ ExitSub:
                         RGN = "Implants"
                     ElseIf CN.Contains("Planetary") Or ITN = "Oxygen" Or ITN = "Water" Then
                         RGN = "Planetary Materials"
-                    ElseIf CN = "Blueprint" Then
-                        RGN = "Blueprints"
+                    ElseIf CN.Contains("Blueprint") Then
+                        RGN = "Blueprint"
                     ElseIf CN = "Ancient Relics" Then
                         RGN = "Ancient Relics"
                     ElseIf CN = "Deployable" Then
