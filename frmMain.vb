@@ -8684,6 +8684,7 @@ ExitForm:
         Dim BPCRegion As String = "" ' Region to use for BPC Contract price updates
         Dim SearchStructureID As String = ""
         Dim NumSystems As Integer = 0
+        Dim BPRegionID As String = ""
 
         RegionSelected = False
         SystemSelected = False
@@ -8898,19 +8899,14 @@ ExitForm:
                         ' Put this in the blueprints list and we will look at contracts for prices
                         ' Jita/Perimeter won't matter since they are in the same region and we can only query regions for contracts
                         Call BlueprintItems.Add(TempItem)
-                        End If
-
-                        ' If this is the BPC profile, save the region they want used
-                        If TempItem.GroupName = "Blueprint Copies" Then
-                            BPCRegion = TempItem.RegionID
-                        End If
-
+                        BPRegionID = TempItem.RegionID ' Will always be the same for all BPCs
                     End If
                 End If
+            End If
         Next
 
         ' Load the prices
-        Call LoadPrices(Items, BlueprintItems)
+        Call LoadPrices(Items, BlueprintItems, BPRegionID)
 
 UpdateProgramPrices:
 
@@ -8957,7 +8953,7 @@ ExitSub:
     End Function
 
     ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem))
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem), ByVal BPCRegionID As String)
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
