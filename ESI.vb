@@ -2016,7 +2016,12 @@ Public Class ESI
 
                             ' Save all the contracts
                             For Each contract In ContractData
-                                Application.DoEvents()
+                                If CancelUpdatePrices Then
+                                    Exit For
+                                Else
+                                    Application.DoEvents()
+                                End If
+
                                 ' Insert the new record
                                 With contract
                                     ' Only add item exchange - auction prices are in the bids esi (if any) and not final, and couriers aren't helpful for prices
@@ -2068,11 +2073,28 @@ Public Class ESI
                             TempPB.Visible = False
                             TempLabel.Text = ""
 
+                            ' Done updating 
+                            Call EVEDB.CommitSQLiteTransaction()
+
+                            ' Now, clean up all the data and only leave BPC's since I'm only using it for BPCs for now and this will speed up price updates
+                            ' Drop table and recreate for faster queries - without closing and opening, the DROP fails - must be an open select somewhere
+                            EVEDB.CloseDB()
+                            EVEDB = New DBConnection(DBFilePath, SQLiteDBFileName)
+                            Call EVEDB.ExecuteNonQuerySQL("DROP TABLE IF EXISTS CONTRACT_BPC_PRICES")
+
+                            SQL = "CREATE TABLE CONTRACT_BPC_PRICES AS SELECT TYPE_ID, REGION_ID, PC.CONTRACT_ID, PRICE/SUM(QUANTITY) AS PRICE, SUM(QUANTITY) AS TOTAL_QUANTITY "
+                            SQL &= "FROM PUBLIC_CONTRACTS AS PC, PUBLIC_CONTRACT_ITEMS WHERE PC.CONTRACT_ID = PUBLIC_CONTRACT_ITEMS.CONTRACT_ID "
+                            SQL &= "AND PC.CONTRACT_ID IN (SELECT DISTINCT CONTRACT_ID FROM PUBLIC_CONTRACT_ITEMS WHERE IS_BLUEPRINT_COPY = 1 "
+                            SQL &= "GROUP BY CONTRACT_ID HAVING COUNT(DISTINCT TYPE_ID) = 1) GROUP BY PC.CONTRACT_ID, TYPE_ID, REGION_ID"
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                            ' Build an index
+                            Call EVEDB.ExecuteNonQuerySQL("CREATE INDEX IDX_TT_REGION_ID ON CONTRACT_BPC_PRICES (TYPE_ID, REGION_ID)")
+
                             ' All set, update cache date before leaving
                             Call CB.UpdateCacheDate(CacheDateType.PublicContracts, CacheDate)
 
-                            ' Done updating 
-                            Call EVEDB.CommitSQLiteTransaction()
+
 
                             Return True
 
@@ -2090,7 +2112,7 @@ Public Class ESI
 
         Catch ex As Exception
             MsgBox("Failed to update public contract data: " & ex.Message, vbInformation, Application.ProductName)
-            Call EVEDB.CommitSQLiteTransaction()
+            Call EVEDB.RollbackSQLiteTransaction()
 
             TempPB.Visible = False
             TempLabel.Text = ""
@@ -2121,7 +2143,12 @@ Public Class ESI
 
                         ' Save all the contract items for this contract
                         For Each contract In ContractData
-                            Application.DoEvents()
+                            If CancelUpdatePrices Then
+                                Exit For
+                            Else
+                                Application.DoEvents()
+                            End If
+
                             ' Insert the new record
                             With contract
                                 SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & CStr(SentContractID) & "," & CStr(.is_included) & "," & CStr(.item_id) & ","

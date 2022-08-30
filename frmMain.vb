@@ -8797,7 +8797,7 @@ ExitForm:
                 End If
 
                 ' Get the system ID string
-                SQL = "SELECT solarSystemID, regionID FROM SOLAR_SYSTEMS, REGIONS "
+                SQL = "SELECT solarSystemID, REGIONS.regionID FROM SOLAR_SYSTEMS, REGIONS "
                 SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -8821,7 +8821,7 @@ ExitForm:
             ' Only include items that are in the market (Market ID not null in Inventory Types) or blueprints/reactions
             If lstPricesView.Items(i).SubItems(5).Text <> "" Or (lstPricesView.Items(i).SubItems(1).Text.Contains("Blueprint") Or lstPricesView.Items(i).SubItems(1).Text.Contains("Reaction")) Then
                 TempItem = New PriceItem
-                TempItem.TypeID = CLng(lstPricesView.Items(i).SubItems(0).Text)
+                TempItem.TypeID = CInt(lstPricesView.Items(i).SubItems(0).Text)
                 TempItem.GroupName = GetPriceGroupName(TempItem.TypeID)
 
                 ' If the group name exists, then look it up
@@ -9158,7 +9158,7 @@ ExitSub:
                 If SentItems(i).JitaPerimeterPrice Then
                     If PriceType = "sellMin" Then
                         SQL &= " AND sellMin > 0"
-                    ElseIf PriceType = "buyMin0" Then
+                    ElseIf PriceType = "buyMin" Then
                         SQL &= " AND buyMin > 0"
                     End If
                 End If
@@ -9254,19 +9254,87 @@ ExitSub:
             ' For each record, update the progress bar
             Call IncrementToolStripProgressBar(pnlProgressBar)
 
-            Application.DoEvents()
+            If Not CancelUpdatePrices Then
+                Application.DoEvents()
+            Else
+                GoTo LocalCancelUpdatePrices
+            End If
+
         Next
 
+        If BPItems.Count > 0 Then
+            pnlStatus.Text = "Updating BPC Prices..."
+            RegionorSystemList = ""
+            pnlProgressBar.Value = 0
+            pnlProgressBar.Minimum = 0
+            pnlProgressBar.Maximum = BPItems.Count + 1
+            pnlProgressBar.Visible = True
+
+            ' If there are BPC Prices, update those here too
+            For Each BPID In BPItems
+                ' Always use ESI so we need to do some calcuations depending on the type they want
+                ' Only one price, so do min/max/avg the same
+                SQL = "SELECT "
+                Select Case BPID.PriceType
+                    Case "Min Sell", "Min Buy"
+                        SQL &= "MIN(PRICE)"
+                    Case "Max Sell", "Max Buy"
+                        SQL &= "MAX(PRICE)"
+                    Case "Avg Sell", "Avg Buy"
+                        SQL &= "AVG(PRICE)"
+                    Case "Median Sell", "Median Buy"
+                        SQL &= GetBPCMedianPrice(BPID.TypeID, BPID.RegionID)
+                    Case "Percentile Sell", "Percentile Buy"
+                        SQL &= GetBPCPercentilePrice(BPID.TypeID, BPID.RegionID)
+                    Case "Split Price"
+                        SQL &= "(MAX(PRICE) + MIN(PRICE))/2"
+                End Select
+
+                SQL &= " FROM CONTRACT_BPC_PRICES WHERE TYPE_ID = " & CStr(BPID.TypeID) & " AND REGION_ID = " & BPID.RegionID
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerPrices = DBCommand.ExecuteReader
+
+                ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
+                If readerPrices.Read Then
+                    If Not IsDBNull(readerPrices.GetValue(0)) Then
+                        ' Now Update the ITEM_PRICES table, set price, price type, Data source, and RegionORSystem used for the price
+                        SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & readerPrices.GetDouble(0).ToString("0.00") & ", PRICE_TYPE = '" & PriceType & "' "
+                        SQL &= ", RegionORSystem = " & BPID.RegionID & ", PRICE_SOURCE = " & UpdatePricesDataSource
+                        SQL &= " WHERE ITEM_ID = " & CStr(BPID.TypeID)
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+                    End If
+                    readerPrices.Close()
+                End If
+
+                ' For each record, update the progress bar
+                Call IncrementToolStripProgressBar(pnlProgressBar)
+
+                If Not CancelUpdatePrices Then
+                    Application.DoEvents()
+                Else
+                    GoTo LocalCancelUpdatePrices
+                End If
+            Next
+        End If
+
         Call EVEDB.CommitSQLiteTransaction()
+
+LocalCancelUpdatePrices:
 
         ' Done updating, hide the progress bar
         pnlProgressBar.Visible = False
         pnlStatus.Text = ""
         Application.DoEvents()
 
+        If EVEDB.TransactionActive And CancelUpdatePrices Then
+            ' We Canceled the update so rollback anything
+            EVEDB.RollbackSQLiteTransaction()
+        End If
+
     End Sub
 
-    Private Function CalcSplit(TypeID As Long, RegionID As String, SystemID As String) As String
+    Private Function CalcSplit(TypeID As Integer, RegionID As String, SystemID As String) As String
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
         Dim PriceList As New List(Of Double)
@@ -9330,8 +9398,47 @@ ExitSub:
 
     End Function
 
+    ' Calculates the median price
+    Private Function GetBPCMedianPrice(TypeID As Integer, RegionID As String) As String
+        Dim SQL As String = ""
+        Dim ReturnPrice As Double = 0
+        Dim MedianList As New List(Of Double)
+        Dim readerPrices As SQLiteDataReader
+
+        SQL = "SELECT PRICE FROM CONTRACT_BPC_PRICES WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & RegionID & " "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPrices = DBCommand.ExecuteReader
+
+        ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
+        If readerPrices.Read Then
+            MedianList.Add(readerPrices.GetDouble(0))
+        End If
+
+        Dim value As Double
+        Dim size As Integer = MedianList.Count
+
+        ' Calculate the median
+        If size > 0 Then
+            If size Mod 2 = 0 Then
+                ' Need to average
+                Dim a As Double = MedianList(CInt(size / 2 - 1))
+                Dim b As Double = MedianList(CInt(size / 2))
+                value = (a + b) / 2
+            Else
+                value = MedianList(CInt(Math.Floor(size / 2)))
+            End If
+        Else
+            value = 0
+        End If
+
+        ' return 2 decimals
+        Return FormatNumber(value, 2)
+
+    End Function
+
     ' Queries market orders and calculates the median and returns the median as a string
-    Private Function CalcMedian(TypeID As Long, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As String
+    Private Function CalcMedian(TypeID As Integer, RegionID As String, SystemID As String, IsBuyOrder As Boolean) As String
         Dim MedianList As List(Of Double) = GetMarketOrderPriceList(TypeID, RegionID, SystemID, IsBuyOrder)
         Dim value As Double
         Dim size As Integer = MedianList.Count
@@ -9352,6 +9459,34 @@ ExitSub:
 
         ' return 2 decimals
         Return FormatNumber(value, 2)
+
+    End Function
+
+    ' Calculates the Percentile Price for BPCs
+    Private Function GetBPCPercentilePrice(TypeID As Integer, RegionID As String) As String
+        Dim PriceList As New List(Of Double)
+        Dim readerPrices As SQLiteDataReader
+        Dim SQL As String
+
+        SQL = "SELECT PRICE FROM CONTRACT_BPC_PRICES WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & RegionID & " "
+
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        readerPrices = DBCommand.ExecuteReader
+
+        ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
+        If readerPrices.Read Then
+            PriceList.Add(readerPrices.GetDouble(0))
+        End If
+
+        Dim index As Integer
+
+        If PriceList.Count > 0 Then
+            ' Get the bottom 5% for SELL 
+            index = CInt(Math.Floor(0.05 * PriceList.Count))
+            Return CStr(PriceList(index))
+        Else
+            Return "0.00"
+        End If
 
     End Function
 
@@ -9887,8 +10022,8 @@ ExitSub:
         End If
 
         ' Blueprint Copies
-        If chkBPCs.Checked Then
-            SQL &= "ITEM_CATEGORY = 'Blueprint Copies' OR "
+        If chkBPCs.Checked Or chkBPCs.CheckState = CheckState.Indeterminate Then
+            SQL &= "ITEM_CATEGORY = 'Blueprint' OR "
             ItemChecked = True
         End If
         If chkMisc.Checked Then ' Commodities = Shattered Villard Wheel
@@ -16735,7 +16870,7 @@ ExitCalc:
         Dim AgentLevel As Integer
         'Dim AgentQuality As Integer *** Removed on 19 May 2011 ***
         Dim AgentLocation As String ' System name + security
-        Dim DataCoreID As Long
+        Dim DataCoreID As Integer
         Dim DataCoreSkill As String
         Dim DataCoreSkillLevel As Integer
         Dim DataCorePrice As Double
@@ -17245,7 +17380,7 @@ ExitCalc:
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerDC2 = DBCommand.ExecuteReader()
             If readerDC2.Read() Then
-                DCAgentRecord.DataCoreID = readerDC2.GetInt64(0)
+                DCAgentRecord.DataCoreID = readerDC2.GetInt32(0)
             Else
                 DCAgentRecord.DataCoreID = 0
             End If

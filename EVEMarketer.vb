@@ -214,7 +214,7 @@ End Structure
 Public Class PriceItem
     Implements ICloneable
 
-    Public TypeID As Long
+    Public TypeID As Integer
     Public Manufacture As Boolean
     Public RegionID As String
     Public SystemID As String
