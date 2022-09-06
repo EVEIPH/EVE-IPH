@@ -2235,41 +2235,6 @@ Tabs:
 
     End Sub
 
-    ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
-    Protected Overrides Function ProcessTabKey(ByVal TabForward As Boolean) As Boolean
-        Dim ac As Control = Me.ActiveControl
-
-        TabPressed = True
-
-        If TabForward Then
-            If ac Is txtBPEdit Or ac Is cmbEdit Then
-                Call ProcessKeyDownBPEdit(Keys.Tab)
-                Return True
-            End If
-        Else
-            If ac Is txtBPEdit Or ac Is cmbEdit Then
-                ' This is Shift + Tab but just send Shift for ease of processing
-                Call ProcessKeyDownBPEdit(Keys.ShiftKey)
-                Return True
-            End If
-        End If
-
-        Return MyBase.ProcessTabKey(TabForward)
-
-    End Function
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBPs_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBPs.ProcMsg
-        txtBPEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    Private Sub txtBPEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtBPEdit.GotFocus
-        If Not FirstLoad Then
-            Call txtBPEdit.SelectAll()
-        End If
-    End Sub
-
     Private Sub txtBPEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPEdit.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPEdit, e)
         If e.KeyCode = Keys.Enter Then

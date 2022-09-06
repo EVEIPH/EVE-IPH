@@ -53,8 +53,9 @@ Public Class frmReprocessingPlant
         lstItemstoRefine.Columns.Add("Refined Value", 100, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("% Return", 55, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Material Group", 0, HorizontalAlignment.Right) ' Hidden
-        lstItemstoRefine.Columns.Add("Item ID", 0, HorizontalAlignment.Right) ' Hidden
+        lstItemstoRefine.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
 
+        lstRefineOutput.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
         lstRefineOutput.Columns.Add("Material", 200, HorizontalAlignment.Left)
         lstRefineOutput.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
         lstRefineOutput.Columns.Add("Cost Per Item", 77, HorizontalAlignment.Right)
@@ -109,7 +110,7 @@ Public Class frmReprocessingPlant
 
         ItemsColumnClicked = 1
         ItemsColumnSortType = SortOrder.Ascending
-        OutputColumnClicked = 1
+        OutputColumnClicked = 2
         OutputColumnSortType = SortOrder.Ascending
 
     End Sub
@@ -415,7 +416,8 @@ Public Class frmReprocessingPlant
         lstRefineOutput.Items.Clear()
         lstRefineOutput.BeginUpdate()
         For Each mat In MaterialOutput.GetMaterialList
-            ItemlstViewRow = New ListViewItem(mat.GetMaterialName)
+            ItemlstViewRow = New ListViewItem(CStr(mat.GetMaterialTypeID))
+            ItemlstViewRow.SubItems.Add(mat.GetMaterialName)
             ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetQuantity, 0))
             ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetCostPerItem, 2))
             ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalCost, 2))
@@ -639,8 +641,6 @@ Public Class frmReprocessingPlant
 
         Application.UseWaitCursor = False
         Me.Cursor = Cursors.Default
-        ' Play notification sound
-        Call PlayNotifySound()
         Application.DoEvents()
 
     End Sub
@@ -730,6 +730,14 @@ Public Class frmReprocessingPlant
     Private Sub cmbRefineryEff_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbReprocessingEff.SelectedIndexChanged
         ' Update the ore processing skills
         Call UpdateProcessingSkills()
+    End Sub
+
+    Private Sub lstRefineOutput_MouseClick(sender As Object, e As MouseEventArgs) Handles lstRefineOutput.MouseClick
+        Call lstRefineOutput.ListClicked(lstRefineOutput, sender, e)
+    End Sub
+
+    Private Sub lstItemstoRefine_MouseClick(sender As Object, e As MouseEventArgs) Handles lstItemstoRefine.MouseClick
+        Call lstItemstoRefine.ListClicked(lstItemstoRefine, sender, e)
     End Sub
 
 End Class

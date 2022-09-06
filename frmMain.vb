@@ -7,7 +7,7 @@ Imports System.Net
 Imports GoogleAnalyticsClientDotNet
 
 Public Class frmMain
-    Inherits System.Windows.Forms.Form
+    Inherits Form
 
     ' Update Prices Variables
     Private m_ControlsCollection As ControlsCollection
@@ -214,44 +214,8 @@ Public Class frmMain
     Private ListRowFormats As New List(Of RowFormat) ' The lists of formats to use in drawing the manufacturing list
 
     Private SelectedBPTabIndex As Integer ' So we don't move around the different facility/invention/re tabs on the user
-
-    ' Inline grid row update variables
-    Private Structure SavedLoc
-        Dim X As Integer
-        Dim Y As Integer
-    End Structure
-
-    Private SavedListClickLoc As SavedLoc
-    Private RefreshingGrid As Boolean
-
-    Private CurrentRow As ListViewItem
-    Private PreviousRow As ListViewItem
-    Private NextRow As ListViewItem
-
-    Private NextCellRow As ListViewItem
-    Private PreviousCellRow As ListViewItem
-
-    Private CurrentCell As ListViewItem.ListViewSubItem
-    Private PreviousCell As ListViewItem.ListViewSubItem
-    Private NextCell As ListViewItem.ListViewSubItem
-
-    Private MEUpdate As Boolean
-    Private PriceUpdate As Boolean
-    Private DataUpdated As Boolean
     Private DataEntered As Boolean
     Private EnterKeyPressed As Boolean
-    Private SelectedGrid As ListView
-
-    Private PriceTypeUpdate As Boolean
-    Private PriceSystemUpdate As Boolean
-    Private PriceRegionUpdate As Boolean
-    Private PriceModifierUpdate As Boolean
-    Private PreviousPriceType As String
-    Private PreviousRegion As String
-    Private PreviousSystem As String
-    Private PreviousPriceMod As String
-    Private TabPressed As Boolean
-    Private UpdatingCombo As Boolean
 
     Private PPSystemsLoaded As Boolean
     Private PPRegionsLoaded As Boolean
@@ -275,6 +239,8 @@ Public Class frmMain
     Private Const PerimeterID As String = "30000144"
 
     Private UpdatePricesDataSource As String
+
+    Public TestText As TextBox
 
 #Region "Initialization Code"
 
@@ -640,20 +606,6 @@ Public Class frmMain
         FirstPriceChargeTypesComboLoad = True
         FirstPriceShipTypesComboLoad = True
         IgnoreSystemCheckUpdates = False
-
-        PriceTypeUpdate = False
-        PriceSystemUpdate = False
-        PriceRegionUpdate = False
-        PriceModifierUpdate = False
-        PreviousPriceType = ""
-        PreviousRegion = ""
-        PreviousSystem = ""
-        PreviousPriceMod = ""
-        TabPressed = False
-        UpdatingCombo = False
-
-        PPSystemsLoaded = False
-        PPRegionsLoaded = False
 
         PriceHistoryUpdateCount = 0
         PriceOrdersUpdateCount = 0
@@ -1457,7 +1409,7 @@ Public Class frmMain
     End Sub
 
     ' Function to deal with mouse down events to load next or previous blueprint
-    Private Sub MouseDownHandling(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
+    Private Sub MouseDownHandling(ByVal sender As Object, ByVal e As MouseEventArgs)
 
         ' Pause handler for txtbpruns from losing focus so the num bps are updated correctly
         RemoveHandler txtBPRuns.LostFocus, AddressOf txtBPRuns_LostFocus
@@ -2783,766 +2735,6 @@ Public Class frmMain
 
 #End Region
 
-#Region "InlineListUpdate"
-
-    ' Determines where to show the text box when clicking on the list sent
-    Private Sub ListClicked(ListRef As ListView, sender As Object, e As System.Windows.Forms.MouseEventArgs)
-        Dim iSubIndex As Integer = 0
-
-        ' Hide the text box when a new line is selected
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-
-        CurrentRow = ListRef.GetItemAt(e.X, e.Y) ' which listviewitem was clicked
-        SelectedGrid = ListRef
-
-        If CurrentRow Is Nothing Then
-            Exit Sub
-        End If
-
-        CurrentCell = CurrentRow.GetSubItemAt(e.X, e.Y)  ' which subitem was clicked
-
-        ' Determine where the previous and next item boxes will be based on what they clicked - used in tab event handling
-        Call SetNextandPreviousCells(ListRef)
-
-        ' See which column has been clicked
-        iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
-
-        If ListRef.Name <> lstPricesView.Name And ListRef.Name <> lstMineGrid.Name _
-            And ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
-            ' Set the columns that can be edited, just ME and Price
-            If iSubIndex = 2 Or iSubIndex = 3 Then
-
-                If iSubIndex = 2 Then
-                    MEUpdate = True
-                Else
-                    MEUpdate = False
-                End If
-
-                If iSubIndex = 3 Then
-                    PriceUpdate = True
-                Else
-                    PriceUpdate = False
-                End If
-
-                ' For the update grids in the Blueprint Tab, only show the box if
-                ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
-                ' 2 - If the Price is clicked and the ME box has '-' in it
-                If (CurrentRow.SubItems(2).Text <> "-" And MEUpdate) Or PriceUpdate Then
-                    Call ShowEditBox(ListRef)
-                End If
-
-            End If
-
-        ElseIf ListRef.Name = lstPricesView.Name Or ListRef.Name = lstMineGrid.Name Then ' Price update for update prices and mining grid
-
-            ' Only process the price box logic on rows that are unrefined and compressed ore on mining tab
-            If ListRef.Name = lstMineGrid.Name And CurrentRow.SubItems(2).Text = "Refined" Then
-                Exit Sub
-            End If
-
-            ' Set the columns that can be edited, just Price
-            If iSubIndex = 3 Then
-                Call ShowEditBox(ListRef)
-                PriceUpdate = True
-            End If
-
-        ElseIf ListRef.Name = lstRawPriceProfile.Name Or ListRef.Name = lstManufacturedPriceProfile.Name Then
-
-            If iSubIndex > 0 Then
-                ' Reset update type
-                Call SetPriceProfileVariables(iSubIndex)
-                Call ShowEditBox(ListRef)
-            End If
-
-        End If
-
-    End Sub
-
-    ' For updating the items in the list by clicking on them
-    Private Sub ProcessKeyDownEdit(SentKey As Keys, ListRef As ListView)
-        Dim SQL As String = ""
-        Dim rsData As SQLiteDataReader
-
-        Dim MEValue As String = ""
-        Dim PriceValue As Double = 0
-        Dim PriceUpdated As Boolean = False
-
-        ' Change blank entry to 0
-        If Trim(txtListEdit.Text) = "" Then
-            txtListEdit.Text = "0"
-        End If
-
-        DataUpdated = False
-
-        ' If they hit enter or tab away, mark the BP as owned in the DB with the values entered
-        If (SentKey = Keys.Enter Or SentKey = Keys.ShiftKey Or SentKey = Keys.Tab) And DataEntered Then
-
-            ' Check the input first
-            If Not IsNumeric(txtListEdit.Text) And MEUpdate Then
-                MsgBox("Invalid ME Value", vbExclamation)
-                Exit Sub
-            End If
-
-            If Not IsNumeric(txtListEdit.Text) And PriceUpdate Then
-                MsgBox("Invalid Price Value", vbExclamation)
-                Exit Sub
-            End If
-
-            ' Save the data depending on what we are updating
-            If MEUpdate Then
-                MEValue = txtListEdit.Text
-            End If
-
-            If PriceUpdate Then
-                PriceValue = CDbl(txtListEdit.Text)
-            End If
-
-            ' Now do the update for the grids
-            If ListRef.Name <> lstPricesView.Name And ListRef.Name <> lstMineGrid.Name And
-                ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
-                ' BP Grid update
-
-                ' Check the numbers, if the same then don't update
-                If MEValue = CurrentRow.SubItems(2).Text And PriceValue = CDbl(CurrentRow.SubItems(3).Text) Then
-                    ' Skip down
-                    GoTo Tabs
-                End If
-
-                ' First, see if we are updating an ME or a price, then deal with each separately
-                If MEUpdate Then
-                    ' First we need to look up the Blueprint ID
-                    SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ALL_BLUEPRINTS.BLUEPRINT_NAME, TECH_LEVEL, "
-                    SQL &= "CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NULL THEN 0 ELSE ALL_BLUEPRINTS.FAVORITE END AS FAVORITE, IGNORE, "
-                    SQL &= "CASE WHEN TE IS NULL THEN 0 ELSE TE END AS BP_TE "
-                    SQL &= "FROM ALL_BLUEPRINTS LEFT JOIN OWNED_BLUEPRINTS ON ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID  "
-                    SQL &= "WHERE ITEM_NAME = '" & RemoveItemNameRuns(CurrentRow.SubItems(0).Text) & "'"
-
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsData = DBCommand.ExecuteReader
-                    rsData.Read()
-
-                    ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value, but set the type depending on the bp loaded
-                    Dim TempBPType As BPType
-                    Dim AdditionalCost As Double
-                    Dim TempTE As Integer = rsData.GetInt32(5)
-
-                    If rsData.GetInt64(2) = BPTechLevel.T1 Then
-                        ' T1 BPO
-                        TempBPType = BPType.Original
-                    Else
-                        ' Remaining T2 and T3 must be invited
-                        TempBPType = BPType.InventedBPC
-                    End If
-
-                    ' Check additional costs for saving with this bp
-                    If IsNumeric(txtBPAddlCosts.Text) Then
-                        AdditionalCost = CDbl(txtBPAddlCosts.Text)
-                    Else
-                        AdditionalCost = 0
-                    End If
-
-                    ' If there is no TE for an invented BPC then set it to the base
-                    If TempBPType = BPType.InventedBPC And TempTE = 0 Then
-                        TempTE = BaseT2T3TE
-                    End If
-
-                    Call UpdateBPinDB(rsData.GetInt64(0), CInt(MEValue), TempTE, TempBPType, CInt(MEValue), 0,
-                                      CBool(rsData.GetInt32(3)), CBool(rsData.GetInt32(4)), AdditionalCost)
-
-                    ' Mark the line with white color since it's no longer going to be unowned
-                    CurrentRow.BackColor = Color.White
-
-                    rsData.Close()
-
-                Else ' Price per unit update
-
-                    SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & GetTypeID(RemoveItemNameRuns(CurrentRow.SubItems(0).Text))
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                    ' Mark the line text with black incase it is red for no price
-                    CurrentRow.ForeColor = Color.Black
-
-                    PriceUpdated = True
-
-                End If
-
-                ' Update the data in the current row
-                CurrentRow.SubItems(2).Text = CStr(MEValue)
-                CurrentRow.SubItems(3).Text = FormatNumber(PriceValue, 2)
-
-                ' For both ME and Prices, we need to re-calculate the blueprint (hit the Refresh Button) to reflect the new numbers
-                ' First save the current grid for locations
-                RefreshingGrid = True
-                Call RefreshBP()
-                RefreshingGrid = False
-
-            ElseIf ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
-                ' Price List Update
-                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Change the value in the price grid, but don't update the grid
-                CurrentRow.SubItems(3).Text = FormatNumber(txtListEdit.Text, 2)
-
-                PriceUpdated = True
-            Else
-                ' Price Profile update
-                Dim RawMat As String
-                If ListRef.Name = lstRawPriceProfile.Name Then
-                    RawMat = "1"
-                Else
-                    RawMat = "0"
-                End If
-
-                ' See if they have the profile set already
-                SQL = "SELECT 'X' FROM PRICE_PROFILES WHERE ID = " & CStr(SelectedCharacter.ID) & " "
-                SQL &= "AND GROUP_NAME = '" & CurrentRow.SubItems(0).Text & "' "
-                SQL &= "AND RAW_MATERIAL = " & RawMat
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                rsData = DBCommand.ExecuteReader
-
-                If rsData.Read() Then
-                    ' Update
-                    SQL = "UPDATE PRICE_PROFILES SET "
-                    If PriceTypeUpdate Then
-                        ' Save current region/system
-                        SQL &= "PRICE_TYPE = '" & cmbEdit.Text & "' "
-                        CurrentRow.SubItems(1).Text = cmbEdit.Text
-                    ElseIf PriceSystemUpdate Then
-                        ' Just update system, save others
-                        SQL &= "SOLAR_SYSTEM_NAME = '" & cmbEdit.Text & "' "
-                        CurrentRow.SubItems(3).Text = cmbEdit.Text
-                    ElseIf PriceRegionUpdate Then
-                        ' Set region, but set system to all systems (blank)
-                        SQL &= "REGION_NAME ='" & cmbEdit.Text & "', SOLAR_SYSTEM_NAME = 'All Systems' "
-                        CurrentRow.SubItems(2).Text = cmbEdit.Text
-                        CurrentRow.SubItems(3).Text = AllSystems
-                    ElseIf PriceModifierUpdate Then
-                        Dim PM As Double = CDbl(txtListEdit.Text.Replace("%", "")) / 100
-                        SQL &= "PRICE_MODIFIER = " & CStr(PM) & " "
-                        CurrentRow.SubItems(4).Text = FormatPercent(PM, 1)
-                    End If
-
-                    SQL &= "WHERE ID = " & CStr(SelectedCharacter.ID) & " "
-                    SQL &= "AND GROUP_NAME ='" & CurrentRow.SubItems(0).Text & "' "
-                    SQL &= "AND RAW_MATERIAL = " & RawMat
-
-                    rsData.Close()
-
-                Else
-                    ' Insert new record
-                    Dim TempPercent As String = CStr(CDbl(CurrentRow.SubItems(4).Text.Replace("%", "")) / 100)
-                    SQL = "INSERT INTO PRICE_PROFILES VALUES (" & CStr(SelectedCharacter.ID) & ",'" & CurrentRow.SubItems(0).Text & "','"
-                    If PriceTypeUpdate Then
-                        ' Save current region/system
-                        SQL &= FormatDBString(cmbEdit.Text) & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "'," & TempPercent & "," & RawMat & ")"
-                        CurrentRow.SubItems(1).Text = cmbEdit.Text
-                    ElseIf PriceSystemUpdate Then
-                        ' Just update system, save others
-                        SQL &= CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & FormatDBString(cmbEdit.Text) & "'," & TempPercent & "," & RawMat & ")"
-                        CurrentRow.SubItems(3).Text = cmbEdit.Text
-                    ElseIf PriceRegionUpdate Then
-                        ' Set region, but set system to all systems (blank)
-                        SQL &= CurrentRow.SubItems(1).Text & "','" & FormatDBString(cmbEdit.Text) & "','All Systems'," & TempPercent & "," & RawMat & ")"
-                        ' Set the text
-                        CurrentRow.SubItems(2).Text = cmbEdit.Text
-                        CurrentRow.SubItems(3).Text = AllSystems
-                    ElseIf PriceModifierUpdate Then
-                        ' Save current region/system/type
-                        SQL &= CurrentRow.SubItems(1).Text & "','" & CurrentRow.SubItems(2).Text & "','" & CurrentRow.SubItems(3).Text & "',"
-                        Dim PM As Double = CDbl(txtListEdit.Text.Replace("%", "")) / 100
-                        SQL &= CStr(PM) & "," & RawMat & ")"
-                        CurrentRow.SubItems(4).Text = FormatPercent(PM, 1)
-                    End If
-
-                End If
-
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                ' Reset these
-                PriceTypeUpdate = False
-                PriceRegionUpdate = False
-                PriceSystemUpdate = False
-                PreviousPriceType = ""
-                PreviousRegion = ""
-                PreviousSystem = ""
-                PriceUpdated = False
-
-            End If
-
-            ' If we updated a price, then update the program everywhere to be consistent
-            If PriceUpdated Then
-                IgnoreFocus = True
-                Call UpdateProgramPrices(False) ' Don't refresh the grid, we are already updating it
-                IgnoreFocus = False
-            End If
-
-            ' Play sound to indicate update complete
-            If PriceUpdated Then
-                Call PlayNotifySound()
-            End If
-
-            ' Reset text they entered if tabbed
-            If SentKey = Keys.ShiftKey Or SentKey = Keys.Tab Then
-                txtListEdit.Text = ""
-                cmbEdit.Text = ""
-            End If
-
-            If SentKey = Keys.Enter Then
-                ' Just refresh and select the current row
-                CurrentRow.Selected = True
-                txtListEdit.Visible = False
-            End If
-
-            ' Data updated, so reset
-            DataEntered = False
-            DataUpdated = True
-
-        End If
-
-Tabs:
-        ' If they hit tab, then tab to the next cell
-        If SentKey = Keys.Tab Then
-            If CurrentRow.Index = -1 Then
-                ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
-            End If
-
-            CurrentCell = NextCell
-            ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Next")
-            If CurrentRow.Index = 0 Then
-                ' Scroll to top
-                ListRef.Items.Item(0).Selected = True
-                ListRef.EnsureVisible(0)
-                ListRef.Update()
-            Else
-                ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
-            End If
-
-            ' Show the text box
-            Call ShowEditBox(ListRef)
-        End If
-
-        ' If shift+tab, then go to the previous cell 
-        If SentKey = Keys.ShiftKey Then
-            If CurrentRow.Index = -1 Then
-                ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
-            End If
-
-            CurrentCell = PreviousCell
-            ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Previous")
-            If CurrentRow.Index = ListRef.Items.Count - 1 Then
-                ' Scroll to bottom
-                ListRef.Items.Item(ListRef.Items.Count - 1).Selected = True
-                ListRef.EnsureVisible(ListRef.Items.Count - 1)
-                ListRef.Update()
-            Else
-                ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
-            End If
-
-            ' Show the text box
-            Call ShowEditBox(ListRef)
-        End If
-
-    End Sub
-
-    ' Determines where the previous and next item boxes will be based on what they clicked - used in tab event handling
-    Private Sub SetNextandPreviousCells(ListRef As ListView, Optional CellType As String = "")
-        Dim iSubIndex As Integer = 0
-
-        ' Normal Row
-        If CellType = "Next" Then
-            CurrentRow = NextCellRow
-        ElseIf CellType = "Previous" Then
-            CurrentRow = PreviousCellRow
-        End If
-
-        ' Get index of column
-        iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
-
-        ' Get next and previous rows. If at end, wrap to top. If at top, wrap to bottom
-        If ListRef.Items.Count = 1 Then
-            NextRow = CurrentRow
-            PreviousRow = CurrentRow
-        ElseIf CurrentRow.Index <> ListRef.Items.Count - 1 And CurrentRow.Index <> 0 Then
-            ' Not the last line, so set the next and previous
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        ElseIf CurrentRow.Index = 0 Then
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            ' Wrap to bottom
-            PreviousRow = ListRef.Items.Item(ListRef.Items.Count - 1)
-        ElseIf CurrentRow.Index = ListRef.Items.Count - 1 Then
-            ' Need to wrap up to top
-            NextRow = ListRef.Items.Item(0)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        End If
-
-        If ListRef.Name <> lstPricesView.Name And ListRef.Name <> lstMineGrid.Name _
-            And ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
-
-            ' For the update grids in the Blueprint Tab, only show the box if
-            ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
-            ' 2 - If the Price is clicked and the ME box has '-' in it
-
-            ' The next row must be an ME or Price box on the next row 
-            ' or a previous ME or price box on the previous row
-            If iSubIndex = 2 Or iSubIndex = 3 Then
-                ' Set the next and previous ME boxes (subitems)
-                ' If the next row ME box is a '-' then the next row cell is Price
-                If NextRow.SubItems(2).Text = "-" Then
-                    NextCell = NextRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    NextCell = NextRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                NextCellRow = NextRow
-
-                'If the previous row ME box is a '-' then the previous row is Price
-                If PreviousRow.SubItems(2).Text = "-" Then
-                    PreviousCell = PreviousRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    PreviousCell = PreviousRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                PreviousCellRow = PreviousRow
-
-                If iSubIndex = 2 Then
-                    MEUpdate = True
-                    PriceUpdate = False
-                Else
-                    MEUpdate = False
-                    PriceUpdate = True
-                End If
-
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-
-        ElseIf ListRef.Name = lstRawPriceProfile.Name Or ListRef.Name = lstManufacturedPriceProfile.Name Then
-
-            If iSubIndex <> 0 Then
-                ' Set the next and previous combo boxes
-                If iSubIndex = 4 Then
-                    NextCell = NextRow.SubItems.Item(1) ' Next now price type box
-                    NextCellRow = NextRow
-                Else
-                    NextCell = CurrentRow.SubItems.Item(iSubIndex + 1) ' current row, next cell
-                    NextCellRow = CurrentRow
-                End If
-
-                If iSubIndex = 1 Then
-                    PreviousCell = PreviousRow.SubItems.Item(4) ' Previous row price mod
-                    PreviousCellRow = PreviousRow
-                Else
-                    PreviousCell = CurrentRow.SubItems.Item(iSubIndex - 1) ' Same row, just back a cell
-                    PreviousCellRow = CurrentRow
-                End If
-
-                ' Reset update type
-                Call SetPriceProfileVariables(iSubIndex)
-
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-
-        Else ' Price list 
-            ' For this, just go up and down the rows
-            NextCell = NextRow.SubItems.Item(3)
-            NextCellRow = NextRow
-            PreviousCell = PreviousRow.SubItems.Item(3)
-            PreviousCellRow = PreviousRow
-            PriceUpdate = True
-            MEUpdate = False
-        End If
-
-    End Sub
-
-    ' Shows the text box on the grid where clicked if enabled
-    Private Sub ShowEditBox(ListRef As ListView)
-
-        ' Save the center location of the edit box
-        SavedListClickLoc.X = CurrentCell.Bounds.Left + CInt(CurrentCell.Bounds.Width / 2)
-        SavedListClickLoc.Y = CurrentCell.Bounds.Top + CInt(CurrentCell.Bounds.Height / 2)
-
-        ' Get the boundry data for the control now
-        Dim pTop As Integer = ListRef.Top + CurrentCell.Bounds.Top
-        Dim pLeft As Integer = ListRef.Left + CurrentCell.Bounds.Left + 2 ' pad right by 2 to align better
-        Dim CurrentParent As Control
-
-        CurrentParent = ListRef.Parent
-        ' Look up all locations of parent controls to get the location for the control boundaries when shown
-        Do Until CurrentParent.Name = "frmMain"
-            pTop = pTop + CurrentParent.Top
-            pLeft = pLeft + CurrentParent.Left
-            CurrentParent = CurrentParent.Parent
-        Loop
-
-        If ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Or PriceModifierUpdate Then
-            With txtListEdit
-                .Hide()
-                ' Set the bounds of the control
-                .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                .Text = CurrentCell.Text
-                .Show()
-                If CurrentRow.SubItems(2).Text = txtListEdit.Text Then
-                    .TextAlign = HorizontalAlignment.Center
-                Else
-                    .TextAlign = HorizontalAlignment.Right
-                End If
-
-                .Focus()
-            End With
-            cmbEdit.Visible = False
-        Else ' updates on the price profile grids
-
-            With cmbEdit
-                UpdatingCombo = True
-
-                If PriceRegionUpdate Then
-                    Call LoadRegionCombo(cmbEdit, CurrentCell.Text)
-                    ' Set the bounds of the control
-                    .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                    .Show()
-                    .Focus()
-                Else
-                    .Hide()
-                    .BeginUpdate()
-                    .Items.Clear()
-                    Dim rsData As SQLiteDataReader
-                    Dim SQL As String = ""
-
-                    If PriceSystemUpdate Then
-                        ' Base it off the data in the region cell
-                        SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
-                        SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                        SQL &= "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
-                        SQL &= "ORDER BY solarSystemName"
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsData = DBCommand.ExecuteReader
-
-                        ' Add all systems if it's the system
-                        .Items.Add(AllSystems)
-                        While rsData.Read
-                            .Items.Add(rsData.GetString(0))
-                            ' Special processing for The Forge
-                            If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
-                                .Items.Add(JitaPerimeter)
-                            End If
-                        End While
-
-                        rsData.Close()
-
-                    ElseIf PriceTypeUpdate Then
-                        ' Manually enter these
-                        .Items.Add("Min Sell")
-                        .Items.Add("Max Sell")
-                        .Items.Add("Avg Sell")
-                        .Items.Add("Median Sell")
-                        .Items.Add("Percentile Sell")
-                        .Items.Add("Min Buy")
-                        .Items.Add("Max Buy")
-                        .Items.Add("Avg Buy")
-                        .Items.Add("Median Buy")
-                        .Items.Add("Percentile Buy")
-                        .Items.Add("Split Price")
-                    End If
-
-                    ' Set the bounds of the control
-                    .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                    .Text = CurrentCell.Text
-                    .EndUpdate()
-                    .Show()
-                    .Focus()
-                End If
-                DataEntered = False ' We just updated so reset
-                UpdatingCombo = False
-            End With
-            txtListEdit.Visible = False
-        End If
-    End Sub
-
-    ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
-    Protected Overrides Function ProcessTabKey(ByVal TabForward As Boolean) As Boolean
-        Dim ac As Control = Me.ActiveControl
-
-        TabPressed = True
-
-        If TabForward Then
-            If ac Is txtListEdit Or ac Is cmbEdit Then
-                Call ProcessKeyDownEdit(Keys.Tab, SelectedGrid)
-                Return True
-            End If
-        Else
-            If ac Is txtListEdit Or ac Is cmbEdit Then
-                ' This is Shift + Tab but just send Shift for ease of processing
-                Call ProcessKeyDownEdit(Keys.ShiftKey, SelectedGrid)
-                Return True
-            End If
-        End If
-
-        Return MyBase.ProcessTabKey(TabForward)
-
-    End Function
-
-    Private Sub cmbEdit_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbEdit.DropDownClosed
-        If (PriceRegionUpdate And cmbEdit.Text <> PreviousRegion) Or
-            (PriceSystemUpdate And cmbEdit.Text <> PreviousSystem) Or
-            (PriceTypeUpdate And cmbEdit.Text <> PreviousPriceType) And Not UpdatingCombo Then
-            DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-    End Sub
-
-    Private Sub cmbEdit_SelectedIndexChanged(sender As Object, e As System.EventArgs) Handles cmbEdit.SelectedIndexChanged
-        If Not DataUpdated Then
-            DataEntered = True
-        End If
-    End Sub
-
-    Private Sub cmbEdit_LostFocus(sender As Object, e As System.EventArgs) Handles cmbEdit.LostFocus
-        ' Lost focus some other way than tabbing
-        If ((PriceRegionUpdate And cmbEdit.Text <> PreviousRegion) Or
-            (PriceSystemUpdate And cmbEdit.Text <> PreviousSystem) Or
-            (PriceTypeUpdate And cmbEdit.Text <> PreviousPriceType)) _
-            And Not TabPressed And Not UpdatingCombo Then
-            DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-        cmbEdit.Visible = False
-        TabPressed = False
-    End Sub
-
-    Private Sub txtListEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.GotFocus
-        Call txtListEdit.SelectAll()
-    End Sub
-
-    Private Sub txtListEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtListEdit.KeyDown
-        If Not DataEntered Then ' If data already entered, then they didn't do it through paste
-            DataEntered = ProcessCutCopyPasteSelect(txtListEdit, e)
-        End If
-
-        If e.KeyCode = Keys.Enter Then
-            IgnoreFocus = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-            IgnoreFocus = False
-        End If
-    End Sub
-
-    Private Sub txtListEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtListEdit.KeyPress
-        ' Make sure it's the right format for ME or Price update
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If MEUpdate Then
-                If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            ElseIf PriceUpdate Then
-                If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            ElseIf PriceModifierUpdate Then
-                e.Handled = CheckPercentCharEntry(e, txtListEdit)
-                If e.Handled = False Then
-                    DataEntered = True
-                End If
-            End If
-        End If
-
-    End Sub
-
-    Private Sub txtListEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.LostFocus
-        If Not RefreshingGrid And DataEntered And Not IgnoreFocus And (PriceModifierUpdate And txtListEdit.Text <> PreviousPriceMod) Then
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-        txtListEdit.Visible = False
-    End Sub
-
-    Private Sub txtListEdit_TextChanged(sender As Object, e As System.EventArgs) Handles txtListEdit.TextChanged
-        If MEUpdate Then ' make sure they only enter 0-10 for values
-            Call VerifyMETEEntry(txtListEdit, "ME")
-        End If
-    End Sub
-
-    ' Sets the variables for price profiles
-    Private Sub SetPriceProfileVariables(Index As Integer)
-        PriceTypeUpdate = False
-        PriceRegionUpdate = False
-        PriceSystemUpdate = False
-        PriceModifierUpdate = False
-
-        Select Case Index
-            Case 1
-                PriceTypeUpdate = True
-                PreviousPriceType = CurrentCell.Text
-            Case 2
-                PriceRegionUpdate = True
-                PreviousRegion = CurrentCell.Text
-            Case 3
-                PriceSystemUpdate = True
-                PreviousSystem = CurrentCell.Text
-            Case 4
-                PriceModifierUpdate = True
-                PreviousPriceMod = CurrentCell.Text
-        End Select
-
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBPComponentMats_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBPComponentMats.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBPRawMats_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBPRawMats.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstPricesView_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstPricesView.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstRawPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstManufacturedPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-#End Region
-
 #Region "Blueprints Tab"
 
 #Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
@@ -3611,12 +2803,12 @@ Tabs:
         txtBPLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
     End Sub
 
-    Private Sub txtBPLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPLines.KeyDown
+    Private Sub txtBPLines_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPLines.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPLines, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPLines.KeyPress
+    Private Sub txtBPLines_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPLines.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -3633,12 +2825,12 @@ Tabs:
         txtBPInventionLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
     End Sub
 
-    Private Sub txtBPInventionLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPInventionLines.KeyDown
+    Private Sub txtBPInventionLines_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPInventionLines.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPInventionLines, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPInventionLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPInventionLines.KeyPress
+    Private Sub txtBPInventionLines_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPInventionLines.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -3684,7 +2876,7 @@ Tabs:
         f1.Show()
     End Sub
 
-    Private Sub txtBPCCosts_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
+    Private Sub txtBPCCosts_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -3721,11 +2913,11 @@ Tabs:
 
     End Sub
 
-    Private Sub lstBPComponentMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPComponentMats.ColumnClick
+    Private Sub lstBPComponentMats_ColumnClick(ByVal sender As Object, ByVal e As ColumnClickEventArgs) Handles lstBPComponentMats.ColumnClick
         Call ListViewColumnSorter(e.Column, CType(lstBPComponentMats, ListView), BPCompColumnClicked, BPCompColumnSortType)
     End Sub
 
-    Private Sub lstBPRawMats_ColumnClick(ByVal sender As Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstBPRawMats.ColumnClick
+    Private Sub lstBPRawMats_ColumnClick(ByVal sender As Object, ByVal e As ColumnClickEventArgs) Handles lstBPRawMats.ColumnClick
         Call ListViewColumnSorter(e.Column, CType(lstBPRawMats, ListView), BPRawColumnClicked, BPRawColumnSortType)
     End Sub
 
@@ -3815,12 +3007,12 @@ Tabs:
         Call txtBPRuns.SelectAll()
     End Sub
 
-    Private Sub txtBPRuns_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtBPRuns.KeyDown
+    Private Sub txtBPRuns_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPRuns.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPRuns, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPRuns_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPRuns.KeyPress
+    Private Sub txtBPRuns_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtBPRuns.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -3830,7 +3022,7 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPRuns_KeyUp(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPRuns.KeyUp
+    Private Sub txtBPRuns_KeyUp(sender As Object, e As KeyEventArgs) Handles txtBPRuns.KeyUp
         If Not EnterKeyPressed Then
             EnterKeyPressed = False
         End If
@@ -3843,12 +3035,12 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPAddlCosts_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPAddlCosts.KeyDown
+    Private Sub txtBPAddlCosts_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPAddlCosts.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPAddlCosts, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPAddlCosts_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPAddlCosts.KeyPress
+    Private Sub txtBPAddlCosts_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPAddlCosts.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -3866,14 +3058,14 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPME_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtBPME.KeyDown
+    Private Sub txtBPME_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPME.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPME, e)
         If e.KeyCode = Keys.Enter Then
             Call EnterKeyRunBP(e)
         End If
     End Sub
 
-    Private Sub txtBPME_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPME.KeyPress
+    Private Sub txtBPME_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtBPME.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
@@ -3893,14 +3085,14 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPTE_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtBPTE.KeyDown
+    Private Sub txtBPTE_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPTE.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPTE, e)
         If e.KeyCode = Keys.Enter Then
             Call EnterKeyRunBP(e)
         End If
     End Sub
 
-    Private Sub txtBPTE_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPTE.KeyPress
+    Private Sub txtBPTE_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtBPTE.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
@@ -3996,12 +3188,12 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPNumBPs_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtBPNumBPs.KeyDown
+    Private Sub txtBPNumBPs_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPNumBPs.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPNumBPs, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPNumBPs_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPNumBPs.KeyPress
+    Private Sub txtBPNumBPs_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtBPNumBPs.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -4317,11 +3509,11 @@ Tabs:
 
     End Sub
 
-    Private Sub cmbBPInventionDecryptor_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPInventionDecryptor.KeyPress
+    Private Sub cmbBPInventionDecryptor_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles cmbBPInventionDecryptor.KeyPress
         e.Handled = True
     End Sub
 
-    Private Sub cmbBPREDecryptor_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbBPT3Decryptor.KeyPress
+    Private Sub cmbBPREDecryptor_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPT3Decryptor.KeyPress
         e.Handled = True
     End Sub
 
@@ -4529,7 +3721,7 @@ Tabs:
     End Sub
 
     Private Sub lstBPComponentMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseClick
-        Call ListClicked(lstBPComponentMats, sender, e)
+        Call lstBPComponentMats.ListClicked(lstBPComponentMats, sender, e)
     End Sub
 
     Private Sub lstBPComponentMats_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseDown
@@ -4622,11 +3814,11 @@ Tabs:
         End If
     End Sub
 
-    Private Sub lstBPRawMats_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBPRawMats.MouseClick
-        Call ListClicked(lstBPRawMats, sender, e)
+    Private Sub lstBPRawMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPRawMats.MouseClick
+        Call lstBPRawMats.ListClicked(lstBPRawMats, sender, e)
     End Sub
 
-    Private Sub EnterKeyRunBP(ByVal e As System.Windows.Forms.KeyEventArgs)
+    Private Sub EnterKeyRunBP(ByVal e As KeyEventArgs)
         If CorrectMETE(txtBPME.Text, txtBPTE.Text, txtBPME, txtBPTE) Then
             If e.KeyCode = Keys.Enter Then
                 EnterKeyPressed = True
@@ -4655,12 +3847,12 @@ Tabs:
         txtBPUpdateCostIndex.SelectAll()
     End Sub
 
-    Private Sub txtBPUpdateCostIndex_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPUpdateCostIndex.KeyDown
+    Private Sub txtBPUpdateCostIndex_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPUpdateCostIndex.KeyDown
         Call ProcessCutCopyPasteSelect(txtBPUpdateCostIndex, e)
         Call EnterKeyRunBP(e)
     End Sub
 
-    Private Sub txtBPUpdateCostIndex_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPUpdateCostIndex.KeyPress
+    Private Sub txtBPUpdateCostIndex_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPUpdateCostIndex.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
@@ -4684,7 +3876,7 @@ Tabs:
         txtBPMarketPriceEdit.SelectAll()
     End Sub
 
-    Private Sub txtBPMarketPriceEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPMarketPriceEdit.KeyDown
+    Private Sub txtBPMarketPriceEdit_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPMarketPriceEdit.KeyDown
         If Not DataEntered Then ' If data already entered, then they didn't do it through paste
             DataEntered = ProcessCutCopyPasteSelect(txtBPMarketPriceEdit, e)
         End If
@@ -4697,7 +3889,7 @@ Tabs:
         End If
     End Sub
 
-    Private Sub txtBPMarketPriceEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtBPMarketPriceEdit.KeyPress
+    Private Sub txtBPMarketPriceEdit_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBPMarketPriceEdit.KeyPress
         ' Make sure it's the right format for Price update
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
@@ -4818,7 +4010,7 @@ Tabs:
         End If
     End Sub
 
-    Private Sub lstPricesView_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstPricesView.ColumnWidthChanging
+    Private Sub lstPricesView_ColumnWidthChanging(sender As Object, e As ColumnWidthChangingEventArgs) Handles lstPricesView.ColumnWidthChanging
         If e.ColumnIndex = 0 Or e.ColumnIndex >= 4 Then
             e.Cancel = True
             e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
@@ -4895,7 +4087,7 @@ Tabs:
         cmbBPBlueprintSelection.Focus()
     End Sub
 
-    Private Sub cmbBPBlueprintSelection_MouseWheel(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles cmbBPBlueprintSelection.MouseWheel
+    Private Sub cmbBPBlueprintSelection_MouseWheel(sender As Object, e As MouseEventArgs) Handles cmbBPBlueprintSelection.MouseWheel
         ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
         If ComboMenuDown Then
             MouseWheelSelection = False
@@ -4945,7 +4137,7 @@ Tabs:
     End Sub
 
     ' Process keys for bp combo
-    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
+    Private Sub cmbBPBlueprintSelection_KeyDown(sender As Object, e As KeyEventArgs) Handles cmbBPBlueprintSelection.KeyDown
 
         If cmbBPBlueprintSelection.DroppedDown = False Then
             BPComboKeyDown = True
@@ -7801,7 +6993,7 @@ ExitForm:
         End If
     End Sub
 
-    Private Sub txtPriceItemFilter_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtPriceItemFilter.KeyDown
+    Private Sub txtPriceItemFilter_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtPriceItemFilter.KeyDown
         'Call ProcessCutCopyPasteSelect(txtPriceItemFilter, e)
         If e.KeyCode = Keys.Enter Then
             Call UpdatePriceList()
@@ -7950,7 +7142,7 @@ ExitForm:
         End If
     End Sub
 
-    Private Sub lstPricesView_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstPricesView.ColumnClick
+    Private Sub lstPricesView_ColumnClick(sender As System.Object, e As ColumnClickEventArgs) Handles lstPricesView.ColumnClick
         Call ListViewColumnSorter(e.Column, CType(lstPricesView, ListView), UpdatePricesColumnClicked, UpdatePricesColumnSortType)
     End Sub
 
@@ -7983,11 +7175,11 @@ ExitForm:
         End If
     End Sub
 
-    Private Sub txtRawPriceModifier_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtRawPriceModifier.KeyPress
+    Private Sub txtRawPriceModifier_KeyPress(sender As System.Object, e As KeyPressEventArgs) Handles txtRawPriceModifier.KeyPress
         e.Handled = CheckPercentCharEntry(e, txtRawPriceModifier)
     End Sub
 
-    Private Sub txtItemsPriceModifier_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtItemsPriceModifier.KeyPress
+    Private Sub txtItemsPriceModifier_KeyPress(sender As System.Object, e As KeyPressEventArgs) Handles txtItemsPriceModifier.KeyPress
         e.Handled = CheckPercentCharEntry(e, txtItemsPriceModifier)
     End Sub
 
@@ -8011,7 +7203,7 @@ ExitForm:
         txtPPDefaultsPriceMod.Text = FormatPriceModifier(txtPPDefaultsPriceMod)
     End Sub
 
-    Private Sub txtPPDefaultsPriceMod_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtPPDefaultsPriceMod.KeyPress
+    Private Sub txtPPDefaultsPriceMod_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtPPDefaultsPriceMod.KeyPress
         e.Handled = CheckPercentCharEntry(e, txtPPDefaultsPriceMod)
     End Sub
 
@@ -8649,16 +7841,16 @@ ExitForm:
 
     End Sub
 
-    Private Sub lstPricesView_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstPricesView.MouseClick
-        Call ListClicked(lstPricesView, sender, e)
+    Private Sub lstPricesView_MouseClick(sender As Object, e As MouseEventArgs) Handles lstPricesView.MouseClick
+        Call lstPricesView.ListClicked(lstPricesView, sender, e)
     End Sub
 
-    Private Sub lstRawPriceProfile_MouseClick(sender As System.Object, e As System.Windows.Forms.MouseEventArgs) Handles lstRawPriceProfile.MouseClick
-        Call ListClicked(lstRawPriceProfile, sender, e)
+    Private Sub lstRawPriceProfile_MouseClick(sender As System.Object, e As MouseEventArgs) Handles lstRawPriceProfile.MouseClick
+        Call lstRawPriceProfile.ListClicked(lstRawPriceProfile, sender, e)
     End Sub
 
-    Private Sub lstManufacturedPriceProfile_MouseClick(sender As System.Object, e As System.Windows.Forms.MouseEventArgs) Handles lstManufacturedPriceProfile.MouseClick
-        Call ListClicked(lstManufacturedPriceProfile, sender, e)
+    Private Sub lstManufacturedPriceProfile_MouseClick(sender As System.Object, e As MouseEventArgs) Handles lstManufacturedPriceProfile.MouseClick
+        Call lstManufacturedPriceProfile.ListClicked(lstManufacturedPriceProfile, sender, e)
     End Sub
 
     Private Sub btnAddStructureIDs_Click(sender As Object, e As EventArgs) Handles btnAddStructureIDs.Click
@@ -9433,7 +8625,7 @@ LocalCancelUpdatePrices:
         End If
 
         ' return 2 decimals
-        Return FormatNumber(value, 2)
+        Return CStr(value)
 
     End Function
 
@@ -9485,7 +8677,7 @@ LocalCancelUpdatePrices:
             index = CInt(Math.Floor(0.05 * PriceList.Count))
             Return CStr(PriceList(index))
         Else
-            Return "0.00"
+            Return "0"
         End If
 
     End Function
@@ -10498,7 +9690,7 @@ LocalCancelUpdatePrices:
         Dim SavedgbPPValue As Boolean = gbPriceProfile.Enabled
         Dim SavedgbSSValue As Boolean = gbSingleSource.Enabled
 
-        If openFileDialog1.ShowDialog() = System.Windows.Forms.DialogResult.OK Then
+        If openFileDialog1.ShowDialog() = DialogResult.OK Then
             Try
                 BPStream = New StreamReader(openFileDialog1.FileName)
 
@@ -10606,7 +9798,7 @@ ExitPRocessing:
 
 #Region "Manufacturing Object Functions"
 
-    Private Sub lstManufacturing_KeyDown(sender As System.Object, e As System.Windows.Forms.KeyEventArgs) Handles lstManufacturing.KeyDown
+    Private Sub lstManufacturing_KeyDown(sender As System.Object, e As KeyEventArgs) Handles lstManufacturing.KeyDown
 
         If e.KeyCode = Keys.C AndAlso e.Control = True Then ' Copy
             ' Find the bp record selected
@@ -10663,7 +9855,7 @@ ExitPRocessing:
         Call ResetRefresh()
     End Sub
 
-    Private Sub cmbCalcFWUpgrade_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs)
+    Private Sub cmbCalcFWUpgrade_KeyPress(sender As Object, e As KeyPressEventArgs)
         e.Handled = True
     End Sub
 
@@ -10755,7 +9947,7 @@ CheckTechs:
         txtCalcProdLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
     End Sub
 
-    Private Sub txtCalcProdLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcProdLines.KeyPress
+    Private Sub txtCalcProdLines_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcProdLines.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -10771,7 +9963,7 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
-    Private Sub txtCalcBPs_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcNumBPs.KeyPress
+    Private Sub txtCalcBPs_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcNumBPs.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -10796,7 +9988,7 @@ CheckTechs:
         txtCalcLabLines.Text = CStr(SelectedCharacter.MaximumLaboratoryLines)
     End Sub
 
-    Private Sub txtCalcLabLines_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcLabLines.KeyPress
+    Private Sub txtCalcLabLines_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcLabLines.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -10816,7 +10008,7 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
-    Private Sub cmbCalcAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcAvgPriceDuration.KeyPress
+    Private Sub cmbCalcAvgPriceDuration_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbCalcAvgPriceDuration.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -10916,7 +10108,7 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
-    Private Sub txtCalcSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcSVRThreshold.KeyPress
+    Private Sub txtCalcSVRThreshold_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcSVRThreshold.KeyPress
         ' Only allow numbers, decimal, negative or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
@@ -10976,7 +10168,7 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
-    Private Sub txtTempME_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcTempME.KeyPress
+    Private Sub txtTempME_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtCalcTempME.KeyPress
         ' Only allow numbers, negative or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
@@ -10988,7 +10180,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub txtTempPE_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcTempTE.KeyPress
+    Private Sub txtTempPE_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtCalcTempTE.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
@@ -11045,7 +10237,7 @@ CheckTechs:
         Call cmbCalcBPTypeFilter.SelectAll()
     End Sub
 
-    Private Sub cmbCalcBPTypeFilter_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcBPTypeFilter.KeyPress
+    Private Sub cmbCalcBPTypeFilter_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles cmbCalcBPTypeFilter.KeyPress
         ' Only let them select a bp by clicking
         Dim i As Integer
         i = 0
@@ -11332,7 +10524,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub txtCalcItemFilter_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtCalcItemFilter.KeyDown
+    Private Sub txtCalcItemFilter_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtCalcItemFilter.KeyDown
         'Call ProcessCutCopyPasteSelect(txtCalcItemFilter, e)
         If e.KeyCode = Keys.Enter Then
             Call ResetRefresh()
@@ -11350,7 +10542,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub txtCalcBPCCosts_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
+    Private Sub txtCalcBPCCosts_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -11516,7 +10708,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub cmbCalcSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbCalcHistoryRegion.KeyPress
+    Private Sub cmbCalcSVRRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbCalcHistoryRegion.KeyPress
         e.Handled = True
     End Sub
 
@@ -11588,13 +10780,13 @@ CheckTechs:
         Call ResetRefresh()
     End Sub
 
-    Private Sub lstManufacturing_ColumnClick(sender As System.Object, e As System.Windows.Forms.ColumnClickEventArgs) Handles lstManufacturing.ColumnClick
+    Private Sub lstManufacturing_ColumnClick(sender As System.Object, e As ColumnClickEventArgs) Handles lstManufacturing.ColumnClick
 
         Call ListViewColumnSorter(e.Column, CType(lstManufacturing, ListView), ManufacturingColumnClicked, ManufacturingColumnSortType)
 
     End Sub
 
-    Private Sub txtCalcIPHThreshold_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcIPHThreshold.KeyPress
+    Private Sub txtCalcIPHThreshold_KeyPress(sender As System.Object, e As KeyPressEventArgs) Handles txtCalcIPHThreshold.KeyPress
         ' Only allow numbers, decimal, negative or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
@@ -11610,7 +10802,7 @@ CheckTechs:
         txtCalcIPHThreshold.Text = FormatNumber(txtCalcIPHThreshold.Text, 2)
     End Sub
 
-    Private Sub txtCalcProfitThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcProfitThreshold.KeyPress
+    Private Sub txtCalcProfitThreshold_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcProfitThreshold.KeyPress
 
         If chkCalcProfitThreshold.Text.Contains("%") Then
             ' Only allow numbers, decimal, negative or backspace
@@ -11646,7 +10838,7 @@ CheckTechs:
         End If
     End Sub
 
-    Private Sub txtCalcVolumeThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtCalcVolumeThreshold.KeyPress
+    Private Sub txtCalcVolumeThreshold_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtCalcVolumeThreshold.KeyPress
         ' Only allow postive numbers
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -12147,7 +11339,7 @@ CheckTechs:
     End Function
 
     ' Updates the column order when changed
-    Private Sub lstManufacturing_ColumnReordered(sender As Object, e As System.Windows.Forms.ColumnReorderedEventArgs) Handles lstManufacturing.ColumnReordered
+    Private Sub lstManufacturing_ColumnReordered(sender As Object, e As ColumnReorderedEventArgs) Handles lstManufacturing.ColumnReordered
         Dim TempArray(NumManufacturingTabColumns) As String
         Dim Minus1 As Boolean = False
 
@@ -12439,7 +11631,7 @@ CheckTechs:
     End Sub
 
     ' Updates the column sizes when changed
-    Private Sub lstManufacturing_ColumnWidthChanged(sender As Object, e As System.Windows.Forms.ColumnWidthChangedEventArgs) Handles lstManufacturing.ColumnWidthChanged
+    Private Sub lstManufacturing_ColumnWidthChanged(sender As Object, e As ColumnWidthChangedEventArgs) Handles lstManufacturing.ColumnWidthChanged
         Dim NewWidth As Integer = lstManufacturing.Columns(e.ColumnIndex).Width
 
         If Not AddingColumns Then
@@ -15942,7 +15134,7 @@ ExitCalc:
         End If
     End Function
 
-    Private Sub lstManufacturing_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstManufacturing.ColumnWidthChanging
+    Private Sub lstManufacturing_ColumnWidthChanging(sender As Object, e As ColumnWidthChangingEventArgs) Handles lstManufacturing.ColumnWidthChanging
         If e.ColumnIndex = 0 Then
             e.Cancel = True
             e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
@@ -16656,7 +15848,7 @@ ExitCalc:
         Call CoreCheckBoxOnClickLabel(17)
     End Sub
 
-    Private Sub lstDC_ItemCheck(ByVal sender As Object, ByVal e As System.Windows.Forms.ItemCheckEventArgs) Handles lstDC.ItemCheck
+    Private Sub lstDC_ItemCheck(ByVal sender As Object, ByVal e As ItemCheckEventArgs) Handles lstDC.ItemCheck
         Dim TotalAgents As Integer = CInt(cmbDCResearchMgmt.Text) + 1
 
         If TotalAgents = lstDC.CheckedItems.Count And e.NewValue = CheckState.Checked Then
@@ -16666,7 +15858,7 @@ ExitCalc:
 
     End Sub
 
-    Private Sub lstDC_ItemChecked(ByVal sender As Object, ByVal e As System.Windows.Forms.ItemCheckedEventArgs) Handles lstDC.ItemChecked
+    Private Sub lstDC_ItemChecked(ByVal sender As Object, ByVal e As ItemCheckedEventArgs) Handles lstDC.ItemChecked
 
         ' Item was checked so add up the total iph
         If e.Item.Checked Then
@@ -16854,7 +16046,7 @@ ExitCalc:
         Call LoadDatacoreTab()
     End Sub
 
-    Private Sub lstDC_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstDC.ColumnClick
+    Private Sub lstDC_ColumnClick(ByVal sender As System.Object, ByVal e As ColumnClickEventArgs) Handles lstDC.ColumnClick
         Call ListViewColumnSorter(e.Column, lstDC, DCColumnClicked, DCColumnSortType)
     End Sub
 
@@ -17839,15 +17031,11 @@ Leave:
 
 #Region "Mining Object Functions"
 
-    Private Sub lstMineGrid_ColumnWidthChanging(sender As Object, e As System.Windows.Forms.ColumnWidthChangingEventArgs) Handles lstMineGrid.ColumnWidthChanging
+    Private Sub lstMineGrid_ColumnWidthChanging(sender As Object, e As ColumnWidthChangingEventArgs) Handles lstMineGrid.ColumnWidthChanging
         If e.ColumnIndex = 0 Then
             e.Cancel = True
             e.NewWidth = lstPricesView.Columns(e.ColumnIndex).Width
         End If
-    End Sub
-
-    Private Sub lstMineGrid_MouseClick(sender As System.Object, e As System.Windows.Forms.MouseEventArgs) Handles lstMineGrid.MouseClick
-        Call ListClicked(lstMineGrid, sender, e)
     End Sub
 
     Private Sub OreCheckProcessing_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkOreProcessing1.CheckedChanged, chkOreProcessing2.CheckedChanged, chkOreProcessing3.CheckedChanged,
@@ -18045,7 +17233,7 @@ Leave:
 
     End Sub
 
-    Private Sub lstMineGrid_ColumnClick(ByVal sender As System.Object, ByVal e As System.Windows.Forms.ColumnClickEventArgs) Handles lstMineGrid.ColumnClick
+    Private Sub lstMineGrid_ColumnClick(ByVal sender As System.Object, ByVal e As ColumnClickEventArgs) Handles lstMineGrid.ColumnClick
         Call ListViewColumnSorter(e.Column, lstMineGrid, MiningColumnClicked, MiningColumnSortType)
     End Sub
 
@@ -18087,7 +17275,7 @@ Leave:
         Call UpdateMiningBoosterObjects()
     End Sub
 
-    Private Sub txtMineNumberMiners_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineNumberMiners.KeyPress
+    Private Sub txtMineNumberMiners_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineNumberMiners.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -18097,7 +17285,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub txtMineTotalJumpM3_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
+    Private Sub txtMineTotalJumpM3_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -18107,7 +17295,7 @@ Leave:
         End If
     End Sub
 
-    Private Sub txtMineTotalJumpFuel_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs)
+    Private Sub txtMineTotalJumpFuel_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs)
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
@@ -18147,7 +17335,7 @@ Leave:
         Call txtMineHaulerM3.SelectAll()
     End Sub
 
-    Private Sub txtMineHaulerM3_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineHaulerM3.KeyPress
+    Private Sub txtMineHaulerM3_KeyPress(sender As System.Object, e As KeyPressEventArgs) Handles txtMineHaulerM3.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -18161,7 +17349,7 @@ Leave:
         txtMineHaulerM3.Text = FormatNumber(txtMineHaulerM3.Text, 1)
     End Sub
 
-    Private Sub txtMineRTMin_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineRTMin.KeyPress
+    Private Sub txtMineRTMin_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtMineRTMin.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -18175,7 +17363,7 @@ Leave:
         Call txtMineRTSec.SelectAll()
     End Sub
 
-    Private Sub txtMineRTSec_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMineRTSec.KeyPress
+    Private Sub txtMineRTSec_KeyPress(ByVal sender As Object, ByVal e As KeyPressEventArgs) Handles txtMineRTSec.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then

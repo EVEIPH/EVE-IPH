@@ -1345,7 +1345,7 @@ SkipItem:
     End Sub
 
     ' Enables Cut, Copy, Paste, and Select all from shortcut key entry for the sent text box
-    Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As System.Windows.Forms.KeyEventArgs) As Boolean
+    Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As KeyEventArgs) As Boolean
 
         If e.KeyCode = Keys.A AndAlso e.Control = True Then ' Select All
             SentBox.SelectAll()
@@ -1947,10 +1947,9 @@ SkipItem:
         While rsData.Read
             RegionCombo.Items.Add(rsData.GetString(0))
         End While
+        rsData.Close()
         RegionCombo.EndUpdate()
         RegionCombo.Text = DefaultRegionName
-
-        rsData.Close()
 
     End Sub
 
