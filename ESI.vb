@@ -939,56 +939,56 @@ Public Class ESI
 
         Try
 
-            '' See if we update the token data first
-            'If TokenData.TokenExpiration <= DateTime.UtcNow Then
+            ' See if we update the token data first
+            If TokenData.TokenExpiration <= DateTime.UtcNow Then
 
-            '    ' Update the token
-            '    Token = GetAccessToken(Token.refresh_token, True, Nothing, Nothing)
+                ' Update the token
+                Token = GetAccessToken(Token.refresh_token, True, Nothing, Nothing)
 
-            '    If IsNothing(TokenData) Then
-            '        Return Nothing
-            '    End If
+                If IsNothing(TokenData) Then
+                    Return Nothing
+                End If
 
-            '    ' Update the token data in the DB for this character/corporation
-            '    Dim SQL As String = ""
-            '    ' Update data - only stuff that could (reasonably) change
-            '    SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-            '    SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+                ' Update the token data in the DB for this character/corporation
+                Dim SQL As String = ""
+                ' Update data - only stuff that could (reasonably) change
+                SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+                SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
 
-            '    With Token
-            '        TokenData.TokenExpiration = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
-            '        SQL = String.Format(SQL, FormatDBString(.access_token),
-            '        Format(TokenData.TokenExpiration, SQLiteDateFormat),
-            '        FormatDBString(.token_type), FormatDBString(.refresh_token), ID)
-            '    End With
+                With Token
+                    TokenData.TokenExpiration = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
+                    SQL = String.Format(SQL, FormatDBString(.access_token),
+                    Format(TokenData.TokenExpiration, SQLiteDateFormat),
+                    FormatDBString(.token_type), FormatDBString(.refresh_token), ID)
+                End With
 
-            '    ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
-            '    If EVEDB.TransactionActive Then
-            '        EVEDB.CommitSQLiteTransaction()
-            '        EVEDB.ExecuteNonQuerySQL(SQL)
-            '        EVEDB.BeginSQLiteTransaction()
-            '    Else
-            '        EVEDB.ExecuteNonQuerySQL(SQL)
-            '    End If
+                ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
+                If EVEDB.TransactionActive Then
+                    EVEDB.CommitSQLiteTransaction()
+                    EVEDB.ExecuteNonQuerySQL(SQL)
+                    EVEDB.BeginSQLiteTransaction()
+                Else
+                    EVEDB.ExecuteNonQuerySQL(SQL)
+                End If
 
-            '    ' Now update the copy used in IPH so we don't re-query
-            '    SelectedCharacter.CharacterTokenData.AccessToken = Token.access_token
-            '    SelectedCharacter.CharacterTokenData.RefreshToken = Token.refresh_token
-            '    SelectedCharacter.CharacterTokenData.TokenExpiration = TokenData.TokenExpiration
+                ' Now update the copy used in IPH so we don't re-query
+                SelectedCharacter.CharacterTokenData.AccessToken = Token.access_token
+                SelectedCharacter.CharacterTokenData.RefreshToken = Token.refresh_token
+                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenData.TokenExpiration
 
-            'End If
+            End If
+
+            'See If we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
 
             ' See if we are in an error limited state
-            'If ESIErrorHandler.ErrorLimitReached Then
-            '    ' Need to wait until we are ready to continue
-            '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-            'End If
-
-            '' See if we are in an error limited state
-            'If ESIErrorHandler.ErrorLimitReached Then
-            '    ' Need to wait until we are ready to continue
-            '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-            'End If
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
 
             If JobType = ScanType.Corporation Then
                 Address = ESIURL & "corporations/" & CStr(ID) & "/assets/names/" & TranquilityDataSource

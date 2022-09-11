@@ -45,7 +45,6 @@ Partial Class frmShoppingList
         Me.btnUpdateListwithAssets = New System.Windows.Forms.Button()
         Me.btnMineThis = New System.Windows.Forms.Button()
         Me.chkUpdateAssetsWhenUsed = New System.Windows.Forms.CheckBox()
-        Me.txtListEdit = New System.Windows.Forms.TextBox()
         Me.DeleteMaterialStrip = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DeleteMaterial = New System.Windows.Forms.ToolStripMenuItem()
         Me.btnSaveListToFile = New System.Windows.Forms.Button()
@@ -84,7 +83,7 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
-        Me.Button1 = New System.Windows.Forms.Button()
+        Me.btnEVEPraisal = New System.Windows.Forms.Button()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -274,15 +273,6 @@ Partial Class frmShoppingList
         Me.chkUpdateAssetsWhenUsed.TabIndex = 10
         Me.chkUpdateAssetsWhenUsed.Text = "Update Assets When Used"
         Me.chkUpdateAssetsWhenUsed.UseVisualStyleBackColor = True
-        '
-        'txtListEdit
-        '
-        Me.txtListEdit.Location = New System.Drawing.Point(792, 295)
-        Me.txtListEdit.Name = "txtListEdit"
-        Me.txtListEdit.Size = New System.Drawing.Size(48, 20)
-        Me.txtListEdit.TabIndex = 40
-        Me.txtListEdit.TabStop = False
-        Me.txtListEdit.Visible = False
         '
         'DeleteMaterialStrip
         '
@@ -667,15 +657,15 @@ Partial Class frmShoppingList
         Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
         '
-        'Button1
+        'btnEVEPraisal
         '
-        Me.Button1.Location = New System.Drawing.Point(723, 587)
-        Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(113, 28)
-        Me.Button1.TabIndex = 78
-        Me.Button1.Text = "EVEpraisal Test"
-        Me.Button1.UseVisualStyleBackColor = True
-        Me.Button1.Visible = False
+        Me.btnEVEPraisal.Location = New System.Drawing.Point(723, 587)
+        Me.btnEVEPraisal.Name = "btnEVEPraisal"
+        Me.btnEVEPraisal.Size = New System.Drawing.Size(113, 28)
+        Me.btnEVEPraisal.TabIndex = 78
+        Me.btnEVEPraisal.Text = "EVEpraisal Test"
+        Me.btnEVEPraisal.UseVisualStyleBackColor = True
+        Me.btnEVEPraisal.Visible = False
         '
         'frmShoppingList
         '
@@ -684,14 +674,13 @@ Partial Class frmShoppingList
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
         Me.Controls.Add(Me.chkRebuildItemsfromList)
-        Me.Controls.Add(Me.Button1)
+        Me.Controls.Add(Me.btnEVEPraisal)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
         Me.Controls.Add(Me.lblTIC)
         Me.Controls.Add(Me.lblTotalCopyCost)
         Me.Controls.Add(Me.lblTotalInventionCost)
         Me.Controls.Add(Me.gbUpdateList)
-        Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.lblItemstoBuild)
         Me.Controls.Add(Me.lblItemstoBuy)
         Me.Controls.Add(Me.lstBuy)
@@ -753,7 +742,6 @@ End Sub
     Friend WithEvents btnUpdateListwithAssets As System.Windows.Forms.Button
     Friend WithEvents btnMineThis As System.Windows.Forms.Button
     Friend WithEvents chkUpdateAssetsWhenUsed As System.Windows.Forms.CheckBox
-    Friend WithEvents txtListEdit As System.Windows.Forms.TextBox
     Friend WithEvents DeleteItemStrip As System.Windows.Forms.ContextMenuStrip
     Friend WithEvents DeleteItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents DeleteMaterialStrip As System.Windows.Forms.ContextMenuStrip
@@ -793,7 +781,7 @@ End Sub
     Friend WithEvents lblTotalItemsInList As System.Windows.Forms.Label
     Friend WithEvents chkRebuildItemsfromList As CheckBox
     Friend WithEvents rbtnExportMulitBuy As RadioButton
-    Friend WithEvents Button1 As Button
+    Friend WithEvents btnEVEPraisal As Button
     Friend WithEvents txtBrokerFeeRate As TextBox
     Friend WithEvents lblFeeRate As Label
 End Class

@@ -188,12 +188,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
-    <Compile Include="AssetViewer.Designer.vb">
-      <DependentUpon>AssetViewer.vb</DependentUpon>
-    </Compile>
-    <Compile Include="AssetViewer.vb">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="Blueprint.vb" />
     <Compile Include="BuildBuyItems.vb" />
     <Compile Include="CacheBox.vb" />
@@ -547,9 +541,6 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AssetViewer.resx">
-      <DependentUpon>AssetViewer.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmAddCharacter.resx">
       <DependentUpon>frmAddCharacter.vb</DependentUpon>
     </EmbeddedResource>

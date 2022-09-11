@@ -385,7 +385,7 @@ Public Class frmMain
 
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
-        UserAssetWindowRefinerySettings = AllSettings.LoadAssetWindowSettings(AssetWindow.Refinery)
+        UserAssetWindowRefinerySettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ReprocessingPlant)
         UserAssetWindowDefaultSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.DefaultView)
 
         ' These will be used for all areas in the program - I may make specific to each reprocessing facility if requested, then will move to the manufacturing facility object
@@ -1619,70 +1619,92 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub InitInventionMatsWindow()
+        ' Make sure it's not disposed
+        If IsNothing(frmInventMats) Then
+            ' Make new form
+            frmInventMats = New frmInventionMats()
+        Else
+            If frmInventMats.IsDisposed Then
+                ' Make new form
+                frmInventMats = New frmInventionMats()
+            End If
+        End If
+    End Sub
+
     ' Loads the popup with all the material break down and usage for invention
     Private Sub lblBPInventionCost_DoubleClick(sender As System.Object, e As System.EventArgs) Handles lblBPInventionCost.DoubleClick
-        Dim f1 As New frmInventionMats
+
+        Call InitInventionMatsWindow()
 
         Me.Cursor = Cursors.WaitCursor
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
-                f1.MatType = "T2 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "T2 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
-                    f1.MatType = f1.MatType & " Run"
+                    frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
-                    f1.MatType = f1.MatType & " Runs"
+                    frmInventMats.MatType = frmInventMats.MatType & " Runs"
                 End If
-                f1.MaterialList = SelectedBlueprint.GetInventionMaterials
-                f1.TotalInventedRuns = SelectedBlueprint.GetTotalInventedRuns
-                f1.UserRuns = SelectedBlueprint.GetUserRuns
-                f1.ListType = "Invention"
+                frmInventMats.MaterialList = SelectedBlueprint.GetInventionMaterials
+                frmInventMats.TotalInventedRuns = SelectedBlueprint.GetTotalInventedRuns
+                frmInventMats.UserRuns = SelectedBlueprint.GetUserRuns
+                frmInventMats.ListType = "Invention"
             End If
             Me.Cursor = Cursors.Default
-            f1.Show()
+            frmInventMats.Show()
         End If
 
     End Sub
 
     ' Loads the popup with all the copy materials and usage for copy jobs
     Private Sub lblBPCopyCosts_DoubleClick(sender As Object, e As System.EventArgs) Handles lblBPCopyCosts.DoubleClick
-        Dim f1 As New frmInventionMats
+
+        Call InitInventionMatsWindow()
+
+        Me.Cursor = Cursors.WaitCursor
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
-                f1.MatType = "T2 Copy Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "T2 Copy Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
-                    f1.MatType = f1.MatType & " Run"
+                    frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
-                    f1.MatType = f1.MatType & " Runs"
+                    frmInventMats.MatType = frmInventMats.MatType & " Runs"
                 End If
-                f1.MaterialList = SelectedBlueprint.GetCopyMaterials
-                f1.TotalInventedRuns = SelectedBlueprint.GetInventionJobs
-                f1.ListType = "Copying"
+                frmInventMats.MaterialList = SelectedBlueprint.GetCopyMaterials
+                frmInventMats.TotalInventedRuns = SelectedBlueprint.GetInventionJobs
+                frmInventMats.ListType = "Copying"
             End If
-            f1.Show()
+            Me.Cursor = Cursors.Default
+            frmInventMats.Show()
         End If
 
     End Sub
 
     ' Loads the popup with all the material break down and usage for T3 invention
     Private Sub lblBPRECost_DoubleClick(sender As System.Object, e As System.EventArgs) Handles lblBPRECost.DoubleClick
-        Dim f1 As New frmInventionMats
+
+        Call InitInventionMatsWindow()
+
+        Me.Cursor = Cursors.WaitCursor
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
-                f1.MatType = "T3 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "T3 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
                 If SelectedBlueprint.GetUserRuns = 1 Then
-                    f1.MatType = f1.MatType & " Run"
+                    frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
-                    f1.MatType = f1.MatType & " Runs"
+                    frmInventMats.MatType = frmInventMats.MatType & " Runs"
                 End If
-                f1.MaterialList = SelectedBlueprint.GetInventionMaterials
-                f1.TotalInventedRuns = SelectedBlueprint.GetTotalInventedRuns
-                f1.UserRuns = SelectedBlueprint.GetUserRuns
-                f1.ListType = "T3 Invention"
+                frmInventMats.MaterialList = SelectedBlueprint.GetInventionMaterials
+                frmInventMats.TotalInventedRuns = SelectedBlueprint.GetTotalInventedRuns
+                frmInventMats.UserRuns = SelectedBlueprint.GetUserRuns
+                frmInventMats.ListType = "T3 Invention"
             End If
-            f1.Show()
+            Me.Cursor = Cursors.Default
+            frmInventMats.Show()
         End If
 
     End Sub
@@ -3720,10 +3742,6 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub lstBPComponentMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseClick
-        Call lstBPComponentMats.ListClicked(lstBPComponentMats, sender, e)
-    End Sub
-
     Private Sub lstBPComponentMats_MouseDown(sender As Object, e As MouseEventArgs) Handles lstBPComponentMats.MouseDown
         inhibitAutoCheck = True
     End Sub
@@ -3812,10 +3830,6 @@ Public Class frmMain
             End If
 
         End If
-    End Sub
-
-    Private Sub lstBPRawMats_MouseClick(sender As Object, e As MouseEventArgs) Handles lstBPRawMats.MouseClick
-        Call lstBPRawMats.ListClicked(lstBPRawMats, sender, e)
     End Sub
 
     Private Sub EnterKeyRunBP(ByVal e As KeyEventArgs)
@@ -5594,7 +5608,6 @@ Public Class frmMain
 
         lblBPCanMakeBP.Visible = False
         lblBPCanMakeBPAll.Visible = False
-        txtListEdit.Visible = False
         btnBPRefreshBP.Enabled = False
         Me.Cursor = Cursors.WaitCursor
         IgnoreFocus = True
@@ -7841,18 +7854,6 @@ ExitForm:
 
     End Sub
 
-    Private Sub lstPricesView_MouseClick(sender As Object, e As MouseEventArgs) Handles lstPricesView.MouseClick
-        Call lstPricesView.ListClicked(lstPricesView, sender, e)
-    End Sub
-
-    Private Sub lstRawPriceProfile_MouseClick(sender As System.Object, e As MouseEventArgs) Handles lstRawPriceProfile.MouseClick
-        Call lstRawPriceProfile.ListClicked(lstRawPriceProfile, sender, e)
-    End Sub
-
-    Private Sub lstManufacturedPriceProfile_MouseClick(sender As System.Object, e As MouseEventArgs) Handles lstManufacturedPriceProfile.MouseClick
-        Call lstManufacturedPriceProfile.ListClicked(lstManufacturedPriceProfile, sender, e)
-    End Sub
-
     Private Sub btnAddStructureIDs_Click(sender As Object, e As EventArgs) Handles btnAddStructureIDs.Click
         Dim f1 As New frmAddStructureIDs
 
@@ -9452,7 +9453,6 @@ LocalCancelUpdatePrices:
         End If
 
         ' Reset
-        txtListEdit.Visible = False
         Me.Cursor = Cursors.Default
         Application.DoEvents()
         pnlStatus.Text = ""

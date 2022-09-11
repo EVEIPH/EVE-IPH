@@ -4688,7 +4688,7 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
@@ -4783,7 +4783,7 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = TempSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = TempSettings
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowsettingsRefinery = TempSettings
         End Select
 
@@ -4803,7 +4803,7 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
@@ -4883,7 +4883,7 @@ Public Class ProgramSettings
                 Return AssetWindowSettingsManufacturingTab
             Case AssetWindow.ShoppingList
                 Return AssetWindowSettingsShoppingList
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 Return AssetWindowsettingsRefinery
             Case Else
                 Return Nothing
@@ -4960,7 +4960,7 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = LocalSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = LocalSettings
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowsettingsRefinery = LocalSettings
         End Select
 

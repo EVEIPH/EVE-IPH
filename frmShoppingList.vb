@@ -15,7 +15,6 @@ Public Class frmShoppingList
     End Structure
 
     Private SavedListClickLoc As SavedLoc
-    Private RefreshingGrid As Boolean
     Private CutPasteUpdate As Boolean
 
     Private CurrentRow As ListViewItem
@@ -270,7 +269,6 @@ Public Class frmShoppingList
     End Sub
 
     Public Sub RefreshLists()
-        RefreshingGrid = True
         Call LoadBuyList()
         Call LoadItemList()
         Call LoadBuildList()
@@ -290,8 +288,6 @@ Public Class frmShoppingList
             ' No more items so clear lists
             Call ClearLists()
         End If
-
-        RefreshingGrid = False
     End Sub
 
     Private Sub ClearLists()
@@ -1984,6 +1980,89 @@ Public Class frmShoppingList
         End If
     End Sub
 
+    Private Sub btnEVEPraisal_Click(sender As Object, e As EventArgs) Handles btnEVEPraisal.Click
+        Dim AccessTokenOutput As New ESITokenData
+        Dim Success As Boolean = False
+        Dim WC As New WebClient
+        Dim Response As Byte()
+        Dim Data As String = ""
+        Dim PostParameters As New NameValueCollection
+        Dim Items As New NameValueCollection
+
+        Try
+            '' Look at creating this call using json data - Call works below but only returns prices, which I really don't need
+            'Dim test As New EAItem
+            'test.market_name = "jita"
+            'Dim item As New typeIDs
+            'item.type_id = 34
+            'Dim eaitems As New List(Of typeIDs)
+            'eaitems.Add(item)
+            'test.items = eaitems
+            'Dim JSONresult As String = JsonConvert.SerializeObject(test)
+            'Dim myURI As Uri = New Uri("https://evepraisal.com/appraisal/structured.json")
+
+            ''curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
+
+            'Data = SendRequest(myURI, Encoding.UTF8.GetBytes(JSONresult), "application/json", "POST")
+
+            '' Convert byte data to string
+            'Data = Encoding.UTF8.GetString(Response)
+
+            '' Parse the data to the class
+            'AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            'Success = True
+
+            ' This returns an ID for the raw text values - tested and works
+            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=basilisk " & vbCrLf & "rifter" & vbCrLf & "hulk" & vbCrLf & "zydrine 44", "POST", PostParameters)
+            Data = Encoding.UTF8.GetString(Response)
+
+            ' Need to parse data and pull id for permanent link - https://evepraisal.com/a/yifsu
+
+        Catch ex As WebException
+
+            Call MsgBox(ex.Message)
+
+        Catch ex As Exception
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+        End Try
+
+
+    End Sub
+
+    Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
+        If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtBrokerFeeRate.Visible = True
+            lblFeeRate.Visible = True
+        Else
+            txtBrokerFeeRate.Visible = False
+            lblFeeRate.Visible = False
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.GotFocus
+        Call txtBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
+        txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+    End Sub
+
 #Region "Delete list items"
 
     ' Checks to see if we have any items left and resets the lists and panel on frmmain and refreshes the lists
@@ -2137,610 +2216,6 @@ Public Class frmShoppingList
         Call PlayNotifySound()
         Call RefreshLists()
 
-    End Sub
-
-#End Region
-
-#Region "InlineListUpdate"
-
-    ' Determines where to show the text box when clicking on the list sent
-    Private Sub ListClicked(ListRef As ListView, sender As Object, e As MouseEventArgs)
-        Dim iSubIndex As Integer = 0
-
-        ' Hide the text box when a new line is selected
-        txtListEdit.Hide()
-
-        CurrentRow = ListRef.GetItemAt(e.X, e.Y) ' which listviewitem was clicked
-        SelectedGrid = ListRef
-
-        If CurrentRow Is Nothing Then
-            Exit Sub
-        End If
-
-        CurrentCell = CurrentRow.GetSubItemAt(e.X, e.Y)  ' which subitem was clicked
-
-        ' See which column has been clicked
-        iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
-
-        ' Determine where the previous and next item boxes will be based on what they clicked - used in tab event handling as well
-        Call SetNextandPreviousCells(ListRef)
-
-        ' Look at the buy list for price and quantity
-        If ListRef.Name = lstBuy.Name Then
-            ' Set the columns that can be edited, just Quantity and Price
-            Select Case iSubIndex
-                Case 1
-                    ' Item - only showing box
-                    UpdateQuantity = False
-                    UpdatePrice = False
-                    Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
-                Case 2
-                    UpdateQuantity = True
-                    UpdatePrice = False
-                    Call ShowUpdateTextBox(ListRef)
-                Case 3
-                    UpdateQuantity = False
-                    UpdatePrice = True
-                    Call ShowUpdateTextBox(ListRef)
-                Case Else
-                    UpdateQuantity = False
-                    UpdatePrice = False
-            End Select
-
-        Else ' Just Quantity updates in the other two grids
-            ' Set the columns that can be edited, just Price
-            If iSubIndex = 2 Then
-                UpdateQuantity = True
-                UpdatePrice = False
-                Call ShowUpdateTextBox(ListRef)
-            ElseIf iSubIndex = 1 Then
-                ' Show the item box for copy/paste purposes
-                UpdateQuantity = False
-                UpdatePrice = False
-                Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
-            Else
-                UpdateQuantity = False
-                UpdatePrice = False
-            End If
-        End If
-
-    End Sub
-
-    ' Shows the text box on the grid where clicked if enabled
-    Private Sub ShowUpdateTextBox(ListRef As ListView, Optional TextAlignment As HorizontalAlignment = HorizontalAlignment.Right)
-        Dim lLeft As Integer = 0
-        Dim lWidth As Integer = 0
-
-        ' Get size of column and location
-        lLeft = CurrentCell.Bounds.Left + 2
-        lWidth = CurrentCell.Bounds.Width
-
-        ' Save the center location of the edit box
-        SavedListClickLoc.X = CurrentCell.Bounds.Left + CInt(CurrentCell.Bounds.Width / 2)
-        SavedListClickLoc.Y = CurrentCell.Bounds.Top + CInt(CurrentCell.Bounds.Height / 2)
-
-        With txtListEdit
-            .Hide()
-            .SetBounds(lLeft + ListRef.Left, CurrentCell.Bounds.Top + ListRef.Top, lWidth, CurrentCell.Bounds.Height)
-            .Text = CurrentCell.Text
-            .Show()
-            .TextAlign = TextAlignment
-            .Focus()
-        End With
-
-    End Sub
-
-    ' Determines where the previous and next item boxes will be based on what they clicked - used in tab event handling
-    Private Sub SetNextandPreviousCells(ListRef As ListView, Optional CellType As String = "")
-        Dim iSubIndex As Integer = 0
-
-        ' Normal Row
-        If CellType = "Next" Then
-            CurrentRow = NextCellRow
-        ElseIf CellType = "Previous" Then
-            CurrentRow = PreviousCellRow
-        End If
-
-        ' Get index of column
-        iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
-
-        ' Get next and previous rows. If at end, wrap to top. If at top, wrap to bottom
-        If ListRef.Items.Count = 1 Then
-            NextRow = CurrentRow
-            PreviousRow = CurrentRow
-        ElseIf CurrentRow.Index <> ListRef.Items.Count - 1 And CurrentRow.Index <> 0 Then
-            ' Not the last line, so set the next and previous
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        ElseIf CurrentRow.Index = 0 Then
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            ' Wrap to bottom
-            PreviousRow = ListRef.Items.Item(ListRef.Items.Count - 1)
-        ElseIf CurrentRow.Index = ListRef.Items.Count - 1 Then
-            ' Need to wrap up to top
-            NextRow = ListRef.Items.Item(0)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        End If
-
-        ' Check for buy list
-        If ListRef.Name = lstBuy.Name Then
-
-            ' The next row must be a Quantity or Price box on the next row 
-            ' or a previous Quantity or Price box on the previous row
-            Select Case iSubIndex
-                Case 1 ' Just item
-                    NextCell = CurrentRow.SubItems.Item(2) ' Current row Quantity box
-                    NextCellRow = CurrentRow
-                    PreviousCell = PreviousRow.SubItems.Item(3) ' Previous row Price box
-                    PreviousCellRow = PreviousRow
-
-                    UpdateQuantity = False
-                    UpdatePrice = False
-                Case 2 ' Quantity
-                    NextCell = CurrentRow.SubItems.Item(3) ' Current row Price box
-                    NextCellRow = CurrentRow
-                    PreviousCell = CurrentRow.SubItems.Item(1) ' Current row Item box
-                    PreviousCellRow = CurrentRow
-
-                    UpdateQuantity = True
-                    UpdatePrice = False
-                Case 3 ' Price
-                    NextCell = NextRow.SubItems.Item(1) ' Next row Item box
-                    NextCellRow = NextRow
-                    PreviousCell = CurrentRow.SubItems.Item(2) ' Current row Quantity box
-                    PreviousCellRow = CurrentRow
-
-                    UpdateQuantity = False
-                    UpdatePrice = True
-                Case Else
-                    NextCell = Nothing
-                    PreviousCell = Nothing
-                    CurrentCell = Nothing
-            End Select
-
-        Else ' For quantity updates only
-            ' Set the next and previous quantity boxes
-            If iSubIndex = 1 Then
-                NextCell = CurrentRow.SubItems.Item(2) ' Next quantity box
-                NextCellRow = CurrentRow
-                PreviousCell = PreviousRow.SubItems.Item(2) ' Previous quantity box
-                PreviousCellRow = PreviousRow
-
-                UpdateQuantity = True
-                UpdatePrice = False
-            ElseIf iSubIndex = 2 Then
-                NextCell = NextRow.SubItems.Item(1) ' Next name box
-                NextCellRow = NextRow
-                PreviousCell = CurrentRow.SubItems.Item(1) ' Previous name box
-                PreviousCellRow = CurrentRow
-
-                UpdateQuantity = False
-                UpdatePrice = False
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-        End If
-
-    End Sub
-
-    ' For updating the items in the list by clicking on them
-    Private Sub ProcessKeyDownUpdateEdit(SentKey As Keys, ListRef As ListView)
-        Dim QuantityValue As Integer = 0
-        Dim PriceValue As Double = 0
-        Dim SQL As String
-
-        ' Change blank entry to 0
-        If Trim(txtListEdit.Text) = "" Then
-            txtListEdit.Text = "0"
-        End If
-
-        ' If they hit enter or tab away, mark the BP as owned in the DB with the values entered
-        If (SentKey = Keys.Enter Or SentKey = Keys.ShiftKey Or SentKey = Keys.Tab) And DataEntered Then
-
-            ' Check the input first
-            If Not IsNumeric(txtListEdit.Text) And UpdateQuantity Then
-                MsgBox("Invalid Quantity Value", vbExclamation)
-                Exit Sub
-            End If
-
-            If Not IsNumeric(txtListEdit.Text) And UpdatePrice Then
-                MsgBox("Invalid Price Value", vbExclamation)
-                Exit Sub
-            End If
-
-            ' Save the data depending on what we are updating
-            If UpdateQuantity Then
-                QuantityValue = CInt(txtListEdit.Text)
-            End If
-
-            If UpdatePrice Then
-                PriceValue = CDbl(txtListEdit.Text)
-            End If
-
-            ' Update the quantity data in all three grids
-            If UpdateQuantity Then
-
-                ' Adjust the mats to what they enter - if it said 100, and they enter 90, then adjust to 90
-                If ListRef.Name = lstBuy.Name Then ' The materials we buy to build items 
-                    ' Check the numbers, if the same then don't update
-                    If QuantityValue = CInt(CurrentRow.SubItems(2).Text) And PriceValue = CDbl(CurrentRow.SubItems(3).Text) Then
-                        ' Skip down
-                        GoTo Tabs
-                    End If
-
-                    ' Save the mats they probably have on hand to make this change - calc from value in grid vs. value entered
-                    Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
-                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
-                    TotalShoppingList.OnHandMatList.InsertMaterial(OnHandMaterial)
-
-                    ' Update the buy list
-                    Call TotalShoppingList.UpdateShoppingBuyQuantity(CurrentRow.SubItems(1).Text, QuantityValue)
-
-                ElseIf ListRef.Name = lstBuild.Name Then ' The components we are building to make the item
-                    ' Check the numbers, if the same then don't update
-                    If QuantityValue = CInt(CurrentRow.SubItems(2).Text) Then
-                        ' Skip down
-                        GoTo Tabs
-                    End If
-
-                    Dim TempBuiltItem As New BuiltItem
-                    TempBuiltItem.ItemTypeID = CLng(CurrentRow.SubItems(0).Text)
-                    TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
-                    TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
-                    TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
-                    TempBuiltItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(5).Text
-
-                    ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
-                    Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
-                    Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
-                    TotalShoppingList.OnHandComponentList.InsertMaterial(OnHandMaterial)
-
-                    ' Update the build list
-                    Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltItem, QuantityValue)
-
-                ElseIf ListRef.Name = lstItems.Name Then ' The items we are building
-                    ' Check the numbers, if the same then don't update
-                    If QuantityValue = CInt(CurrentRow.SubItems(2).Text) Then
-                        ' Skip down
-                        GoTo Tabs
-                    End If
-
-                    Dim ShopListItem As New ShoppingListItem
-                    Dim TempName As String = CurrentRow.SubItems(1).Text
-                    If TempName.Contains("(") Then
-                        ShopListItem.Name = TempName.Substring(0, InStr(TempName, "(") - 2)
-                        ShopListItem.Relic = TempName.Substring(InStr(TempName, "("), InStr(TempName, ")") - InStr(TempName, "(") - 1)
-                    Else
-                        ShopListItem.Name = TempName
-                        ShopListItem.Relic = ""
-                    End If
-                    ShopListItem.Runs = CLng(CurrentRow.SubItems(2).Text)
-                    ShopListItem.ItemME = CInt(CurrentRow.SubItems(3).Text)
-                    ShopListItem.ItemTE = CInt(CurrentRow.SubItems(15).Text)
-                    ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
-                    ShopListItem.BuildType = CurrentRow.SubItems(5).Text
-                    ShopListItem.Decryptor = CurrentRow.SubItems(6).Text
-                    ShopListItem.InventedRunsPerBP = CInt(Math.Ceiling(ShopListItem.Runs / ShopListItem.NumBPs))
-                    ShopListItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(7).Text
-
-                    ' Update the full shopping list
-                    Call TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, QuantityValue)
-
-                End If
-
-            ElseIf ListRef.Name = lstBuy.Name And UpdatePrice Then ' Price update on the lstBuy screen
-                ' Update the price in the database
-                SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call evedb.ExecuteNonQuerySQL(SQL)
-
-                ' Change the value in the price grid, but don't update the grid
-                CurrentRow.SubItems(2).Text = FormatNumber(txtListEdit.Text, 2)
-
-                ' Update the Prices
-                Call UpdateProgramPrices()
-                Me.Focus()
-
-            Else
-                GoTo Tabs
-            End If
-
-            Call RefreshLists()
-
-            ' Just updated, so notify
-            Call PlayNotifySound()
-
-            ' Reset text they entered if tabbed
-            If SentKey = Keys.ShiftKey Or SentKey = Keys.Tab Then
-                txtListEdit.Text = ""
-            End If
-
-            ' Data updated, so reset
-            DataEntered = False
-
-            If SentKey = Keys.Enter Then
-                ' Just refresh and select the current row
-                CurrentRow.Selected = True
-                txtListEdit.Visible = False
-            End If
-
-        End If
-
-Tabs:
-        ' If they hit tab, then tab to the next cell
-        If SentKey = Keys.Tab Then
-            If CurrentRow.Index = -1 Then
-                ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
-            End If
-
-            CurrentCell = NextCell
-
-            ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Next")
-            If CurrentRow.Index = 0 Then
-                ' Scroll to top
-                ListRef.Items.Item(0).Selected = True
-                ListRef.EnsureVisible(0)
-                ListRef.Update()
-            Else
-                ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
-            End If
-
-            ' Show the text box
-            If CurrentRow.SubItems.IndexOf(CurrentCell) = 1 Then
-                Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
-            Else
-                Call ShowUpdateTextBox(ListRef)
-            End If
-
-        End If
-
-        ' If shift+tab, then go to the previous cell 
-        If SentKey = Keys.ShiftKey Then
-            If CurrentRow.Index = -1 Then
-                ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
-                ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
-            End If
-
-            CurrentCell = PreviousCell
-            ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Previous")
-            If CurrentRow.Index = ListRef.Items.Count - 1 Then
-                ' Scroll to bottom
-                ListRef.Items.Item(ListRef.Items.Count - 1).Selected = True
-                ListRef.EnsureVisible(ListRef.Items.Count - 1)
-                ListRef.Update()
-            Else
-                ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
-            End If
-
-            ' Show the text box
-            If CurrentRow.SubItems.IndexOf(CurrentCell) = 1 Then
-                Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
-            Else
-                Call ShowUpdateTextBox(ListRef)
-            End If
-
-        End If
-
-    End Sub
-
-    ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
-    Protected Overrides Function ProcessTabKey(ByVal TabForward As Boolean) As Boolean
-        Dim ac As Control = Me.ActiveControl
-
-        If TabForward Then
-            If ac Is txtListEdit Then
-                Call ProcessKeyDownUpdateEdit(Keys.Tab, SelectedGrid)
-                Return True
-            End If
-        Else
-            If ac Is txtListEdit Then
-                ' This is Shift + Tab but just send Shift for ease of processing
-                Call ProcessKeyDownUpdateEdit(Keys.ShiftKey, SelectedGrid)
-                Return True
-            End If
-        End If
-
-        Return MyBase.ProcessTabKey(TabForward)
-
-    End Function
-
-    Private Sub txtListEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.GotFocus
-        Call txtListEdit.SelectAll()
-    End Sub
-
-    Private Sub txtListEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtListEdit.KeyDown
-        If Not DataEntered Then ' If data already entered, then they didn't do it through paste
-            DataEntered = ProcessCutCopyPasteSelect(txtListEdit, e)
-        End If
-
-        If e.KeyCode = Keys.Enter Then
-            IgnoreFocusChange = True
-            Call ProcessKeyDownUpdateEdit(Keys.Enter, SelectedGrid)
-            IgnoreFocusChange = False
-        End If
-    End Sub
-
-    Private Sub txtListEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtListEdit.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If UpdateQuantity Then
-                If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            ElseIf UpdatePrice Then
-                If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            End If
-
-        End If
-
-    End Sub
-
-    Private Sub txtListEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.LostFocus
-        If Not RefreshingGrid And DataEntered And Not IgnoreFocusChange Then
-            Call ProcessKeyDownUpdateEdit(Keys.Enter, SelectedGrid)
-        End If
-        txtListEdit.Visible = False
-    End Sub
-
-    ' Grid clicks
-    Private Sub lstBuild_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuild.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
-            Call ListClicked(lstBuild, sender, e)
-        End If
-    End Sub
-
-    Private Sub lstBuy_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuy.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
-            Call ListClicked(lstBuy, sender, e)
-        End If
-    End Sub
-
-    Private Sub lstItems_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstItems.MouseClick
-        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
-            Call ListClicked(lstItems, sender, e)
-        End If
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBuild_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBuild.ProcMsg
-        txtListEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBuy_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBuy.ProcMsg
-        txtListEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstItems_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstItems.ProcMsg
-        txtListEdit.Hide()
-    End Sub
-
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-        Dim AccessTokenOutput As New ESITokenData
-        Dim Success As Boolean = False
-        Dim WC As New WebClient
-        Dim Response As Byte()
-        Dim Data As String = ""
-        Dim PostParameters As New NameValueCollection
-        Dim Items As New NameValueCollection
-
-        Try
-            '' Look at creating this call using json data - Call works below but only returns prices, which I really don't need
-            'Dim test As New EAItem
-            'test.market_name = "jita"
-            'Dim item As New typeIDs
-            'item.type_id = 34
-            'Dim eaitems As New List(Of typeIDs)
-            'eaitems.Add(item)
-            'test.items = eaitems
-            'Dim JSONresult As String = JsonConvert.SerializeObject(test)
-            'Dim myURI As Uri = New Uri("https://evepraisal.com/appraisal/structured.json")
-
-            ''curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
-
-            'Data = SendRequest(myURI, Encoding.UTF8.GetBytes(JSONresult), "application/json", "POST")
-
-            '' Convert byte data to string
-            'Data = Encoding.UTF8.GetString(Response)
-
-            '' Parse the data to the class
-            'AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
-            'Success = True
-
-            ' This returns an ID for the raw text values - tested and works
-            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=basilisk " & vbCrLf & "rifter" & vbCrLf & "hulk" & vbCrLf & "zydrine 44", "POST", PostParameters)
-            Data = Encoding.UTF8.GetString(Response)
-
-            ' Need to parse data and pull id for permanent link - https://evepraisal.com/a/yifsu
-
-        Catch ex As WebException
-
-            Call MsgBox(ex.Message)
-
-        Catch ex As Exception
-            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
-        End Try
-
-
-    End Sub
-
-    Private Function SendRequest(uri As Uri, jsonDataBytes As Byte(), contentType As String, method As String) As String
-        Dim response As String
-        Dim request As WebRequest
-
-        request = WebRequest.Create(uri)
-        request.ContentLength = jsonDataBytes.Length
-        request.ContentType = contentType
-        request.Method = method
-
-        Using requestStream = request.GetRequestStream
-            requestStream.Write(jsonDataBytes, 0, jsonDataBytes.Length)
-            requestStream.Close()
-
-            Using responseStream = request.GetResponse.GetResponseStream
-                Using reader As New StreamReader(responseStream)
-                    response = reader.ReadToEnd()
-                End Using
-            End Using
-        End Using
-
-        Return response
-    End Function
-
-
-    Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
-        If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
-            txtBrokerFeeRate.Visible = True
-            lblFeeRate.Visible = True
-        Else
-            txtBrokerFeeRate.Visible = False
-            lblFeeRate.Visible = False
-        End If
-    End Sub
-
-    Private Sub txtBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBrokerFeeRate.KeyDown
-        If e.KeyCode = Keys.Enter Then
-            txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
-        End If
-    End Sub
-
-    Private Sub txtBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBrokerFeeRate.KeyPress
-        ' Only allow numbers, decimal, percent or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.GotFocus
-        Call txtBrokerFeeRate.SelectAll()
-    End Sub
-
-    Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
-        txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
     End Sub
 
 #End Region

@@ -207,16 +207,18 @@ Public Class EVEAssets
                     SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    '' Finally, get all the names and update the Assets table
-                    'Dim AssetItemNames As New List(Of ESICharacterAssetName)
-                    'AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
+                    ' Finally, get all the names and update the Assets table
+                    Dim AssetItemNames As New List(Of ESICharacterAssetName)
+                    AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
 
-                    '' Update the names in the asset table for each itemID
-                    'For Each item In AssetItemNames
-                    '    If item.name <> None Then
-                    '        Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE ItemID=" & CStr(item.item_id))
-                    '    End If
-                    'Next
+                    ' Update the names in the asset table for each itemID
+                    If Not IsNothing(AssetItemNames) Then
+                        For Each item In AssetItemNames
+                            If item.name <> None Then
+                                Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE LocationId=" & CStr(item.item_id))
+                            End If
+                        Next
+                    End If
 
                     'Update cache date since it's all set now
                     Call CB.UpdateCacheDate(CDType, CacheDate, ID)
@@ -858,7 +860,7 @@ Public Class EVEAssets
     ' For sorting assets by name
     Public Class AssetNameComparer
 
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
+        Implements IComparer(Of EVEAsset)
 
         Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
             ' Sort by name alphabetically
@@ -870,7 +872,7 @@ Public Class EVEAssets
     ' For sorting assets by quantity
     Public Class AssetQuantityComparer
 
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
+        Implements IComparer(Of EVEAsset)
 
         Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
             ' Sort by quantity decending
@@ -882,7 +884,7 @@ Public Class EVEAssets
     ' For sorting assets by item group
     Public Class AssetGroupComparer
 
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
+        Implements IComparer(Of EVEAsset)
 
         Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
             ' Sort by group name alphabetically
@@ -894,7 +896,7 @@ Public Class EVEAssets
     ' For sorting assets by flag id
     Public Class AssetFlagComparer
 
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
+        Implements IComparer(Of EVEAsset)
 
         Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
             ' Sort by flagid

@@ -109,9 +109,9 @@ Public Class frmReprocessingPlant
         Call RefreshRefiningRates()
 
         ItemsColumnClicked = 1
-        ItemsColumnSortType = SortOrder.Ascending
+        ItemsColumnSortType = SortOrder.Descending
         OutputColumnClicked = 2
-        OutputColumnSortType = SortOrder.Ascending
+        OutputColumnSortType = SortOrder.Descending
 
     End Sub
 
@@ -304,11 +304,11 @@ Public Class frmReprocessingPlant
         ' Make sure it's not disposed
         If IsNothing(frmRefineryAssets) Then
             ' Make new form
-            frmRefineryAssets = New frmAssetsViewer(AssetWindow.Refinery)
+            frmRefineryAssets = New frmAssetsViewer(AssetWindow.ReprocessingPlant)
         Else
             If frmRefineryAssets.IsDisposed Then
                 ' Make new form
-                frmRefineryAssets = New frmAssetsViewer(AssetWindow.Refinery)
+                frmRefineryAssets = New frmAssetsViewer(AssetWindow.ReprocessingPlant)
             End If
         End If
 
@@ -349,7 +349,7 @@ Public Class frmReprocessingPlant
         Call Reprocess()
     End Sub
 
-    Private Sub Reprocess()
+    Public Sub Reprocess()
         Dim ReprocessedMaterials As New Materials
         Dim ReprocessedCost As Double
         Dim ReprocessingUsage As Double
@@ -357,6 +357,8 @@ Public Class frmReprocessingPlant
         Dim ItemCost As Double
         Dim ItemlstViewRow As ListViewItem
         Dim TotalItemListValue As Double = 0
+        Dim ReprocessingYield As Double
+        Dim fnt_font As Font
 
         If lstItemstoRefine.CheckedItems.Count = 0 Then
             MsgBox("No items selected to refine.", vbExclamation, Application.ProductName)
@@ -372,8 +374,7 @@ Public Class frmReprocessingPlant
         For Each Item As ListViewItem In Me.lstItemstoRefine.Items
             If Item.Checked Then
 
-                Dim ReprocessingYield As Double = 0
-
+                ReprocessingYield = 0
                 TotalItemListValue += CDbl(Item.SubItems.Item(2).Text)
                 Dim ItemGroup As String = Item.SubItems.Item(6).Text
 
@@ -382,7 +383,6 @@ Public Class frmReprocessingPlant
                     Call ReprocessMaterial(CInt(.Item(7).Text), .Item(0).Text, CInt(.Item(1).Text), .Item(6).Text, chkRecursiveRefine.Checked,
                                                              ReprocessedMaterials, ReprocessingYield, ReprocessingUsage)
                 End With
-
                 ' Save the processing cost
                 TotalReprocessingUsage += ReprocessingUsage
 
@@ -394,35 +394,47 @@ Public Class frmReprocessingPlant
                 If ItemCost = 0 Then
                     Item.SubItems.Item(5).Text = FormatPercent(1, 1)
                 Else
+                    Item.UseItemStyleForSubItems = False
+                    fnt_font = New Font(Item.SubItems.Item(5).Font.SystemFontName, Item.SubItems.Item(5).Font.Size, FontStyle.Bold)
+                    Item.SubItems.Item(5).Font = fnt_font
                     Item.SubItems.Item(5).Text = FormatPercent(ReprocessedCost / ItemCost, 1)
+                    If ReprocessedCost / ItemCost >= 1 Then
+                        Item.SubItems.Item(5).ForeColor = Color.DarkGreen
+                    Else
+                        Item.SubItems.Item(5).ForeColor = Color.DarkRed
+                    End If
                 End If
 
                 ' Add the materials to the main material list
                 Call MaterialOutput.InsertMaterialList(ReprocessedMaterials.GetMaterialList)
-                Application.DoEvents()
+
             Else
                 ' Clear the output data 
                 Item.SubItems.Item(3).Text = ""
                 Item.SubItems.Item(4).Text = ""
                 Item.SubItems.Item(5).Text = ""
             End If
+            Application.DoEvents()
         Next
         lstItemstoRefine.EndUpdate()
 
         ' Update the total usage for doing this refining
         ReprocessingFacility.GetSelectedFacility.FacilityUsage = TotalReprocessingUsage
+        lblTotalReprocessingCost.Text = FormatNumber(TotalReprocessingUsage, 2)
 
         ' Now update the main output list
         lstRefineOutput.Items.Clear()
         lstRefineOutput.BeginUpdate()
         For Each mat In MaterialOutput.GetMaterialList
-            ItemlstViewRow = New ListViewItem(CStr(mat.GetMaterialTypeID))
-            ItemlstViewRow.SubItems.Add(mat.GetMaterialName)
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetQuantity, 0))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetCostPerItem, 2))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalCost, 2))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalVolume, 2))
-            Call lstRefineOutput.Items.Add(ItemlstViewRow)
+            If mat.GetQuantity > 0 Then
+                ItemlstViewRow = New ListViewItem(CStr(mat.GetMaterialTypeID))
+                ItemlstViewRow.SubItems.Add(mat.GetMaterialName)
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetQuantity, 0))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetCostPerItem, 2))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalCost, 2))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalVolume, 2))
+                Call lstRefineOutput.Items.Add(ItemlstViewRow)
+            End If
         Next
         lstRefineOutput.EndUpdate()
 
@@ -433,8 +445,13 @@ Public Class frmReprocessingPlant
         lblReprocessingValueOutput.Text = FormatNumber(TotalValue, 2) ' Total value of stuff reprocessed minus usage
         lblReprocessingVolumeOutput.Text = FormatNumber(MaterialOutput.GetTotalVolume, 2) ' Total volume of output stuff
 
+        ' Whenever reprocess is pushed and the sort column is quantity, just sort ascending
+        'If OutputColumnClicked = 2 Then
+        '    OutputColumnSortType = SortOrder.Ascending
+        'End If
+
         ' Sort the  list
-        Call ListViewColumnSorter(OutputColumnClicked, CType(lstRefineOutput, ListView), OutputColumnClicked, OutputColumnSortType)
+        Call ListViewColumnSorter(OutputColumnClicked, CType(lstRefineOutput, ListView), OutputColumnClicked, OutputColumnSortType, True)
 
         Application.DoEvents()
 
@@ -544,7 +561,7 @@ Public Class frmReprocessingPlant
             ' Build the where clause to look up data
             Dim AssetLocationFlagList As String = ""
             ' First look up the location and flagID pairs - unique ID of asset locations
-            SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.Refinery) & " AND ID IN (" & IDString & ")"
+            SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ReprocessingPlant) & " AND ID IN (" & IDString & ")"
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerItems = DBCommand.ExecuteReader
 
@@ -693,6 +710,8 @@ Public Class frmReprocessingPlant
         lblReprocessingValueOutput.Text = "-"
         lblReprocessingVolumeOutput.Text = "-"
 
+        lblTotalReprocessingCost.Text = "0.00"
+
     End Sub
 
     Private Sub btnCopyOutput_Click(sender As Object, e As EventArgs) Handles btnCopyOutput.Click
@@ -730,14 +749,6 @@ Public Class frmReprocessingPlant
     Private Sub cmbRefineryEff_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbReprocessingEff.SelectedIndexChanged
         ' Update the ore processing skills
         Call UpdateProcessingSkills()
-    End Sub
-
-    Private Sub lstRefineOutput_MouseClick(sender As Object, e As MouseEventArgs) Handles lstRefineOutput.MouseClick
-        Call lstRefineOutput.ListClicked(lstRefineOutput, sender, e)
-    End Sub
-
-    Private Sub lstItemstoRefine_MouseClick(sender As Object, e As MouseEventArgs) Handles lstItemstoRefine.MouseClick
-        Call lstItemstoRefine.ListClicked(lstItemstoRefine, sender, e)
     End Sub
 
 End Class

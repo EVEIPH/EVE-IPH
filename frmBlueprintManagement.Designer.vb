@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmBlueprintManagement
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class frmBlueprintManagement
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmBlueprintManagement))
@@ -107,11 +107,9 @@ Partial Class frmBlueprintManagement
         Me.lblBPTE = New System.Windows.Forms.Label()
         Me.txtBPME = New System.Windows.Forms.TextBox()
         Me.lblBPME = New System.Windows.Forms.Label()
-        Me.txtBPEdit = New System.Windows.Forms.TextBox()
         Me.ttBPManage = New System.Windows.Forms.ToolTip(Me.components)
         Me.SaveFileDialog = New System.Windows.Forms.SaveFileDialog()
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
-        Me.cmbEdit = New System.Windows.Forms.ComboBox()
         Me.lstBPs = New EVE_Isk_per_Hour.MyListView()
         Me.gbBPFilter.SuspendLayout()
         Me.gbBlueprintTech.SuspendLayout()
@@ -1034,15 +1032,6 @@ Partial Class frmBlueprintManagement
         Me.lblBPME.TabIndex = 12
         Me.lblBPME.Text = "ME:"
         '
-        'txtBPEdit
-        '
-        Me.txtBPEdit.Location = New System.Drawing.Point(802, 325)
-        Me.txtBPEdit.Name = "txtBPEdit"
-        Me.txtBPEdit.Size = New System.Drawing.Size(48, 20)
-        Me.txtBPEdit.TabIndex = 58
-        Me.txtBPEdit.TabStop = False
-        Me.txtBPEdit.Visible = False
-        '
         'ttBPManage
         '
         Me.ttBPManage.IsBalloon = True
@@ -1050,18 +1039,6 @@ Partial Class frmBlueprintManagement
         'OpenFileDialog
         '
         Me.OpenFileDialog.FileName = "Filename"
-        '
-        'cmbEdit
-        '
-        Me.cmbEdit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbEdit.FormattingEnabled = True
-        Me.cmbEdit.ItemHeight = 13
-        Me.cmbEdit.Items.AddRange(New Object() {"Yes", "No"})
-        Me.cmbEdit.Location = New System.Drawing.Point(802, 347)
-        Me.cmbEdit.Name = "cmbEdit"
-        Me.cmbEdit.Size = New System.Drawing.Size(48, 21)
-        Me.cmbEdit.TabIndex = 61
-        Me.cmbEdit.TabStop = False
         '
         'lstBPs
         '
@@ -1085,8 +1062,6 @@ Partial Class frmBlueprintManagement
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1115, 614)
         Me.Controls.Add(Me.gbBPFilter)
-        Me.Controls.Add(Me.cmbEdit)
-        Me.Controls.Add(Me.txtBPEdit)
         Me.Controls.Add(Me.lstBPs)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -1116,7 +1091,6 @@ Partial Class frmBlueprintManagement
         Me.gbUpdateOptions.ResumeLayout(False)
         Me.gbUpdateOptions.PerformLayout()
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
     Friend WithEvents gbBPFilter As System.Windows.Forms.GroupBox
@@ -1185,11 +1159,9 @@ Partial Class frmBlueprintManagement
     Friend WithEvents btnBackupBPs As System.Windows.Forms.Button
     Friend WithEvents SaveFileDialog As System.Windows.Forms.SaveFileDialog
     Friend WithEvents OpenFileDialog As System.Windows.Forms.OpenFileDialog
-    Friend WithEvents txtBPEdit As System.Windows.Forms.TextBox
     Friend WithEvents rbtnFavorites As System.Windows.Forms.RadioButton
     Friend WithEvents chkMarkasFavorite As System.Windows.Forms.CheckBox
     Friend WithEvents lstBPs As EVE_Isk_per_Hour.MyListView
-    Friend WithEvents cmbEdit As System.Windows.Forms.ComboBox
     Friend WithEvents chkNotOwned As System.Windows.Forms.CheckBox
     Friend WithEvents gbSize As System.Windows.Forms.GroupBox
     Friend WithEvents chkBPXL As System.Windows.Forms.CheckBox

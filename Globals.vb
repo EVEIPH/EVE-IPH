@@ -114,6 +114,7 @@ Public Module Public_Variables
     Public frmRefineryAssets As frmAssetsViewer
     Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
     Public frmRepoPlant As frmReprocessingPlant
+    Public frmInventMats As frmInventionMats
 
     ' The only allowed characters for text entry
     Public Const allowedPriceChars As String = "0123456789.,"
@@ -249,6 +250,14 @@ Public Module Public_Variables
         Original = -1
         Copy = -2
         InventedBPC = -3
+    End Enum
+
+    ' Types of Asset windows
+    Public Enum AssetWindow
+        DefaultView = 0
+        ManufacturingTab = 1
+        ShoppingList = 2
+        ReprocessingPlant = 3
     End Enum
 
     ' For scanning assets
@@ -1431,6 +1440,12 @@ SkipItem:
         ' Reload the prices on the reprocessing plant if open
         If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
             frmRepoPlant.RefreshMaterialList()
+            frmRepoPlant.Reprocess()
+        End If
+
+        ' Reload the prices on the reprocessing plant if open
+        If Application.OpenForms().OfType(Of frmInventionMats).Any Then
+            frmInventMats.RefreshInventionMatsGrid()
         End If
 
         ' Refill the search grid on manual updates
@@ -1768,41 +1783,41 @@ SkipItem:
 
             ' Format TechSQL - Add on Meta codes - 21,22,23,24 are T3
             If TechSQL <> "" Then
-                TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
+                TechSQL = " AND (" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
             End If
 
             ' Build Tech 1,2,3 Manufactured Items
             If Charges.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Charge' " & TechSQL
                 If ChargeTypes.Text <> "All Charge Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ChargeTypes.Text & "'"
                 End If
                 SQL &= ") OR "
             End If
             If Drones.Checked Then
-                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') " & TechSQL & ") OR "
             End If
             If Modules.Checked Then ' Not rigs but Modules
-                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' " & TechSQL & ") OR "
             End If
             If Ships.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Ship' " & TechSQL
                 If ShipTypes.Text <> "All Ship Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ShipTypes.Text & "'"
                 End If
                 SQL &= ") OR "
             End If
             If Subsystems.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Subsystem' " & TechSQL & ") OR "
             End If
             If StructureRigs.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' AND " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' " & TechSQL & ") OR "
             End If
             If Rigs.Checked Then ' Rigs
-                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
+                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
             End If
             If Structures.Checked Then
-                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
+                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
             End If
         End If
 

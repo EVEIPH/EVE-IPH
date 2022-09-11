@@ -5,8 +5,9 @@ Public Class MyListView
 
     Public Event ProcMsg(ByVal m As Message)
     Public Const WM_VSCROLL As Integer = 277
+
     Private WithEvents txtListEditBox As TextBox
-    Private WithEvents cmbeditBox As ComboBox
+    Private WithEvents cmbEditBox As ComboBox
 
     ' Inline grid row update variables
     Private Structure SavedLoc
@@ -20,18 +21,16 @@ Public Class MyListView
     Private CurrentRow As ListViewItem
     Private PreviousRow As ListViewItem
     Private NextRow As ListViewItem
-
     Private NextCellRow As ListViewItem
     Private PreviousCellRow As ListViewItem
-
     Private CurrentCell As ListViewItem.ListViewSubItem
     Private PreviousCell As ListViewItem.ListViewSubItem
     Private NextCell As ListViewItem.ListViewSubItem
 
     Private PriceUpdate As Boolean
+    Private QuantityUpdate As Boolean
     Private DataUpdated As Boolean
     Private DataEntered As Boolean
-    Private SelectedGrid As ListView
 
     Private PriceTypeUpdate As Boolean
     Private PriceSystemUpdate As Boolean
@@ -63,7 +62,11 @@ Public Class MyListView
     Private Const RefineryOutput As String = "lstRefineOutput"
     Private Const RefineryItems As String = "lstItemstoRefine"
     Private Const BPManagement As String = "lstBPs"
-    Private Const MiningGrid As String = "lstMineGrid"
+    Private Const InventionMats As String = "lstInventionMats"
+
+    Private Const ShoppingListItems As String = "lstItems"
+    Private Const ShoppingListBuy As String = "lstBuy"
+    Private Const ShoppingListBuild As String = "lstBuild"
 
     Public Sub New()
 
@@ -78,7 +81,8 @@ Public Class MyListView
         txtListEditBox.SetBounds(5, 5, 20, 20)
         txtListEditBox.Hide()
 
-        cmbeditBox = New ComboBox
+        cmbEditBox = New ComboBox
+        cmbEditBox.DropDownStyle = ComboBoxStyle.DropDownList
         Me.SuspendLayout()
         Me.Controls.Add(cmbeditBox)
         cmbeditBox.SetBounds(5, 5, 20, 20)
@@ -87,15 +91,14 @@ Public Class MyListView
     End Sub
 
     ' Determines where to show the text box when clicking on the list sent
-    Public Sub ListClicked(ListRef As ListView, sender As Object, e As MouseEventArgs)
+    Private Sub MyListView_MouseClick(sender As Object, e As MouseEventArgs) Handles Me.MouseClick
         Dim iSubIndex As Integer = 0
 
         ' Hide the text box when a new line is selected
         txtListEditBox.Hide()
         cmbeditBox.Hide()
 
-        CurrentRow = ListRef.GetItemAt(e.X, e.Y) ' which listviewitem was clicked
-        SelectedGrid = ListRef
+        CurrentRow = Me.GetItemAt(e.X, e.Y) ' which listviewitem was clicked
 
         If CurrentRow Is Nothing Then
             Exit Sub
@@ -104,12 +107,12 @@ Public Class MyListView
         CurrentCell = CurrentRow.GetSubItemAt(e.X, e.Y)  ' which subitem was clicked
 
         ' Determine where the previous and next item boxes will be based on what they clicked - used in tab event handling
-        Call SetNextandPreviousCells(ListRef)
+        Call SetNextandPreviousCells()
 
         ' See which column has been clicked
         iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
 
-        Select Case ListRef.Name
+        Select Case Me.Name
             Case BPRaw, BPComponents
                 ' Set the columns that can be edited, just ME and Price
                 If iSubIndex = 2 Or iSubIndex = 3 Then
@@ -130,33 +133,256 @@ Public Class MyListView
                     ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
                     ' 2 - If the Price is clicked and the ME box has '-' in it
                     If (CurrentRow.SubItems(2).Text <> "-" And MEUpdate) Or PriceUpdate Then
-                        Call ShowEditBox(ListRef)
+                        Call ShowEditBox()
                     End If
 
                 End If
-            Case UpdatePrices, RefineryOutput, RefineryItems
+            Case UpdatePrices, RefineryOutput, RefineryItems, InventionMats
                 ' Set the columns that can be edited, just Price
-                If (ListRef.Name = RefineryItems And iSubIndex = 2) Or (ListRef.Name <> RefineryItems And iSubIndex = 3) Then
-                    Call ShowEditBox(ListRef)
+                If ((Me.Name = RefineryItems Or Me.Name = InventionMats) And iSubIndex = 2) Or (Me.Name <> RefineryItems And Me.Name <> InventionMats And iSubIndex = 3) Then
+                    Call ShowEditBox()
                     PriceUpdate = True
                 End If
             Case RawPriceProfile, ManufacturedPriceProfile
                 If iSubIndex > 0 Then
                     ' Reset update type
                     Call SetPriceProfileVariables(iSubIndex)
-                    Call ShowEditBox(ListRef)
+                    Call ShowEditBox()
+                End If
+            Case BPManagement
+                ' Set the columns that can be edited, just ME and TE
+                If iSubIndex = 5 Or iSubIndex = 6 Then
+
+                    If iSubIndex = 5 Then
+                        MEUpdate = True
+                    Else
+                        MEUpdate = False
+                    End If
+
+                    If iSubIndex = 6 Then
+                        TEUpdate = True
+                    Else
+                        TEUpdate = False
+                    End If
+
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = False
+
+                    Call ShowEditBox()
+
+                ElseIf iSubIndex = 8 Then ' Owned Type
+
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = True
+
+                    Call ShowEditBox()
+
+                ElseIf iSubIndex = 9 Then ' Favorite
+
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = True
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = False
+
+                    Call ShowEditBox()
+
+                ElseIf iSubIndex = 10 Then ' Ignored
+
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = True
+                    OwnedTypeUpdate = False
+
+                    Call ShowEditBox()
+
+                Else
+                    ' Not updatable so leave
+                    Exit Sub
+                End If
+            Case ShoppingListBuild, ShoppingListBuy, ShoppingListItems
+                ' Look at the buy list for price and quantity
+                If Me.Name = ShoppingListBuy Then
+                    ' Set the columns that can be edited, just Quantity and Price
+                    Select Case iSubIndex
+                        Case 2
+                            QuantityUpdate = True
+                            PriceUpdate = False
+                            Call ShowEditBox()
+                        Case 3
+                            QuantityUpdate = False
+                            PriceUpdate = True
+                            Call ShowEditBox()
+                        Case Else
+                            QuantityUpdate = False
+                            PriceUpdate = False
+                    End Select
+
+                Else
+                    ' Just quantity for the other 2
+                    If iSubIndex = 2 Then
+                        QuantityUpdate = True
+                        PriceUpdate = False
+                        Call ShowEditBox()
+                    Else
+                        QuantityUpdate = False
+                        PriceUpdate = False
+                    End If
                 End If
         End Select
 
     End Sub
 
+    ' Shows the text/combo box on the grid where clicked if enabled
+    Private Sub ShowEditBox(Optional TextBoxAlignment As HorizontalAlignment = HorizontalAlignment.Right)
+        Dim RowIndex As Integer = 0
+
+        ' Save the center location of the edit box
+        SavedListClickLoc.X = CurrentCell.Bounds.Left + CInt(CurrentCell.Bounds.Width / 2)
+        SavedListClickLoc.Y = CurrentCell.Bounds.Top + CInt(CurrentCell.Bounds.Height / 2)
+
+        ' Get the boundry data for the control now
+        Dim pLeft As Integer = CurrentCell.Bounds.Left
+        Dim pTop As Integer = CurrentCell.Bounds.Top - 1
+
+        Select Case Me.Name
+            Case BPComponents
+                If Me.Columns(CurrentRow.SubItems.IndexOf(CurrentCell)).Text = "ME" Then
+                    Call ShowTextBox(pLeft, pTop, HorizontalAlignment.Center)
+                Else
+                    Call ShowTextBox(pLeft, pTop, TextBoxAlignment)
+                End If
+            Case BPRaw, UpdatePrices, RefineryOutput, RefineryItems, InventionMats, ShoppingListItems, ShoppingListBuild, ShoppingListBuy
+                Call ShowTextBox(pLeft, pTop, TextBoxAlignment)
+            Case ManufacturedPriceProfile, RawPriceProfile
+                If PriceModifierUpdate Then
+                    ' Show the text box
+                    Call ShowTextBox(pLeft, pTop, TextBoxAlignment)
+                Else ' Show combo box
+                    With cmbEditBox
+                        UpdatingCombo = True
+                        .Hide()
+
+                        If PriceRegionUpdate Then
+                            Call LoadRegionCombo(cmbEditBox, CurrentCell.Text)
+                        Else
+                            .BeginUpdate()
+                            .Items.Clear()
+                            Dim rsData As SQLiteDataReader
+                            Dim SQL As String = ""
+
+                            If PriceSystemUpdate Then
+                                ' Base it off the data in the region cell
+                                SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
+                                SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
+                                SQL &= "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
+                                SQL &= "ORDER BY solarSystemName"
+                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                                rsData = DBCommand.ExecuteReader
+
+                                ' Add all systems if it's the system
+                                .Items.Add(AllSystems)
+                                While rsData.Read
+                                    .Items.Add(rsData.GetString(0))
+                                    ' Special processing for The Forge
+                                    If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
+                                        .Items.Add(JitaPerimeter)
+                                    End If
+                                End While
+
+                                rsData.Close()
+
+                            ElseIf PriceTypeUpdate Then
+                                ' Manually enter these
+                                .Items.Add("Min Sell")
+                                .Items.Add("Max Sell")
+                                .Items.Add("Avg Sell")
+                                .Items.Add("Median Sell")
+                                .Items.Add("Percentile Sell")
+                                .Items.Add("Min Buy")
+                                .Items.Add("Max Buy")
+                                .Items.Add("Avg Buy")
+                                .Items.Add("Median Buy")
+                                .Items.Add("Percentile Buy")
+                                .Items.Add("Split Price")
+                            End If
+                            .EndUpdate()
+                        End If
+
+                        ' Set the bounds of the control
+                        .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
+                        .Text = CurrentCell.Text
+                        .Show()
+                        .Focus()
+
+                        DataEntered = False ' We just updated so reset
+                        UpdatingCombo = False
+                    End With
+                    txtListEditBox.Visible = False
+                End If
+
+            Case BPManagement
+                If MEUpdate Or TEUpdate Then
+                    Call ShowTextBox(pLeft, pTop, TextBoxAlignment)
+                Else ' OwnedType/Favorites/Ignore
+                    With cmbEditBox
+                        If OwnedTypeUpdate Then
+                            .Items.Clear()
+                            If CurrentRow.SubItems.Item(4).Text = "T1" Or CurrentRow.SubItems.Item(4).Text = "T2" Then
+                                .Items.Add(BPO) ' Only T1 and T2 have BPOs
+                            End If
+
+                            If CurrentRow.SubItems.Item(4).Text = "T2" Or CurrentRow.SubItems.Item(4).Text = "T3" Then
+                                ' Invented BPCs are T2, T3 
+                                .Items.Add(InventedBPC)
+                            End If
+
+                            If CurrentRow.SubItems.Item(4).Text <> "T3" Then
+                                .Items.Add(BPC) ' Copies from BPOs, which are T1 and T2 only
+                            End If
+                            .Items.Add(UnownedBP)
+                        Else ' Favorite / Ignore
+                            .Items.Clear()
+                            .Items.Add(Yes)
+                            .Items.Add(No)
+                        End If
+
+                        .Hide()
+                        .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
+                        .Text = CurrentCell.Text
+                        DataEntered = False ' We just updated so reset
+                        .Show()
+                        .Focus()
+
+                    End With
+                    txtListEditBox.Visible = False
+                End If
+
+        End Select
+    End Sub
+
     ' For updating the items in the list by clicking on them
-    Private Sub ProcessKeyDownEdit(SentKey As Keys, ListRef As ListView)
+    Private Sub ProcessKeyDownEdit(SentKey As Keys)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
         Dim MEValue As String = ""
+        Dim TEValue As String = ""
+        Dim FavoriteValue As String
+        Dim OwnedTypeValue As String
+        Dim IgnoredValue As String
+        Dim TempBPType As BPType
+        Dim UpdatedBPType As BPType
+        Dim SetasFavorite As Boolean
+        Dim SetasIgnore As Boolean
+
         Dim PriceValue As Double = 0
+        Dim QuantityValue As Integer = 0
         Dim PriceUpdated As Boolean = False
 
         ' Change blank entry to 0
@@ -189,7 +415,7 @@ Public Class MyListView
                 PriceValue = CDbl(txtListEditBox.Text)
             End If
 
-            Select Case ListRef.Name
+            Select Case Me.Name
                 Case BPRaw, BPComponents
                     ' Check the numbers, if the same then don't update
                     If MEValue = CurrentRow.SubItems(2).Text And PriceValue = CDbl(CurrentRow.SubItems(3).Text) Then
@@ -211,7 +437,6 @@ Public Class MyListView
                         rsData.Read()
 
                         ' If they update the ME of the blueprint, then we mark it as Owned and a 0 for TE value, but set the type depending on the bp loaded
-                        Dim TempBPType As BPType
                         Dim TempTE As Integer = rsData.GetInt32(5)
 
                         If rsData.GetInt64(2) = BPTechLevel.T1 Then
@@ -257,10 +482,10 @@ Public Class MyListView
                     Call frmMain.RefreshBP()
                     RefreshingGrid = False
 
-                Case UpdatePrices, RefineryOutput, RefineryItems
+                Case UpdatePrices, RefineryOutput, RefineryItems, InventionMats
                     ' Price List Update
                     SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEditBox.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = "
-                    If ListRef.Name = RefineryItems Then
+                    If Me.Name = RefineryItems Then
                         SQL &= CurrentRow.SubItems(7).Text
                     Else
                         SQL &= CurrentRow.SubItems(0).Text
@@ -269,13 +494,13 @@ Public Class MyListView
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Change the value in the price grid, but don't update the grid
-                    CurrentRow.SubItems(3).Text = FormatNumber(txtListEditBox.Text, 2)
+                    CurrentRow.SubItems(GetPriceColumnIndex).Text = FormatNumber(txtListEditBox.Text, 2)
                     PriceUpdated = True
 
                 Case ManufacturedPriceProfile, RawPriceProfile
                     ' Price Profiles update
                     Dim RawMat As String
-                    If ListRef.Name = RawPriceProfile Then
+                    If Me.Name = RawPriceProfile Then
                         RawMat = "1"
                     Else
                         RawMat = "0"
@@ -354,6 +579,185 @@ Public Class MyListView
                     PreviousRegion = ""
                     PreviousSystem = ""
                     PriceUpdated = False
+
+                Case BPManagement
+                    ' Save the data, Save as no scan, but BPO, BP Type
+                    If MEUpdate Then
+                        MEValue = txtListEditBox.Text
+                    Else
+                        MEValue = CurrentRow.SubItems(5).Text
+                    End If
+
+                    If TEUpdate Then
+                        TEValue = txtListEditBox.Text
+                    Else
+                        TEValue = CurrentRow.SubItems(6).Text
+                    End If
+
+                    If OwnedTypeUpdate Then
+                        OwnedTypeValue = cmbEditBox.Text
+                    Else
+                        OwnedTypeValue = CurrentRow.SubItems(8).Text
+                    End If
+
+                    If FavoriteUpdate Then
+                        FavoriteValue = cmbEditBox.Text
+                    Else
+                        FavoriteValue = CurrentRow.SubItems(9).Text
+                    End If
+
+                    If FavoriteValue = Yes Then
+                        SetasFavorite = True
+                    Else
+                        SetasFavorite = False
+                    End If
+
+                    If IgnoredBPUpdate Then
+                        IgnoredValue = cmbEditBox.Text
+                    Else
+                        IgnoredValue = CurrentRow.SubItems(10).Text
+                    End If
+
+                    If IgnoredValue = Yes Then
+                        SetasIgnore = True
+                    Else
+                        SetasIgnore = False
+                    End If
+
+                    ' Check the numbers, if they are the same, then don't mark as owned
+                    If MEValue = CurrentRow.SubItems(5).Text _
+                        And TEValue = CurrentRow.SubItems(6).Text _
+                        And OwnedTypeValue = CurrentRow.SubItems(8).Text _
+                        And FavoriteValue = CurrentRow.SubItems(9).Text _
+                        And IgnoredValue = CurrentRow.SubItems(10).Text Then
+                        ' Skip down
+                        GoTo Tabs
+                    End If
+
+                    ' Set the bp type to make sure we set the owned flag correctly
+                    TempBPType = GetBPType(OwnedTypeValue)
+
+                    Dim TempRuns As Integer
+
+                    UpdatedBPType = UpdateBPinDB(CLng(CurrentRow.SubItems(1).Text), CInt(MEValue), CInt(TEValue), TempBPType,
+                                      CInt(CurrentRow.SubItems(5).Text), CInt(CurrentRow.SubItems(6).Text), SetasFavorite, SetasIgnore)
+
+                    ' Update the data in the current row
+                    CurrentRow.SubItems(8).Text = GetBPTypeString(UpdatedBPType)
+                    If UpdatedBPType = BPType.NotOwned Or CurrentRow.SubItems(2).Text.Contains("Reaction Formulas") Then ' Reactions are always set to 0
+                        ' Update the ME/TE to 0 
+                        CurrentRow.SubItems(5).Text = "0"
+                        CurrentRow.SubItems(6).Text = "0"
+                    Else
+                        CurrentRow.SubItems(5).Text = CStr(MEValue)
+                        CurrentRow.SubItems(6).Text = CStr(TEValue)
+                    End If
+
+                    If TempRuns = -1 Then
+                        CurrentRow.SubItems(11).Text = Unlimited
+                    Else
+                        CurrentRow.SubItems(11).Text = CStr(TempRuns)
+                    End If
+
+                    CurrentRow.SubItems(9).Text = FavoriteValue
+                    CurrentRow.SubItems(10).Text = IgnoredValue
+
+                    ' Mark as owned and change color
+                    If CBool(UpdatedBPType) Then ' 14 = Owned
+                        CurrentRow.SubItems.Add(Yes)
+                        CurrentRow.ForeColor = Color.Blue
+                    Else
+                        CurrentRow.SubItems.Add(No)
+                        CurrentRow.ForeColor = Color.Black
+                        CurrentRow.BackColor = Color.White
+                    End If
+
+                Case ShoppingListItems, ShoppingListBuy, ShoppingListBuild
+                    ' Save the data depending on what we are updating
+                    If QuantityUpdate Then
+                        QuantityValue = CInt(txtListEditBox.Text)
+                        ' Check the numbers, if the same then don't update
+                        If QuantityValue = CInt(CurrentRow.SubItems(2).Text) Then
+                            ' Skip down and don't update
+                            GoTo Tabs
+                        End If
+                    End If
+
+                    If PriceUpdate Then
+                        PriceValue = CDbl(txtListEditBox.Text)
+                        ' Check the numbers, if the same then don't update
+                        If PriceValue = CDbl(CurrentRow.SubItems(3).Text) Then
+                            ' Skip down and don't update
+                            GoTo Tabs
+                        End If
+                    End If
+
+                    ' Update the quantity data in all three grids
+                    If QuantityUpdate Then
+                        ' Adjust the mats to what they enter - if it said 100, and they enter 90, then adjust to 90
+                        If Me.Name = ShoppingListBuy Then ' The materials we buy to build items 
+                            ' Save the mats they probably have on hand to make this change - calc from value in grid vs. value entered
+                            Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
+                            Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
+                            TotalShoppingList.OnHandMatList.InsertMaterial(OnHandMaterial)
+
+                            ' Update the buy list
+                            Call TotalShoppingList.UpdateShoppingBuyQuantity(CurrentRow.SubItems(1).Text, QuantityValue)
+
+                        ElseIf Me.Name = ShoppingListBuild Then ' The components we are building to make the item
+                            Dim TempBuiltItem As New BuiltItem
+                            TempBuiltItem.ItemTypeID = CLng(CurrentRow.SubItems(0).Text)
+                            TempBuiltItem.ItemName = CurrentRow.SubItems(1).Text
+                            TempBuiltItem.ItemQuantity = CLng(CurrentRow.SubItems(2).Text)
+                            TempBuiltItem.BuildME = CInt(CurrentRow.SubItems(3).Text)
+                            TempBuiltItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(5).Text
+
+                            ' Save the built components they probably have on hand to make this change - calc from value in grid vs. value entered
+                            Dim OnHandQuantity As Long = CLng(CurrentRow.SubItems(2).Text) - QuantityValue
+                            Dim OnHandMaterial As New Material(0, CurrentRow.SubItems(1).Text, "", OnHandQuantity, 0, 0, "", "")
+                            TotalShoppingList.OnHandComponentList.InsertMaterial(OnHandMaterial)
+
+                            ' Update the build list
+                            Call TotalShoppingList.UpdateShoppingBuiltItemQuantity(TempBuiltItem, QuantityValue)
+
+                        ElseIf Me.Name = ShoppingListItems Then ' The items we are building
+                            Dim ShopListItem As New ShoppingListItem
+                            Dim TempName As String = CurrentRow.SubItems(1).Text
+                            If TempName.Contains("(") Then
+                                ShopListItem.Name = TempName.Substring(0, InStr(TempName, "(") - 2)
+                                ShopListItem.Relic = TempName.Substring(InStr(TempName, "("), InStr(TempName, ")") - InStr(TempName, "(") - 1)
+                            Else
+                                ShopListItem.Name = TempName
+                                ShopListItem.Relic = ""
+                            End If
+                            ShopListItem.Runs = CLng(CurrentRow.SubItems(2).Text)
+                            ShopListItem.ItemME = CInt(CurrentRow.SubItems(3).Text)
+                            ShopListItem.ItemTE = CInt(CurrentRow.SubItems(15).Text)
+                            ShopListItem.NumBPs = CInt(CurrentRow.SubItems(4).Text)
+                            ShopListItem.BuildType = CurrentRow.SubItems(5).Text
+                            ShopListItem.Decryptor = CurrentRow.SubItems(6).Text
+                            ShopListItem.InventedRunsPerBP = CInt(Math.Ceiling(ShopListItem.Runs / ShopListItem.NumBPs))
+                            ShopListItem.ManufacturingFacility.FacilityName = CurrentRow.SubItems(7).Text
+
+                            ' Update the full shopping list
+                            Call TotalShoppingList.UpdateShoppingItemQuantity(ShopListItem, QuantityValue)
+
+                        End If
+
+                        ' refresh all three lists with the quantity updated
+                        Call frmShop.RefreshLists()
+
+                    ElseIf Me.Name = ShoppingListBuy And PriceUpdate Then ' Price update on the lstBuy screen
+                        ' Update the price in the database
+                        SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEditBox.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
+                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                        ' Change the value in the price grid
+                        CurrentRow.SubItems(3).Text = FormatNumber(txtListEditBox.Text, 2)
+                        PriceUpdated = True
+                    Else
+                        GoTo Tabs
+                    End If
             End Select
 
             ' If we updated a price, then update the program everywhere to be consistent
@@ -364,7 +768,7 @@ Public Class MyListView
             End If
 
             ' Play sound to indicate update complete
-            If PriceUpdated Then
+            If PriceUpdated Or Me.Name = BPManagement Or Me.Name = ShoppingListBuild Or Me.Name = ShoppingListBuy Or Me.Name = ShoppingListItems Then
                 Call PlayNotifySound()
             End If
 
@@ -378,6 +782,7 @@ Public Class MyListView
                 ' Just refresh and select the current row
                 CurrentRow.Selected = True
                 txtListEditBox.Visible = False
+                cmbEditBox.Visible = False
             End If
 
             ' Data updated, so reset
@@ -391,60 +796,60 @@ Tabs:
         If SentKey = Keys.Tab Then
             If CurrentRow.Index = -1 Then
                 ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                CurrentRow = Me.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
                 CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
                 ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
+                SetNextandPreviousCells()
             End If
 
             CurrentCell = NextCell
             ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Next")
+            Call SetNextandPreviousCells("Next")
             If CurrentRow.Index = 0 Then
                 ' Scroll to top
-                ListRef.Items.Item(0).Selected = True
-                ListRef.EnsureVisible(0)
-                ListRef.Update()
+                Me.Items.Item(0).Selected = True
+                Me.EnsureVisible(0)
+                Me.Update()
             Else
                 ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
+                Me.EnsureVisible(CurrentRow.Index)
             End If
 
             ' Show the text box
-            Call ShowEditBox(ListRef)
+            Call ShowEditBox()
         End If
 
         ' If shift+tab, then go to the previous cell 
         If SentKey = Keys.ShiftKey Then
             If CurrentRow.Index = -1 Then
                 ' Reset the current row based on the original click
-                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                CurrentRow = Me.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
                 CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
                 ' Reset the next and previous cells
-                SetNextandPreviousCells(ListRef)
+                SetNextandPreviousCells()
             End If
 
             CurrentCell = PreviousCell
             ' Reset these each time
-            Call SetNextandPreviousCells(ListRef, "Previous")
-            If CurrentRow.Index = ListRef.Items.Count - 1 Then
+            Call SetNextandPreviousCells("Previous")
+            If CurrentRow.Index = Me.Items.Count - 1 Then
                 ' Scroll to bottom
-                ListRef.Items.Item(ListRef.Items.Count - 1).Selected = True
-                ListRef.EnsureVisible(ListRef.Items.Count - 1)
-                ListRef.Update()
+                Me.Items.Item(Me.Items.Count - 1).Selected = True
+                Me.EnsureVisible(Me.Items.Count - 1)
+                Me.Update()
             Else
                 ' Make sure the row is visible
-                ListRef.EnsureVisible(CurrentRow.Index)
+                Me.EnsureVisible(CurrentRow.Index)
             End If
 
             ' Show the text box
-            Call ShowEditBox(ListRef)
+            Call ShowEditBox()
         End If
 
     End Sub
 
     ' Determines where the previous and next item boxes will be based on what they clicked - used in tab event handling
-    Private Sub SetNextandPreviousCells(ListRef As ListView, Optional CellType As String = "")
+    Private Sub SetNextandPreviousCells(Optional CellType As String = "")
         Dim iSubIndex As Integer = 0
 
         ' Normal Row
@@ -458,135 +863,238 @@ Tabs:
         iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
 
         ' Get next and previous rows. If at end, wrap to top. If at top, wrap to bottom
-        If ListRef.Items.Count = 1 Then
+        If Me.Items.Count = 1 Then
             NextRow = CurrentRow
             PreviousRow = CurrentRow
-        ElseIf CurrentRow.Index <> ListRef.Items.Count - 1 And CurrentRow.Index <> 0 Then
+        ElseIf CurrentRow.Index <> Me.Items.Count - 1 And CurrentRow.Index <> 0 Then
             ' Not the last line, so set the next and previous
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
+            NextRow = Me.Items.Item(CurrentRow.Index + 1)
+            PreviousRow = Me.Items.Item(CurrentRow.Index - 1)
         ElseIf CurrentRow.Index = 0 Then
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
+            NextRow = Me.Items.Item(CurrentRow.Index + 1)
             ' Wrap to bottom
-            PreviousRow = ListRef.Items.Item(ListRef.Items.Count - 1)
-        ElseIf CurrentRow.Index = ListRef.Items.Count - 1 Then
+            PreviousRow = Me.Items.Item(Me.Items.Count - 1)
+        ElseIf CurrentRow.Index = Me.Items.Count - 1 Then
             ' Need to wrap up to top
-            NextRow = ListRef.Items.Item(0)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
+            NextRow = Me.Items.Item(0)
+            PreviousRow = Me.Items.Item(CurrentRow.Index - 1)
         End If
 
         ' BP Grids
-        If ListRef.Name = BPRaw Or ListRef.Name = BPComponents Then
+        Select Case Me.Name
+            Case BPRaw, BPComponents
+                ' For the update grids in the Blueprint Tab, only show the box if
+                ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
+                ' 2 - If the Price is clicked and the ME box has '-' in it
 
-            ' For the update grids in the Blueprint Tab, only show the box if
-            ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
-            ' 2 - If the Price is clicked and the ME box has '-' in it
+                ' The next row must be an ME or Price box on the next row 
+                ' or a previous ME or price box on the previous row
+                If iSubIndex = 2 Or iSubIndex = 3 Then
+                    ' Set the next and previous ME boxes (subitems)
+                    ' If the next row ME box is a '-' then the next row cell is Price
+                    If NextRow.SubItems(2).Text = "-" Then
+                        NextCell = NextRow.SubItems.Item(3) ' Next row price box
+                    Else ' It can be the ME box in the next row
+                        NextCell = NextRow.SubItems.Item(2) ' Next row ME box
+                    End If
 
-            ' The next row must be an ME or Price box on the next row 
-            ' or a previous ME or price box on the previous row
-            If iSubIndex = 2 Or iSubIndex = 3 Then
-                ' Set the next and previous ME boxes (subitems)
-                ' If the next row ME box is a '-' then the next row cell is Price
-                If NextRow.SubItems(2).Text = "-" Then
-                    NextCell = NextRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    NextCell = NextRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                NextCellRow = NextRow
-
-                'If the previous row ME box is a '-' then the previous row is Price
-                If PreviousRow.SubItems(2).Text = "-" Then
-                    PreviousCell = PreviousRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    PreviousCell = PreviousRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                PreviousCellRow = PreviousRow
-
-                If iSubIndex = 2 Then
-                    MEUpdate = True
-                    PriceUpdate = False
-                Else
-                    MEUpdate = False
-                    PriceUpdate = True
-                End If
-
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-
-        ElseIf ListRef.Name = RawPriceProfile Or ListRef.Name = ManufacturedPriceProfile Then
-
-            If iSubIndex <> 0 Then
-                ' Set the next and previous combo boxes
-                If iSubIndex = 4 Then
-                    NextCell = NextRow.SubItems.Item(1) ' Next now price type box
                     NextCellRow = NextRow
-                Else
-                    NextCell = CurrentRow.SubItems.Item(iSubIndex + 1) ' current row, next cell
-                    NextCellRow = CurrentRow
-                End If
 
-                If iSubIndex = 1 Then
-                    PreviousCell = PreviousRow.SubItems.Item(4) ' Previous row price mod
+                    'If the previous row ME box is a '-' then the previous row is Price
+                    If PreviousRow.SubItems(2).Text = "-" Then
+                        PreviousCell = PreviousRow.SubItems.Item(3) ' Next row price box
+                    Else ' It can be the ME box in the next row
+                        PreviousCell = PreviousRow.SubItems.Item(2) ' Next row ME box
+                    End If
+
                     PreviousCellRow = PreviousRow
+
+                    If iSubIndex = 2 Then
+                        MEUpdate = True
+                        PriceUpdate = False
+                    Else
+                        MEUpdate = False
+                        PriceUpdate = True
+                    End If
+
                 Else
-                    PreviousCell = CurrentRow.SubItems.Item(iSubIndex - 1) ' Same row, just back a cell
-                    PreviousCellRow = CurrentRow
+                    NextCell = Nothing
+                    PreviousCell = Nothing
+                    CurrentCell = Nothing
                 End If
 
-                ' Reset update type
-                Call SetPriceProfileVariables(iSubIndex)
+            Case RawPriceProfile, ManufacturedPriceProfile
+                If iSubIndex <> 0 Then
+                    ' Set the next and previous combo boxes
+                    If iSubIndex = 4 Then
+                        NextCell = NextRow.SubItems.Item(1) ' Next now price type box
+                        NextCellRow = NextRow
+                    Else
+                        NextCell = CurrentRow.SubItems.Item(iSubIndex + 1) ' current row, next cell
+                        NextCellRow = CurrentRow
+                    End If
 
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
+                    If iSubIndex = 1 Then
+                        PreviousCell = PreviousRow.SubItems.Item(4) ' Previous row price mod
+                        PreviousCellRow = PreviousRow
+                    Else
+                        PreviousCell = CurrentRow.SubItems.Item(iSubIndex - 1) ' Same row, just back a cell
+                        PreviousCellRow = CurrentRow
+                    End If
 
-        Else ' Price list 
-            Dim Index As Integer = GetPriceColumnIndex(ListRef)
-            ' For this, just go up and down the rows
-            NextCell = NextRow.SubItems.Item(Index)
-            NextCellRow = NextRow
-            PreviousCell = PreviousRow.SubItems.Item(Index)
-            PreviousCellRow = PreviousRow
-            PriceUpdate = True
-            MEUpdate = False
-        End If
+                    ' Reset update type
+                    Call SetPriceProfileVariables(iSubIndex)
+
+                Else
+                    NextCell = Nothing
+                    PreviousCell = Nothing
+                    CurrentCell = Nothing
+                End If
+
+            Case BPManagement
+                ' ME box is selected
+                If iSubIndex = 5 Then
+                    ' Set the next and previous ME boxes (subitems)
+                    NextCell = CurrentRow.SubItems.Item(6) ' On Same Line 
+                    NextCellRow = CurrentRow
+                    PreviousCell = PreviousRow.SubItems.Item(10) ' On previous line 
+                    PreviousCellRow = PreviousRow
+                    MEUpdate = True
+                    TEUpdate = False
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = False
+                ElseIf iSubIndex = 6 Then ' TE box is selected
+                    ' Set the next and previous ME or favorite boxes (subitems)
+                    NextCell = CurrentRow.SubItems.Item(8) ' On same line 
+                    NextCellRow = CurrentRow
+                    PreviousCell = CurrentRow.SubItems.Item(5) ' On same line 
+                    PreviousCellRow = CurrentRow
+                    MEUpdate = False
+                    TEUpdate = True
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = False
+                ElseIf iSubIndex = 8 Then ' Owned Type combo
+                    ' Set the next and previous ME boxes (subitems)
+                    NextCell = CurrentRow.SubItems.Item(9) ' On On same line 
+                    NextCellRow = CurrentRow
+                    PreviousCell = CurrentRow.SubItems.Item(6) ' On same line 
+                    PreviousCellRow = CurrentRow
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = True
+                ElseIf iSubIndex = 9 Then ' Favorite combo
+                    ' Set the next and previous ME boxes (subitems)
+                    NextCell = CurrentRow.SubItems.Item(10) ' On same line
+                    NextCellRow = CurrentRow
+                    PreviousCell = CurrentRow.SubItems.Item(8) ' On same line 
+                    PreviousCellRow = CurrentRow
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = True
+                    IgnoredBPUpdate = False
+                    OwnedTypeUpdate = False
+                ElseIf iSubIndex = 10 Then ' Ignore combo
+                    ' Set the next and previous ME boxes (subitems)
+                    NextCell = NextRow.SubItems.Item(5) ' On next line 
+                    NextCellRow = NextRow
+                    PreviousCell = CurrentRow.SubItems.Item(9) ' On same line 
+                    PreviousCellRow = CurrentRow
+                    MEUpdate = False
+                    TEUpdate = False
+                    FavoriteUpdate = False
+                    IgnoredBPUpdate = True
+                    OwnedTypeUpdate = False
+                Else
+                    NextCell = Nothing
+                    PreviousCell = Nothing
+                    CurrentCell = Nothing
+                End If
+
+            Case ShoppingListItems, ShoppingListBuy, ShoppingListBuild
+                ' Check for buy list
+                If Me.Name = ShoppingListBuy Then
+                    ' The next row must be a Quantity or Price box on the next row 
+                    ' or a previous Quantity or Price box on the previous row
+                    Select Case iSubIndex
+                        Case 2 ' Quantity
+                            NextCell = CurrentRow.SubItems.Item(3) ' Current row Cost box
+                            NextCellRow = CurrentRow
+                            PreviousCell = PreviousRow.SubItems.Item(3) ' previous row price
+                            PreviousCellRow = PreviousRow
+
+                            QuantityUpdate = True
+                            PriceUpdate = False
+                        Case 3 ' Price
+                            NextCell = NextRow.SubItems.Item(2) ' Next row quantity box
+                            NextCellRow = NextRow
+                            PreviousCell = CurrentRow.SubItems.Item(2) ' Current row quantity box
+                            PreviousCellRow = CurrentRow
+
+                            QuantityUpdate = False
+                            PriceUpdate = True
+                        Case Else
+                            NextCell = Nothing
+                            PreviousCell = Nothing
+                            CurrentCell = Nothing
+                    End Select
+
+                Else ' For quantity updates only
+                    ' Set the next and previous quantity boxes
+                    If iSubIndex = 2 Then
+                        NextCell = NextRow.SubItems.Item(2) ' Next quantity box
+                        NextCellRow = NextRow
+                        PreviousCell = PreviousRow.SubItems.Item(2) ' Previous quantity box
+                        PreviousCellRow = PreviousRow
+
+                        QuantityUpdate = True
+                        PriceUpdate = False
+                    Else
+                        NextCell = Nothing
+                        PreviousCell = Nothing
+                        CurrentCell = Nothing
+                    End If
+                End If
+
+            Case Else ' Price list - single column
+                Dim Index As Integer = GetPriceColumnIndex()
+                ' For this, just go up and down the rows
+                NextCell = NextRow.SubItems.Item(Index)
+                NextCellRow = NextRow
+                PreviousCell = PreviousRow.SubItems.Item(Index)
+                PreviousCellRow = PreviousRow
+                PriceUpdate = True
+                MEUpdate = False
+        End Select
 
     End Sub
 
-    Private Sub ShowTextBox(ListColumnIndex As Integer, pLeft As Integer, pTop As Integer)
+    Private Sub ShowTextBox(pLeft As Integer, pTop As Integer, Optional TextBoxAlignment As HorizontalAlignment = HorizontalAlignment.Right)
         With txtListEditBox
             .Hide()
             ' Set the bounds of the control
             .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-            If SelectedGrid.Name = RefineryItems Then
-                .Text = FormatNumber(CDbl(CurrentCell.Text) / CInt(CurrentRow.SubItems(ListColumnIndex - 1).Text), 2) ' Show the unit price for refinery items list
+            If Me.Name = RefineryItems Then
+                .Text = FormatNumber(CDbl(CurrentCell.Text) / CInt(CurrentRow.SubItems(GetPriceColumnIndex() - 1).Text), 2) ' Show the unit price for refinery items list
             Else
                 .Text = CurrentCell.Text
             End If
             .Show()
-            If Me.Columns(CurrentRow.SubItems.IndexOf(CurrentCell)).Text = "ME" Then
-                .TextAlign = HorizontalAlignment.Center
-            Else
-                .TextAlign = HorizontalAlignment.Right
-            End If
+            .TextAlign = TextBoxAlignment
             .Focus()
         End With
-        cmbeditBox.Visible = False
+        cmbEditBox.Visible = False
     End Sub
 
     ' Returns the row number that allows price updates
-    Private Function GetPriceColumnIndex(SentList As ListView) As Integer
-        Select Case SentList.Name
+    Private Function GetPriceColumnIndex() As Integer
+        Select Case Me.Name
             Case BPRaw, BPComponents, UpdatePrices, RefineryOutput
                 Return 3
-            Case RefineryItems
+            Case RefineryItems, InventionMats
                 Return 2
             Case ManufacturedPriceProfile, RawPriceProfile
                 If PriceModifierUpdate Then
@@ -598,99 +1106,15 @@ Tabs:
 
     End Function
 
-    ' Shows the text/combo box on the grid where clicked if enabled
-    Private Sub ShowEditBox(ListRef As ListView)
-        Dim RowIndex As Integer = 0
-
-        ' Save the center location of the edit box
-        SavedListClickLoc.X = CurrentCell.Bounds.Left + CInt(CurrentCell.Bounds.Width / 2)
-        SavedListClickLoc.Y = CurrentCell.Bounds.Top + CInt(CurrentCell.Bounds.Height / 2)
-
-        ' Get the boundry data for the control now
-        Dim pLeft As Integer = CurrentCell.Bounds.Left
-        Dim pTop As Integer = CurrentCell.Bounds.Top - 1
-
-        Select Case ListRef.Name
-            Case BPRaw, BPComponents, UpdatePrices, RefineryOutput, RefineryItems
-                Call ShowTextBox(GetPriceColumnIndex(ListRef), pLeft, pTop)
-            Case ManufacturedPriceProfile, RawPriceProfile
-                If PriceModifierUpdate Then
-                    ' Show the text box
-                    Call ShowTextBox(GetPriceColumnIndex(ListRef), pLeft, pTop)
-                Else ' Show combo box
-                    With cmbeditBox
-                        UpdatingCombo = True
-                        .Hide()
-
-                        If PriceRegionUpdate Then
-                            Call LoadRegionCombo(cmbeditBox, CurrentCell.Text)
-                        Else
-                            .BeginUpdate()
-                            .Items.Clear()
-                            Dim rsData As SQLiteDataReader
-                            Dim SQL As String = ""
-
-                            If PriceSystemUpdate Then
-                                ' Base it off the data in the region cell
-                                SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
-                                SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                                SQL &= "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
-                                SQL &= "ORDER BY solarSystemName"
-                                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                                rsData = DBCommand.ExecuteReader
-
-                                ' Add all systems if it's the system
-                                .Items.Add(AllSystems)
-                                While rsData.Read
-                                    .Items.Add(rsData.GetString(0))
-                                    ' Special processing for The Forge
-                                    If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
-                                        .Items.Add(JitaPerimeter)
-                                    End If
-                                End While
-
-                                rsData.Close()
-
-                            ElseIf PriceTypeUpdate Then
-                                ' Manually enter these
-                                .Items.Add("Min Sell")
-                                .Items.Add("Max Sell")
-                                .Items.Add("Avg Sell")
-                                .Items.Add("Median Sell")
-                                .Items.Add("Percentile Sell")
-                                .Items.Add("Min Buy")
-                                .Items.Add("Max Buy")
-                                .Items.Add("Avg Buy")
-                                .Items.Add("Median Buy")
-                                .Items.Add("Percentile Buy")
-                                .Items.Add("Split Price")
-                            End If
-                            .EndUpdate()
-                        End If
-
-                        ' Set the bounds of the control
-                        .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                        .Text = CurrentCell.Text
-                        .Show()
-                        .Focus()
-
-                        DataEntered = False ' We just updated so reset
-                        UpdatingCombo = False
-                    End With
-                    txtListEditBox.Visible = False
-                End If
-        End Select
-    End Sub
-
     ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
     Protected Overrides Function ProcessDialogKey(ByVal keyData As Keys) As Boolean
         If txtListEditBox.Visible Or cmbeditBox.Visible Then
             If (keyData = Keys.Tab) Then
-                Call ProcessKeyDownEdit(Keys.Tab, SelectedGrid)
+                Call ProcessKeyDownEdit(Keys.Tab)
                 Return True
             ElseIf keyData = Keys.Tab + Keys.Shift Then
                 ' This is Shift + Tab but just send Shift for ease of processing
-                Call ProcessKeyDownEdit(Keys.ShiftKey, SelectedGrid)
+                Call ProcessKeyDownEdit(Keys.ShiftKey)
                 Return True
             End If
         End If
@@ -717,7 +1141,7 @@ Tabs:
 
         If e.KeyCode = Keys.Enter Then
             IgnoreFocus = True
-            Call ProcessKeyDownEdit(Keys.Enter, Me)
+            Call ProcessKeyDownEdit(Keys.Enter)
             IgnoreFocus = False
         End If
     End Sub
@@ -726,7 +1150,7 @@ Tabs:
         ' Make sure it's the right format for ME or Price update
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
-            If MEUpdate Then
+            If MEUpdate Or TEUpdate Then
                 If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
                     ' Invalid Character
                     e.Handled = True
@@ -735,6 +1159,13 @@ Tabs:
                 End If
             ElseIf PriceUpdate Then
                 If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
+                    ' Invalid Character
+                    e.Handled = True
+                Else
+                    DataEntered = True
+                End If
+            ElseIf QuantityUpdate Then
+                If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
                     ' Invalid Character
                     e.Handled = True
                 Else
@@ -751,15 +1182,18 @@ Tabs:
     End Sub
 
     Private Sub txtListEditBox_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEditBox.LostFocus
-        If Not RefreshingGrid And DataEntered And Not IgnoreFocus And (PriceModifierUpdate And txtListEditBox.Text <> PreviousPriceMod) Then
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
+        If Not RefreshingGrid And DataEntered And Not IgnoreFocus And (PriceModifierUpdate And txtListEditBox.Text <> PreviousPriceMod) And Not TabPressed Then
+            Call ProcessKeyDownEdit(Keys.Enter)
         End If
+        TabPressed = False ' Reset
         txtListEditBox.Visible = False
     End Sub
 
     Private Sub txtListEditBox_TextChanged(sender As Object, e As System.EventArgs) Handles txtListEditBox.TextChanged
         If MEUpdate Then ' make sure they only enter 0-10 for values
             Call VerifyMETEEntry(txtListEditBox, "ME")
+        ElseIf TEUpdate Then
+            Call VerifyMETEEntry(txtListEditBox, "TE")
         End If
     End Sub
 
@@ -768,7 +1202,7 @@ Tabs:
             (PriceSystemUpdate And cmbeditBox.Text <> PreviousSystem) Or
             (PriceTypeUpdate And cmbeditBox.Text <> PreviousPriceType) And Not UpdatingCombo Then
             DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
+            Call ProcessKeyDownEdit(Keys.Enter)
         End If
     End Sub
 
@@ -785,10 +1219,10 @@ Tabs:
             (PriceTypeUpdate And cmbeditBox.Text <> PreviousPriceType)) _
             And Not TabPressed And Not UpdatingCombo Then
             DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
+            Call ProcessKeyDownEdit(Keys.Enter)
         End If
-        cmbeditBox.Visible = False
         TabPressed = False
+        cmbEditBox.Visible = False
     End Sub
 
     ' Sets the variables for price profiles
