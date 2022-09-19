@@ -1801,7 +1801,7 @@ Public Class ManufacturingFacility
     Private Sub DisplayFacilityBonus(BuildType As ProductionType, ItemGroupID As Integer, ItemCategoryID As Integer, Activity As String,
                                     FacilityType As FacilityTypes, FacilityName As String)
         Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
+        Dim rsLoader As SQLiteDataReader = Nothing
 
         Dim FacilityID As Long
         Dim DFMaterialMultiplier As Double = 0
@@ -1823,24 +1823,25 @@ Public Class ManufacturingFacility
 
         ' Get the facility ID first
         ' Not in there for either character or default, so use the defaults
-        If FacilityType = FacilityTypes.Station Then
-            ' Load the Stations in system for the activity we are doing
-            SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
-        ElseIf FacilityType = FacilityTypes.UpwellStructure Then
-            SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+        If FacilityType <> FacilityTypes.None Then
+            If FacilityType = FacilityTypes.Station Then
+                ' Load the Stations in system for the activity we are doing
+                SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
+            ElseIf FacilityType = FacilityTypes.UpwellStructure Then
+                SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+            End If
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsLoader = DBCommand.ExecuteReader
+            rsLoader.Read()
         End If
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
-        rsLoader.Read()
-
-        If rsLoader.HasRows Then
+        If Not IsNothing(rsLoader) Then
             FacilityID = rsLoader.GetInt64(0)
+            rsLoader.Close()
         Else
             FacilityID = -1
         End If
-
-        rsLoader.Close()
 
         Dim CharID As String = ""
 

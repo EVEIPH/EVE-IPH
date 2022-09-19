@@ -218,7 +218,6 @@ Public Class PriceItem
     Public Manufacture As Boolean
     Public RegionID As String
     Public SystemID As String
-    Public StructureID As String
     Public GroupName As String
     Public PriceModifier As Double
     Public PriceType As String
@@ -231,7 +230,6 @@ Public Class PriceItem
         CopyOfMe.Manufacture = Manufacture
         CopyOfMe.RegionID = RegionID
         CopyOfMe.SystemID = SystemID
-        CopyOfMe.StructureID = StructureID
         CopyOfMe.GroupName = GroupName
         CopyOfMe.PriceModifier = PriceModifier
         CopyOfMe.PriceType = PriceType

@@ -59,6 +59,9 @@ Partial Class ManufacturingFacility
         Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
         Me.chkFacilityConvertToOre = New System.Windows.Forms.CheckBox()
         Me.btnConversiontoOreSettings = New System.Windows.Forms.Button()
+        Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
+        Me.lblBPSystemCostIndexManual = New System.Windows.Forms.Label()
+        Me.txtBPUpdateCostIndex = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -234,7 +237,7 @@ Partial Class ManufacturingFacility
         '
         'txtFacilityManualTax
         '
-        Me.txtFacilityManualTax.Location = New System.Drawing.Point(133, 106)
+        Me.txtFacilityManualTax.Location = New System.Drawing.Point(124, 111)
         Me.txtFacilityManualTax.MaxLength = 7
         Me.txtFacilityManualTax.Name = "txtFacilityManualTax"
         Me.txtFacilityManualTax.Size = New System.Drawing.Size(50, 20)
@@ -244,7 +247,7 @@ Partial Class ManufacturingFacility
         'lblFacilityManualTax
         '
         Me.lblFacilityManualTax.AutoSize = True
-        Me.lblFacilityManualTax.Location = New System.Drawing.Point(99, 109)
+        Me.lblFacilityManualTax.Location = New System.Drawing.Point(93, 113)
         Me.lblFacilityManualTax.Name = "lblFacilityManualTax"
         Me.lblFacilityManualTax.Size = New System.Drawing.Size(28, 13)
         Me.lblFacilityManualTax.TabIndex = 21
@@ -298,7 +301,7 @@ Partial Class ManufacturingFacility
         'lblFacilityManualCost
         '
         Me.lblFacilityManualCost.AutoSize = True
-        Me.lblFacilityManualCost.Location = New System.Drawing.Point(6, 109)
+        Me.lblFacilityManualCost.Location = New System.Drawing.Point(6, 114)
         Me.lblFacilityManualCost.Name = "lblFacilityManualCost"
         Me.lblFacilityManualCost.Size = New System.Drawing.Size(31, 13)
         Me.lblFacilityManualCost.TabIndex = 17
@@ -306,7 +309,7 @@ Partial Class ManufacturingFacility
         '
         'txtFacilityManualCost
         '
-        Me.txtFacilityManualCost.Location = New System.Drawing.Point(38, 105)
+        Me.txtFacilityManualCost.Location = New System.Drawing.Point(37, 111)
         Me.txtFacilityManualCost.MaxLength = 7
         Me.txtFacilityManualCost.Name = "txtFacilityManualCost"
         Me.txtFacilityManualCost.Size = New System.Drawing.Size(50, 20)
@@ -373,7 +376,7 @@ Partial Class ManufacturingFacility
         'chkFacilityConvertToOre
         '
         Me.chkFacilityConvertToOre.AutoSize = True
-        Me.chkFacilityConvertToOre.Location = New System.Drawing.Point(33, 260)
+        Me.chkFacilityConvertToOre.Location = New System.Drawing.Point(4, 261)
         Me.chkFacilityConvertToOre.Name = "chkFacilityConvertToOre"
         Me.chkFacilityConvertToOre.Size = New System.Drawing.Size(95, 17)
         Me.chkFacilityConvertToOre.TabIndex = 33
@@ -383,17 +386,49 @@ Partial Class ManufacturingFacility
         '
         'btnConversiontoOreSettings
         '
-        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(133, 256)
+        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(102, 257)
         Me.btnConversiontoOreSettings.Name = "btnConversiontoOreSettings"
         Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(56, 22)
         Me.btnConversiontoOreSettings.TabIndex = 34
         Me.btnConversiontoOreSettings.Text = "Settings"
         Me.btnConversiontoOreSettings.UseVisualStyleBackColor = True
         '
+        'btnBPUpdateCostIndex
+        '
+        Me.btnBPUpdateCostIndex.Enabled = False
+        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(312, 282)
+        Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
+        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(51, 22)
+        Me.btnBPUpdateCostIndex.TabIndex = 35
+        Me.btnBPUpdateCostIndex.Text = "Update"
+        Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = True
+        '
+        'lblBPSystemCostIndexManual
+        '
+        Me.lblBPSystemCostIndexManual.AutoSize = True
+        Me.lblBPSystemCostIndexManual.Location = New System.Drawing.Point(182, 291)
+        Me.lblBPSystemCostIndexManual.Name = "lblBPSystemCostIndexManual"
+        Me.lblBPSystemCostIndexManual.Size = New System.Drawing.Size(60, 13)
+        Me.lblBPSystemCostIndexManual.TabIndex = 37
+        Me.lblBPSystemCostIndexManual.Text = "Cost Index:"
+        '
+        'txtBPUpdateCostIndex
+        '
+        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(246, 284)
+        Me.txtBPUpdateCostIndex.MaxLength = 7
+        Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
+        Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(46, 20)
+        Me.txtBPUpdateCostIndex.TabIndex = 36
+        Me.txtBPUpdateCostIndex.Text = "99.00 %"
+        Me.txtBPUpdateCostIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.btnBPUpdateCostIndex)
+        Me.Controls.Add(Me.lblBPSystemCostIndexManual)
+        Me.Controls.Add(Me.txtBPUpdateCostIndex)
         Me.Controls.Add(Me.btnFacilityFitting)
         Me.Controls.Add(Me.btnFacilitySave)
         Me.Controls.Add(Me.btnConversiontoOreSettings)
@@ -430,7 +465,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbModules)
         Me.Controls.Add(Me.lblFacilityFWUpgrade)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(330, 296)
+        Me.Size = New System.Drawing.Size(393, 388)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -471,4 +506,7 @@ Partial Class ManufacturingFacility
     Friend WithEvents mainToolTip As ToolTip
     Friend WithEvents chkFacilityConvertToOre As CheckBox
     Friend WithEvents btnConversiontoOreSettings As Button
+    Friend WithEvents btnBPUpdateCostIndex As Button
+    Friend WithEvents lblBPSystemCostIndexManual As Label
+    Friend WithEvents txtBPUpdateCostIndex As TextBox
 End Class

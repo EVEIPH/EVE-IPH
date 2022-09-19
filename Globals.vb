@@ -1781,9 +1781,9 @@ SkipItem:
                 Return ""
             End If
 
-            ' Format TechSQL - Add on Meta codes - 21,22,23,24 are T3
+            ' Format TechSQL 
             If TechSQL <> "" Then
-                TechSQL = " AND (" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
+                TechSQL = " AND (" & TechSQL.Substring(0, TechSQL.Length - 3) & ")" '& "OR ITEM_TYPE IN (21,22,23,24)) "- Add on Meta codes - 21,22,23,24 are T3 
             End If
 
             ' Build Tech 1,2,3 Manufactured Items

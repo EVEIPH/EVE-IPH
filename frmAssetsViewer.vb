@@ -147,9 +147,6 @@ Public Class frmAssetsViewer
 
         FirstLoad = True
 
-        btnToggleExpand.Visible = True
-        btnToggleRetract.Visible = False
-
         Timer1.Interval = 1000 ' 1 second
         Timer1.Enabled = True
 
@@ -185,12 +182,6 @@ Public Class frmAssetsViewer
 
         lblReloadCorpAssets.Text = "---"
         lblReloadPersonalAssets.Text = "---"
-
-        If UserApplicationSettings.ShowToolTips Then
-            ttMain.SetToolTip(btnToggleExpand, "Expand all Assets")
-            ttMain.SetToolTip(btnToggleRetract, "Retract all Assets")
-            ttMain.SetToolTip(chkToggle, "Check/Uncheck all Assets")
-        End If
 
         ' Search settings form
         If SelectedSettings.AllItems Then
@@ -442,7 +433,7 @@ Public Class frmAssetsViewer
                 BaseTree.SelectedNode = tn
                 BaseTree.SelectedNode.Parent.Expand()
             End If
-            FindCheckedNode(tn, BaseTree)
+            ' FindCheckedNode(tn, BaseTree)
         Next
     End Sub
 
@@ -680,6 +671,7 @@ Public Class frmAssetsViewer
         Dim TempSettings As AssetWindowSettings = Nothing
         Dim TempLocationIDs As New List(Of Long)
         Dim SQL As String
+        Dim rsCheck As SQLiteDataReader
 
         With TempSettings
             .SortbyName = rbtnSortName.Checked
@@ -770,9 +762,19 @@ Public Class frmAssetsViewer
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             For i = 0 To SavedLocationIDs.Count - 1
-                SQL = "INSERT INTO ASSET_LOCATIONS (EnumAssetType, ID, LocationID, FlagID) VALUES "
-                SQL &= "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
-                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                ' See if it's in there already, and only add if not
+                SQL = "SELECT 'X' FROM ASSET_LOCATIONS WHERE EnumAssetType=" & CStr(WindowForm) & " AND ID=" & CStr(SavedLocationIDs(i).AccountID)
+                SQL &= " AND LocationID=" & CStr(SavedLocationIDs(i).LocationID) & " AND FlagID=" & CStr(SavedLocationIDs(i).FlagID)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+                rsCheck.Read()
+
+                If Not rsCheck.HasRows Then
+                    SQL = "INSERT INTO ASSET_LOCATIONS (EnumAssetType, ID, LocationID, FlagID) VALUES "
+                    SQL &= "(" & CStr(WindowForm) & "," & CStr(SavedLocationIDs(i).AccountID) & "," & CStr(SavedLocationIDs(i).LocationID) & "," & CStr(SavedLocationIDs(i).FlagID) & ")"
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End If
+                rsCheck.Close()
             Next
 
             Call EVEDB.CommitSQLiteTransaction()
@@ -838,36 +840,6 @@ Public Class frmAssetsViewer
         Me.Hide()
     End Sub
 
-    Private Sub btnToggleExpand_Click(sender As System.Object, e As System.EventArgs) Handles btnToggleExpand.Click
-
-        Call AssetTree.ExpandAll()
-
-        ' Scroll to top
-        AssetTree.TopNode = AssetTree.Nodes(0)
-        AssetTree.Focus()
-
-        ' Hide button, show retract
-        btnToggleExpand.Visible = False
-        btnToggleRetract.Visible = True
-
-    End Sub
-
-    Private Sub btnToggleRetract_Click(sender As System.Object, e As System.EventArgs) Handles btnToggleRetract.Click
-
-        Call AssetTree.CollapseAll()
-        ' Open top one though
-        AssetTree.TopNode.Expand()
-
-        ' Scroll to top
-        AssetTree.TopNode = AssetTree.Nodes(0)
-        AssetTree.Focus()
-
-        ' Hide button, show expand
-        btnToggleExpand.Visible = True
-        btnToggleRetract.Visible = False
-
-    End Sub
-
     Private Sub txtItemFilter_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtItemFilter.KeyDown
         Call ProcessCutCopyPasteSelect(txtItemFilter, e)
         If e.KeyCode = Keys.Enter Then
@@ -913,6 +885,9 @@ Public Class frmAssetsViewer
         txtItemFilter.Text = ""
         chkManufacturedItems.Checked = True
         chkMaterialResearchEqPrices.Checked = True
+        For i = 1 To TechCheckBoxes.Length - 1
+            TechCheckBoxes(i).Checked = True
+        Next i
     End Sub
 
     Private Sub chkMaterialResearchEqPrices_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkMaterialResearchEqPrices.CheckedChanged
@@ -1045,7 +1020,6 @@ Public Class frmAssetsViewer
         UpdatingChecks = True
 
     End Sub
-
 
     ' Makes sure a tech is enabled and checked for items that require tech based on saved values, not current due to disabling form
     Private Function CheckTechChecks() As Boolean
@@ -1246,6 +1220,11 @@ Public Class frmAssetsViewer
 
     End Sub
 
+    Private Sub TechChecks_CheckedChanged(sender As Object, e As EventArgs) Handles chkItemsT1.CheckedChanged, chkItemsT2.CheckedChanged, chkItemsT3.CheckedChanged,
+                                                                                    chkItemsT4.CheckedChanged, chkItemsT5.CheckedChanged, chkItemsT6.CheckedChanged
+        UpdateTechChecks()
+    End Sub
+
     Private Sub cmbPriceShipTypes_DropDown(sender As Object, e As System.EventArgs) Handles cmbPriceShipTypes.DropDown
         If FirstPriceShipTypesComboLoad Then
             Call LoadPriceShipTypes()
@@ -1382,16 +1361,39 @@ Public Class frmAssetsViewer
         End If
     End Sub
 
-    Private Sub chkToggle_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkToggle.CheckedChanged
-        Call ToggleNodeChecks(AssetTree.Nodes(0), chkToggle.Checked)
-    End Sub
-
     Private Sub ToggleNodeChecks(SentNode As TreeNode, Check As Boolean)
-
+        Me.UseWaitCursor = True
         For Each child As TreeNode In SentNode.Nodes
+            Application.DoEvents()
             child.Checked = Check
             If child.Nodes.Count > 0 Then ToggleNodeChecks(child, Check)
         Next
+        Application.DoEvents()
+        Me.UseWaitCursor = False
+    End Sub
+
+    Private Sub mnuCheckAll_Click(sender As Object, e As EventArgs) Handles mnuCheckAll.Click
+        AssetTree.SelectedNode.Checked = True
+        Call ToggleNodeChecks(AssetTree.SelectedNode, True)
+    End Sub
+
+    Private Sub mnuUncheckAll_Click(sender As Object, e As EventArgs) Handles mnuUncheckAll.Click
+        AssetTree.SelectedNode.Checked = False
+        Call ToggleNodeChecks(AssetTree.SelectedNode, False)
+    End Sub
+
+    Private Sub mnuExpandNodes_Click(sender As Object, e As EventArgs) Handles mnuExpandNodes.Click
+        Call AssetTree.SelectedNode.ExpandAll()
+    End Sub
+
+    Private Sub mnuCollapseNodes_Click(sender As Object, e As EventArgs) Handles mnuCollapseNodes.Click
+        Call AssetTree.SelectedNode.Collapse(False)
+    End Sub
+
+    Private Sub AssetTree_MouseDown(sender As Object, e As MouseEventArgs) Handles AssetTree.MouseDown
+        If e.Button = MouseButtons.Right Then
+            AssetTree.SelectedNode = AssetTree.GetNodeAt(e.X, e.Y)
+        End If
     End Sub
 
 #End Region

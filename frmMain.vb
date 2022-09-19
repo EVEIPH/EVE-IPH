@@ -440,12 +440,45 @@ Public Class frmMain
             Application.DoEvents()
         End If
 
+        ' If this is the first time the program is loaded, then 
+        ' set some default prices from Jita
+        If FirstProgramStart() Then
+            ' Load up prices for Fuzzworks/Jita
+            Call SetProgress("Downloading initial market prices...")
+            Dim Items As New List(Of PriceItem)
+            Dim TempItem As PriceItem
+            rbtnPriceSourceFW.Checked = True ' Default with fuzzworks before download
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
+
+            Dim rsPriceItems As SQLiteDataReader
+            DBCommand = New SQLiteCommand("SELECT ITEM_ID, ITEM_GROUP, MANUFACTURE FROM ITEM_PRICES", EVEDB.DBREf)
+            rsPriceItems = DBCommand.ExecuteReader
+
+            While rsPriceItems.Read
+                TempItem = New PriceItem
+                ' Defaults
+                TempItem.JitaPerimeterPrice = False
+                TempItem.SystemID = JitaID
+                TempItem.RegionID = CStr(TheForgeTypeID)
+                TempItem.PriceType = "Min Sell"
+                TempItem.PriceModifier = 0
+                ' get from query
+                TempItem.TypeID = rsPriceItems.GetInt32(0)
+                TempItem.GroupName = rsPriceItems.GetString(1)
+                TempItem.Manufacture = CBool(rsPriceItems.GetInt32(2))
+                Items.Add(TempItem)
+            End While
+
+            Call LoadPrices(Items, New List(Of PriceItem), "")
+
+        End If
+
         If TestingVersion Then
-            Me.Text = Me.Text & " - Testing"
+            Me.Text &= " - Testing"
         End If
 
         If Developer Then
-            Me.Text = Me.Text & " - Developer"
+            Me.Text &= " - Developer"
         Else
             ' Hide all the development stuff
             tabMain.TabPages.Remove(tabPI)
@@ -776,6 +809,23 @@ Public Class frmMain
             f1.ShowDialog()
         End If
     End Sub
+
+    ' Checks if this the first time loading the program. It will search for the file name, if found, it's first load 
+    ' so it will return true, and delete the file 
+    Private Function FirstProgramStart() As Boolean
+        Try
+            Dim FilePath As String = Path.Combine(DynamicFilePath, "FirstProgramLoad")
+
+            If File.Exists(FilePath) Then
+                File.Delete(FilePath)
+                Return True
+            Else
+                Return False
+            End If
+        Catch ex As Exception
+            Return False
+        End Try
+    End Function
 
     ' If the text file is there, read the counter in it. Only show the splash on the first run and after every 100 uses
     Private Function ShowSupportSplash() As Boolean
@@ -2632,63 +2682,31 @@ Public Class frmMain
         MsgBox("Manual Build/Buy List Reset")
     End Sub
 
-    Private Sub chkBPIncludeCopyTime_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeCopyTime.CheckedChanged
-        If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Set the copy time check
-            BPTabFacility.GetFacility(ProductionType.Copying).IncludeActivityTime = chkBPIncludeCopyTime.Checked
-            If Not IsNothing(SelectedBlueprint) Then
-                ' Use the original ME and TE values when they change the meta level
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
+    Private Sub IncludeInventionCosts_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeInventionCosts.CheckedChanged, chkBPIncludeInventionTime.CheckedChanged,
+                                                                                                             chkBPIncludeCopyCosts.CheckedChanged, chkBPIncludeCopyTime.CheckedChanged,
+                                                                                                             chkBPIncludeT3Costs.CheckedChanged, chkBPIncludeT3Time.CheckedChanged
+        Call UpdateInventionCostsTime(CType(sender, CheckBox))
 
-            End If
-        End If
     End Sub
 
-    Private Sub chkBPIncludeCopyCosts_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeCopyCosts.CheckedChanged
+    Private Sub UpdateInventionCostsTime(SelectedCheckbox As CheckBox)
         If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Include copy costs
-            BPTabFacility.GetFacility(ProductionType.Copying).IncludeActivityCost = chkBPIncludeCopyCosts.Checked
-            If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
-            End If
-        End If
-    End Sub
+            ' Set the usage for the selected facility
+            Select Case SelectedCheckbox.Name
+                Case chkBPIncludeT3Costs.Name
+                    BPTabFacility.GetFacility(ProductionType.T3Invention).IncludeActivityCost = chkBPIncludeT3Costs.Checked
+                Case chkBPIncludeT3Time.Name
+                    BPTabFacility.GetFacility(ProductionType.T3Invention).IncludeActivityTime = chkBPIncludeT3Time.Checked
+                Case chkBPIncludeInventionCosts.Name
+                    BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityCost = chkBPIncludeInventionCosts.Checked
+                Case chkBPIncludeInventionTime.Name
+                    BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityTime = chkBPIncludeInventionTime.Checked
+                Case chkBPIncludeCopyCosts.Name
+                    BPTabFacility.GetFacility(ProductionType.Copying).IncludeActivityCost = chkBPIncludeCopyCosts.Checked
+                Case chkBPIncludeCopyTime.Name
+                    BPTabFacility.GetFacility(ProductionType.Copying).IncludeActivityTime = chkBPIncludeCopyTime.Checked
+            End Select
 
-    Private Sub chkBPIncludeInventionTime_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeInventionTime.CheckedChanged
-        If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Include invention time
-            BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityTime = chkBPIncludeInventionTime.Checked
-            If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
-            End If
-        End If
-    End Sub
-
-    Private Sub chkBPIncludeInventionCosts_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeInventionCosts.CheckedChanged
-        If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Include cost for invention
-            BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityCost = chkBPIncludeInventionCosts.Checked
-            ' Use the original ME and TE values when they change the meta level
-            If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
-            End If
-        End If
-    End Sub
-
-    Private Sub chkBPIncludeT3Time_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeT3Time.CheckedChanged
-        If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Set the time for T3 invention
-            BPTabFacility.GetFacility(ProductionType.T3Invention).IncludeActivityTime = chkBPIncludeT3Time.Checked
-            If Not IsNothing(SelectedBlueprint) Then
-                Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
-            End If
-        End If
-    End Sub
-
-    Private Sub chkBPIncludeT3Costs_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPIncludeT3Costs.CheckedChanged
-        If Not FirstLoad And Not UpdatingInventionChecks Then
-            ' Set the usage for T3 invention
-            BPTabFacility.GetFacility(ProductionType.T3Invention).IncludeActivityCost = chkBPIncludeT3Costs.Checked
             If Not IsNothing(SelectedBlueprint) Then
                 Call UpdateBPGrids(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, False, SelectedBlueprint.GetItemGroupID, SelectedBlueprint.GetItemCategoryID, SentFromLocation.BlueprintTab)
             End If
@@ -2760,6 +2778,25 @@ Public Class frmMain
 #Region "Blueprints Tab"
 
 #Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
+
+    Private Sub BPOptimalTriCheck_Click(sender As Object, e As EventArgs) Handles chkBPOptimalT3Decryptor.Click, chkBPOptimalT2Decryptor.Click
+        Call UpdateOptimalBPTriCheck(CType(sender, CheckBox))
+    End Sub
+
+    Private Sub UpdateOptimalBPTriCheck(SentCheck As CheckBox)
+        ' Change the name based on the check state
+        If SentCheck.CheckState = CheckState.Unchecked Then
+            SentCheck.Text = "Optimal"
+        ElseIf SentCheck.CheckState = CheckState.Checked Then
+            SentCheck.Text = "Optimal IPH"
+        ElseIf SentCheck.CheckState = CheckState.Indeterminate Then
+            SentCheck.Text = "Optimal Profit"
+        End If
+
+        ' Will just run the bp again
+        Call UpdateInventionCostsTime(SentCheck)
+
+    End Sub
 
     Private Sub btnBPComponents_Click(sender As Object, e As EventArgs) Handles btnBPComponents.Click
         lstBPComponentMats.Visible = True
@@ -3271,6 +3308,10 @@ Public Class frmMain
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingInventionDecryptors Then
+            ' Uncheck the optimal box
+            chkBPOptimalT2Decryptor.Checked = False
+            chkBPOptimalT2Decryptor.Text = "Optimal"
+
             Call SelectDecryptor(cmbBPInventionDecryptor.Text)
 
             ' Reload the number of bps you need etc
@@ -3292,6 +3333,10 @@ Public Class frmMain
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingT3Decryptors Then
+            ' Uncheck the optimal box
+            chkBPOptimalT3Decryptor.Checked = False
+            chkBPOptimalT2Decryptor.Text = "Optimal"
+
             Call SelectDecryptor(cmbBPT3Decryptor.Text)
 
             ' Reload the number of bps you need etc
@@ -4712,6 +4757,26 @@ Public Class frmMain
             chkBPIncludeT3Time.Checked = .IncludeT3Time
             UpdatingInventionChecks = False
 
+            Select Case .OptimalT2Decryptor
+                Case 2
+                    chkBPBrokerFees.CheckState = CheckState.Indeterminate
+                    txtBPBrokerFeeRate.Visible = True
+                Case 1
+                    chkBPBrokerFees.CheckState = CheckState.Checked
+                Case 0
+                    chkBPBrokerFees.CheckState = CheckState.Unchecked
+            End Select
+
+            Select Case .OptimalT3Decryptor
+                Case 2
+                    chkBPBrokerFees.CheckState = CheckState.Indeterminate
+                    txtBPBrokerFeeRate.Visible = True
+                Case 1
+                    chkBPBrokerFees.CheckState = CheckState.Checked
+                Case 0
+                    chkBPBrokerFees.CheckState = CheckState.Unchecked
+            End Select
+
             ' These facilities use the same include checks
             BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityCost = .IncludeInventionCost
             BPTabFacility.GetFacility(ProductionType.Invention).IncludeActivityTime = .IncludeInventionTime
@@ -4939,6 +5004,22 @@ Public Class frmMain
                 .IncludeFees = 0
             End If
             .BrokerFeeRate = FormatManualPercentEntry(txtBPBrokerFeeRate.Text)
+
+            If chkBPOptimalT2Decryptor.CheckState = CheckState.Indeterminate Then
+                .IncludeFees = 2
+            ElseIf chkBPOptimalT2Decryptor.CheckState = CheckState.Checked Then
+                .IncludeFees = 1
+            Else
+                .IncludeFees = 0
+            End If
+
+            If chkBPOptimalT3Decryptor.CheckState = CheckState.Indeterminate Then
+                .IncludeFees = 2
+            ElseIf chkBPOptimalT3Decryptor.CheckState = CheckState.Checked Then
+                .IncludeFees = 1
+            Else
+                .IncludeFees = 0
+            End If
 
             .IncludeInventionCost = chkBPIncludeInventionCosts.Checked
             .IncludeInventionTime = chkBPIncludeInventionTime.Checked
@@ -5582,6 +5663,8 @@ Public Class frmMain
                 InventionFacility = BPTabFacility.GetFacility(ProductionType.T3Invention)
                 ' Load the decryptor options
                 Call LoadBPT3InventionDecryptors()
+                InventionFacility.IncludeActivityCost = chkBPIncludeT3Costs.Checked
+                InventionFacility.IncludeActivityTime = chkBPIncludeT3Time.Checked
             ElseIf BPTech = BPTechLevel.T2 Then
                 ' T2 no relic 
                 RelicName = ""
@@ -5591,11 +5674,9 @@ Public Class frmMain
                 ' T2 has copy costs/time
                 CopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
                 CopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
+                InventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
+                InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
             End If
-
-            ' All invention facilities need to have these set
-            InventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
-            InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
         End If
 
         ' Now load the materials into the lists
@@ -5625,22 +5706,25 @@ Public Class frmMain
             BPBuildBuyPref = Nothing
         End If
 
-        ' Construct Blueprint
-        SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
-                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
+        ' Run the main blueprint functions - and allow for optimal calculation
+        SelectedBlueprint = RunBlueprint(BPID, SelectedRuns, BPME, BPTE, AdditionalCosts, BuildFacility, ComponentFacility, CapitalComponentManufacturingFacility,
+                                         ReactionFacility, BPBuildBuyPref, ReprocessingFacility, BPTech, InventionFacility, CopyFacility, RelicName)
 
-        ' Set the T2 and T3 inputs if necessary
-        If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
-            ' Invent this bp
-            txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
-                                  InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
-        End If
+        'SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
+        '                                  UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
+        '                                  ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+        '                                  UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
 
-        ' Build the item and get the list of materials
-        Dim BFData As BrokerFeeInfo = GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate)
-        Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, BFData, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        '' Set the T2 and T3 inputs if necessary
+        'If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
+        '    ' Invent this bp
+        '    txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
+        '                          InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
+        'End If
+
+        '' Build the item and get the list of materials
+        'Dim BFData As BrokerFeeInfo = GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate)
+        'Call SelectedBlueprint.BuildItems(chkBPTaxes.Checked, BFData, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
 
         ' Get the lists
         BPRawMats = SelectedBlueprint.GetRawMaterials.GetMaterialList
@@ -6035,6 +6119,116 @@ ExitForm:
         Application.DoEvents()
 
     End Sub
+
+    ' Runs the main blueprint functions
+    Private Function RunBlueprint(ByVal BPID As Integer, ByVal SelectedRuns As Integer, ByVal BPME As Integer, ByVal BPTE As Integer,
+                                  ByVal AdditionalCosts As Double, ByVal BuildFacility As IndustryFacility, ByVal ComponentFacility As IndustryFacility,
+                                  ByVal CapitalComponentManufacturingFacility As IndustryFacility, ByVal ReactionFacility As IndustryFacility,
+                                  ByVal BPBuildBuyPref As List(Of BuildBuyItem), ByVal ReprocessingFacility As IndustryFacility, ByVal BPTech As Integer,
+                                  ByVal InventionFacility As IndustryFacility, ByVal CopyFacility As IndustryFacility, ByVal RelicName As String) As Blueprint
+
+        Dim LocalBlueprint As Blueprint = Nothing
+
+        Dim LocalNumBPs As String = ""
+        Dim BFData As BrokerFeeInfo = GetBrokerFeeData(chkBPBrokerFees, txtBPBrokerFeeRate)
+        Dim DecryptorSet As New List(Of Decryptor)
+        Dim Decryptors As New DecryptorList
+        Dim OptimalBPList As New List(Of Blueprint)
+
+        ' Add decryptors to the list and run through all to find optimal - if only one, then it will only run once
+        If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
+            If (chkBPOptimalT2Decryptor.Checked And BPTech = BPTechLevel.T2) Or (chkBPOptimalT3Decryptor.Checked And BPTech = BPTechLevel.T3) Then
+                ' Add all the decryptors
+                Call DecryptorSet.Add(NoDecryptor)
+                Call DecryptorSet.AddRange(Decryptors.GetDecryptorList)
+            Else
+                ' Just add the one they selected
+                Call DecryptorSet.Add(SelectedDecryptor)
+            End If
+
+            For Each DC In DecryptorSet
+
+                ' Set the ME/TE text
+                BPME = DC.MEMod + BaseT2T3ME
+                BPTE = DC.TEMod + BaseT2T3TE
+
+                ' Construct Blueprint
+                LocalBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
+                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
+                ' Invent BP
+                LocalNumBPs = CStr(LocalBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), DC, InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
+
+                ' Build the item and compare the values
+                Call LocalBlueprint.BuildItems(chkBPTaxes.Checked, BFData, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+
+                ' Only insert if we are comparing
+                If DecryptorSet.Count > 1 Then
+                    Call OptimalBPList.Add(LocalBlueprint)
+                End If
+            Next
+
+            ' Now return the optimal for compare
+            If OptimalBPList.Count > 0 Then
+                Dim OptimalBP As Blueprint = Nothing
+                Dim OptimalValue As Double
+                Dim BPValue As Double
+
+                For Each BP In OptimalBPList
+                    If IsNothing(OptimalBP) Then
+                        ' First loop
+                        OptimalBP = BP
+                    Else
+                        If (chkBPOptimalT2Decryptor.Text = "Optimal Profit" And BPTech = BPTechLevel.T2) Or (chkBPOptimalT3Decryptor.Text = "Optimal Profit" And BPTech = BPTechLevel.T3) Then
+                            OptimalValue = Math.Max(OptimalBP.GetTotalRawProfit, OptimalBP.GetTotalComponentProfit)
+                            BPValue = Math.Max(BP.GetTotalRawProfit, BP.GetTotalComponentProfit)
+                        Else ' IPH
+                            OptimalValue = Math.Max(OptimalBP.GetTotalIskperHourRaw, OptimalBP.GetTotalIskperHourComponents)
+                            BPValue = Math.Max(BP.GetTotalIskperHourRaw, BP.GetTotalIskperHourComponents)
+                        End If
+
+                        ' Now compare values and save the optimal BP
+                        If BPValue > OptimalValue Then
+                            OptimalBP = BP ' Reset new optimal bp
+                        End If
+                    End If
+
+                Next
+
+                ' Save final optimal
+                LocalBlueprint = OptimalBP
+
+                ' Set the decryptor text for optimal
+                If BPTech = BPTechLevel.T2 Then
+                    LoadingInventionDecryptors = True
+                    cmbBPInventionDecryptor.Text = LocalBlueprint.GetDecryptor.Name
+                    LoadingInventionDecryptors = False
+                Else
+                    LoadingT3Decryptors = True
+                    cmbBPT3Decryptor.Text = LocalBlueprint.GetDecryptor.Name
+                    LoadingT3Decryptors = False
+                End If
+
+            End If
+
+            txtBPNumBPs.Text = LocalNumBPs
+            txtBPME.Text = CStr(LocalBlueprint.GetDecryptor.MEMod + BaseT2T3ME)
+            txtBPTE.Text = CStr(LocalBlueprint.GetDecryptor.TEMod + BaseT2T3TE)
+
+        Else
+            ' Construct Blueprint
+            LocalBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
+                                          UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
+                                          ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+                                          UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
+            ' Just do a basic build of the item and return the blueprint
+            Call LocalBlueprint.BuildItems(chkBPTaxes.Checked, BFData, False, chkBPIgnoreMinerals.Checked, chkBPIgnoreT1Item.Checked)
+        End If
+
+        Return LocalBlueprint
+
+    End Function
 
     ' Updates the blueprint history list for moving forward and back
     Private Sub UpdateBPHistory(ByVal NewBP As Boolean)
@@ -7875,7 +8069,6 @@ ExitForm:
         Dim SearchRegion As String = ""
         Dim SearchSystem As String = ""
         Dim BPCRegion As String = "" ' Region to use for BPC Contract price updates
-        Dim SearchStructureID As String = ""
         Dim NumSystems As Integer = 0
         Dim BPRegionID As String = ""
 
@@ -8025,7 +8218,6 @@ ExitForm:
                     If rbtnPriceSettingSingleSelect.Checked Then
                         TempItem.RegionID = SearchRegion
                         TempItem.SystemID = SearchSystem
-                        TempItem.StructureID = SearchStructureID
                         If TempItem.Manufacture Then
                             TempItem.PriceType = cmbItemsSplitPrices.Text
                             TempItem.PriceModifier = CDbl(txtItemsPriceModifier.Text.Replace("%", "")) / 100
@@ -13444,7 +13636,7 @@ CheckTechs:
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList, ListRowFormats)
 
                                 ' Insert the item for decryptor compare
-                                Call InsertDecryptorforOptimalCompare(ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
+                                Call InsertDecryptorforOptimalCompare(chkCalcDecryptor0, ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
 
                             End If
 
@@ -13516,7 +13708,7 @@ CheckTechs:
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList, ListRowFormats)
 
                             ' Insert the item for decryptor compare
-                            Call InsertDecryptorforOptimalCompare(ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
+                            Call InsertDecryptorforOptimalCompare(chkCalcDecryptor0, ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
 
                             ' *** For Build/Buy we need to construct a new BP and add that
                             ' Construct the BP
@@ -13605,7 +13797,7 @@ CheckTechs:
                                 Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList, ListRowFormats)
 
                                 ' Insert the item for decryptor compare
-                                Call InsertDecryptorforOptimalCompare(ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
+                                Call InsertDecryptorforOptimalCompare(chkCalcDecryptor0, ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
 
                             End If
                         Else
@@ -13720,7 +13912,7 @@ CheckTechs:
                             Call InsertManufacturingItem(InsertItem, SVRThresholdValue, chkCalcSVRIncludeNull.Checked, ManufacturingList, ListRowFormats)
 
                             ' Insert the item for decryptor compare
-                            Call InsertDecryptorforOptimalCompare(ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
+                            Call InsertDecryptorforOptimalCompare(chkCalcDecryptor0, ManufacturingBlueprint, InsertItem.CalcType, InsertItem.ListID, OptimalDecryptorItems)
 
                         End If
 
@@ -15035,12 +15227,13 @@ ExitCalc:
     End Sub
 
     ' Checks if the BP is T2 or T3 and we want to save it for determining the optimal calc for decryptors
-    Private Sub InsertDecryptorforOptimalCompare(ByRef BP As Blueprint, ByRef CalcType As String, ByRef LocationID As Integer, ByRef OptimalList As List(Of OptimalDecryptorItem))
-        If chkCalcDecryptor0.Checked Then
+    Private Sub InsertDecryptorforOptimalCompare(ByRef OptimalCheckbox As CheckBox, ByRef BP As Blueprint, ByRef CalcType As String, ByRef LocationID As Integer,
+                                                 ByRef OptimalList As List(Of OptimalDecryptorItem))
+        If OptimalCheckbox.Checked Then
             Dim TempItem As New OptimalDecryptorItem
             Dim CompareIPH As Boolean
 
-            If chkCalcDecryptor0.Text.Contains("Profit") Then
+            If OptimalCheckbox.Text.Contains("Profit") Then
                 CompareIPH = False
             Else
                 CompareIPH = True

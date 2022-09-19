@@ -175,6 +175,7 @@ Public Class ProgramSettings
     Public DefaultBPPricePerUnit As Boolean = False
     Public DefaultBPIncludeInventionTime As Boolean = False
     Public DefaultBPIncludeInventionCost As Boolean = True
+    Public DefaultBPOptimalDecryptor As Integer = 0
     Public DefaultBPIncludeCopyTime As Boolean = False
     Public DefaultBPIncludecopyCost As Boolean = True
     Public DefaultBPIncludeT3Cost As Boolean = False
@@ -1546,6 +1547,8 @@ Public Class ProgramSettings
                     .MediumCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "MediumCheck", DefaultSizeChecks))
                     .LargeCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "LargeCheck", DefaultSizeChecks))
                     .XLCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "XLCheck", DefaultSizeChecks))
+                    .OptimalT2Decryptor = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "OptimalT2Decryptor", DefaultBPOptimalDecryptor))
+                    .OptimalT3Decryptor = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "OptimalT3Decryptor", DefaultBPOptimalDecryptor))
                     .IncludeFees = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "IncludeFees", DefaultBPIncludeFees))
                     .BrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeDouble, BPSettingsFileName, "BrokerFeeRate", DefaultBPBrokerFeeRate))
                     .RelicType = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "RelicType", DefaultBPRelicType))
@@ -1589,7 +1592,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(43) As Setting
+        Dim BPSettingsList(45) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1645,6 +1648,9 @@ Public Class ProgramSettings
 
             BPSettingsList(43) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
 
+            BPSettingsList(44) = New Setting("OptimalT2Decryptor", CStr(SentSettings.OptimalT2Decryptor))
+            BPSettingsList(45) = New Setting("OptimalT3Decryptor", CStr(SentSettings.OptimalT3Decryptor))
+
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
@@ -1687,6 +1693,8 @@ Public Class ProgramSettings
             .IncludeCopyTime = DefaultBPIncludeCopyTime
             .IncludeT3Cost = DefaultBPIncludeT3Cost
             .IncludeT3Time = DefaultBPIncludeT3Time
+            .OptimalT2Decryptor = DefaultBPOptimalDecryptor
+            .OptimalT3Decryptor = DefaultBPOptimalDecryptor
 
             .RelicType = DefaultBPRelicType
             .T2DecryptorType = DefaultBPT2DecryptorType
@@ -5456,6 +5464,8 @@ Public Structure BPTabSettings
     Dim IncludeCopyTime As Boolean
     Dim IncludeT3Cost As Boolean
     Dim IncludeT3Time As Boolean
+    Dim OptimalT2Decryptor As Integer
+    Dim OptimalT3Decryptor As Integer
 
     Dim PricePerUnit As Boolean
 

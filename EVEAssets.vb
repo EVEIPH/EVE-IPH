@@ -68,7 +68,7 @@ Public Class EVEAssets
 
         ' Load the assets - corp or personal
         SQL = "SELECT ID, ItemID, LocationID, TypeID, Assets.Quantity, Flag, IsSingleton, "
-        SQL &= "CASE WHEN BP_TYPE Is NULL THEN 0 ELSE BP_TYPE END AS BPType FROM ASSETS "
+        SQL &= "CASE WHEN BP_TYPE Is NULL THEN 0 ELSE BP_TYPE END AS BPType, ItemName FROM ASSETS "
         SQL &= "LEFT JOIN ALL_OWNED_BLUEPRINTS ON ID = OWNER_ID And ItemID = ITEM_ID "
         SQL &= "WHERE ID = " & ID
 
@@ -84,6 +84,13 @@ Public Class EVEAssets
             TempAsset.FlagID = readerAssets.GetInt32(5)
             TempAsset.IsSingleton = CBool(readerAssets.GetInt32(6))
             TempAsset.BPType = CType(readerAssets.GetInt32(7), BPType)
+
+            ' If there is nothing in ItemName, then just set to empty string
+            If IsDBNull(readerAssets.GetValue(8)) Then
+                TempAsset.ItemName = ""
+            Else
+                TempAsset.ItemName = readerAssets.GetString(8)
+            End If
 
             ' Get the location name, update flagID (ref) and set flag text (ref)
             TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText, CharacterTokenData)
@@ -129,6 +136,11 @@ Public Class EVEAssets
                 TempAsset.TypeCategory = "Unknown Category"
 
             End Try
+
+            ' Add the location name to the item name if it's set
+            If TempAsset.ItemName <> "" Then
+                TempAsset.TypeName = TempAsset.ItemName & " (" & TempAsset.TypeName & ")"
+            End If
 
             readerData.Close()
 
@@ -187,6 +199,16 @@ Public Class EVEAssets
                         End If
                         rsLookup.Close()
 
+                        ' Get the category of the item - if it's a ship and flag = 4, then it's in a ships hangar, so switch to 90 (Ships Hangar)
+                        DBCommand = New SQLiteCommand("SELECT categoryID FROM ITEM_LOOKUP WHERE typeID = " & Assets(i).type_id, EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        If rsLookup.Read Then
+                            If rsLookup.GetInt32(0) = 6 And Assets(i).location_flag = "Hangar" Then
+                                FlagID = 90
+                            End If
+                        End If
+                        rsLookup.Close()
+
                         ' Insert it
                         If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
                             SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
@@ -207,7 +229,7 @@ Public Class EVEAssets
                     SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    ' Finally, get all the names and update the Assets table
+                    ' Finally, get all the names and update the Assets table - use the same cache date for assets
                     Dim AssetItemNames As New List(Of ESICharacterAssetName)
                     AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
 
@@ -215,7 +237,7 @@ Public Class EVEAssets
                     If Not IsNothing(AssetItemNames) Then
                         For Each item In AssetItemNames
                             If item.name <> None Then
-                                Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE LocationId=" & CStr(item.item_id))
+                                Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE ItemID=" & CStr(item.item_id))
                             End If
                         Next
                     End If
@@ -427,7 +449,11 @@ Public Class EVEAssets
                     TempLocationInfo = New LocationInfo
                     TempLocationInfo.AccountID = AccountID
                     TempLocationInfo.LocationID = TempAsset.LocationID
-                    TempLocationInfo.FlagID = TempAsset.FlagID
+                    If TempAsset.FlagID = -90 Then
+                        TempLocationInfo.FlagID = -4
+                    Else
+                        TempLocationInfo.FlagID = TempAsset.FlagID
+                    End If
                     BaseLocationNode.Tag = TempLocationInfo
 
                     BaseLocationNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
@@ -438,7 +464,7 @@ Public Class EVEAssets
                 BaseLocationNode = AnchorNode.Nodes.Find(TempAsset.LocationName, True)(0)
 
                 ' Add the subnode to the tree without the name yet, wait for the search for children before marking
-                If (TempAsset.TypeCategory = "Ship" And AssetType = ScanType.Corporation And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
+                If (TempAsset.TypeCategory = "Ship" And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
 
                     ' Check corp deliveries first since a ship could be a delivery
                     If TempAsset.FlagText = CorpDelivery Then
@@ -456,7 +482,7 @@ Public Class EVEAssets
                         ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
                         TempLocationInfo = New LocationInfo
                         TempLocationInfo.AccountID = AccountID
-                        TempLocationInfo.LocationID = -1 * TempAsset.LocationID
+                        TempLocationInfo.LocationID = TempAsset.LocationID ' * -1
                         TempLocationInfo.FlagID = TempAsset.FlagID
                         TempNode.Tag = TempLocationInfo
                         TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
@@ -719,7 +745,7 @@ Public Class EVEAssets
             For Each Asset In FindAssets
                 If Not FoundAssets.Contains(Asset) Then
                     ' If it's a blueprint, see if we are only looking at BPCs
-                    If (Asset.TypeCategory = "Blueprint" And Asset.BPType = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint" Then
+                    If ((Asset.TypeCategory = "Blueprint" And Asset.BPType = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint") Then
                         FoundAssets.Add(Asset)
                     End If
                 End If
@@ -794,8 +820,13 @@ Public Class EVEAssets
             Qx = GetNodeQuantity(tx)
             Qy = GetNodeQuantity(ty)
 
-            If tx.Text.Contains("R.Db") Or ty.Text.Contains("R.Db") Then
-                Application.DoEvents()
+            ' Force Ship Hanger to top of tree
+            If tx.Text = "Ship Hangar" Then
+                ' y comes after x 
+                Return -1
+            ElseIf ty.Text = "Ship Hangar" Then
+                ' x comes after y
+                Return 1
             End If
 
             If Qx = 0 And Qy = 0 Then
@@ -827,8 +858,17 @@ Public Class EVEAssets
             Qx = GetNodeQuantity(tx)
             Qy = GetNodeQuantity(ty)
 
+            ' Force Ship Hanger to top of tree
+            If tx.Text = "Ship Hangar" Then
+                ' y comes after x 
+                Return -1
+            ElseIf ty.Text = "Ship Hangar" Then
+                ' x comes after y
+                Return 1
+            End If
+
             If Qx = 0 And Qy = 0 Then
-                ' Sort by name!
+                ' Sort by name
                 Return String.Compare(tx.Text, ty.Text)
             ElseIf Qx = 0 Or Qy = 0 Then
                 ' Sort assending, since a zero quanity is a base item and should go to the top
@@ -959,6 +999,7 @@ Public Class EVEAsset
     Public LocationID As Long ' Can be a station, system, or another item id
     Public LocationName As String ' Station or system name
     Public ItemID As Long
+    Public ItemName As String ' This is the in-game user name given to the item/location - e.g. can name
     Public TypeID As Long
     Public TypeName As String
     Public TypeGroup As String
@@ -971,6 +1012,7 @@ Public Class EVEAsset
 
     Public Sub New()
         ItemID = 0
+        ItemName = ""
         LocationID = 0
         LocationName = ""
         TypeID = 0

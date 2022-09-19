@@ -722,8 +722,8 @@ Public Class frmShoppingList
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
-        While readerAssets.Read
-            If (readerAssets.GetInt32(1) = -4 Or readerAssets.GetInt64(0) > 1000000000000) Then
+        While readerAssets.Read ' Update that if we are looking at -4, then only select stuff that is marked as -4 or in the Hangar and not ships (drones - 87 flag, cargo - 5 flag)
+            If ((readerAssets.GetInt32(1) = -90 Or readerAssets.GetInt32(1) = -4) And readerAssets.GetInt64(0) > 1000000000000) Then
                 ' If the flag is the base location, then we want all items at the location id
                 AssetLocationFlagList.Add("(LocationID = " & CStr(readerAssets.GetInt64(0)) & ")")
             Else

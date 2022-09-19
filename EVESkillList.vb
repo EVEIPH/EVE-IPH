@@ -350,7 +350,7 @@ Public Class EVESkillList
         If Not IsNothing(TempSkills) Then
             For i = 0 To TempSkills.NumSkills - 1
                 With TempSkills
-                    InsertSkill(TempSkills.GetSkillList(i), LoadPreReqSkills)
+                    Call InsertSkill(TempSkills.GetSkillList(i), LoadPreReqSkills)
                 End With
             Next
         End If
@@ -376,7 +376,8 @@ Public Class EVESkillList
     Private Function FindSkill(ByVal SSkill As EVESkill) As Boolean
 
         If SSkill.TypeID = SkillToFind.TypeID Then
-            If CheckLevelofSkilltoFind And SSkill.Level <= SkillToFind.Level Then
+            ' if we are checking skill leave and the level of the skill in the list is greater than or equal to the searching skill, then it's in there (true)
+            If CheckLevelofSkilltoFind And SSkill.Level >= SkillToFind.Level Then
                 Return True
             ElseIf Not CheckLevelofSkilltoFind Then
                 Return True

@@ -410,53 +410,16 @@ Public Class ESI
     ''' authorization token and update the sent variable and DB data if expired.
     ''' </summary>
     ''' <returns>Returns data response as a string</returns>
-    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByVal TokenData As ESITokenData,
+    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByVal SentTokenData As ESITokenData,
                                               ByVal TokenExpiration As Date, ByRef CacheDate As Date,
                                               ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False,
                                               Optional SinglePage As Boolean = False) As String
         Dim WC As New WebClient
         Dim Response As String = ""
-        Dim TokenExpireDate As Date
 
         Try
-            ' See if we update the token data first
-            If TokenExpiration <= DateTime.UtcNow Then
-
-                ' Update the token
-                TokenData = GetAccessToken(TokenData.refresh_token, True, Nothing, Nothing)
-
-                If IsNothing(TokenData) Then
-                    Return Nothing
-                End If
-
-                ' Update the token data in the DB for this character
-                Dim SQL As String = ""
-                ' Update data - only stuff that could (reasonably) change
-                SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-                SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
-
-                With TokenData
-                    TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
-                    SQL = String.Format(SQL, FormatDBString(.access_token),
-                    Format(TokenExpireDate, SQLiteDateFormat),
-                    FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
-                End With
-
-                ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
-                If EVEDB.TransactionActive Then
-                    EVEDB.CommitSQLiteTransaction()
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                    EVEDB.BeginSQLiteTransaction()
-                Else
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                End If
-
-                ' Now update the copy used in IPH so we don't re-query
-                SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
-                SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
-                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
-
-            End If
+            ' Update the token data first
+            SentTokenData = UpdateTokenData(SentTokenData, TokenExpiration, CharacterID)
 
             ' See if we are in an error limited state
             If ESIErrorHandler.ErrorLimitReached Then
@@ -464,7 +427,7 @@ Public Class ESI
                 Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
             End If
 
-            Dim Auth_header As String = $"Bearer {TokenData.access_token}"
+            Dim Auth_header As String = $"Bearer {SentTokenData.access_token}"
 
             WC.Proxy = GetProxyData()
             WC.Headers(HttpRequestHeader.Authorization) = Auth_header
@@ -507,7 +470,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
+                Return GetPrivateAuthorizedData(URL, SentTokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
             End If
 
         Catch ex As Exception
@@ -527,7 +490,7 @@ Public Class ESI
     ''' </summary>
     ''' <param name="TokenData">SavedTokenData object</param>
     ''' <returns>the ESITokenData object</returns>
-    Private Function FormatTokenData(ByVal TokenData As SavedTokenData) As ESITokenData
+    Private Function FormatESITokenData(ByVal TokenData As SavedTokenData) As ESITokenData
         Dim TempTokenData As New ESITokenData
 
         TempTokenData.access_token = TokenData.AccessToken
@@ -536,6 +499,21 @@ Public Class ESI
 
         Return TempTokenData
 
+    End Function
+
+    ''' <summary>
+    ''' Formats a ESITokenData object to SavedTokenData
+    ''' </summary>
+    ''' <param name="TokenData">ESITokenData object</param>
+    ''' <returns>the SavedTokenData object</returns>
+    Private Function FormatSavedtokenData(ByVal TokenData As ESITokenData) As SavedTokenData
+        Dim TempTokenData As New SavedTokenData
+
+        TempTokenData.AccessToken = TokenData.access_token
+        TempTokenData.RefreshToken = TokenData.refresh_token
+        TempTokenData.TokenType = TokenData.token_type
+
+        Return TempTokenData
     End Function
 
     ''' <summary>
@@ -735,7 +713,7 @@ Public Class ESI
         Dim TempSkill As New EVESkill
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/skills/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, SkillsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, SkillsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             SkillData = JsonConvert.DeserializeObject(Of ESICharacterSkillsBase)(ReturnData)
@@ -764,7 +742,7 @@ Public Class ESI
         Dim StandingType As String = ""
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/standings/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StandingsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, StandingsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             StandingsData = JsonConvert.DeserializeObject(Of List(Of ESICharacterStandingsData))(ReturnData)
@@ -792,7 +770,7 @@ Public Class ESI
         Dim ReturnData As String
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/agents_research/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESIResearchAgent))(ReturnData)
@@ -812,10 +790,10 @@ Public Class ESI
         ' Set up query string
         If ScanType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -889,7 +867,7 @@ Public Class ESI
         End If
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & URLType & CStr(ID) & "/industry/jobs/" & TranquilityDataSource & "&include_completed=true",
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, JobsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, JobsCacheDate, ID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESIIndustryJob))(ReturnData)
@@ -905,10 +883,10 @@ Public Class ESI
         ' Set up query string
         If JobType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -930,7 +908,6 @@ Public Class ESI
         Dim TempOutput As New List(Of ESICharacterAssetName)
         Dim Success As Boolean = False
         Dim Data As String = ""
-        Dim Token As ESITokenData = FormatTokenData(TokenData)
 
         Dim WC As New WebClient
         Dim Address As String = ""
@@ -938,45 +915,8 @@ Public Class ESI
         Dim IDList As String = ""
 
         Try
-
-            ' See if we update the token data first
-            If TokenData.TokenExpiration <= DateTime.UtcNow Then
-
-                ' Update the token
-                Token = GetAccessToken(Token.refresh_token, True, Nothing, Nothing)
-
-                If IsNothing(TokenData) Then
-                    Return Nothing
-                End If
-
-                ' Update the token data in the DB for this character/corporation
-                Dim SQL As String = ""
-                ' Update data - only stuff that could (reasonably) change
-                SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-                SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
-
-                With Token
-                    TokenData.TokenExpiration = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
-                    SQL = String.Format(SQL, FormatDBString(.access_token),
-                    Format(TokenData.TokenExpiration, SQLiteDateFormat),
-                    FormatDBString(.token_type), FormatDBString(.refresh_token), ID)
-                End With
-
-                ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
-                If EVEDB.TransactionActive Then
-                    EVEDB.CommitSQLiteTransaction()
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                    EVEDB.BeginSQLiteTransaction()
-                Else
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                End If
-
-                ' Now update the copy used in IPH so we don't re-query
-                SelectedCharacter.CharacterTokenData.AccessToken = Token.access_token
-                SelectedCharacter.CharacterTokenData.RefreshToken = Token.refresh_token
-                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenData.TokenExpiration
-
-            End If
+            ' Update the token data first
+            TokenData = FormatSavedtokenData(UpdateTokenData(FormatESITokenData(TokenData), TokenData.TokenExpiration, ID))
 
             'See If we are in an error limited state
             If ESIErrorHandler.ErrorLimitReached Then
@@ -996,7 +936,7 @@ Public Class ESI
                 Address = ESIURL & "characters/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
             End If
 
-            WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {Token.access_token}"
+            WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {TokenData.AccessToken}"
             Dim counter As Integer = 0
 
             For Each item In ItemIDs
@@ -1021,6 +961,15 @@ Public Class ESI
 
         Catch ex As WebException
             Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
+
+            ' Retry call
+            If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
+                ESIErrorHandler.RetriedCall = True
+                ' Try this call again after waiting a second
+                Thread.Sleep(1000)
+                Return GetAssetNames(ItemIDs, ID, TokenData, JobType, AssetNamesCacheDate)
+            End If
+
         Catch ex As Exception
             Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
         End Try
@@ -1036,7 +985,7 @@ Public Class ESI
     Public Function GetCorporationRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
         Dim ReturnData As String
 
-        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(CorporationID) & "/roles/" & TranquilityDataSource, FormatTokenData(TokenData), TokenData.TokenExpiration, RolesCacheDate, CharacterID)
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(CorporationID) & "/roles/" & TranquilityDataSource, FormatESITokenData(TokenData), TokenData.TokenExpiration, RolesCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESICorporationRoles))(ReturnData)
@@ -1124,7 +1073,7 @@ Public Class ESI
 
         ' Set up query string - choose a suppress error message setting since this will probably have the most issues
         ReturnData = GetPrivateAuthorizedData(ESIURL & "universe/structures/" & CStr(ID) & "/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, SuppressErrors)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, SuppressErrors)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of ESIUniverseStructure)(ReturnData)
@@ -1312,7 +1261,7 @@ Public Class ESI
 
                 ' Get the data from ESI 
                 OrderData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(.StructureID) & "/" & TranquilityDataSource,
-                                                FormatTokenData(.TokenData), .TokenData.TokenExpiration, CacheDate, .TokenData.CharacterID, QueryInfo.SupressMessages)
+                                                FormatESITokenData(.TokenData), .TokenData.TokenExpiration, CacheDate, .TokenData.CharacterID, QueryInfo.SupressMessages)
 
                 If Not IsNothing(OrderData) Then
                     MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(OrderData)
@@ -1380,7 +1329,7 @@ Public Class ESI
         Dim PriceData As String = ""
 
         PriceData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(StructureID) & "/" & TranquilityDataSource,
-                                                     FormatTokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors, True)
+                                                     FormatESITokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors, True)
 
         If Not IsNothing(PriceData) Then
             Return True
@@ -2172,6 +2121,52 @@ Public Class ESI
 #End Region
 
 #Region "Supporting Functions"
+
+    Private Function UpdateTokenData(ByVal TokenData As ESITokenData, ByVal TokenExpiration As Date, ByVal CharacterID As Long) As ESITokenData
+
+        If TokenExpiration <= DateTime.UtcNow Then
+
+            Dim TokenExpireDate As Date
+
+            ' Update the token
+            TokenData = GetAccessToken(TokenData.refresh_token, True, Nothing, Nothing)
+
+            If IsNothing(TokenData) Then
+                Return Nothing
+            End If
+
+            ' Update the token data in the DB for this character
+            Dim SQL As String = ""
+            ' Update data - only stuff that could (reasonably) change
+            SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+            SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+
+            With TokenData
+                TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
+                SQL = String.Format(SQL, FormatDBString(.access_token),
+                    Format(TokenExpireDate, SQLiteDateFormat),
+                    FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
+            End With
+
+            ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
+            If EVEDB.TransactionActive Then
+                EVEDB.CommitSQLiteTransaction()
+                EVEDB.ExecuteNonQuerySQL(SQL)
+                EVEDB.BeginSQLiteTransaction()
+            Else
+                EVEDB.ExecuteNonQuerySQL(SQL)
+            End If
+
+            ' Now update the copy used in IPH so we don't re-query
+            SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
+            SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
+            SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
+
+        End If
+
+        Return TokenData
+
+    End Function
 
     Public Function GetFactionData() As List(Of ESIFactionData)
         Dim PublicData As String

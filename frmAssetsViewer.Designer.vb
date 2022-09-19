@@ -72,12 +72,14 @@ Partial Class frmAssetsViewer
         Me.chkSubsystemComponents = New System.Windows.Forms.CheckBox()
         Me.chkMolecularForgingTools = New System.Windows.Forms.CheckBox()
         Me.chkRAM = New System.Windows.Forms.CheckBox()
-        Me.btnToggleExpand = New System.Windows.Forms.Button()
-        Me.chkToggle = New System.Windows.Forms.CheckBox()
-        Me.btnToggleRetract = New System.Windows.Forms.Button()
         Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.AssetTree = New System.Windows.Forms.TreeView()
+        Me.ListOptionsMenu = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.mnuCheckAll = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuUncheckAll = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuExpandNodes = New System.Windows.Forms.ToolStripMenuItem()
+        Me.mnuCollapseNodes = New System.Windows.Forms.ToolStripMenuItem()
         Me.btnResetItemFilter = New System.Windows.Forms.Button()
         Me.txtItemFilter = New System.Windows.Forms.TextBox()
         Me.chkStructureComponents = New System.Windows.Forms.CheckBox()
@@ -125,6 +127,7 @@ Partial Class frmAssetsViewer
         Me.gbResearchEquipment.SuspendLayout()
         Me.gbReactionMaterials.SuspendLayout()
         Me.gbItems.SuspendLayout()
+        Me.ListOptionsMenu.SuspendLayout()
         Me.gbPricesTech.SuspendLayout()
         Me.tabSearchSettings.SuspendLayout()
         Me.gbRawMaterials.SuspendLayout()
@@ -137,6 +140,9 @@ Partial Class frmAssetsViewer
         Me.GroupBox1.SuspendLayout()
         Me.tabMain.SuspendLayout()
         Me.SuspendLayout()
+        '
+        'Timer1
+        '
         '
         'ttMain
         '
@@ -625,38 +631,6 @@ Partial Class frmAssetsViewer
         Me.chkRAM.Text = "R.A.M.s"
         Me.chkRAM.UseVisualStyleBackColor = True
         '
-        'btnToggleExpand
-        '
-        Me.btnToggleExpand.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnToggleExpand.ForeColor = System.Drawing.SystemColors.AppWorkspace
-        Me.btnToggleExpand.Image = CType(resources.GetObject("btnToggleExpand.Image"), System.Drawing.Image)
-        Me.btnToggleExpand.Location = New System.Drawing.Point(323, 4)
-        Me.btnToggleExpand.Name = "btnToggleExpand"
-        Me.btnToggleExpand.Size = New System.Drawing.Size(25, 25)
-        Me.btnToggleExpand.TabIndex = 261
-        Me.btnToggleExpand.UseVisualStyleBackColor = False
-        '
-        'chkToggle
-        '
-        Me.chkToggle.AutoSize = True
-        Me.chkToggle.BackColor = System.Drawing.Color.Transparent
-        Me.chkToggle.Location = New System.Drawing.Point(305, 10)
-        Me.chkToggle.Name = "chkToggle"
-        Me.chkToggle.Size = New System.Drawing.Size(15, 14)
-        Me.chkToggle.TabIndex = 260
-        Me.chkToggle.UseVisualStyleBackColor = False
-        '
-        'btnToggleRetract
-        '
-        Me.btnToggleRetract.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnToggleRetract.ForeColor = System.Drawing.SystemColors.AppWorkspace
-        Me.btnToggleRetract.Image = CType(resources.GetObject("btnToggleRetract.Image"), System.Drawing.Image)
-        Me.btnToggleRetract.Location = New System.Drawing.Point(323, 4)
-        Me.btnToggleRetract.Name = "btnToggleRetract"
-        Me.btnToggleRetract.Size = New System.Drawing.Size(25, 25)
-        Me.btnToggleRetract.TabIndex = 259
-        Me.btnToggleRetract.UseVisualStyleBackColor = False
-        '
         'ToolTip1
         '
         Me.ToolTip1.IsBalloon = True
@@ -664,11 +638,42 @@ Partial Class frmAssetsViewer
         'AssetTree
         '
         Me.AssetTree.CheckBoxes = True
+        Me.AssetTree.ContextMenuStrip = Me.ListOptionsMenu
         Me.AssetTree.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawAll
         Me.AssetTree.Location = New System.Drawing.Point(2, 4)
         Me.AssetTree.Name = "AssetTree"
-        Me.AssetTree.Size = New System.Drawing.Size(346, 660)
+        Me.AssetTree.Size = New System.Drawing.Size(450, 660)
         Me.AssetTree.TabIndex = 258
+        '
+        'ListOptionsMenu
+        '
+        Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCheckAll, Me.mnuUncheckAll, Me.mnuExpandNodes, Me.mnuCollapseNodes})
+        Me.ListOptionsMenu.Name = "ListOptionsMenu"
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(157, 92)
+        '
+        'mnuCheckAll
+        '
+        Me.mnuCheckAll.Name = "mnuCheckAll"
+        Me.mnuCheckAll.Size = New System.Drawing.Size(156, 22)
+        Me.mnuCheckAll.Text = "Check All"
+        '
+        'mnuUncheckAll
+        '
+        Me.mnuUncheckAll.Name = "mnuUncheckAll"
+        Me.mnuUncheckAll.Size = New System.Drawing.Size(156, 22)
+        Me.mnuUncheckAll.Text = "Uncheck All"
+        '
+        'mnuExpandNodes
+        '
+        Me.mnuExpandNodes.Name = "mnuExpandNodes"
+        Me.mnuExpandNodes.Size = New System.Drawing.Size(156, 22)
+        Me.mnuExpandNodes.Text = "Expand Nodes"
+        '
+        'mnuCollapseNodes
+        '
+        Me.mnuCollapseNodes.Name = "mnuCollapseNodes"
+        Me.mnuCollapseNodes.Size = New System.Drawing.Size(156, 22)
+        Me.mnuCollapseNodes.Text = "Collapse Nodes"
         '
         'btnResetItemFilter
         '
@@ -1146,7 +1151,7 @@ Partial Class frmAssetsViewer
         '
         Me.tabMain.Controls.Add(Me.tabAssetMain)
         Me.tabMain.Controls.Add(Me.tabSearchSettings)
-        Me.tabMain.Location = New System.Drawing.Point(354, 4)
+        Me.tabMain.Location = New System.Drawing.Point(458, 4)
         Me.tabMain.Name = "tabMain"
         Me.tabMain.SelectedIndex = 0
         Me.tabMain.Size = New System.Drawing.Size(284, 662)
@@ -1168,10 +1173,7 @@ Partial Class frmAssetsViewer
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(641, 671)
-        Me.Controls.Add(Me.btnToggleExpand)
-        Me.Controls.Add(Me.chkToggle)
-        Me.Controls.Add(Me.btnToggleRetract)
+        Me.ClientSize = New System.Drawing.Size(744, 671)
         Me.Controls.Add(Me.AssetTree)
         Me.Controls.Add(Me.tabMain)
         Me.Controls.Add(Me.btnCheckToggle)
@@ -1188,6 +1190,7 @@ Partial Class frmAssetsViewer
         Me.gbReactionMaterials.PerformLayout()
         Me.gbItems.ResumeLayout(False)
         Me.gbItems.PerformLayout()
+        Me.ListOptionsMenu.ResumeLayout(False)
         Me.gbPricesTech.ResumeLayout(False)
         Me.gbPricesTech.PerformLayout()
         Me.tabSearchSettings.ResumeLayout(False)
@@ -1208,7 +1211,6 @@ Partial Class frmAssetsViewer
         Me.GroupBox1.PerformLayout()
         Me.tabMain.ResumeLayout(False)
         Me.ResumeLayout(False)
-        Me.PerformLayout()
 
     End Sub
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
@@ -1259,9 +1261,6 @@ Partial Class frmAssetsViewer
     Friend WithEvents chkSubsystemComponents As CheckBox
     Friend WithEvents chkMolecularForgingTools As CheckBox
     Friend WithEvents chkRAM As CheckBox
-    Friend WithEvents btnToggleExpand As Button
-    Friend WithEvents chkToggle As CheckBox
-    Friend WithEvents btnToggleRetract As Button
     Friend WithEvents ToolTip1 As ToolTip
     Friend WithEvents Timer2 As Timer
     Friend WithEvents AssetTree As TreeView
@@ -1309,4 +1308,9 @@ Partial Class frmAssetsViewer
     Friend WithEvents GroupBox1 As GroupBox
     Friend WithEvents tabMain As TabControl
     Friend WithEvents btnCheckToggle As Button
+    Friend WithEvents ListOptionsMenu As ContextMenuStrip
+    Friend WithEvents mnuCheckAll As ToolStripMenuItem
+    Friend WithEvents mnuUncheckAll As ToolStripMenuItem
+    Friend WithEvents mnuExpandNodes As ToolStripMenuItem
+    Friend WithEvents mnuCollapseNodes As ToolStripMenuItem
 End Class

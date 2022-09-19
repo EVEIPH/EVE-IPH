@@ -391,12 +391,13 @@ Public Class frmReprocessingPlant
                 ReprocessedCost = ReprocessedMaterials.GetTotalMaterialsCost
                 Item.SubItems.Item(4).Text = FormatNumber(ReprocessedCost, 2)
                 ItemCost = CDbl(Item.SubItems.Item(2).Text)
+                Item.UseItemStyleForSubItems = False
+                fnt_font = New Font(Item.SubItems.Item(5).Font.SystemFontName, Item.SubItems.Item(5).Font.Size, FontStyle.Bold)
+                Item.SubItems.Item(5).Font = fnt_font
                 If ItemCost = 0 Then
                     Item.SubItems.Item(5).Text = FormatPercent(1, 1)
+                    Item.SubItems.Item(5).ForeColor = Color.DarkGreen
                 Else
-                    Item.UseItemStyleForSubItems = False
-                    fnt_font = New Font(Item.SubItems.Item(5).Font.SystemFontName, Item.SubItems.Item(5).Font.Size, FontStyle.Bold)
-                    Item.SubItems.Item(5).Font = fnt_font
                     Item.SubItems.Item(5).Text = FormatPercent(ReprocessedCost / ItemCost, 1)
                     If ReprocessedCost / ItemCost >= 1 Then
                         Item.SubItems.Item(5).ForeColor = Color.DarkGreen
@@ -565,12 +566,12 @@ Public Class frmReprocessingPlant
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerItems = DBCommand.ExecuteReader
 
-            While readerItems.Read
-                If (readerItems.GetInt32(1) = -4 Or readerItems.GetInt64(0) > 1000000000000) Then
+            While readerItems.Read ' Update that if we are looking at -4, then only select stuff that is marked as -4 or in the Hangar and not ships (drones - 87 flag, cargo - 5 flag)
+                If ((readerItems.GetInt32(1) = -90 Or readerItems.GetInt32(1) = -4) And readerItems.GetInt64(0) > 1000000000000) Then
                     ' If the flag is the base location, then we want all items at the location id
                     AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & ") OR "
                 Else
-                    AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
+                    AssetLocationFlagList &= "(LocationID = " & CStr(Math.Abs(readerItems.GetInt64(0))) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
                 End If
             End While
 

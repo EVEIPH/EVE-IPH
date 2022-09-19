@@ -167,6 +167,8 @@ Public Class Blueprint
 
     Private OreConversionSettings As ConversionToOreSettings
 
+    Private UsesReactions As Boolean
+
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
 
@@ -260,8 +262,9 @@ Public Class Blueprint
         InventionDecryptor = NoDecryptor
         Relic = ""
         TotalInventedRuns = 0
-
         NumInventionJobs = 0
+
+        UsesReactions = False
 
         ' Do build/buy 
         BuildBuy = BPBuildBuy
@@ -904,8 +907,6 @@ Public Class Blueprint
         Dim AdjCurrentMatQuantity As Long = 0
         Dim ExtraMaterial As Material = Nothing
         Dim RefUsedMat As Material = Nothing
-
-        Dim UsesReactions As Boolean = False
         Dim IgnoreBuild As Boolean = False
 
         ' Select all materials to buid this BP
@@ -1173,7 +1174,9 @@ Public Class Blueprint
                         Call ComponentProductionTimes.Add(ComponentBlueprint.GetTotalProductionTime)
 
                         ' Get the skills for BP to build it and add them to the list
-                        TempSkills = ComponentBlueprint.GetReqBPSkills
+                        TempSkills.InsertSkills(ComponentBlueprint.GetReqBPSkills, False)
+                        ' Add any skills on the component if not already in list
+                        TempSkills.InsertSkills(ComponentBlueprint.ReqBuildComponentSkills, False)
 
                         ' Get the component usage
                         Select Case ComponentBlueprint.GetItemGroupID
@@ -2553,6 +2556,11 @@ SkipProcessing:
         Dim readerLookup As SQLiteDataReader
         Dim BaseJobCost As Double = 0
 
+        ' If this is a T3 BP, then we need to get the build cost from the BPC, and not the relic used to invent it
+        If TechLevel = BPTechLevel.T3 Then
+            BPCTypeID = BlueprintID
+        End If
+
         ' Look up the sum of the quantity from the sent BPC ID 
         SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS_FACT "
         SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
@@ -2808,6 +2816,11 @@ SkipProcessing:
     ' Returns the Race ID of the item built by this BP
     Public Function GetRaceID() As Integer
         Return BlueprintRace
+    End Function
+
+    ' Returns a boolean whether this blueprint uses reactions
+    Public Function GetReactionFlag() As Boolean
+        Return UsesReactions
     End Function
 
     ' Returns the category id for the item this BP builds
