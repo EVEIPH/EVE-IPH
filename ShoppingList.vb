@@ -426,7 +426,7 @@ Public Class ShoppingList
 
         If Not IsNothing(TotalBuyList) Then
             If Not IsNothing(TotalBuyList.GetMaterialList) Then
-
+                BuyListDataChange = True ' Flag that something changed in the buy list for EVEPraisal link creation
                 If Quantity <= 0 Then
                     ' We just delete the item (all quantity) from the total materials list
                     Call TotalBuyList.RemoveMaterial(TotalBuyList.SearchListbyName(SentItemName))
@@ -876,6 +876,7 @@ Public Class ShoppingList
             If Not IsNothing(SentBuyList.GetMaterialList) Then
                 TotalBuyList.InsertMaterialList(SentBuyList.GetMaterialList)
             End If
+            BuyListDataChange = True
         End If
 
         ' Total Build - Need to rebuild every component as if we are only using one bp to get the numbers exact

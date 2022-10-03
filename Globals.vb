@@ -237,6 +237,11 @@ Public Module Public_Variables
     Public OreBeltFlipOpen As Boolean
     Public IceBeltFlipOpen As Boolean
 
+    Public BuyListDataChange As Boolean = True
+
+    ' This limits all regions queries to regions players use
+    Public Const RegionFilterString As String = "(regionName Not Like '%-R%' OR regionName = 'G-R00031') AND regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
+
     ' For scanning assets
     Public Enum ScanType
         Personal = 0
@@ -1180,6 +1185,44 @@ SkipItem:
 
     End Function
 
+    ' Gets the ID's for personal and corp assets for querying in asset windows
+    Public Function GetAssetIDString(AssetSettings As AssetWindowSettings) As String
+        Dim IDs() As String
+        Dim IDString As String = ""
+        Dim CorpID As Long = 0
+        Dim readerIDs As SQLiteDataReader
+
+        ' Read the character IDs selected and get locations for each
+        IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
+
+        ' Get the characterIDs
+        For Each ID In IDs
+            ' Get the Corporation ID
+            DBCommand = New SQLiteCommand("SELECT CORPORATION_ID FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & ID, EVEDB.DBREf)
+            readerIDs = DBCommand.ExecuteReader
+            If readerIDs.Read() Then
+                CorpID = readerIDs.GetInt64(0)
+            End If
+
+            If IDString <> "" Then
+                IDString &= ","
+            End If
+
+            ' Add the ID's to the list depending on options
+            If AssetSettings.AssetType = "Both" Then
+                IDString &= CStr(ID) & "," & CStr(CorpID)
+            ElseIf AssetSettings.AssetType = "Personal" Then
+                IDString &= CStr(ID)
+            ElseIf AssetSettings.AssetType = "Corporation" Then
+                IDString &= CStr(CorpID)
+            End If
+            readerIDs.Close()
+        Next
+
+        Return IDString
+
+    End Function
+
     ' Strips off the Runs if it is on the name
     Public Function RemoveItemNameRuns(ByVal ItemName As String) As String
         If ItemName.Contains("(Runs:") Then
@@ -1953,8 +1996,7 @@ SkipItem:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT regionName FROM REGIONS WHERE (regionName NOT LIKE '%-R%' OR regionName = 'G-R00031') "
-        SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' GROUP BY regionName "
+        SQL = "SELECT regionName FROM REGIONS WHERE " & RegionFilterString & " GROUP BY regionName "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
         RegionCombo.BeginUpdate()

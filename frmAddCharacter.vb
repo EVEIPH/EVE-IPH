@@ -20,6 +20,7 @@ Public Class frmAddCharacter
         chkReadCorporationBlueprints.Checked = True
         chkReadCorporationJobs.Checked = True
         chkReadCorporationMembership.Checked = True
+        chkReadCorporationDivisions.Checked = True
         chkReadStandings.Checked = True
         chkReadStructures.Checked = True
         chkReadStructureMarkets.Checked = True
@@ -37,6 +38,7 @@ Public Class frmAddCharacter
             .SetToolTip(chkReadCorporationBlueprints, "Reads a list of blueprints the corporation owns")
             .SetToolTip(chkReadCorporationJobs, "List industry jobs run by a corporation")
             .SetToolTip(chkReadCorporationMembership, "List of the current members a corporation and titles (for corp roles)")
+            .SetToolTip(chkReadCorporationDivisions, "Lists the names of corporation hanger and wallet division names if not default")
 
             .SetToolTip(chkReadStructures, "Reads information about specific structures")
             .SetToolTip(chkReadStructureMarkets, "Reads market orders from a specific structure")
@@ -168,6 +170,12 @@ Public Class frmAddCharacter
         End With
     End Sub
 
+    Private Sub chkReadCorporationDivisions_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationDivisions.CheckedChanged
+        With chkReadCorporationDivisions
+            Call UpdateScopesString(.Text, .Checked)
+        End With
+    End Sub
+
     Private Sub chkReadCorporationJobs_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationJobs.CheckedChanged
         With chkReadCorporationJobs
             Call UpdateScopesString(.Text, .Checked)
@@ -209,8 +217,10 @@ Public Class frmAddCharacter
         chkReadCorporationBlueprints.Enabled = Setting
         chkReadCorporationJobs.Enabled = Setting
         chkReadCorporationMembership.Enabled = Setting
+        chkReadCorporationDivisions.Enabled = Setting
         chkReadStandings.Enabled = Setting
         chkReadStructures.Enabled = Setting
         chkReadStructureMarkets.Enabled = Setting
     End Sub
+
 End Class

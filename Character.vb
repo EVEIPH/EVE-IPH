@@ -198,7 +198,7 @@ Public Class Character
 
     ' Load the latest data for the character sent or the default if no character sent from the DB - users may not want to load bps or assets 
     Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean,
-                                      Optional IndustryJobsUpdate As Boolean = False) As Boolean
+                                      Optional IndustryJobsUpdate As Boolean = False, Optional ResetCorporationData As Boolean = True) As Boolean
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
 
@@ -246,7 +246,7 @@ Public Class Character
                         CharacterCorporation = New Corporation()
                         ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
                         If .GetInt64(2) > 2000000 Then
-                            CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs)
+                            CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs, ResetCorporationData)
                         End If
 
                         UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
@@ -263,7 +263,7 @@ Public Class Character
                         ' Now leave since everything below will fail
                         Return True
                     End If
-                    End If
+                End If
 
             End With
 

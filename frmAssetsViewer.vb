@@ -118,8 +118,12 @@ Public Class frmAssetsViewer
                 SelectedSettings = UserAssetWindowRefinerySettings
         End Select
 
-        ' For this window, get the asset locations saved for the character
-        SavedLocationIDs = SelectedCharacter.Assets.GetAssetLocationIDs(WindowForm, SelectedCharacter.ID, SelectedCharacter.CharacterCorporation)
+        ' Width 253, 21 for scrollbar, 25 for check (207)
+        lstCharacters.Columns.Add("", -2, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Name", 90, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("Character Corporation", 117, HorizontalAlignment.Left)
+        lstCharacters.Columns.Add("CharID", 0, HorizontalAlignment.Left) ' Hidden
+        lstCharacters.Columns.Add("CorpID", 0, HorizontalAlignment.Left) ' Hidden
 
         ' For the disabling of the price update form
         PriceCheckT1Enabled = True
@@ -128,6 +132,8 @@ Public Class frmAssetsViewer
         PriceCheckT4Enabled = True
         PriceCheckT5Enabled = True
         PriceCheckT6Enabled = True
+
+        SavedLocationIDs = New List(Of LocationInfo)
 
         AssetTree.DrawMode = TreeViewDrawMode.OwnerDrawAll
         AssetTree.CheckBoxes = True
@@ -164,6 +170,9 @@ Public Class frmAssetsViewer
         TechCheckBoxes(5) = chkItemsT5
         TechCheckBoxes(6) = chkItemsT6
 
+        pnlStatus.Text = ""
+        pnlProgressBar.Visible = False
+
         ' Main form
         Select Case SelectedSettings.AssetType
             Case rbtnAllAssets.Text
@@ -189,6 +198,15 @@ Public Class frmAssetsViewer
         Else
             rbtnBPMats.Checked = True
         End If
+
+        If SelectedSettings.SelectedAccount Then
+            rbtnSelectedAccount.Checked = True
+        Else
+            rbtnMultiAccounts.Checked = True
+        End If
+
+        ' Regardless, load up all account info
+        Call LoadAccountList()
 
         txtItemFilter.Text = SelectedSettings.ItemFilterText
 
@@ -266,6 +284,32 @@ Public Class frmAssetsViewer
 
     End Sub
 
+    ' Refreshes the account list with character account info
+    Private Sub LoadAccountList()
+        Dim rsAccounts As SQLiteDataReader
+        Dim lstCharacterRow As ListViewItem
+        Dim SQL As String = "SELECT CHARACTER_NAME, CORPORATION_NAME, CHARACTER_ID, ESI_CHARACTER_DATA.CORPORATION_ID FROM ESI_CHARACTER_DATA, ESI_CORPORATION_DATA
+                             WHERE ESI_CHARACTER_DATA.CORPORATION_ID = ESI_CORPORATION_DATA.CORPORATION_ID AND CHARACTER_ID <> " & CStr(DummyCharacterID)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsAccounts = DBCommand.ExecuteReader
+        lstCharacters.BeginUpdate()
+        lstCharacters.Items.Clear()
+
+        While rsAccounts.Read
+            lstCharacterRow = New ListViewItem("") ' Check
+            lstCharacterRow.SubItems.Add(rsAccounts.GetString(0))
+            lstCharacterRow.SubItems.Add(rsAccounts.GetString(1))
+            lstCharacterRow.SubItems.Add(CStr(rsAccounts.GetInt64(2)))
+            lstCharacterRow.SubItems.Add(CStr(rsAccounts.GetInt64(3)))
+            Call lstCharacters.Items.Add(lstCharacterRow)
+            ' check the selected character to start if only selected account 
+            If rbtnMultiAccounts.Checked And SelectedSettings.SelectedCharacterIDs.Contains(rsAccounts.GetInt64(2).ToString) Then
+                lstCharacterRow.Checked = True
+            End If
+        End While
+        lstCharacters.EndUpdate()
+    End Sub
+
     ' Returns true if an selected item is checked
     Private Function ItemsChecked() As Boolean
 
@@ -322,6 +366,11 @@ Public Class frmAssetsViewer
 
     End Function
 
+    Private Structure AssetDataInfo
+        Dim ID As Long
+        Dim Name As String
+    End Structure
+
     ' Main function that refresh's the tree
     Public Sub RefreshTree()
         Dim BaseNode As New TreeNode
@@ -329,6 +378,7 @@ Public Class frmAssetsViewer
         Dim SearchItemList As List(Of Long)
         Dim OnlyBPCs As Boolean ' Pass through if the BPIDs we sent need to only be shown if a copy
 
+        pnlStatus.Text = ""
         Application.UseWaitCursor = True
         Application.DoEvents()
 
@@ -365,9 +415,6 @@ Public Class frmAssetsViewer
             OnlyBPCs = False
         End If
 
-        ' Add the base node
-        AnchorNode = AssetTree.Nodes.Add("Asset List")
-
         ' If we get nothing back from the search item list, then just clear the assets and exit - we have no items to display
         If IsNothing(SearchItemList) Then
             AssetTree.EndUpdate()
@@ -380,29 +427,97 @@ Public Class frmAssetsViewer
             Exit Sub
         End If
 
-        ' Get the base node of the full tree (may want to save these options globally so we don't need to load them every time)
-        If rbtnPersonalAssets.Checked Or rbtnAllAssets.Checked Then
-            BaseNode = SelectedCharacter.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Personal Assets", SelectedCharacter.ID, SavedLocationIDs, OnlyBPCs)
-            ' Need to add it to the tree but as a clone
-            AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
-        End If
-        If rbtnCorpAssets.Checked Or rbtnAllAssets.Checked Then
-            BaseNode = SelectedCharacter.CharacterCorporation.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, "Corporation Assets", SelectedCharacter.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
-            ' Need to add it to the tree but as a clone
-            AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
+        ' Now add all the characters we want to update for assets - add character name in a node first, then attach all the assets to that character node
+        ' Loop through all characters and add each - including corporations. For Corporations, just add separately so we only load one corporation tree for 
+        ' each corporation from the list of characters
+        Dim AssetData As New List(Of AssetDataInfo)
+        Dim Tempinfo As AssetDataInfo
+
+        If rbtnSelectedAccount.Checked Then
+            ' Just use the selected ID and corporation
+            Tempinfo.ID = SelectedCharacter.ID
+            Tempinfo.Name = SelectedCharacter.Name
+            AssetData.Add(Tempinfo)
+        Else
+            ' Go through the list and build all CharacterID's and Corps for those selected
+            If lstCharacters.CheckedItems.Count > 0 Then
+                For i = 0 To lstCharacters.CheckedItems.Count - 1
+                    ' Add to the list
+                    Tempinfo.ID = CLng(lstCharacters.CheckedItems(i).SubItems(3).Text)
+                    Tempinfo.Name = lstCharacters.CheckedItems(i).SubItems(1).Text
+                    AssetData.Add(Tempinfo)
+                Next
+            Else ' nothing selected
+                For Each item In lstCharacters.SelectedItems
+                    MsgBox("You must select a character for assets", vbExclamation, Application.ProductName)
+                    Me.Cursor = Cursors.Default
+                    Application.UseWaitCursor = False
+                    Exit Sub
+                Next
+            End If
         End If
 
+        ' Add the base node
+        AnchorNode = AssetTree.Nodes.Add("Asset List")
+
+        Dim TokenData As New SavedTokenData
+        Dim AssetCharacterList As New List(Of Character)
+        Dim TempCharacter As New Character
+
+        For Each entry In AssetData
+            ' Create a character, then update the assets, then run asset tree node on that set of assets
+            pnlStatus.Text = "Refreshing Assets for " & entry.Name
+            TokenData.CharacterID = entry.ID
+            Application.DoEvents()
+
+            ' update assets only
+            TempCharacter = New Character
+            TempCharacter.LoadCharacterData(TokenData, False, True, False)
+            ' Get the asset locations saved for the character
+            Call SavedLocationIDs.AddRange(TempCharacter.Assets.GetAssetLocationIDs(WindowForm, TempCharacter.ID, TempCharacter.CharacterCorporation))
+            Call AssetCharacterList.Add(TempCharacter)
+
+            ' Now run the tree build
+            pnlStatus.Text = "Loading Assets for " & entry.Name
+            Application.DoEvents()
+
+            ' Get the base node of the full tree (may want to save these options globally so we don't need to load them every time)
+            If rbtnPersonalAssets.Checked Or rbtnAllAssets.Checked Then
+                BaseNode = TempCharacter.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, entry.Name & " - Personal Assets", entry.ID, SavedLocationIDs, OnlyBPCs)
+                ' Need to add it to the tree but as a clone
+                AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
+            End If
+
+        Next
+
+        Dim LoadedCorpIDs As New List(Of Long) ' only load the corp once
+
+        ' Now load the corporation data at the end
+        For Each entry In AssetCharacterList
+            If (rbtnCorpAssets.Checked Or rbtnAllAssets.Checked) And Not LoadedCorpIDs.Contains(entry.CharacterCorporation.CorporationID) Then
+                pnlStatus.Text = "Loading Assets for " & entry.CharacterCorporation.Name
+                Application.DoEvents()
+                BaseNode = entry.CharacterCorporation.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, entry.CharacterCorporation.Name & " - Corporation Assets", entry.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
+                ' Need to add it to the tree but as a clone
+                AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
+                Call LoadedCorpIDs.Add(entry.CharacterCorporation.CorporationID)
+            End If
+        Next
+
         ' Update
+        pnlStatus.Text = ""
+        Application.DoEvents()
         AssetTree.EndUpdate()
         AssetTree.Refresh()
 
         ' Open up the top node and the personal/corp nodes. Plus reset toggle since we just reloaded
         ToggleAllOpen = False
         AssetTree.TopNode.Expand()
-        AssetTree.Nodes(0).Nodes(0).Expand()
-        If rbtnAllAssets.Checked Then
-            AssetTree.Nodes(0).Nodes(1).Expand()
-        End If
+
+        ' expand all nodes for each character/corp loaded
+        For i = 0 To AssetTree.Nodes(0).Nodes.Count - 1
+            AssetTree.Nodes(0).Nodes(i).Expand()
+        Next
 
         ' Expand all parents for check boxes that have values checked
         Call ExpandCheckedNodes(AssetTree.Nodes(0).Nodes, AssetTree)
@@ -433,7 +548,7 @@ Public Class frmAssetsViewer
                 BaseTree.SelectedNode = tn
                 BaseTree.SelectedNode.Parent.Expand()
             End If
-            ' FindCheckedNode(tn, BaseTree)
+            FindCheckedNode(tn, BaseTree)
         Next
     End Sub
 
@@ -666,6 +781,22 @@ Public Class frmAssetsViewer
 
     End Sub
 
+    Private Function GetCharIDs() As String
+        Dim CharIDs As String = ""
+
+        For i = 0 To lstCharacters.CheckedItems.Count - 1
+            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(3).Text) & ","
+        Next
+
+        ' Strip the last comma
+        If CharIDs <> "" Then
+            CharIDs = CharIDs.Substring(0, Len(CharIDs) - 1)
+        End If
+
+        Return CharIDs
+
+    End Function
+
     ' Saves the settings on both tabs for the asset window
     Private Sub SaveWindowSettings()
         Dim TempSettings As AssetWindowSettings = Nothing
@@ -689,6 +820,9 @@ Public Class frmAssetsViewer
             Else
                 .AllItems = False
             End If
+
+            .SelectedAccount = rbtnSelectedAccount.Checked
+            .SelectedCharacterIDs = GetCharIDs()
 
             .AllRawMats = chkMaterialResearchEqPrices.Checked
 
@@ -848,6 +982,10 @@ Public Class frmAssetsViewer
     End Sub
 
     Private Sub btnSearchRefresh_Click(sender As System.Object, e As System.EventArgs) Handles btnSearchRefresh.Click
+        Call RefreshTree()
+    End Sub
+
+    Private Sub btnMainRefresh_Click(sender As Object, e As EventArgs) Handles btnMainRefresh.Click
         Call RefreshTree()
     End Sub
 
@@ -1393,6 +1531,14 @@ Public Class frmAssetsViewer
     Private Sub AssetTree_MouseDown(sender As Object, e As MouseEventArgs) Handles AssetTree.MouseDown
         If e.Button = MouseButtons.Right Then
             AssetTree.SelectedNode = AssetTree.GetNodeAt(e.X, e.Y)
+        End If
+    End Sub
+
+    Private Sub AccountToggle_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnSelectedAccount.CheckedChanged, rbtnMultiAccounts.CheckedChanged
+        If rbtnSelectedAccount.Checked Then
+            lstCharacters.Enabled = False
+        ElseIf rbtnMultiAccounts.Checked Then
+            lstCharacters.Enabled = True
         End If
     End Sub
 

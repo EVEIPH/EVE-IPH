@@ -546,18 +546,8 @@ Public Class frmReprocessingPlant
             PasteMaterialList = ImportCopyPasteText(CopyPasteRefineryMaterialText)
         End If
 
-        Dim IDString As String = ""
-
         If IsNothing(PasteMaterialList) Then
-            ' Read all the assets into the list as selected
-            ' Set the ID string we will use to update
-            If UserAssetWindowRefinerySettings.AssetType = "Both" Then
-                IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-            ElseIf UserAssetWindowRefinerySettings.AssetType = "Personal" Then
-                IDString = CStr(SelectedCharacter.ID)
-            ElseIf UserAssetWindowRefinerySettings.AssetType = "Corporation" Then
-                IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-            End If
+            Dim IDString As String = GetAssetIDString(UserAssetWindowRefinerySettings)
 
             ' Build the where clause to look up data
             Dim AssetLocationFlagList As String = ""

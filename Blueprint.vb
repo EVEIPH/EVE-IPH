@@ -47,10 +47,9 @@ Public Class Blueprint
     Private BrokerFees As Double ' See above - Sell Order or Buy Order
     Private DisplayBrokerFees As Double ' Public updatable number for display updates, for easy updates when clicked
 
-    ' New cost variables
-    Private BaseJobCost As Double ' Total per material used * average price
-    Private BaseCopyJobCost As Double ' Total job cost for copying (need to use the BPC job cost)
-    Private BaseInventionJobCost As Double ' Total job cost for invention (need to use the BPC job cost)
+    ' New cost variable for usage calcuations
+    Private EstimatedItemValue As Double
+    Private EstimatedT1ItemValue As Double ' For copy calcuations, need T1 item EIV
 
     ' Base Fees for activity
     Private JobFee As Double
@@ -255,7 +254,8 @@ Public Class Blueprint
         CopyUsage = 0
         InventionUsage = 0
 
-        BaseJobCost = 0
+        EstimatedItemValue = GetEstimatedItemValue(BlueprintID) ' For calcuating usage
+        EstimatedT1ItemValue = 0 ' Will calcluate in invention if needed
         JobFee = 0
         TotalUsage = 0
 
@@ -453,6 +453,8 @@ Public Class Blueprint
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
+        ' Estimated item value for calculating usage
+        EstimatedT1ItemValue = GetEstimatedItemValue(InventionBPCTypeID)
 
         ' Set the Decryptor data
         InventionDecryptor = BPDecryptor
@@ -649,7 +651,7 @@ Public Class Blueprint
                         BrokerFees += .GetSalesBrokerFees
 
                         ' New cost variables
-                        BaseJobCost += .GetBaseJobCost
+                        EstimatedItemValue += .GetEstItemValue
 
                         ' Base Fees for activity
                         JobFee += .GetJobFee
@@ -957,9 +959,6 @@ Public Class Blueprint
 
                 ' Refresh the facility bonuses before we start calculations of ME/TE
                 Call MainManufacturingFacility.RefreshMMTMCMBonuses(ItemGroupID, ItemCategoryID)
-
-                ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
-                BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
@@ -1310,29 +1309,29 @@ Public Class Blueprint
 
                 Else ' Just raw material 
                     If readerME.HasRows Then
-                            ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
-                            ' For example, see modulated core strip miner and polarized heavy pulse weapons.
-                            Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
-                            CurrentMaterial.SetItemME(CStr(TempME))
-                        End If
-
-                        ' We are not building these
-                        CurrentMaterial.SetBuildItem(False)
-
-                        ' Insert the raw mats
-                        RawMaterials.InsertMaterial(CurrentMaterial)
-                        ' Also insert into component list
-                        ComponentMaterials.InsertMaterial(CurrentMaterial)
-                        ' These are from the bp and not a component
-                        BPRawMats.InsertMaterial(CurrentMaterial)
-
+                        ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
+                        ' For example, see modulated core strip miner and polarized heavy pulse weapons.
+                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                        CurrentMaterial.SetItemME(CStr(TempME))
                     End If
+
+                    ' We are not building these
+                    CurrentMaterial.SetBuildItem(False)
+
+                    ' Insert the raw mats
+                    RawMaterials.InsertMaterial(CurrentMaterial)
+                    ' Also insert into component list
+                    ComponentMaterials.InsertMaterial(CurrentMaterial)
+                    ' These are from the bp and not a component
+                    BPRawMats.InsertMaterial(CurrentMaterial)
+
+                End If
 
                 readerME.Close()
 
 SkipProcessing:
 
-                End If
+            End If
 
         End While
 
@@ -2017,9 +2016,9 @@ SkipProcessing:
         Dim TempFacilityUsage As Double = 0
 
         If IncludeManufacturingUsage Then
-            ' baseJobCost = Sum(eachmaterialquantity * adjustedPrice) - set in build function
+            ' EIV = Sum(each material quantity * adjustedPrice)
             ' jobFee = baseJobCost * systemCostIndex * runs
-            JobFee = CLng(BaseJobCost * UserRuns) * MainManufacturingFacility.CostIndex
+            JobFee = CLng(EstimatedItemValue * UserRuns) * MainManufacturingFacility.CostIndex
             JobFee = JobFee * MainManufacturingFacility.CostMultiplier
 
             ' facilityUsage = jobFee * taxRate
@@ -2421,15 +2420,14 @@ SkipProcessing:
 
     ' Sets the cost of doing the number of invention jobs sent
     Private Function GetInventionUsage(InventionJobs As Double) As Double
-        'jobFee = baseJobCost * systemCostIndex * 0.02
-        BaseInventionJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
-        Dim InventionJobFee As Double = BaseInventionJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
+        ' 2% of EIV * System Cost Index - FW bonus - Structure Role Bonus
+        Dim JobGrossCost As Double = (EstimatedItemValue * 0.02) * InventionFacility.CostIndex * FWInventionCostBonus * InventionFacility.CostMultiplier
 
-        ' facilityUsage = (jobFee) * taxRate
-        Dim InventionFacilityTax As Double = InventionJobFee * InventionFacility.TaxRate
+        ' FacilityTax = JobGrossCost * taxRate
+        Dim InventionFacilityTax As Double = JobGrossCost * InventionFacility.TaxRate
 
-        ' totalInstallationCost = jobFee + facilityTax * bonus for FW and invention facility
-        Return (InventionJobFee + InventionFacilityTax) * FWInventionCostBonus * InventionFacility.CostMultiplier
+        ' totalInstallationCost = (JobGrossCost + FacilityTax) * number of jobs
+        Return (JobGrossCost + InventionFacilityTax) * InventionJobs
 
     End Function
 
@@ -2467,15 +2465,14 @@ SkipProcessing:
 
     ' Sets and returns the copy cost for the number of copies sent
     Private Function GetCopyUsage(NumberofCopies As Integer) As Double
-        ' jobFee = baseJobCost * systemCostIndex * 0.02 * runs * runsPerCopy (just use the total number of copies here)
-        BaseCopyJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
-        Dim CopyJobFee As Double = BaseCopyJobCost * CopyFacility.CostIndex * 0.02 * NumberofCopies
+        ' 2% of EIV (of T1 item) * System Cost Index - FW bonus - Structure Role Bonus
+        Dim JobGrossCost As Double = (EstimatedT1ItemValue * 0.02) * CopyFacility.CostIndex * FWCopyingCostBonus * CopyFacility.CostMultiplier
 
-        ' facilityUsage = jobFee * taxRate
-        Dim CopyFacilityTax As Double = CopyJobFee * CopyFacility.TaxRate
+        ' FacilityTax = JobGrossCost * taxRate
+        Dim CopyFacilityTax As Double = JobGrossCost * CopyFacility.TaxRate
 
-        ' totalInstallationCost = jobFee +  facilityTax * bonus for FW and copy facility
-        Return (CopyJobFee + CopyFacilityTax) * FWCopyingCostBonus * CopyFacility.CostMultiplier
+        ' totalInstallationCost = (JobGrossCost + FacilityTax) * number of jobs
+        Return (JobGrossCost + CopyFacilityTax) * NumberofCopies
 
     End Function
 
@@ -2550,11 +2547,11 @@ SkipProcessing:
 
     End Sub
 
-    ' Gets the job fee for the BPC and not the current T2/T3 bp
-    Private Function GetBaseJobCostforBPC(ByVal BPCTypeID As Long) As Double
+    ' Gets the EIV for the BPC and not the current T2/T3 bp
+    Private Function GetEstimatedItemValue(ByVal BPCTypeID As Long) As Double
         Dim SQL As String
         Dim readerLookup As SQLiteDataReader
-        Dim BaseJobCost As Double = 0
+        Dim BaseCost As Double = 0
 
         ' If this is a T3 BP, then we need to get the build cost from the BPC, and not the relic used to invent it
         If TechLevel = BPTechLevel.T3 Then
@@ -2564,18 +2561,18 @@ SkipProcessing:
         ' Look up the sum of the quantity from the sent BPC ID 
         SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS_FACT "
         SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL &= "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY IN (1,11) "
+        SQL &= "WHERE BLUEPRINT_ID =" & BPCTypeID & " AND ACTIVITY IN (1,11) "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
         While readerLookup.Read
-            BaseJobCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
+            BaseCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
         End While
 
         readerLookup.Close()
 
-        Return BaseJobCost
+        Return BaseCost
 
     End Function
 
@@ -2693,18 +2690,8 @@ SkipProcessing:
     End Function
 
     ' Returns the base job cost for this blueprint
-    Public Function GetBaseJobCost() As Double
-        Return BaseJobCost
-    End Function
-
-    ' Returns the base job cost for the BPC to make this bp
-    Public Function GetBaseInventionJobCost() As Double
-        Return BaseInventionJobCost
-    End Function
-
-    ' Returns the base job cost for the BPC to make the invention bpc
-    Public Function GetBaseCopyJobCost() As Double
-        Return BaseCopyJobCost
+    Public Function GetEstItemValue() As Double
+        Return EstimatedItemValue
     End Function
 
     ' Returns the Job fee based on the system index

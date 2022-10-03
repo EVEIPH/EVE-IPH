@@ -38,6 +38,7 @@ Public Class ESI
     Public Const ESICorporationBlueprintsScope As String = "esi-corporations.read_blueprints"
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
+    Public Const ESICorporationDivisions As String = "esi-corporations.read_divisions"
 
     Public Const ESIUniverseStructuresScope As String = "esi-universe.read_structures"
     Public Const ESIStructureMarketsScope As String = "esi-markets.structure_markets"
@@ -77,6 +78,8 @@ Public Class ESI
     ' esi-assets.read_corporation_assets.v1: Allows reading of a character's corporation's assets, if the character has roles to do so.
     ' esi-corporations.read_blueprints.v1: Allows reading a corporation's blueprints
     ' esi-industry.read_corporation_jobs.v1: Allows reading of a character's corporation's industry jobs, if the character has roles to do so.
+    ' esi-corporations.read_corporation_membership.v1: Shows all the roles of a corporation for things like factory manager and division director
+    ' esi-corporations.read_divisions.v1: names of corporation hangers and wallet divisions
     '
     ' esi-universe.read_structure.v1: Allows reading of all public structures in the universe
     ' esi-markets.structure_markets.v1: Allows reading of markets for structures the character can use
@@ -1054,7 +1057,7 @@ Public Class ESI
                         SQL &= BuildInsertFieldString(.description) & ","
                         SQL &= BuildInsertFieldString(.date_founded) & ","
                         SQL &= BuildInsertFieldString(.url) & ","
-                        SQL &= "NULL,NULL,NULL,NULL,NULL)"
+                        SQL &= "NULL,NULL,NULL,NULL,NULL,NULL)"
                     End With
 
                 End If
@@ -1077,6 +1080,21 @@ Public Class ESI
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of ESIUniverseStructure)(ReturnData)
+        Else
+            Return Nothing
+        End If
+
+    End Function
+
+    Public Function GetDivisionNames(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByRef DivisionDataCacheDate As Date, ByVal SuppressErrors As Boolean) As ESICorporationDivisions
+        Dim ReturnData As String = ""
+
+        ' Set up query string - choose a suppress error message setting since this will probably have the most issues
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/divisions/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, DivisionDataCacheDate, TokenData.CharacterID, SuppressErrors)
+
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of ESICorporationDivisions)(ReturnData)
         Else
             Return Nothing
         End If
@@ -2795,6 +2813,16 @@ Public Class ESIUniverseStructure
     <JsonProperty("position")> Public position As ESIPosition
     <JsonProperty("solar_system_id")> Public solar_system_id As Integer
     <JsonProperty("type_id")> Public type_id As Integer
+End Class
+
+Public Class ESICorporationDivisions
+    <JsonProperty("hangar")> Public hangar As List(Of ESIHangerWalletNames)
+    <JsonProperty("wallet")> Public wallet As List(Of ESIHangerWalletNames)
+End Class
+
+Public Class ESIHangerWalletNames
+    <JsonProperty("division")> Public division As Integer
+    <JsonProperty("name")> Public name As String
 End Class
 
 Public Class ESIPostion

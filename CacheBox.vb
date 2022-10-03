@@ -114,13 +114,15 @@ Public Class CacheBox
                     .FieldName = "PUBLIC_ESI_STATUS_CACHED_UNTIL"
                 Case CacheDateType.PublicContracts
                     .FieldName = "PUBLIC_CONTRACTS_CACHED_UNTIL"
+                Case CacheDateType.CorporateDivisions
+                    .FieldName = "CORP_DIVISIONS_CACHE_DATE"
                 Case Else
                     .FieldName = ""
             End Select
         End With
 
         Select Case CacheType
-            Case CacheDateType.CorporateAssets, CacheDateType.CorporateBlueprints, CacheDateType.CorporateIndyJobs, CacheDateType.PublicCorporationData, CacheDateType.CorporateRoles
+            Case CacheDateType.CorporateAssets, CacheDateType.CorporateBlueprints, CacheDateType.CorporateIndyJobs, CacheDateType.PublicCorporationData, CacheDateType.CorporateRoles, CacheDateType.CorporateDivisions
                 ReturnData.TableName = "ESI_CORPORATION_DATA"
                 ReturnData.IDName = "CORPORATION_ID"
             Case CacheDateType.IndustryFacilities, CacheDateType.IndustrySystems, CacheDateType.MarketPrices, CacheDateType.PublicStructures, CacheDateType.ESIStatus, CacheDateType.PublicContracts
@@ -149,6 +151,7 @@ Public Enum CacheDateType
     CorporateBlueprints = 6
     CorporateAssets = 7
     CorporateIndyJobs = 8
+    CorporateDivisions = 18
 
     PublicCharacterData = 9
     PublicCorporationData = 10

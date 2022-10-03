@@ -96,7 +96,7 @@ Public Class EVEAssets
             TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText, CharacterTokenData)
 
             ' Look up the type name
-            SQL = "SELECT typeName, groupName, categoryName "
+            SQL = "SELECT CASE WHEN typeName = 'Asset Safety Wrap' THEN 'Asset Safety' ELSE typeName END, groupName, categoryName "
             SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
             SQL &= "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
             SQL &= "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
@@ -228,6 +228,40 @@ Public Class EVEAssets
                     ' Update all the asset flags to negative values if they are base nodes
                     SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                    ' Special processing for corporation data
+                    If AssetType = ScanType.Corporation Then
+
+                        ' Get the corp division names first
+                        If CB.DataUpdateable(CacheDateType.CorporateDivisions, ID) Then
+                            Dim DivisionNames As ESICorporationDivisions = ESIData.GetDivisionNames(ID, CharacterTokenData, CacheDate, False)
+
+                            ' Clear data first then add to the table
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CORPORATION_DIVISIONS")
+
+                            For Each item In DivisionNames.hangar
+                                Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_CORPORATION_DIVISIONS VALUES (" & CStr(ID) & ",'HANGAR'," & CStr(item.division) & ",'" & FormatDBString(item.name) & "')")
+                            Next
+                            For Each item In DivisionNames.wallet
+                                Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_CORPORATION_DIVISIONS VALUES (" & CStr(ID) & ",'WALLET'," & CStr(item.division) & ",'" & FormatDBString(item.name) & "')")
+                            Next
+                            ' Update cache date too
+                            Call CB.UpdateCacheDate(CacheDateType.CorporateDivisions, CacheDate, ID)
+                        End If
+
+                        ' If we are looking up corporation asset names, we need to limit it to just those that will come up in the call
+                        ' since it's not the same as personal asset where you can query all IDs
+                        ' Only send itemids that singleton is true, the locationid is an item (i.e., container not station), and the item is in the list of location ids
+                        AssetIDs = New List(Of Double)
+                        SQL = "SELECT ItemID FROM ASSETS WHERE ID = {0} AND IsSingleton= -1 AND LocationID > 90000000 "
+                        SQL &= "AND ItemID IN (SELECT LocationID FROM ASSETS WHERE ID = {0})"
+                        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ID)), EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        While rsLookup.Read
+                            AssetIDs.Add(rsLookup.GetDouble(0))
+                        End While
+                        rsLookup.Close()
+                    End If
 
                     ' Finally, get all the names and update the Assets table - use the same cache date for assets
                     Dim AssetItemNames As New List(Of ESICharacterAssetName)
@@ -396,7 +430,7 @@ Public Class EVEAssets
 
         ' If no assets, just update and leave
         If AssetList.Count = 0 Then
-            AnchorNode = Tree.Nodes.Add("No " & NodeName & " Loaded")
+            AnchorNode = Tree.Nodes.Add(NodeName & " - No Assets Loaded")
             Tree.EndUpdate()
             Return AnchorNode
         End If
@@ -452,6 +486,7 @@ Public Class EVEAssets
                     If TempAsset.FlagID = -90 Then
                         TempLocationInfo.FlagID = -4
                     Else
+
                         TempLocationInfo.FlagID = TempAsset.FlagID
                     End If
                     BaseLocationNode.Tag = TempLocationInfo
@@ -567,6 +602,22 @@ Public Class EVEAssets
                     CategoryFlagName = "Corp Hangar 1"
                 Else
                     CategoryFlagName = TempAsset.FlagText
+                End If
+
+                ' If this is a corp hanger, then change the flag text name to the corporation division name if it's in the table
+                If CategoryFlagName.Contains("Corp Hangar") Then
+                    Dim rsData As SQLiteDataReader
+                    Dim SQL As String = "SELECT NAME FROM ESI_CORPORATION_DIVISIONS WHERE CORPORATION_ID=" & CStr(AccountID)
+                    SQL &= " AND DIVISION_TYPE = 'HANGAR' AND DIVISION_NUMBER=" & CategoryFlagName.Substring(Len(CategoryFlagName) - 1)
+
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    rsData = DBCommand.ExecuteReader
+
+                    If rsData.Read Then
+                        ' Found it
+                        CategoryFlagName = rsData.GetString(0)
+                    End If
+                    rsData.Close()
                 End If
 
                 If CategoryFlagName <> IgnoreFlag Then

@@ -43,7 +43,6 @@ Partial Class frmShoppingList
         Me.lblTotalBuiltVolume1 = New System.Windows.Forms.Label()
         Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
         Me.btnUpdateListwithAssets = New System.Windows.Forms.Button()
-        Me.btnMineThis = New System.Windows.Forms.Button()
         Me.chkUpdateAssetsWhenUsed = New System.Windows.Forms.CheckBox()
         Me.DeleteMaterialStrip = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DeleteMaterial = New System.Windows.Forms.ToolStripMenuItem()
@@ -250,17 +249,6 @@ Partial Class frmShoppingList
         Me.btnUpdateListwithAssets.TabIndex = 19
         Me.btnUpdateListwithAssets.Text = "Update with Selected Assets"
         Me.btnUpdateListwithAssets.UseVisualStyleBackColor = True
-        '
-        'btnMineThis
-        '
-        Me.btnMineThis.ForeColor = System.Drawing.Color.Red
-        Me.btnMineThis.Location = New System.Drawing.Point(107, 577)
-        Me.btnMineThis.Name = "btnMineThis"
-        Me.btnMineThis.Size = New System.Drawing.Size(94, 32)
-        Me.btnMineThis.TabIndex = 1
-        Me.btnMineThis.Text = "Mine This!"
-        Me.btnMineThis.UseVisualStyleBackColor = True
-        Me.btnMineThis.Visible = False
         '
         'chkUpdateAssetsWhenUsed
         '
@@ -659,13 +647,12 @@ Partial Class frmShoppingList
         '
         'btnEVEPraisal
         '
-        Me.btnEVEPraisal.Location = New System.Drawing.Point(723, 587)
+        Me.btnEVEPraisal.Location = New System.Drawing.Point(107, 577)
         Me.btnEVEPraisal.Name = "btnEVEPraisal"
-        Me.btnEVEPraisal.Size = New System.Drawing.Size(113, 28)
+        Me.btnEVEPraisal.Size = New System.Drawing.Size(94, 32)
         Me.btnEVEPraisal.TabIndex = 78
-        Me.btnEVEPraisal.Text = "EVEpraisal Test"
+        Me.btnEVEPraisal.Text = "EVEpraisal Link"
         Me.btnEVEPraisal.UseVisualStyleBackColor = True
-        Me.btnEVEPraisal.Visible = False
         '
         'frmShoppingList
         '
@@ -697,7 +684,6 @@ Partial Class frmShoppingList
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.lblTC)
         Me.Controls.Add(Me.lblTotalProfit)
-        Me.Controls.Add(Me.btnMineThis)
         Me.Controls.Add(Me.lblTotalProfit1)
         Me.Controls.Add(Me.lblAvgIPH1)
         Me.Controls.Add(Me.btnClear)
@@ -740,7 +726,6 @@ End Sub
     Friend WithEvents btnShowAssets As System.Windows.Forms.Button
     Friend WithEvents ttMain As System.Windows.Forms.ToolTip
     Friend WithEvents btnUpdateListwithAssets As System.Windows.Forms.Button
-    Friend WithEvents btnMineThis As System.Windows.Forms.Button
     Friend WithEvents chkUpdateAssetsWhenUsed As System.Windows.Forms.CheckBox
     Friend WithEvents DeleteItemStrip As System.Windows.Forms.ContextMenuStrip
     Friend WithEvents DeleteItem As System.Windows.Forms.ToolStripMenuItem

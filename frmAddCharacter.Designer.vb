@@ -47,6 +47,7 @@ Partial Class frmAddCharacter
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.ttAPI = New System.Windows.Forms.ToolTip(Me.components)
+        Me.chkReadCorporationDivisions = New System.Windows.Forms.CheckBox()
         Me.gbCorp.SuspendLayout()
         Me.gbCharacter.SuspendLayout()
         Me.gbStructures.SuspendLayout()
@@ -56,7 +57,7 @@ Partial Class frmAddCharacter
         '
         Me.btnEVESSOLogin.BackgroundImage = CType(resources.GetObject("btnEVESSOLogin.BackgroundImage"), System.Drawing.Image)
         Me.btnEVESSOLogin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center
-        Me.btnEVESSOLogin.Location = New System.Drawing.Point(141, 238)
+        Me.btnEVESSOLogin.Location = New System.Drawing.Point(141, 256)
         Me.btnEVESSOLogin.Name = "btnEVESSOLogin"
         Me.btnEVESSOLogin.Size = New System.Drawing.Size(270, 46)
         Me.btnEVESSOLogin.TabIndex = 2
@@ -193,13 +194,14 @@ Partial Class frmAddCharacter
         '
         'gbCorp
         '
+        Me.gbCorp.Controls.Add(Me.chkReadCorporationDivisions)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationMembership)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationJobs)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationAssets)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationBlueprints)
         Me.gbCorp.Location = New System.Drawing.Point(258, 44)
         Me.gbCorp.Name = "gbCorp"
-        Me.gbCorp.Size = New System.Drawing.Size(281, 113)
+        Me.gbCorp.Size = New System.Drawing.Size(281, 135)
         Me.gbCorp.TabIndex = 26
         Me.gbCorp.TabStop = False
         Me.gbCorp.Text = "Corporation"
@@ -214,7 +216,7 @@ Partial Class frmAddCharacter
         Me.gbCharacter.Controls.Add(Me.chkReadBlueprints)
         Me.gbCharacter.Location = New System.Drawing.Point(15, 44)
         Me.gbCharacter.Name = "gbCharacter"
-        Me.gbCharacter.Size = New System.Drawing.Size(237, 188)
+        Me.gbCharacter.Size = New System.Drawing.Size(237, 206)
         Me.gbCharacter.TabIndex = 27
         Me.gbCharacter.TabStop = False
         Me.gbCharacter.Text = "Character"
@@ -228,9 +230,9 @@ Partial Class frmAddCharacter
         Me.gbStructures.Controls.Add(Me.chkReadStructureMarkets)
         Me.gbStructures.Controls.Add(Me.CheckBox1)
         Me.gbStructures.Controls.Add(Me.CheckBox2)
-        Me.gbStructures.Location = New System.Drawing.Point(258, 163)
+        Me.gbStructures.Location = New System.Drawing.Point(258, 185)
         Me.gbStructures.Name = "gbStructures"
-        Me.gbStructures.Size = New System.Drawing.Size(281, 69)
+        Me.gbStructures.Size = New System.Drawing.Size(281, 65)
         Me.gbStructures.TabIndex = 28
         Me.gbStructures.TabStop = False
         Me.gbStructures.Text = "Structures"
@@ -285,11 +287,21 @@ Partial Class frmAddCharacter
         Me.CheckBox2.Text = "esi-assets.read_assets.v1"
         Me.CheckBox2.UseVisualStyleBackColor = True
         '
+        'chkReadCorporationDivisions
+        '
+        Me.chkReadCorporationDivisions.AutoSize = True
+        Me.chkReadCorporationDivisions.Location = New System.Drawing.Point(11, 112)
+        Me.chkReadCorporationDivisions.Name = "chkReadCorporationDivisions"
+        Me.chkReadCorporationDivisions.Size = New System.Drawing.Size(185, 17)
+        Me.chkReadCorporationDivisions.TabIndex = 26
+        Me.chkReadCorporationDivisions.Text = "esi-corporations.read_divisions.v1"
+        Me.chkReadCorporationDivisions.UseVisualStyleBackColor = True
+        '
         'frmAddCharacter
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(553, 292)
+        Me.ClientSize = New System.Drawing.Size(553, 310)
         Me.Controls.Add(Me.gbStructures)
         Me.Controls.Add(Me.gbCharacter)
         Me.Controls.Add(Me.gbCorp)
@@ -335,4 +347,5 @@ Partial Class frmAddCharacter
     Friend WithEvents CheckBox1 As CheckBox
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents ttAPI As ToolTip
+    Friend WithEvents chkReadCorporationDivisions As CheckBox
 End Class

@@ -34,12 +34,6 @@ Partial Class ManufacturingFacility
         Me.lblFacilityLocation = New System.Windows.Forms.Label()
         Me.lblFacilityType = New System.Windows.Forms.Label()
         Me.cmbFacilityType = New System.Windows.Forms.ComboBox()
-        Me.cmbLargeShips = New System.Windows.Forms.ComboBox()
-        Me.lblLargeShips = New System.Windows.Forms.Label()
-        Me.cmbFuelBlocks = New System.Windows.Forms.ComboBox()
-        Me.lblFuelBlocks = New System.Windows.Forms.Label()
-        Me.cmbModules = New System.Windows.Forms.ComboBox()
-        Me.lblModules = New System.Windows.Forms.Label()
         Me.btnFacilityFitting = New System.Windows.Forms.Button()
         Me.txtFacilityManualTax = New System.Windows.Forms.TextBox()
         Me.lblFacilityManualTax = New System.Windows.Forms.Label()
@@ -59,9 +53,8 @@ Partial Class ManufacturingFacility
         Me.mainToolTip = New System.Windows.Forms.ToolTip(Me.components)
         Me.chkFacilityConvertToOre = New System.Windows.Forms.CheckBox()
         Me.btnConversiontoOreSettings = New System.Windows.Forms.Button()
-        Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
-        Me.lblBPSystemCostIndexManual = New System.Windows.Forms.Label()
-        Me.txtBPUpdateCostIndex = New System.Windows.Forms.TextBox()
+        Me.lstFacilityRegion = New System.Windows.Forms.ListBox()
+        Me.lstFacilitySystem = New System.Windows.Forms.ListBox()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -134,9 +127,8 @@ Partial Class ManufacturingFacility
         '
         'cmbFacilityRegion
         '
-        Me.cmbFacilityRegion.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend
-        Me.cmbFacilityRegion.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems
-        Me.cmbFacilityRegion.FormattingEnabled = True
+        Me.cmbFacilityRegion.DropDownHeight = 110
+        Me.cmbFacilityRegion.IntegralHeight = False
         Me.cmbFacilityRegion.Location = New System.Drawing.Point(5, 37)
         Me.cmbFacilityRegion.Name = "cmbFacilityRegion"
         Me.cmbFacilityRegion.Size = New System.Drawing.Size(130, 21)
@@ -169,62 +161,6 @@ Partial Class ManufacturingFacility
         Me.cmbFacilityType.Name = "cmbFacilityType"
         Me.cmbFacilityType.Size = New System.Drawing.Size(65, 21)
         Me.cmbFacilityType.TabIndex = 3
-        '
-        'cmbLargeShips
-        '
-        Me.cmbLargeShips.FormattingEnabled = True
-        Me.cmbLargeShips.Items.AddRange(New Object() {"All", "Capital", "Large"})
-        Me.cmbLargeShips.Location = New System.Drawing.Point(196, 229)
-        Me.cmbLargeShips.Name = "cmbLargeShips"
-        Me.cmbLargeShips.Size = New System.Drawing.Size(78, 21)
-        Me.cmbLargeShips.TabIndex = 32
-        Me.cmbLargeShips.Text = "All"
-        '
-        'lblLargeShips
-        '
-        Me.lblLargeShips.AutoSize = True
-        Me.lblLargeShips.Location = New System.Drawing.Point(193, 213)
-        Me.lblLargeShips.Name = "lblLargeShips"
-        Me.lblLargeShips.Size = New System.Drawing.Size(66, 13)
-        Me.lblLargeShips.TabIndex = 31
-        Me.lblLargeShips.Text = "Large Ships:"
-        '
-        'cmbFuelBlocks
-        '
-        Me.cmbFuelBlocks.FormattingEnabled = True
-        Me.cmbFuelBlocks.Items.AddRange(New Object() {"All", "Ammunition", "Component"})
-        Me.cmbFuelBlocks.Location = New System.Drawing.Point(102, 229)
-        Me.cmbFuelBlocks.Name = "cmbFuelBlocks"
-        Me.cmbFuelBlocks.Size = New System.Drawing.Size(78, 21)
-        Me.cmbFuelBlocks.TabIndex = 30
-        Me.cmbFuelBlocks.Text = "All"
-        '
-        'lblFuelBlocks
-        '
-        Me.lblFuelBlocks.AutoSize = True
-        Me.lblFuelBlocks.Location = New System.Drawing.Point(99, 213)
-        Me.lblFuelBlocks.Name = "lblFuelBlocks"
-        Me.lblFuelBlocks.Size = New System.Drawing.Size(65, 13)
-        Me.lblFuelBlocks.TabIndex = 29
-        Me.lblFuelBlocks.Text = "Fuel Blocks:"
-        '
-        'cmbModules
-        '
-        Me.cmbModules.FormattingEnabled = True
-        Me.cmbModules.Items.AddRange(New Object() {"All", "Equipment", "Rapid"})
-        Me.cmbModules.Location = New System.Drawing.Point(9, 229)
-        Me.cmbModules.Name = "cmbModules"
-        Me.cmbModules.Size = New System.Drawing.Size(78, 21)
-        Me.cmbModules.TabIndex = 28
-        Me.cmbModules.Text = "All"
-        '
-        'lblModules
-        '
-        Me.lblModules.Location = New System.Drawing.Point(6, 196)
-        Me.lblModules.Name = "lblModules"
-        Me.lblModules.Size = New System.Drawing.Size(87, 30)
-        Me.lblModules.TabIndex = 27
-        Me.lblModules.Text = "Assembly Arrays: Modules:"
         '
         'btnFacilityFitting
         '
@@ -376,7 +312,7 @@ Partial Class ManufacturingFacility
         'chkFacilityConvertToOre
         '
         Me.chkFacilityConvertToOre.AutoSize = True
-        Me.chkFacilityConvertToOre.Location = New System.Drawing.Point(4, 261)
+        Me.chkFacilityConvertToOre.Location = New System.Drawing.Point(64, 192)
         Me.chkFacilityConvertToOre.Name = "chkFacilityConvertToOre"
         Me.chkFacilityConvertToOre.Size = New System.Drawing.Size(95, 17)
         Me.chkFacilityConvertToOre.TabIndex = 33
@@ -386,56 +322,43 @@ Partial Class ManufacturingFacility
         '
         'btnConversiontoOreSettings
         '
-        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(102, 257)
+        Me.btnConversiontoOreSettings.Location = New System.Drawing.Point(162, 188)
         Me.btnConversiontoOreSettings.Name = "btnConversiontoOreSettings"
         Me.btnConversiontoOreSettings.Size = New System.Drawing.Size(56, 22)
         Me.btnConversiontoOreSettings.TabIndex = 34
         Me.btnConversiontoOreSettings.Text = "Settings"
         Me.btnConversiontoOreSettings.UseVisualStyleBackColor = True
         '
-        'btnBPUpdateCostIndex
+        'lstFacilityRegion
         '
-        Me.btnBPUpdateCostIndex.Enabled = False
-        Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(312, 282)
-        Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
-        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(51, 22)
-        Me.btnBPUpdateCostIndex.TabIndex = 35
-        Me.btnBPUpdateCostIndex.Text = "Update"
-        Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = True
+        Me.lstFacilityRegion.BackColor = System.Drawing.SystemColors.Window
+        Me.lstFacilityRegion.FormattingEnabled = True
+        Me.lstFacilityRegion.Location = New System.Drawing.Point(9, 215)
+        Me.lstFacilityRegion.Name = "lstFacilityRegion"
+        Me.lstFacilityRegion.Size = New System.Drawing.Size(130, 56)
+        Me.lstFacilityRegion.TabIndex = 65
+        Me.lstFacilityRegion.Visible = False
         '
-        'lblBPSystemCostIndexManual
+        'lstFacilitySystem
         '
-        Me.lblBPSystemCostIndexManual.AutoSize = True
-        Me.lblBPSystemCostIndexManual.Location = New System.Drawing.Point(182, 291)
-        Me.lblBPSystemCostIndexManual.Name = "lblBPSystemCostIndexManual"
-        Me.lblBPSystemCostIndexManual.Size = New System.Drawing.Size(60, 13)
-        Me.lblBPSystemCostIndexManual.TabIndex = 37
-        Me.lblBPSystemCostIndexManual.Text = "Cost Index:"
-        '
-        'txtBPUpdateCostIndex
-        '
-        Me.txtBPUpdateCostIndex.Location = New System.Drawing.Point(246, 284)
-        Me.txtBPUpdateCostIndex.MaxLength = 7
-        Me.txtBPUpdateCostIndex.Name = "txtBPUpdateCostIndex"
-        Me.txtBPUpdateCostIndex.Size = New System.Drawing.Size(46, 20)
-        Me.txtBPUpdateCostIndex.TabIndex = 36
-        Me.txtBPUpdateCostIndex.Text = "99.00 %"
-        Me.txtBPUpdateCostIndex.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.lstFacilitySystem.BackColor = System.Drawing.SystemColors.Window
+        Me.lstFacilitySystem.FormattingEnabled = True
+        Me.lstFacilitySystem.Location = New System.Drawing.Point(167, 215)
+        Me.lstFacilitySystem.Name = "lstFacilitySystem"
+        Me.lstFacilitySystem.Size = New System.Drawing.Size(130, 56)
+        Me.lstFacilitySystem.TabIndex = 66
+        Me.lstFacilitySystem.Visible = False
         '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.Controls.Add(Me.btnBPUpdateCostIndex)
-        Me.Controls.Add(Me.lblBPSystemCostIndexManual)
-        Me.Controls.Add(Me.txtBPUpdateCostIndex)
+        Me.Controls.Add(Me.lstFacilitySystem)
+        Me.Controls.Add(Me.lstFacilityRegion)
         Me.Controls.Add(Me.btnFacilityFitting)
         Me.Controls.Add(Me.btnFacilitySave)
         Me.Controls.Add(Me.btnConversiontoOreSettings)
         Me.Controls.Add(Me.chkFacilityConvertToOre)
-        Me.Controls.Add(Me.lblModules)
-        Me.Controls.Add(Me.lblFuelBlocks)
-        Me.Controls.Add(Me.lblLargeShips)
         Me.Controls.Add(Me.cmbFacilityType)
         Me.Controls.Add(Me.cmbFacilityActivities)
         Me.Controls.Add(Me.lblFacilityActivity)
@@ -460,12 +383,9 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.cmbFacilityRegion)
         Me.Controls.Add(Me.lblFacilityLocation)
         Me.Controls.Add(Me.lblFacilityType)
-        Me.Controls.Add(Me.cmbLargeShips)
-        Me.Controls.Add(Me.cmbFuelBlocks)
-        Me.Controls.Add(Me.cmbModules)
         Me.Controls.Add(Me.lblFacilityFWUpgrade)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(393, 388)
+        Me.Size = New System.Drawing.Size(311, 311)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -481,12 +401,6 @@ Partial Class ManufacturingFacility
     Friend WithEvents lblFacilityLocation As Label
     Friend WithEvents lblFacilityType As Label
     Friend WithEvents cmbFacilityType As ComboBox
-    Friend WithEvents cmbLargeShips As ComboBox
-    Friend WithEvents lblLargeShips As Label
-    Friend WithEvents cmbFuelBlocks As ComboBox
-    Friend WithEvents lblFuelBlocks As Label
-    Friend WithEvents cmbModules As ComboBox
-    Friend WithEvents lblModules As Label
     Friend WithEvents btnFacilityFitting As Button
     Friend WithEvents txtFacilityManualTax As TextBox
     Friend WithEvents lblFacilityManualTax As Label
@@ -506,7 +420,6 @@ Partial Class ManufacturingFacility
     Friend WithEvents mainToolTip As ToolTip
     Friend WithEvents chkFacilityConvertToOre As CheckBox
     Friend WithEvents btnConversiontoOreSettings As Button
-    Friend WithEvents btnBPUpdateCostIndex As Button
-    Friend WithEvents lblBPSystemCostIndexManual As Label
-    Friend WithEvents txtBPUpdateCostIndex As TextBox
+    Friend WithEvents lstFacilityRegion As ListBox
+    Friend WithEvents lstFacilitySystem As ListBox
 End Class

@@ -215,6 +215,7 @@ Public Class frmShoppingList
 
         btnCopy.Enabled = False
         btnSaveListToFile.Enabled = False
+        btnEVEPraisal.Enabled = False
 
         ItemListColumnClicked = 0
         ItemListColumnSortOrder = SortOrder.None
@@ -278,11 +279,13 @@ Public Class frmShoppingList
         If lstItems.Items.Count > 0 Then
             btnCopy.Enabled = True
             btnSaveListToFile.Enabled = True
+            btnEVEPraisal.Enabled = True
             btnClear.Enabled = True
             gbUpdateList.Enabled = True
         Else
             btnCopy.Enabled = False
             btnSaveListToFile.Enabled = False
+            btnEVEPraisal.Enabled = False
             btnClear.Enabled = False
             gbUpdateList.Enabled = False
             ' No more items so clear lists
@@ -320,6 +323,7 @@ Public Class frmShoppingList
 
         btnCopy.Enabled = False
         btnSaveListToFile.Enabled = False
+        btnEVEPraisal.Enabled = False
 
         Me.Refresh()
 
@@ -704,16 +708,7 @@ Public Class frmShoppingList
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
-        Dim IDString As String = ""
-
-        ' Set the ID string we will use to update
-        If UserAssetWindowShoppingListSettings.AssetType = "Both" Then
-            IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Personal" Then
-            IDString = CStr(SelectedCharacter.ID)
-        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Corporation" Then
-            IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-        End If
+        Dim IDString As String = GetAssetIDString(UserAssetWindowShoppingListSettings)
 
         ' Build the where clause to look up data
         Dim AssetLocationFlagList As New List(Of String)
@@ -1981,51 +1976,41 @@ Public Class frmShoppingList
     End Sub
 
     Private Sub btnEVEPraisal_Click(sender As Object, e As EventArgs) Handles btnEVEPraisal.Click
-        Dim AccessTokenOutput As New ESITokenData
-        Dim Success As Boolean = False
-        Dim WC As New WebClient
-        Dim Response As Byte()
-        Dim Data As String = ""
-        Dim PostParameters As New NameValueCollection
-        Dim Items As New NameValueCollection
 
-        Try
-            '' Look at creating this call using json data - Call works below but only returns prices, which I really don't need
-            'Dim test As New EAItem
-            'test.market_name = "jita"
-            'Dim item As New typeIDs
-            'item.type_id = 34
-            'Dim eaitems As New List(Of typeIDs)
-            'eaitems.Add(item)
-            'test.items = eaitems
-            'Dim JSONresult As String = JsonConvert.SerializeObject(test)
-            'Dim myURI As Uri = New Uri("https://evepraisal.com/appraisal/structured.json")
+        ' Only allow link creation when there is a buy list change 
+        If BuyListDataChange And TotalShoppingList.GetFullBuyList.GetMaterialList.Count > 0 Then
+            Try
+                Dim BuyList As Materials = TotalShoppingList.GetFullBuyList
+                Dim ItemList As String = ""
+                Dim WC As New WebClient
+                Dim Response As Byte()
+                Dim Data As String = ""
+                Dim PostParameters As New NameValueCollection
 
-            ''curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
+                Application.UseWaitCursor = True
 
-            'Data = SendRequest(myURI, Encoding.UTF8.GetBytes(JSONresult), "application/json", "POST")
+                ' Loop through the buy list and build an evepraisal link
+                For Each item In BuyList.GetMaterialList
+                    ItemList &= item.GetMaterialName & " " & CStr(item.GetQuantity) & vbCrLf
+                Next
 
-            '' Convert byte data to string
-            'Data = Encoding.UTF8.GetString(Response)
+                Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=" & ItemList, "POST", PostParameters)
+                Data = Encoding.UTF8.GetString(Response)
 
-            '' Parse the data to the class
-            'AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
-            'Success = True
+                ' Need to parse data and pull id for permanent link then add to clipboard - example: https://evepraisal.com/a/coyaw
+                Dim token As Linq.JToken = Linq.JObject.Parse(Data)
+                Call CopyTextToClipboard("https://evepraisal.com/a/" & token.SelectToken("appraisal.id").ToString)
+                BuyListDataChange = False ' Flag to not allow poeple to click again on this unless the data was changed on the clipboard elsewhere
 
-            ' This returns an ID for the raw text values - tested and works
-            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=basilisk " & vbCrLf & "rifter" & vbCrLf & "hulk" & vbCrLf & "zydrine 44", "POST", PostParameters)
-            Data = Encoding.UTF8.GetString(Response)
+                Application.UseWaitCursor = False
+                Application.DoEvents()
 
-            ' Need to parse data and pull id for permanent link - https://evepraisal.com/a/yifsu
-
-        Catch ex As WebException
-
-            Call MsgBox(ex.Message)
-
-        Catch ex As Exception
-            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
-        End Try
-
+            Catch ex As WebException
+                Call MsgBox(ex.Message, vbCritical, Application.ProductName)
+            Catch ex As Exception
+                Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+            End Try
+        End If
 
     End Sub
 

@@ -953,6 +953,9 @@ Public Class ProgramSettings
     ' Assets - Main window 
     Private DefaultAssetType As String = "Both"
     Private DefaultAssetSortbyName As Boolean = True
+    ' Account type
+    Private DefaultSelectedAccount As Boolean = True
+    Private DefaultCharacterList As String = ""
 
     ' Default LP Store
     Private DefaultLPRewardType As String = "All"
@@ -4714,6 +4717,9 @@ Public Class ProgramSettings
                     .AllItems = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllItems", DefaultAllItems))
                     .AllRawMats = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AllRawMats", DefaultAssetItemChecks))
 
+                    .SelectedAccount = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SelectedAccount", DefaultSelectedAccount))
+                    .SelectedCharacterIDs = CStr(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "SelectedCharacterIDs", DefaultSelectedCharacterIDs))
+
                     .AdvancedProtectiveTechnology = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "AdvancedProtectiveTechnology", DefaultAssetItemChecks))
                     .Gas = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "Gas", DefaultAssetItemChecks))
                     .IceProducts = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "IceProducts", DefaultAssetItemChecks))
@@ -4801,7 +4807,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(55) As Setting
+        Dim AssetWindowSettingsList(57) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location
@@ -4874,6 +4880,9 @@ Public Class ProgramSettings
             AssetWindowSettingsList(53) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
             AssetWindowSettingsList(54) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
             AssetWindowSettingsList(55) = New Setting("NoBuildItems", CStr(ItemsSelected.NoBuildItems))
+
+            AssetWindowSettingsList(56) = New Setting("SelectedAccount", CStr(ItemsSelected.SelectedAccount))
+            AssetWindowSettingsList(57) = New Setting("SelectedCharacterIDs", CStr(ItemsSelected.SelectedCharacterIDs))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4959,7 +4968,8 @@ Public Class ProgramSettings
             .Faction = DefaultAssetItemChecks
             .Pirate = DefaultAssetItemChecks
             .Storyline = DefaultAssetItemChecks
-
+            .SelectedAccount = DefaultSelectedAccount
+            .SelectedCharacterIDs = DefaultSelectedCharacterIDs
         End With
 
         ' Save locally - Will have more than one
@@ -6327,6 +6337,11 @@ Public Structure AssetWindowSettings
     ' Main window
     Dim AssetType As String
     Dim SortbyName As Boolean
+
+    ' Accounts
+    Dim SelectedAccount As Boolean ' False is multi account
+    ' List of selected characters, comma separated - default is going to be empty but will automatically choose the selected character
+    Dim SelectedCharacterIDs As String
 
     ' Selected Items
     Dim ItemFilterText As String

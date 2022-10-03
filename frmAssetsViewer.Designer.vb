@@ -121,9 +121,17 @@ Partial Class frmAssetsViewer
         Me.btnSaveMainSettings = New System.Windows.Forms.Button()
         Me.gbAssetTypes = New System.Windows.Forms.GroupBox()
         Me.tabAssetMain = New System.Windows.Forms.TabPage()
+        Me.btnMainRefresh = New System.Windows.Forms.Button()
+        Me.gbAccounts = New System.Windows.Forms.GroupBox()
+        Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
+        Me.rbtnMultiAccounts = New System.Windows.Forms.RadioButton()
+        Me.rbtnSelectedAccount = New System.Windows.Forms.RadioButton()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.tabMain = New System.Windows.Forms.TabControl()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
+        Me.pnlMain = New System.Windows.Forms.StatusStrip()
+        Me.pnlProgressBar = New System.Windows.Forms.ToolStripProgressBar()
+        Me.pnlStatus = New System.Windows.Forms.ToolStripStatusLabel()
         Me.gbResearchEquipment.SuspendLayout()
         Me.gbReactionMaterials.SuspendLayout()
         Me.gbItems.SuspendLayout()
@@ -137,8 +145,10 @@ Partial Class frmAssetsViewer
         Me.gbSortOptions.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
         Me.tabAssetMain.SuspendLayout()
+        Me.gbAccounts.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.tabMain.SuspendLayout()
+        Me.pnlMain.SuspendLayout()
         Me.SuspendLayout()
         '
         'Timer1
@@ -997,9 +1007,9 @@ Partial Class frmAssetsViewer
         '
         'btnCloseAssets
         '
-        Me.btnCloseAssets.Location = New System.Drawing.Point(140, 274)
+        Me.btnCloseAssets.Location = New System.Drawing.Point(184, 490)
         Me.btnCloseAssets.Name = "btnCloseAssets"
-        Me.btnCloseAssets.Size = New System.Drawing.Size(102, 27)
+        Me.btnCloseAssets.Size = New System.Drawing.Size(85, 27)
         Me.btnCloseAssets.TabIndex = 7
         Me.btnCloseAssets.Text = "Close"
         Me.btnCloseAssets.UseVisualStyleBackColor = True
@@ -1097,9 +1107,9 @@ Partial Class frmAssetsViewer
         '
         'btnSaveMainSettings
         '
-        Me.btnSaveMainSettings.Location = New System.Drawing.Point(32, 274)
+        Me.btnSaveMainSettings.Location = New System.Drawing.Point(95, 490)
         Me.btnSaveMainSettings.Name = "btnSaveMainSettings"
-        Me.btnSaveMainSettings.Size = New System.Drawing.Size(102, 27)
+        Me.btnSaveMainSettings.Size = New System.Drawing.Size(85, 27)
         Me.btnSaveMainSettings.TabIndex = 6
         Me.btnSaveMainSettings.Text = "Save Settings"
         Me.btnSaveMainSettings.UseVisualStyleBackColor = True
@@ -1118,6 +1128,8 @@ Partial Class frmAssetsViewer
         '
         'tabAssetMain
         '
+        Me.tabAssetMain.Controls.Add(Me.btnMainRefresh)
+        Me.tabAssetMain.Controls.Add(Me.gbAccounts)
         Me.tabAssetMain.Controls.Add(Me.btnSaveMainSettings)
         Me.tabAssetMain.Controls.Add(Me.gbAssetTypes)
         Me.tabAssetMain.Controls.Add(Me.GroupBox1)
@@ -1131,6 +1143,64 @@ Partial Class frmAssetsViewer
         Me.tabAssetMain.TabIndex = 0
         Me.tabAssetMain.Text = "Main Search"
         Me.tabAssetMain.UseVisualStyleBackColor = True
+        '
+        'btnMainRefresh
+        '
+        Me.btnMainRefresh.Location = New System.Drawing.Point(6, 490)
+        Me.btnMainRefresh.Name = "btnMainRefresh"
+        Me.btnMainRefresh.Size = New System.Drawing.Size(85, 27)
+        Me.btnMainRefresh.TabIndex = 247
+        Me.btnMainRefresh.Text = "Refresh"
+        Me.btnMainRefresh.UseVisualStyleBackColor = True
+        '
+        'gbAccounts
+        '
+        Me.gbAccounts.Controls.Add(Me.lstCharacters)
+        Me.gbAccounts.Controls.Add(Me.rbtnMultiAccounts)
+        Me.gbAccounts.Controls.Add(Me.rbtnSelectedAccount)
+        Me.gbAccounts.Location = New System.Drawing.Point(6, 272)
+        Me.gbAccounts.Name = "gbAccounts"
+        Me.gbAccounts.Size = New System.Drawing.Size(263, 212)
+        Me.gbAccounts.TabIndex = 241
+        Me.gbAccounts.TabStop = False
+        Me.gbAccounts.Text = "Sort Items By:"
+        '
+        'lstCharacters
+        '
+        Me.lstCharacters.CheckBoxes = True
+        Me.lstCharacters.FullRowSelect = True
+        Me.lstCharacters.GridLines = True
+        Me.lstCharacters.Location = New System.Drawing.Point(5, 42)
+        Me.lstCharacters.MultiSelect = False
+        Me.lstCharacters.Name = "lstCharacters"
+        Me.lstCharacters.Size = New System.Drawing.Size(253, 165)
+        Me.lstCharacters.TabIndex = 259
+        Me.lstCharacters.TabStop = False
+        Me.lstCharacters.Tag = "20"
+        Me.lstCharacters.UseCompatibleStateImageBehavior = False
+        Me.lstCharacters.View = System.Windows.Forms.View.Details
+        '
+        'rbtnMultiAccounts
+        '
+        Me.rbtnMultiAccounts.AutoSize = True
+        Me.rbtnMultiAccounts.Location = New System.Drawing.Point(135, 19)
+        Me.rbtnMultiAccounts.Name = "rbtnMultiAccounts"
+        Me.rbtnMultiAccounts.Size = New System.Drawing.Size(109, 17)
+        Me.rbtnMultiAccounts.TabIndex = 4
+        Me.rbtnMultiAccounts.TabStop = True
+        Me.rbtnMultiAccounts.Text = "Multiple Accounts"
+        Me.rbtnMultiAccounts.UseVisualStyleBackColor = True
+        '
+        'rbtnSelectedAccount
+        '
+        Me.rbtnSelectedAccount.AutoSize = True
+        Me.rbtnSelectedAccount.Location = New System.Drawing.Point(10, 19)
+        Me.rbtnSelectedAccount.Name = "rbtnSelectedAccount"
+        Me.rbtnSelectedAccount.Size = New System.Drawing.Size(110, 17)
+        Me.rbtnSelectedAccount.TabIndex = 3
+        Me.rbtnSelectedAccount.TabStop = True
+        Me.rbtnSelectedAccount.Text = "Selected Account"
+        Me.rbtnSelectedAccount.UseVisualStyleBackColor = True
         '
         'GroupBox1
         '
@@ -1168,12 +1238,38 @@ Partial Class frmAssetsViewer
         Me.btnCheckToggle.TabIndex = 256
         Me.btnCheckToggle.UseVisualStyleBackColor = False
         '
+        'pnlMain
+        '
+        Me.pnlMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.pnlStatus, Me.pnlProgressBar})
+        Me.pnlMain.Location = New System.Drawing.Point(0, 668)
+        Me.pnlMain.Name = "pnlMain"
+        Me.pnlMain.Size = New System.Drawing.Size(744, 22)
+        Me.pnlMain.SizingGrip = False
+        Me.pnlMain.TabIndex = 259
+        Me.pnlMain.Text = "pnlMain"
+        '
+        'pnlProgressBar
+        '
+        Me.pnlProgressBar.AutoSize = False
+        Me.pnlProgressBar.Name = "pnlProgressBar"
+        Me.pnlProgressBar.Size = New System.Drawing.Size(300, 16)
+        Me.pnlProgressBar.Step = 1
+        Me.pnlProgressBar.Visible = False
+        '
+        'pnlStatus
+        '
+        Me.pnlStatus.AutoSize = False
+        Me.pnlStatus.Name = "pnlStatus"
+        Me.pnlStatus.Size = New System.Drawing.Size(440, 17)
+        Me.pnlStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'frmAssetsViewer
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(744, 671)
+        Me.ClientSize = New System.Drawing.Size(744, 690)
+        Me.Controls.Add(Me.pnlMain)
         Me.Controls.Add(Me.AssetTree)
         Me.Controls.Add(Me.tabMain)
         Me.Controls.Add(Me.btnCheckToggle)
@@ -1207,10 +1303,15 @@ Partial Class frmAssetsViewer
         Me.gbAssetTypes.ResumeLayout(False)
         Me.gbAssetTypes.PerformLayout()
         Me.tabAssetMain.ResumeLayout(False)
+        Me.gbAccounts.ResumeLayout(False)
+        Me.gbAccounts.PerformLayout()
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
         Me.tabMain.ResumeLayout(False)
+        Me.pnlMain.ResumeLayout(False)
+        Me.pnlMain.PerformLayout()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
@@ -1313,4 +1414,12 @@ Partial Class frmAssetsViewer
     Friend WithEvents mnuUncheckAll As ToolStripMenuItem
     Friend WithEvents mnuExpandNodes As ToolStripMenuItem
     Friend WithEvents mnuCollapseNodes As ToolStripMenuItem
+    Friend WithEvents gbAccounts As GroupBox
+    Friend WithEvents rbtnMultiAccounts As RadioButton
+    Friend WithEvents rbtnSelectedAccount As RadioButton
+    Friend WithEvents lstCharacters As MyListView
+    Friend WithEvents btnMainRefresh As Button
+    Friend WithEvents pnlMain As StatusStrip
+    Friend WithEvents pnlStatus As ToolStripStatusLabel
+    Friend WithEvents pnlProgressBar As ToolStripProgressBar
 End Class

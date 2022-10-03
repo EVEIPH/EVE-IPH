@@ -2321,6 +2321,7 @@ Public Class frmMain
     End Sub
 
     Private Sub mnuSelectionAddChar_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuSelectionAddChar.Click
+        Dim SelectedCharacterName As String = SelectedCharacter.Name
 
         ' Open up the default select box here
         Dim f1 = New frmAddCharacter
@@ -2330,8 +2331,10 @@ Public Class frmMain
 
         ' Always reset the selected character id
 
-        ' Reinit form
-        Call ResetTabs()
+        ' Reinit form if we loaded a new character - usually just from dummy
+        If SelectedCharacter.Name <> SelectedCharacterName Then
+            Call ResetTabs()
+        End If
 
     End Sub
 
@@ -4127,16 +4130,6 @@ Public Class frmMain
 
 #Region "BP Combo / List Processing "
 
-    Private Sub cmbBPBlueprintSelection_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDown
-        ' If you drop down, don't show the text window
-        'cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.None
-        lstBPList.Hide()
-        ComboMenuDown = True
-        ' if we drop down, we aren't using the arrow keys
-        ComboBoxArrowKeys = False
-        BPComboKeyDown = False
-    End Sub
-
     Private Sub cmbBPBlueprintSelection_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDownClosed
         ' If it closes up, re-enable autocomplete
         'cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.SuggestAppend
@@ -4161,12 +4154,6 @@ Public Class frmMain
         cmbBPBlueprintSelection.SelectAll()
     End Sub
 
-    Private Sub cmbBPBlueprintSelection_LostFocus(sender As Object, e As EventArgs) Handles cmbBPBlueprintSelection.LostFocus
-        ' Close the list view when lost focus
-        Call lstBPList.Hide()
-        Call cmbBPBlueprintSelection.SelectAll()
-    End Sub
-
     ' Thrown when the user changes the value in the combo box
     Private Sub cmbBPBlueprintSelection_SelectionChangeCommitted(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.SelectionChangeCommitted
 
@@ -4185,7 +4172,7 @@ Public Class frmMain
         If Not FirstLoad And Not BPSelected And Trim(cmbBPBlueprintSelection.Text) <> "Select Blueprint" And BPComboKeyDown Then
             If ComboBoxArrowKeys = False Then
                 If (cmbBPBlueprintSelection.Text <> "") Then
-                    GetBPWithName(cmbBPBlueprintSelection.Text)
+                    PopulateBPList(cmbBPBlueprintSelection.Text)
                 End If
                 If (String.IsNullOrEmpty(cmbBPBlueprintSelection.Text)) Then
                     lstBPList.Items.Clear()
@@ -4244,7 +4231,23 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub cmbBPBlueprintSelection_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDown
+        ' If you drop down, don't show the text window
+        'cmbBPBlueprintSelection.AutoCompleteMode = AutoCompleteMode.None
+        lstBPList.Hide()
+        ComboMenuDown = True
+        ' if we drop down, we aren't using the arrow keys
+        ComboBoxArrowKeys = False
+        BPComboKeyDown = False
+    End Sub
+
     Private Sub cmbBlueprintSelection_GotFocus(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        Call cmbBPBlueprintSelection.SelectAll()
+    End Sub
+
+    Private Sub cmbBPBlueprintSelection_LostFocus(sender As Object, e As EventArgs) Handles cmbBPBlueprintSelection.LostFocus
+        ' Close the list view when lost focus
+        Call lstBPList.Hide()
         Call cmbBPBlueprintSelection.SelectAll()
     End Sub
 
@@ -4332,7 +4335,7 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub GetBPWithName(bpName As String)
+    Private Sub PopulateBPList(bpName As String)
         ' Query: SELECT BLUEPRINT_NAME AS bpName FROM ALL_BLUEPRINTS b, INVENTORY_TYPES t WHERE b.ITEM_ID = t.typeID AND bpName LIKE '%Repair%'
         Dim readerBP As SQLiteDataReader
         Dim SQL As String = ""
@@ -5487,10 +5490,10 @@ Public Class frmMain
 
         IgnoreRefresh = False
 
-        If BPTech <> 2 Then
+        If BPTech = 1 Then
             chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
         Else
-            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
+            chkBPIgnoreInvention.Enabled = True ' All T2/T3 options need the toggle - since they can buy the invented BP
         End If
 
         ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
@@ -13583,7 +13586,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -13655,7 +13658,7 @@ CheckTechs:
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -13744,7 +13747,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -13847,7 +13850,7 @@ CheckTechs:
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14405,16 +14408,7 @@ ExitCalc:
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
-        Dim IDString As String = ""
-
-        ' Set the ID string we will use to update
-        If UserAssetWindowShoppingListSettings.AssetType = "Both" Then
-            IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Personal" Then
-            IDString = CStr(SelectedCharacter.ID)
-        ElseIf UserAssetWindowShoppingListSettings.AssetType = "Corporation" Then
-            IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-        End If
+        Dim IDString As String = GetAssetIDString(UserAssetWindowManufacturingTabSettings)
 
         ' Build the where clause to look up data
         Dim AssetLocationFlagList As New List(Of String)
