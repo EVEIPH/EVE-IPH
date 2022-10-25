@@ -364,6 +364,9 @@ Public Class frmSettings
 
                 .SetToolTip(chkAlwaysBuyFuelBlocks, "When selected, IPH will always force buying of fuel blocks as components in Build/Buy calculations")
                 .SetToolTip(chkAlwaysBuyRAMs, "When selected, IPH will always force buying of R.A.M.s as components in Build/Buy calculations")
+
+                .SetToolTip(chkSuggestBuildwhenBPnotOwned, "When selected, IPH will always Build the item if the BP is not owned")
+                .SetToolTip(chkBuildWhenNotEnoughItemsonMarket, "When selected, IPH will build items if suggesting buy components without enough components on market to buy")
             End With
         End If
 
@@ -474,6 +477,7 @@ Public Class frmSettings
             ' For Build/Buy
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
+            chkBuildWhenNotEnoughItemsonMarket.Checked = .BuildWhenNotEnoughItemsonMarket
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
             chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
             chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
@@ -675,6 +679,7 @@ Public Class frmSettings
                 .ShareSavedFacilities = chkShareFacilities.Checked
 
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
+                .BuildWhenNotEnoughItemsonMarket = chkBuildWhenNotEnoughItemsonMarket.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
                 .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked

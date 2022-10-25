@@ -49,6 +49,7 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
+        Me.chkBuildWhenNotEnoughItemsonMarket = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyRAMs = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyFuelBlocks = New System.Windows.Forms.CheckBox()
         Me.chkSaveBPRelicsDecryptors = New System.Windows.Forms.CheckBox()
@@ -353,6 +354,7 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
+        Me.gbBuildBuySettings.Controls.Add(Me.chkBuildWhenNotEnoughItemsonMarket)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyRAMs)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyFuelBlocks)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
@@ -365,10 +367,20 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
         '
+        'chkBuildWhenNotEnoughItemsonMarket
+        '
+        Me.chkBuildWhenNotEnoughItemsonMarket.AutoSize = True
+        Me.chkBuildWhenNotEnoughItemsonMarket.Location = New System.Drawing.Point(9, 58)
+        Me.chkBuildWhenNotEnoughItemsonMarket.Name = "chkBuildWhenNotEnoughItemsonMarket"
+        Me.chkBuildWhenNotEnoughItemsonMarket.Size = New System.Drawing.Size(213, 17)
+        Me.chkBuildWhenNotEnoughItemsonMarket.TabIndex = 41
+        Me.chkBuildWhenNotEnoughItemsonMarket.Text = "Build when not enough items on Market"
+        Me.chkBuildWhenNotEnoughItemsonMarket.UseVisualStyleBackColor = True
+        '
         'chkAlwaysBuyRAMs
         '
         Me.chkAlwaysBuyRAMs.AutoSize = True
-        Me.chkAlwaysBuyRAMs.Location = New System.Drawing.Point(9, 98)
+        Me.chkAlwaysBuyRAMs.Location = New System.Drawing.Point(9, 118)
         Me.chkAlwaysBuyRAMs.Name = "chkAlwaysBuyRAMs"
         Me.chkAlwaysBuyRAMs.Size = New System.Drawing.Size(121, 17)
         Me.chkAlwaysBuyRAMs.TabIndex = 40
@@ -378,7 +390,7 @@ Partial Class frmSettings
         'chkAlwaysBuyFuelBlocks
         '
         Me.chkAlwaysBuyFuelBlocks.AutoSize = True
-        Me.chkAlwaysBuyFuelBlocks.Location = New System.Drawing.Point(9, 78)
+        Me.chkAlwaysBuyFuelBlocks.Location = New System.Drawing.Point(9, 98)
         Me.chkAlwaysBuyFuelBlocks.Name = "chkAlwaysBuyFuelBlocks"
         Me.chkAlwaysBuyFuelBlocks.Size = New System.Drawing.Size(138, 17)
         Me.chkAlwaysBuyFuelBlocks.TabIndex = 39
@@ -388,7 +400,7 @@ Partial Class frmSettings
         'chkSaveBPRelicsDecryptors
         '
         Me.chkSaveBPRelicsDecryptors.AutoSize = True
-        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 58)
+        Me.chkSaveBPRelicsDecryptors.Location = New System.Drawing.Point(9, 78)
         Me.chkSaveBPRelicsDecryptors.Name = "chkSaveBPRelicsDecryptors"
         Me.chkSaveBPRelicsDecryptors.Size = New System.Drawing.Size(212, 17)
         Me.chkSaveBPRelicsDecryptors.TabIndex = 38
@@ -953,4 +965,5 @@ Partial Class frmSettings
     Friend WithEvents chkShareFacilities As CheckBox
     Friend WithEvents chkAlwaysBuyRAMs As CheckBox
     Friend WithEvents chkAlwaysBuyFuelBlocks As CheckBox
+    Friend WithEvents chkBuildWhenNotEnoughItemsonMarket As CheckBox
 End Class

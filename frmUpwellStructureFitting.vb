@@ -636,6 +636,8 @@ Public Class frmUpwellStructureFitting
         Call UpdateCitadelSlots()
         ' Set the stats
         Call LoadUpwellStuctureStats()
+        ' Reset bonus window
+        Call UpdateUpwellStructureBonuses()
 
         ' Now load up the modules if any are saved for this structure
         SQL = "SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES, INVENTORY_TYPES "
@@ -782,6 +784,9 @@ Public Class frmUpwellStructureFitting
         RigSlot1.Image = Nothing
         RigSlot2.Image = Nothing
         RigSlot3.Image = Nothing
+
+        ' Reset bonus window
+        Call UpdateUpwellStructureBonuses()
 
         ' init the upwell structure stats
         Call LoadUpwellStuctureStats()

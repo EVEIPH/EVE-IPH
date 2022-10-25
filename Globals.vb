@@ -240,7 +240,7 @@ Public Module Public_Variables
     Public BuyListDataChange As Boolean = True
 
     ' This limits all regions queries to regions players use
-    Public Const RegionFilterString As String = "(regionName Not Like '%-R%' OR regionName = 'G-R00031') AND regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
+    Public Const RegionFilterString As String = "regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
 
     ' For scanning assets
     Public Enum ScanType
@@ -450,6 +450,7 @@ Public Module Public_Variables
         ConstructionComponentsGroupID = 334 ' Use this for all non-capital components
         ComponentCategoryID = 17
         CapitalComponentGroupID = 873
+        CapitalComponentCategoryID = 17
         AdvCapitalComponentGroupID = 913
         ProtectiveComponentGroupID = -3 ' My manual group ID until they fix it in the SDE
 
@@ -843,6 +844,28 @@ InvalidDate:
     End Function
 
 #End Region
+
+    ' Sets tri-check value for sent check and value
+    Public Sub SetTriCheck(ByRef SentCheckbox As CheckBox, ByVal Value As Integer)
+        Select Case Value
+            Case 0
+                SentCheckbox.CheckState = CheckState.Unchecked
+            Case 1
+                SentCheckbox.CheckState = CheckState.Checked
+            Case 2
+                SentCheckbox.CheckState = CheckState.Indeterminate
+        End Select
+    End Sub
+
+    Public Function GetTriCheckValue(ByVal SentCheckBox As CheckBox) As Integer
+        If SentCheckBox.CheckState = CheckState.Indeterminate Then
+            Return 2
+        ElseIf SentCheckBox.Checked Then
+            Return 1
+        Else
+            Return 0
+        End If
+    End Function
 
     ' Checks entry of percentage chars in keypress
     Public Function CheckPercentCharEntry(ke As KeyPressEventArgs, box As TextBox) As Boolean
@@ -1996,7 +2019,7 @@ SkipItem:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT regionName FROM REGIONS WHERE " & RegionFilterString & " GROUP BY regionName "
+        SQL = "SELECT regionName FROM REGIONS WHERE (regionName Not Like '%-R%' OR regionName = 'G-R00031') AND " & RegionFilterString & " GROUP BY regionName "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
         RegionCombo.BeginUpdate()

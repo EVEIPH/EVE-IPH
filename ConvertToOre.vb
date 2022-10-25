@@ -70,7 +70,7 @@ Public Class ConvertToOre
                     SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
                 End If
 
-                If (Ore.OreGroup = "Ice" And .CompressedIce) Or (Ore.OreGroup = "Ore" And .CompressedOre) Then
+                If (Ore.OreGroup = "Ice" And .ConvertIce = 1) Or (Ore.OreGroup = "Ore" And .ConvertOre = 1) Then
                     SQL &= "AND ORE_NAME LIKE 'Compressed%' "
                 Else
                     SQL &= "AND ORE_NAME NOT LIKE 'Compressed%' "

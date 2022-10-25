@@ -123,6 +123,7 @@ Public Class ProgramSettings
     Public DefaultDisableGATracking As Boolean = False
     Public DefaultShareSavedFacilities As Boolean = True
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
+    Public DefaultBuildWhenNotEnoughItemsonMarket As Boolean = True ' If not enough items on market, then build all items regardless of cost
 
     Public DefaultAlphaAccount As Boolean = False
     Public DefaultUseActiveSkills As Boolean = False
@@ -904,10 +905,8 @@ Public Class ProgramSettings
     Private DefaultCompressedWhiteGlaze As Boolean = True
 
     ' ConvertToOre
-    Private DefaultConversionType As String = None
     Private DefaultMinimizeOn As String = "Refine Price"
-    Private DefaultCompressedOre As Boolean = True
-    Private DefaultCompressedIce As Boolean = True
+    Private DefaultConvertSelection As Integer = 0
     Private DefaultHighSec As Boolean = True
     Private DefaultLowSec As Boolean = True
     Private DefaultNullSec As Boolean = True
@@ -1266,6 +1265,7 @@ Public Class ProgramSettings
                     .ShopListIncludeInventMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeInventMats", DefaultShopListIncludeInventMats))
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
+                    .BuildWhenNotEnoughItemsonMarket = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultBuildWhenNotEnoughItemsonMarket))
                     .UpdatePricesRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "UpdatePricesRefreshInterval", DefaultUpdatePricesRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
@@ -1341,6 +1341,7 @@ Public Class ProgramSettings
             .DisableGATracking = DefaultDisableGATracking
             .ShareSavedFacilities = DefaultShareSavedFacilities
             .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
+            .BuildWhenNotEnoughItemsonMarket = DefaultBuildWhenNotEnoughItemsonMarket
             .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
 
             .AlwaysBuyFuelBlocks = DefaultAlwaysBuyFuelBlocks
@@ -1373,7 +1374,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(40) As Setting
+        Dim ApplicationSettingsList(41) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1417,6 +1418,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(38) = New Setting("RefineDrillDown", CStr(SentSettings.RefineDrillDown))
             ApplicationSettingsList(39) = New Setting("AlwaysBuyFuelBlocks", CStr(SentSettings.AlwaysBuyFuelBlocks))
             ApplicationSettingsList(40) = New Setting("AlwaysBuyRAMs", CStr(SentSettings.AlwaysBuyRAMs))
+            ApplicationSettingsList(41) = New Setting("BuildWhenNotEnoughItemsonMarket", CStr(SentSettings.BuildWhenNotEnoughItemsonMarket))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1816,7 +1818,7 @@ Public Class ProgramSettings
                     .RawPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "RawPriceModifier", DefaultRawPriceModifier))
                     .ItemsPriceModifier = CDbl(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeDouble, UpdatePricesFileName, "ItemsPriceModifier", DefaultItemsPriceModifier))
 
-                    .PriceDataSource = CType(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "PriceDataSource", DefaultUseESIData), DataSource)
+                    .PriceDataSource = CType(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "PriceDataSource", DefaultUseESIData), PricesDataSource)
                     .UsePriceProfile = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "UsePriceProfile", DefaultUsePriceProfile))
 
                     .ColumnSort = CInt(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "ColumnSort", DefaultUPColumnSort))
@@ -2018,7 +2020,7 @@ Public Class ProgramSettings
             .ColumnSortType = DefaultUPColumnSortType
             .RawPriceModifier = DefaultRawPriceModifier
             .ItemsPriceModifier = DefaultItemsPriceModifier
-            .PriceDataSource = CType(DefaultUseESIData, DataSource)
+            .PriceDataSource = CType(DefaultUseESIData, PricesDataSource)
             .UsePriceProfile = DefaultUsePriceProfile
             .StructureModules = DefaultPriceChecks
 
@@ -4494,11 +4496,11 @@ Public Class ProgramSettings
             If FileExists(SettingsFolder, ConvertToOreSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .ConversionType = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "ConversionType", DefaultConversionType))
                     .MinimizeOn = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "MinimizeOn", DefaultMinimizeOn))
-
-                    .CompressedIce = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedIce", DefaultCompressedIce))
-                    .CompressedOre = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedOre", DefaultCompressedOre))
+                    .ConvertOre = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertOre", DefaultConvertSelection))
+                    .ConvertIce = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertIce", DefaultConvertSelection))
+                    .ConvertMoonOre = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertMoonOre", DefaultConvertSelection))
+                    .ConvertGas = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertGas", DefaultConvertSelection))
                     .HighSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "HighSec", DefaultHighSec))
                     .LowSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "LowSec", DefaultLowSec))
                     .NullSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "NullSec", DefaultNullSec))
@@ -4570,10 +4572,11 @@ Public Class ProgramSettings
         Dim LocalSettings As ConversionToOreSettings
 
         With LocalSettings
-            .ConversionType = DefaultConversionType
             .MinimizeOn = DefaultMinimizeOn
-            .CompressedOre = DefaultCompressedOre
-            .CompressedIce = DefaultCompressedIce
+            .ConvertOre = DefaultConvertSelection
+            .ConvertIce = DefaultConvertSelection
+            .ConvertMoonOre = DefaultConvertSelection
+            .ConvertGas = DefaultConvertSelection
             .HighSec = DefaultHighSec
             .LowSec = DefaultLowSec
             .NullSec = DefaultNullSec
@@ -4608,31 +4611,32 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveConversionToOreSettings(SentSettings As ConversionToOreSettings)
-        Dim ConvertSetting(23) As Setting
+        Dim ConvertSetting(24) As Setting
 
         Try
-            ConvertSetting(0) = New Setting("ConversionType", CStr(SentSettings.ConversionType))
-            ConvertSetting(1) = New Setting("MinimizeOn", CStr(SentSettings.MinimizeOn))
-            ConvertSetting(2) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            ConvertSetting(3) = New Setting("CompressedIce", CStr(SentSettings.CompressedIce))
-            ConvertSetting(4) = New Setting("HighSec", CStr(SentSettings.HighSec))
-            ConvertSetting(5) = New Setting("LowSec", CStr(SentSettings.LowSec))
-            ConvertSetting(6) = New Setting("NullSec", CStr(SentSettings.NullSec))
-            ConvertSetting(7) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
-            ConvertSetting(8) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
-            ConvertSetting(9) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
-            ConvertSetting(10) = New Setting("Amarr", CStr(SentSettings.Amarr))
-            ConvertSetting(11) = New Setting("Caldari", CStr(SentSettings.Caldari))
-            ConvertSetting(12) = New Setting("Gallente", CStr(SentSettings.Gallente))
-            ConvertSetting(13) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
-            ConvertSetting(14) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
-            ConvertSetting(15) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
-            ConvertSetting(16) = New Setting("C1", CStr(SentSettings.C1))
-            ConvertSetting(17) = New Setting("C2", CStr(SentSettings.C2))
-            ConvertSetting(18) = New Setting("C3", CStr(SentSettings.C3))
-            ConvertSetting(19) = New Setting("C4", CStr(SentSettings.C4))
-            ConvertSetting(20) = New Setting("C5", CStr(SentSettings.C5))
-            ConvertSetting(21) = New Setting("C6", CStr(SentSettings.C6))
+            ConvertSetting(0) = New Setting("MinimizeOn", CStr(SentSettings.MinimizeOn))
+            ConvertSetting(1) = New Setting("ConvertOre", CStr(SentSettings.ConvertOre))
+            ConvertSetting(2) = New Setting("ConvertIce", CStr(SentSettings.ConvertIce))
+            ConvertSetting(3) = New Setting("ConvertMoonOre", CStr(SentSettings.ConvertMoonOre))
+            ConvertSetting(4) = New Setting("ConvertGas", CStr(SentSettings.ConvertGas))
+            ConvertSetting(5) = New Setting("HighSec", CStr(SentSettings.HighSec))
+            ConvertSetting(6) = New Setting("LowSec", CStr(SentSettings.LowSec))
+            ConvertSetting(7) = New Setting("NullSec", CStr(SentSettings.NullSec))
+            ConvertSetting(8) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
+            ConvertSetting(9) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
+            ConvertSetting(10) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
+            ConvertSetting(11) = New Setting("Amarr", CStr(SentSettings.Amarr))
+            ConvertSetting(12) = New Setting("Caldari", CStr(SentSettings.Caldari))
+            ConvertSetting(13) = New Setting("Gallente", CStr(SentSettings.Gallente))
+            ConvertSetting(14) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
+            ConvertSetting(15) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
+            ConvertSetting(16) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
+            ConvertSetting(17) = New Setting("C1", CStr(SentSettings.C1))
+            ConvertSetting(18) = New Setting("C2", CStr(SentSettings.C2))
+            ConvertSetting(19) = New Setting("C3", CStr(SentSettings.C3))
+            ConvertSetting(20) = New Setting("C4", CStr(SentSettings.C4))
+            ConvertSetting(21) = New Setting("C5", CStr(SentSettings.C5))
+            ConvertSetting(22) = New Setting("C6", CStr(SentSettings.C6))
 
             ' For overridechecks, just make one long string with the value for each index in order
             Dim OverrideList As String = ""
@@ -4641,14 +4645,14 @@ Public Class ProgramSettings
                 OverrideList &= CheckValue & ","
             Next
             OverrideList = OverrideList.Substring(0, Len(OverrideList) - 1)
-            ConvertSetting(22) = New Setting("OverrideChecks", OverrideList)
+            ConvertSetting(23) = New Setting("OverrideChecks", OverrideList)
 
             Dim IgnoreItemsList As String = ""
             For Each item In SentSettings.IgnoreRefinedItems
                 IgnoreItemsList &= item & ","
             Next
             IgnoreItemsList = IgnoreItemsList.Substring(0, Len(IgnoreItemsList) - 1)
-            ConvertSetting(23) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
+            ConvertSetting(24) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
 
             Call WriteSettingsToFile(SettingsFolder, ConvertToOreSettingsFileName, ConvertSetting, ConvertToOreSettingsFileName)
 
@@ -5406,6 +5410,7 @@ Public Structure ApplicationSettings
     ' For Build/Buy 
     Dim CheckBuildBuy As Boolean ' Default for setting the check box for build/buy on the blueprints screen
     Dim SuggestBuildBPNotOwned As Boolean ' For Build/Buy suggestions
+    Dim BuildWhenNotEnoughItemsonMarket As Boolean ' If not enough items on market, then build when checked
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
     Dim AlwaysBuyFuelBlocks As Boolean ' Forces build/buy to always buy fuel blocks instead of making a decision
     Dim AlwaysBuyRAMs As Boolean ' Forces build/buy to always buy RAMs instead of making a decision
@@ -5608,7 +5613,7 @@ Public Structure UpdatePriceTabSettings
     Dim ItemsPriceModifier As Double
     Dim RawPriceModifier As Double
 
-    Dim PriceDataSource As DataSource
+    Dim PriceDataSource As PricesDataSource
     Dim UsePriceProfile As Boolean
 
     Dim ColumnSort As Integer
@@ -5616,7 +5621,7 @@ Public Structure UpdatePriceTabSettings
 
 End Structure
 
-Public Enum DataSource
+Public Enum PricesDataSource
     CCP = 0
     EVEMarketer = 1
     Fuzzworks = 2
@@ -6295,10 +6300,12 @@ End Structure
 
 ' For Ice Flip Belt Settings
 Public Structure ConversionToOreSettings
-    Dim ConversionType As String
     Dim MinimizeOn As String
-    Dim CompressedOre As Boolean
-    Dim CompressedIce As Boolean
+    ' Tri-checks
+    Dim ConvertOre As Integer
+    Dim ConvertIce As Integer
+    Dim ConvertMoonOre As Integer
+    Dim ConvertGas As Integer
     Dim HighSec As Boolean
     Dim LowSec As Boolean
     Dim NullSec As Boolean

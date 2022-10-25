@@ -415,7 +415,7 @@ Public Class frmShoppingList
                     readerItemPrices.Close()
 
                     ' Load the Min Sell and Max Buy prices from cache - source is based off of update prices price selection
-                    If PriceSource = CStr(DataSource.CCP) And PriceType <> None Then
+                    If PriceSource = CStr(PricesDataSource.CCP) And PriceType <> None Then
                         SQL = "SELECT MIN(PRICE) FROM MARKET_ORDERS WHERE TYPE_ID = " & RawItems.GetMaterialList(i).GetMaterialTypeID
                         SQL &= " AND (REGION_ID = " & RegionSystem & " OR SOLAR_SYSTEM_ID = " & RegionSystem & ") AND IS_BUY_ORDER = 0"
                         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

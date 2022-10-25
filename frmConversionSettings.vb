@@ -24,19 +24,6 @@ Public Class frmConversiontoOreSettings
 
         ' Settings
         With UserConversiontoOreSettings
-            Select Case .ConversionType
-                Case rbtnConversionNone.Text
-                    rbtnConversionNone.Checked = True
-                Case rbtnConversionOre.Text
-                    rbtnConversionOre.Checked = True
-                Case rbtnConversionIce.Text
-                    rbtnConversionIce.Checked = True
-                Case rbtnConversionOreIce.Text
-                    rbtnConversionOreIce.Checked = True
-            End Select
-
-            chkCompressedOre.Checked = .CompressedOre
-            chkCompressedIce.Checked = .CompressedIce
 
             Select Case .MinimizeOn
                 Case rbtnRefinePrice.Text
@@ -46,6 +33,11 @@ Public Class frmConversiontoOreSettings
                 Case rbtnOreVolume.Text
                     rbtnOreVolume.Checked = True
             End Select
+
+            Call SetTriCheck(chkConversionOre, .ConvertOre)
+            Call SetTriCheck(chkConversionIce, .ConvertIce)
+            Call SetTriCheck(chkConversionMoonOre, .ConvertMoonOre)
+            Call SetTriCheck(chkConversionGas, .ConvertGas)
 
             chkHighSec.Checked = .HighSec
             chkLowSec.Checked = .LowSec
@@ -94,6 +86,14 @@ Public Class frmConversiontoOreSettings
         End Get
     End Property
 
+    Private Function CompareOptionSelected() As Boolean
+        If chkConversionOre.Checked = False And chkConversionIce.Checked = False And chkConversionMoonOre.Checked = False And chkConversionGas.Checked = False Then
+            Return False
+        Else
+            Return True
+        End If
+    End Function
+
     ' Refreshes the Ore list based on the options selected 
     Private Sub RefreshOreList()
         Dim SQL As String = ""
@@ -102,134 +102,141 @@ Public Class frmConversiontoOreSettings
         Dim rsOres As SQLiteDataReader
         Dim OreList As New List(Of OreType)
 
-        ' Check to make sure they have the right stuff checked
-        If Not CheckMiningEntryData() Then
-            Exit Sub
-        End If
+        If Not FirstLoad Then
 
-        If rbtnConversionNone.Checked = False Then
-            Dim TempOreType As OreType
+            ' Check to make sure they have the right stuff checked
+            If Not CheckMiningEntryData() Then
+                Exit Sub
+            ElseIf CompareOptionSelected() Then
+                Dim TempOreType As OreType
 
-            ' First determine what type of stuff we are mining
-            SQL = "SELECT CASE WHEN groupname = 'Ice' THEN CASE WHEN SUBSTR(ORE_NAME,1,10) ='Compressed' THEN SUBSTR(ORE_NAME,12) ELSE ORE_NAME END ELSE groupName END AS ORE, "
-            SQL &= "CASE WHEN groupName = 'Ice' THEN 'Ice' ELSE 'Ore' END as ORE_GROUP FROM ORES, ORE_LOCATIONS, INVENTORY_GROUPS, INVENTORY_TYPES "
-            SQL &= "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID AND ORES.ORE_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND "
+                ' First determine what type of stuff we are mining
+                SQL = "SELECT CASE WHEN groupname = 'Ice' THEN CASE WHEN SUBSTR(ORE_NAME,1,10) ='Compressed' THEN SUBSTR(ORE_NAME,12) ELSE ORE_NAME END ELSE groupName END AS ORE, "
+                SQL &= "CASE WHEN groupName = 'Ice' THEN 'Ice' ELSE 'Ore' END as ORE_GROUP FROM ORES, ORE_LOCATIONS, INVENTORY_GROUPS, INVENTORY_TYPES "
+                SQL &= "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID AND ORES.ORE_ID = INVENTORY_TYPES.typeID AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID AND "
 
-            ' Ore Type
-            If rbtnConversionOre.Checked Or rbtnConversionOreIce.Checked Then
-                SQLOre = "(BELT_TYPE = 'Ore' AND HIGH_YIELD_ORE IN ("
-                ' Add the variant flag with this
-                If chkUseBaseOre.Checked Then
-                    SQLOre &= "0,"
+                ' Ore Type
+                If chkConversionOre.Checked Or chkConversionMoonOre.Checked Then
+                    If chkConversionOre.Checked And chkConversionMoonOre.Checked Then
+                        SQLOre = "((BELT_TYPE = 'Ore' OR BELT_TYPE LIKE '%MOON%') "
+                    ElseIf chkConversionOre.Checked Then
+                        SQLOre = "(BELT_TYPE LIKE 'Ore' "
+                    Else
+                        SQLOre = "(BELT_TYPE LIKE '%MOON%' "
+                    End If
+                    SQLOre &= "AND HIGH_YIELD_ORE IN ("
+                    ' Add the variant flag with this
+                    If chkUseBaseOre.Checked Then
+                        SQLOre &= "0,"
+                    End If
+                    If chkUse5percent.Checked Then
+                        SQLOre &= "1,"
+                    End If
+                    If chkUse10percent.Checked Then
+                        SQLOre &= "2,"
+                    End If
+                    SQLOre = SQLOre.Substring(0, Len(SQLOre) - 1) & ")) "
                 End If
-                If chkUse5percent.Checked Then
-                    SQLOre &= "1,"
-                End If
-                If chkUse10percent.Checked Then
-                    SQLOre &= "2,"
-                End If
-                SQLOre = SQLOre.Substring(0, Len(SQLOre) - 1) & ")) "
-            End If
 
-            If rbtnConversionIce.Checked Or rbtnConversionOreIce.Checked Then
-                SQLIce = "(BELT_TYPE = 'Ice' AND HIGH_YIELD_ORE =-1) "
-            End If
+                If chkConversionIce.Checked Then
+                    SQLIce = "(BELT_TYPE = 'Ice' AND HIGH_YIELD_ORE =-1) "
+                End If
 
-            ' Combine with OR if ore/ice checked
-            If rbtnConversionOreIce.Checked Then
-                ' Need to combine both
-                SQL &= "(" & SQLOre & " OR " & SQLIce & ") "
-            Else
-                If rbtnConversionIce.Checked Then
-                    SQL &= SQLIce
+                ' Combine with OR if ore/ice checked
+                If (chkConversionMoonOre.Checked Or chkConversionOre.Checked) And chkConversionIce.Checked Then
+                    ' Need to combine both
+                    SQL &= "(" & SQLOre & " OR " & SQLIce & ") "
                 Else
-                    SQL &= SQLOre
+                    If chkConversionIce.Checked Then
+                        SQL &= SQLIce
+                    ElseIf chkConversionOre.Checked Then
+                        SQL &= SQLOre
+                    End If
                 End If
-            End If
 
-            If (chkCompressedIce.Checked And chkCompressedIce.Enabled) Or (chkCompressedOre.Checked And chkCompressedOre.Enabled) Then
-                SQL &= "AND COMPRESSED = 1 "
-            Else
-                SQL &= "AND COMPRESSED = 0 "
-            End If
-
-            SQL &= "AND SYSTEM_SECURITY IN ("
-            If chkHighSec.Checked Then
-                SQL &= "'High Sec',"
-            End If
-            If chkLowSec.Checked Then
-                SQL &= "'Low Sec',"
-            End If
-            If chkNullSec.Checked Then
-                SQL &= "'Null Sec',"
-            End If
-
-            ' If WH checked, then add the classes
-            If chkWH.Checked = True And chkWH.Enabled Then
-                If chkC1.Checked And chkC1.Enabled Then
-                    SQL &= "'C1',"
+                If chkConversionOre.CheckState = CheckState.Indeterminate Or chkConversionMoonOre.CheckState = CheckState.Indeterminate Or chkConversionIce.CheckState = CheckState.Indeterminate Then
+                    SQL &= "AND COMPRESSED = 1 "
+                Else
+                    SQL &= "AND COMPRESSED = 0 "
                 End If
-                If chkC2.Checked And chkC2.Enabled Then
-                    SQL &= "'C2',"
-                End If
-                If chkC3.Checked And chkC3.Enabled Then
-                    SQL &= "'C3',"
-                End If
-                If chkC4.Checked And chkC4.Enabled Then
-                    SQL &= "'C4',"
-                End If
-                If chkC5.Checked And chkC5.Enabled Then
-                    SQL &= "'C5',"
-                End If
-                If chkC6.Checked And chkC6.Enabled Then
-                    SQL &= "'C6',"
-                End If
-            End If
-            SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
-            ' Now determine what space we are looking at
-            SQL &= "AND SPACE IN ("
+                SQL &= "AND SYSTEM_SECURITY IN ("
+                If chkHighSec.Checked Then
+                    SQL &= "'High Sec',"
+                End If
+                If chkLowSec.Checked Then
+                    SQL &= "'Low Sec',"
+                End If
+                If chkNullSec.Checked Then
+                    SQL &= "'Null Sec',"
+                End If
 
-            If chkAmarr.Checked Then
-                SQL &= "'Amarr',"
-            End If
-            If chkCaldari.Checked Then
-                SQL &= "'Caldari',"
-            End If
-            If chkGallente.Checked Then
-                SQL &= "'Gallente',"
-            End If
-            If chkMinmatar.Checked Then
-                SQL &= "'Minmatar',"
-            End If
-            If chkTriglavian.Checked Then
-                SQL &= "'Triglavian',"
-            End If
-            If chkWH.Checked Then
-                SQL &= "'WH',"
-            End If
-            SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
+                ' If WH checked, then add the classes
+                If chkWH.Checked = True And chkWH.Enabled Then
+                    If chkC1.Checked And chkC1.Enabled Then
+                        SQL &= "'C1',"
+                    End If
+                    If chkC2.Checked And chkC2.Enabled Then
+                        SQL &= "'C2',"
+                    End If
+                    If chkC3.Checked And chkC3.Enabled Then
+                        SQL &= "'C3',"
+                    End If
+                    If chkC4.Checked And chkC4.Enabled Then
+                        SQL &= "'C4',"
+                    End If
+                    If chkC5.Checked And chkC5.Enabled Then
+                        SQL &= "'C5',"
+                    End If
+                    If chkC6.Checked And chkC6.Enabled Then
+                        SQL &= "'C6',"
+                    End If
+                End If
+                SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
-            SQL &= "GROUP BY ORE, ORE_GROUP"
+                ' Now determine what space we are looking at
+                SQL &= "AND SPACE IN ("
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsOres = DBCommand.ExecuteReader
+                If chkAmarr.Checked Then
+                    SQL &= "'Amarr',"
+                End If
+                If chkCaldari.Checked Then
+                    SQL &= "'Caldari',"
+                End If
+                If chkGallente.Checked Then
+                    SQL &= "'Gallente',"
+                End If
+                If chkMinmatar.Checked Then
+                    SQL &= "'Minmatar',"
+                End If
+                If chkTriglavian.Checked Then
+                    SQL &= "'Triglavian',"
+                End If
+                If chkWH.Checked Then
+                    SQL &= "'WH',"
+                End If
+                SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
 
-            While rsOres.Read
-                TempOreType.OreName = rsOres.GetString(0)
-                TempOreType.OreGroup = rsOres.GetString(1)
-                OreList.Add(TempOreType)
-            End While
+                SQL &= "GROUP BY ORE, ORE_GROUP"
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsOres = DBCommand.ExecuteReader
+
+                While rsOres.Read
+                    TempOreType.OreName = rsOres.GetString(0)
+                    TempOreType.OreGroup = rsOres.GetString(1)
+                    OreList.Add(TempOreType)
+                End While
+            End If
+
+            ' Update all the ore checks and adjust the orelist depending on overrides
+            Call UpdateOreChecks(OreList)
+
+            ' If they have nothing checked, let them know
+            If Not OresChecked And Not CompareOptionSelected() Then
+                MsgBox("No ores selected", vbExclamation, Application.ProductName)
+            End If
         End If
-
-        ' Update all the ore checks and adjust the orelist depending on overrides
-        Call UpdateOreChecks(OreList)
-
-        ' If they have nothing checked, let them know
-        If Not OresChecked And Not rbtnConversionNone.Checked Then
-            MsgBox("No ores selected", vbExclamation, Application.ProductName)
-        End If
-
     End Sub
 
     ' Checks all the data entered
@@ -348,15 +355,6 @@ Public Class frmConversiontoOreSettings
         Dim Settings As New ProgramSettings
 
         With TempSettings
-            If rbtnConversionNone.Checked Then
-                .ConversionType = rbtnConversionNone.Text
-            ElseIf rbtnConversionOre.Checked Then
-                .ConversionType = rbtnConversionOre.Text
-            ElseIf rbtnConversionIce.Checked Then
-                .ConversionType = rbtnConversionIce.Text
-            ElseIf rbtnConversionOreIce.Checked Then
-                .ConversionType = rbtnConversionOreIce.Text
-            End If
 
             If rbtnRefinePrice.Checked Then
                 .MinimizeOn = rbtnRefinePrice.Text
@@ -366,8 +364,10 @@ Public Class frmConversiontoOreSettings
                 .MinimizeOn = rbtnOrePrice.Text
             End If
 
-            .CompressedIce = chkCompressedIce.Checked
-            .CompressedOre = chkCompressedOre.Checked
+            .ConvertOre = GetTriCheckValue(chkConversionOre)
+            .ConvertIce = GetTriCheckValue(chkConversionIce)
+            .ConvertMoonOre = GetTriCheckValue(chkConversionMoonOre)
+            .ConvertGas = GetTriCheckValue(chkConversionGas)
 
             .HighSec = chkHighSec.Checked
             .LowSec = chkLowSec.Checked
@@ -397,6 +397,8 @@ Public Class frmConversiontoOreSettings
             .IgnoreRefinedItems = UserConversiontoOreSettings.IgnoreRefinedItems
             .IgnoreItems = UserConversiontoOreSettings.IgnoreItems
         End With
+
+        Call UpdateControls()
 
         ' Save the data to the local variable
         UserConversiontoOreSettings = TempSettings
@@ -431,14 +433,14 @@ Public Class frmConversiontoOreSettings
 
     Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles btnReset.Click
         ' Clear the ignore and overrides, then reload the form
-        ReDim UserConversiontoOreSettings.OverrideChecks(28)
-        ReDim UserConversiontoOreSettings.IgnoreRefinedItems(14)
+        ReDim UserConversiontoOreSettings.OverrideChecks(77)
+        ReDim UserConversiontoOreSettings.IgnoreRefinedItems(34)
 
-        For i = 0 To 28
+        For i = 0 To 77
             UserConversiontoOreSettings.OverrideChecks(i) = 1
         Next
 
-        For i = 0 To 14
+        For i = 0 To 34
             UserConversiontoOreSettings.IgnoreRefinedItems(i) = 0
         Next
 
@@ -469,7 +471,7 @@ Public Class frmConversiontoOreSettings
 
     End Sub
 
-    Private Sub CheckOption_Changed(sender As Object, e As EventArgs) Handles chkCompressedIce.CheckedChanged, chkCompressedOre.CheckedChanged, chkHighSec.CheckedChanged, chkLowSec.CheckedChanged, chkUseBaseOre.CheckedChanged, chkUse5percent.CheckedChanged, chkUse10percent.CheckedChanged, chkAmarr.CheckedChanged, chkCaldari.CheckedChanged, chkGallente.CheckedChanged,
+    Private Sub CheckOption_Changed(sender As Object, e As EventArgs) Handles chkHighSec.CheckedChanged, chkLowSec.CheckedChanged, chkUseBaseOre.CheckedChanged, chkUse5percent.CheckedChanged, chkUse10percent.CheckedChanged, chkAmarr.CheckedChanged, chkCaldari.CheckedChanged, chkGallente.CheckedChanged,
             chkMinmatar.CheckedChanged, chkWH.CheckedChanged, chkTriglavian.CheckedChanged, chkC1.CheckedChanged, chkC2.CheckedChanged, chkC3.CheckedChanged, chkC4.CheckedChanged, chkC5.CheckedChanged, chkC6.CheckedChanged
 
         ' Always update the current settings locally, then refresh the ore/ice checks
@@ -484,7 +486,20 @@ Public Class frmConversiontoOreSettings
                                                                                 lblOre17.Click, lblOre18.Click, lblOre19.Click, lblOre20.Click,
                                                                                 lblOre21.Click, lblOre22.Click, lblOre23.Click, lblOre24.Click,
                                                                                 lblOre25.Click, lblOre26.Click, lblOre27.Click, lblOre28.Click,
-                                                                                lblOre29.Click
+                                                                                lblOre29.Click, lblOre30.Click, lblOre31.Click, lblOre32.Click,
+                                                                                lblOre33.Click, lblOre34.Click, lblOre35.Click, lblOre36.Click,
+                                                                                lblOre37.Click, lblOre38.Click, lblOre39.Click, lblOre40.Click,
+                                                                                lblOre41.Click, lblOre42.Click, lblOre43.Click, lblOre44.Click,
+                                                                                lblOre45.Click, lblOre46.Click, lblOre47.Click, lblOre48.Click,
+                                                                                lblOre49.Click, lblOre50.Click, lblOre51.Click, lblOre52.Click,
+                                                                                lblOre53.Click, lblOre54.Click, lblOre55.Click, lblOre56.Click,
+                                                                                lblOre57.Click, lblOre58.Click, lblOre59.Click, lblOre60.Click,
+                                                                                lblOre61.Click, lblOre62.Click, lblOre63.Click, lblOre64.Click,
+                                                                                lblOre65.Click, lblOre66.Click, lblOre67.Click, lblOre68.Click,
+                                                                                lblOre69.Click, lblOre70.Click, lblOre71.Click, lblOre72.Click,
+                                                                                lblOre73.Click, lblOre74.Click, lblOre75.Click, lblOre76.Click,
+                                                                                lblOre77.Click, lblOre78.Click
+
 
         ' Find the index and toggle the check
         If Not FirstFormLoad Then
@@ -501,7 +516,19 @@ Public Class frmConversiontoOreSettings
                                                                                 chkOre17.CheckedChanged, chkOre18.CheckedChanged, chkOre19.CheckedChanged, chkOre20.CheckedChanged,
                                                                                 chkOre21.CheckedChanged, chkOre22.CheckedChanged, chkOre23.CheckedChanged, chkOre24.CheckedChanged,
                                                                                 chkOre25.CheckedChanged, chkOre26.CheckedChanged, chkOre27.CheckedChanged, chkOre28.CheckedChanged,
-                                                                                chkOre29.CheckedChanged
+                                                                                chkOre29.CheckedChanged, chkOre30.CheckedChanged, chkOre31.CheckedChanged, chkOre32.CheckedChanged,
+                                                                                chkOre33.CheckedChanged, chkOre34.CheckedChanged, chkOre35.CheckedChanged, chkOre36.CheckedChanged,
+                                                                                chkOre37.CheckedChanged, chkOre38.CheckedChanged, chkOre39.CheckedChanged, chkOre40.CheckedChanged,
+                                                                                chkOre41.CheckedChanged, chkOre42.CheckedChanged, chkOre43.CheckedChanged, chkOre44.CheckedChanged,
+                                                                                chkOre45.CheckedChanged, chkOre46.CheckedChanged, chkOre47.CheckedChanged, chkOre48.CheckedChanged,
+                                                                                chkOre49.CheckedChanged, chkOre50.CheckedChanged, chkOre51.CheckedChanged, chkOre52.CheckedChanged,
+                                                                                chkOre53.CheckedChanged, chkOre54.CheckedChanged, chkOre55.CheckedChanged, chkOre56.CheckedChanged,
+                                                                                chkOre57.CheckedChanged, chkOre58.CheckedChanged, chkOre59.CheckedChanged, chkOre60.CheckedChanged,
+                                                                                chkOre61.CheckedChanged, chkOre62.CheckedChanged, chkOre63.CheckedChanged, chkOre64.CheckedChanged,
+                                                                                chkOre65.CheckedChanged, chkOre66.CheckedChanged, chkOre67.CheckedChanged, chkOre68.CheckedChanged,
+                                                                                chkOre69.CheckedChanged, chkOre70.CheckedChanged, chkOre71.CheckedChanged, chkOre72.CheckedChanged,
+                                                                                chkOre73.CheckedChanged, chkOre74.CheckedChanged, chkOre75.CheckedChanged, chkOre76.CheckedChanged,
+                                                                                chkOre77.CheckedChanged, chkOre78.CheckedChanged
         If Not FirstFormLoad Then
             ' Get the check number then update the override list
             Dim SelectedCheckbox As CheckBox = CType(sender, CheckBox)
@@ -515,8 +542,12 @@ Public Class frmConversiontoOreSettings
     Private Sub IgnoreLabels_Click(sender As Object, e As EventArgs) Handles lblIgnore1.Click, lblIgnore2.Click, lblIgnore3.Click, lblIgnore4.Click,
                                                                              lblIgnore5.Click, lblIgnore6.Click, lblIgnore7.Click, lblIgnore8.Click,
                                                                              lblIgnore9.Click, lblIgnore10.Click, lblIgnore11.Click, lblIgnore12.Click,
-                                                                             lblIgnore13.Click, lblIgnore14.Click, lblIgnore15.Click
-
+                                                                             lblIgnore13.Click, lblIgnore14.Click, lblIgnore15.Click, lblIgnore16.Click,
+                                                                             lblIgnore17.Click, lblIgnore18.Click, lblIgnore19.Click, lblIgnore20.Click,
+                                                                             lblIgnore21.Click, lblIgnore22.Click, lblIgnore23.Click, lblIgnore24.Click,
+                                                                             lblIgnore25.Click, lblIgnore26.Click, lblIgnore27.Click, lblIgnore28.Click,
+                                                                             lblIgnore29.Click, lblIgnore30.Click, lblIgnore31.Click, lblIgnore32.Click,
+                                                                             lblIgnore33.Click, lblIgnore34.Click, lblIgnore35.Click
         ' Find the index and toggle the check
         If Not FirstFormLoad Then
             Dim Index As Integer = CInt(CType(sender, Label).Name.ToString.Substring(9))
@@ -529,7 +560,13 @@ Public Class frmConversiontoOreSettings
                                                                                       chkIgnore4.CheckedChanged, chkIgnore5.CheckedChanged, chkIgnore6.CheckedChanged,
                                                                                       chkIgnore7.CheckedChanged, chkIgnore8.CheckedChanged, chkIgnore9.CheckedChanged,
                                                                                       chkIgnore10.CheckedChanged, chkIgnore11.CheckedChanged, chkIgnore12.CheckedChanged,
-                                                                                      chkIgnore13.CheckedChanged, chkIgnore14.CheckedChanged, chkIgnore15.CheckedChanged
+                                                                                      chkIgnore13.CheckedChanged, chkIgnore14.CheckedChanged, chkIgnore15.CheckedChanged,
+                                                                                      chkIgnore17.Click, chkIgnore18.Click, chkIgnore19.Click, chkIgnore20.Click,
+                                                                                      chkIgnore21.Click, chkIgnore22.Click, chkIgnore23.Click, chkIgnore24.Click,
+                                                                                      chkIgnore25.Click, chkIgnore26.Click, chkIgnore27.Click, chkIgnore28.Click,
+                                                                                      chkIgnore29.Click, chkIgnore30.Click, chkIgnore31.Click, chkIgnore32.Click,
+                                                                                      chkIgnore33.Click, chkIgnore34.Click, chkIgnore35.Click
+
         If Not FirstFormLoad Then
             ' Get the check number then update the override list
             Dim SelectedCheck As CheckBox = CType(sender, CheckBox)
@@ -543,74 +580,105 @@ Public Class frmConversiontoOreSettings
         End If
     End Sub
 
-    Private Sub rbtnConversionOreIce_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnConversionOreIce.CheckedChanged
-        If rbtnConversionOreIce.Checked Then
-            Call EnableObjects(True, True)
+    Private Sub chkConversionGas_CheckedChanged(sender As Object, e As EventArgs) Handles chkConversionGas.CheckedChanged, chkConversionIce.CheckedChanged,
+                                                                                          chkConversionMoonOre.CheckedChanged, chkConversionOre.CheckedChanged
+        Dim CheckText As String = ""
+        ' change the name of the check box if indeterminate is selected
+        If CType(sender, CheckBox).Text.Contains("Moon Ore") Then
+            CheckText = "Moon Ore"
+        ElseIf CType(sender, CheckBox).Text.Contains("Gas") Then
+            CheckText = "Gas"
+        ElseIf CType(sender, CheckBox).Text.Contains("Ice") Then
+            CheckText = "Ice"
+        ElseIf CType(sender, CheckBox).Text.Contains("Ore") Then
+            CheckText = "Ore"
         End If
+
+        If CType(sender, CheckBox).CheckState = CheckState.Indeterminate Then
+            CType(sender, CheckBox).Text = "Compressed " & CheckText
+        Else
+            CType(sender, CheckBox).Text = CheckText
+        End If
+
+        Call UpdateControls()
+
     End Sub
 
-    Private Sub rbtnConversionIce_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnConversionIce.CheckedChanged
-        If rbtnConversionIce.Checked Then
-            Call EnableObjects(False, True)
-        End If
-    End Sub
+    Private Sub UpdateControls()
 
-    Private Sub rbtnConversionOre_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnConversionOre.CheckedChanged
-        If rbtnConversionOre.Checked Then
-            Call EnableObjects(True, False)
-        End If
-    End Sub
+        Dim Ore As Boolean = chkConversionOre.Checked
+        Dim Ice As Boolean = chkConversionIce.Checked
+        Dim Moon As Boolean = chkConversionMoonOre.Checked
+        Dim Gas As Boolean = chkConversionGas.Checked
 
-    Private Sub rbtnConversionNone_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnConversionNone.CheckedChanged
-        If rbtnConversionNone.Checked Then
-            Call EnableObjects(False, False)
-        End If
-    End Sub
+        ' Disable if none checked
+        If Not Ore And Not Ice And Not Moon And Not Gas Then
+            gbSystemSecurity.Enabled = False
+            gbMineOreLoc.Enabled = False
+            gbOreVariants.Enabled = False
+            gbWHClasses.Enabled = False
+            chkWH.Enabled = False
+            chkTriglavian.Enabled = False
 
-    Private Sub EnableObjects(Ore As Boolean, Ice As Boolean)
+            ' Finally, tabs
+            tabPageIce.Enabled = False
+            tabPageOres.Enabled = False
+            tabPageGas.Enabled = False
+            tabPageMoonOre.Enabled = False
+            tabIgnoreMoonMats.Enabled = False
 
-        ' Disable first
-        chkCompressedIce.Enabled = False
-        chkCompressedOre.Enabled = False
-        gbSystemSecurity.Enabled = False
-        gbMineOreLoc.Enabled = False
-        gbOreVariants.Enabled = False
-        'cmbNullAnomLevel.Enabled = False
+            gbIgnoreMinerals.Enabled = False
+            gbIgnoreIceProducts.Enabled = False
+        Else
+            gbSystemSecurity.Enabled = True ' all get this
 
-        gbWHClasses.Enabled = False
-
-        chkWH.Enabled = False
-        chkTriglavian.Enabled = False
-
-        If Ore Then
-            gbSystemSecurity.Enabled = True
-            gbOreVariants.Enabled = True
-            chkCompressedOre.Enabled = True
-            'cmbNullAnomLevel.Enabled = True
-            chkWH.Enabled = True
-            chkTriglavian.Enabled = True
-
-            If chkWH.Checked Then
-                gbWHClasses.Enabled = True
+            ' Ice, no wh, system security and ore location
+            If Ice Then
+                tabPageIce.Enabled = True
+                gbMineOreLoc.Enabled = True
+                tabIgnoreList.Enabled = True
+                gbIgnoreIceProducts.Enabled = True
             End If
-            gbMineOreLoc.Enabled = True
-        End If
 
-        If Ice Then
-            chkCompressedIce.Enabled = True
-            gbSystemSecurity.Enabled = True
-            gbMineOreLoc.Enabled = True
+            ' Ore, we want system security, ore variants, WH and Trig space, wh classes when checked
+            If Ore Then
+                tabPageOres.Enabled = True
+                gbOreVariants.Enabled = True
+                gbMineOreLoc.Enabled = True
+                chkWH.Enabled = True
+                chkTriglavian.Enabled = True
+                If chkWH.Checked Then
+                    gbWHClasses.Enabled = True
+                Else
+                    gbWHClasses.Enabled = False
+                End If
+                tabIgnoreList.Enabled = True
+                gbIgnoreMinerals.Enabled = True
+            End If
+
+            ' Moon ore - system security, ore variants - ore location but not wh or trig and any empire is the same 'Moon'
+            If Moon Then
+                tabPageMoonOre.Enabled = True
+                tabIgnoreList.Enabled = True
+                tabIgnoreMoonMats.Enabled = True
+                gbOreVariants.Enabled = True
+                gbMineOreLoc.Enabled = True
+            End If
+
+            ' Gas - wh and system security(location) - no trig, no ore variants
+            If Gas Then
+                tabPageGas.Enabled = True
+                chkWH.Enabled = True
+                If chkWH.Checked Then
+                    gbWHClasses.Enabled = True
+                Else
+                    gbWHClasses.Enabled = False
+                End If
+            End If
         End If
 
         ' Always update the current settings locally, then refresh the ore/ice checks
         Call UpdateSettingsRefresh()
-
-        gbIgnoreMinerals.Enabled = Ore
-        gbIgnoreIceProducts.Enabled = Ice
-
-        ' Finally, tabs
-        tabPageIce.Enabled = Ice
-        tabPageOres.Enabled = Ore
 
     End Sub
 
@@ -632,6 +700,13 @@ Public Class frmConversiontoOreSettings
         Call UpdateSettingsRefresh()
 
     End Sub
+
+    Private Enum ConversionType
+        Ore = 0
+        MoonOre = 1
+        Ice = 2
+        Gas = 3
+    End Enum
 
 #End Region
 

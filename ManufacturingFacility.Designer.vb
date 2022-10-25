@@ -118,7 +118,9 @@ Partial Class ManufacturingFacility
         '
         'cmbFacilitySystem
         '
+        Me.cmbFacilitySystem.DropDownHeight = 56
         Me.cmbFacilitySystem.FormattingEnabled = True
+        Me.cmbFacilitySystem.IntegralHeight = False
         Me.cmbFacilitySystem.Location = New System.Drawing.Point(139, 37)
         Me.cmbFacilitySystem.Name = "cmbFacilitySystem"
         Me.cmbFacilitySystem.Size = New System.Drawing.Size(157, 21)
@@ -127,7 +129,7 @@ Partial Class ManufacturingFacility
         '
         'cmbFacilityRegion
         '
-        Me.cmbFacilityRegion.DropDownHeight = 110
+        Me.cmbFacilityRegion.DropDownHeight = 56
         Me.cmbFacilityRegion.IntegralHeight = False
         Me.cmbFacilityRegion.Location = New System.Drawing.Point(5, 37)
         Me.cmbFacilityRegion.Name = "cmbFacilityRegion"
@@ -355,7 +357,6 @@ Partial Class ManufacturingFacility
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(Me.lstFacilitySystem)
         Me.Controls.Add(Me.lstFacilityRegion)
-        Me.Controls.Add(Me.btnFacilityFitting)
         Me.Controls.Add(Me.btnFacilitySave)
         Me.Controls.Add(Me.btnConversiontoOreSettings)
         Me.Controls.Add(Me.chkFacilityConvertToOre)
@@ -384,6 +385,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.lblFacilityLocation)
         Me.Controls.Add(Me.lblFacilityType)
         Me.Controls.Add(Me.lblFacilityFWUpgrade)
+        Me.Controls.Add(Me.btnFacilityFitting)
         Me.Name = "ManufacturingFacility"
         Me.Size = New System.Drawing.Size(311, 311)
         Me.ResumeLayout(False)

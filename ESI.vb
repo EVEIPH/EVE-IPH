@@ -289,17 +289,24 @@ Public Class ESI
             ' Now strip off some key data to return from JWT
             Dim JWToken As New JwtSecurityTokenHandler
             Dim TokenData As JwtSecurityToken = JWToken.ReadJwtToken(Output.access_token)
-            Dim ScopeList As List(Of String) = JsonConvert.DeserializeObject(Of List(Of String))(TokenData.Payload("scp").ToString)
 
-            ' Get the character ID from the JWT
-            TokenCharacterID = CLng(TokenData.Subject.Substring(14))
-            ' Return the scopes as well
-            For Each entry In ScopeList
-                TokenScopes &= entry & " "
-            Next
-            TokenScopes = Trim(TokenScopes)
+            ' Now validate the EVE SSO JWT Token
+            If ValidateToken(TokenData) Then
+                ' Now that it's validated, go ahead and parse
+                Dim ScopeList As List(Of String) = JsonConvert.DeserializeObject(Of List(Of String))(TokenData.Payload("scp").ToString)
 
-            Success = True
+                ' Get the character ID from the JWT
+                TokenCharacterID = CLng(TokenData.Subject.Substring(14))
+                ' Return the scopes as well
+                For Each entry In ScopeList
+                    TokenScopes &= entry & " "
+                Next
+                TokenScopes = Trim(TokenScopes)
+
+                Success = True
+            Else
+                Success = False
+            End If
 
         Catch ex As WebException
 
@@ -325,6 +332,71 @@ Public Class ESI
         Else
             Return Nothing
         End If
+
+    End Function
+
+    ''' <summary>
+    ''' Validates the EVE SSO JWT Token for added security, before trusting the access_token and refresh_token
+    ''' We should validate the access token to make sure it has not been tampered with in transit from the SSO to the application.
+    ''' </summary>
+    ''' <returns></returns>
+    Private Function ValidateToken(ReturnedToken As JwtSecurityToken) As Boolean
+        Const SSO_META_DATA_URL As String = "https://login.eveonline.com/.well-known/oauth-authorization-server" ' for getting the JWKS_URI
+        Const JWK_AUDIENCE As String = "EVE Online"
+
+        Dim WC As New WebClient
+        Dim METAData As WellKnownData
+        Dim JWKS_URI_Data As JWKS
+        Dim KeyObject As New JWKSData
+
+        Try
+            ' get the JWKS URI first from the SSO_META_DATA_URL - returns JSON
+            METAData = JsonConvert.DeserializeObject(Of WellKnownData)(WC.DownloadString(SSO_META_DATA_URL))
+            ' Get the JWKs from the endpoint uri
+            JWKS_URI_Data = JsonConvert.DeserializeObject(Of JWKS)(WC.DownloadString(METAData.jwks_uri), New JWKSConverter)
+
+            ' Get the object based on the algorithim used
+            For Each item In JWKS_URI_Data.keys
+                If CType(item, JWKSData).alg = ReturnedToken.Header.Alg Then
+                    KeyObject = item
+                    Exit For
+                End If
+            Next
+
+            ' If this is empty, we couldn't find the object with the algorithim above, then can't verify anything else
+            If IsNothing(KeyObject.alg) Then
+                Throw New Exception("Invalid SSO Algorithm")
+            End If
+
+            ' Do standard validation checks
+            ' Audience first
+            With ReturnedToken
+                If .Audiences(0) <> JWK_AUDIENCE Then
+                    Throw New Exception("Invalid Audience")
+                End If
+
+                If .Payload("kid").ToString <> KeyObject.kid.ToString Then
+                    Throw New Exception("Invalid Key ID")
+                End If
+
+                If .Issuer <> METAData.issuer Then
+                    Throw New Exception("Invalid Issuer")
+                End If
+
+                ' Issue date should be before expiration date
+                If CLng(.Payload("iat").ToString) > CLng(.Payload("exp").ToString) Then
+                    Throw New Exception("Invalid Token Expiration Date")
+                End If
+
+            End With
+
+        Catch ex As Exception
+            ' Throw this error for now
+            MsgBox("The token validation failed - " & ex.Message, vbInformation, Application.ProductName)
+            Return False
+        End Try
+
+        Return True
 
     End Function
 
@@ -2676,6 +2748,77 @@ Public Class ESITokenData
     <JsonProperty("expires_in")> Public expires_in As Integer ' in seconds
     <JsonProperty("refresh_token")> Public refresh_token As String
 End Class
+
+Public Class WellKnownData
+    <JsonProperty("issuer")> Public issuer As String
+    <JsonProperty("token_endpoint")> Public token_endpoint As String
+    <JsonProperty("response_types_supported")> Public response_types_supported As List(Of String)
+    <JsonProperty("jwks_uri")> Public jwks_uri As String
+    <JsonProperty("revocation_endpoint")> Public revocation_endpoint As String
+    <JsonProperty("revocation_endpoint_auth_methods_supported")> Public revocation_endpoint_auth_methods_supported As List(Of String)
+    <JsonProperty("token_endpoint_auth_methods_supported")> Public token_endpoint_auth_methods_supported As List(Of String)
+    <JsonProperty("token_endpoint_auth_signing_alg_values_supported")> Public token_endpoint_auth_signing_alg_values_supported As List(Of String)
+    <JsonProperty("code_challenge_methods_supported")> Public code_challenge_methods_supported As List(Of String)
+End Class
+
+Public Class JWKS
+    <JsonProperty("keys")> Public keys As List(Of JWKSData)
+    <JsonProperty("SkipUnresolvedJsonWebKeys")> Public SkipUnresolvedJsonWebKeys As Boolean
+End Class
+
+Public Class JWKSData
+    <JsonProperty("alg")> Public alg As String
+    <JsonProperty("kid")> Public kid As String
+    <JsonProperty("kty")> Public kty As String
+    <JsonProperty("use")> Public use As String
+End Class
+
+Public Class JWKSData0
+    Inherits JWKSData
+    <JsonProperty("e")> Public e As String
+    <JsonProperty("n")> Public n As String
+End Class
+
+Public Class JWKSData1
+    Inherits JWKSData
+    <JsonProperty("crv")> Public e As String
+    <JsonProperty("x")> Public x As String
+    <JsonProperty("y")> Public y As String
+End Class
+
+Public Class JWKSConverter
+    Inherits JsonConverter
+
+    Public Overrides Function CanConvert(ByVal objectType As Type) As Boolean
+        Return GetType(JWKSData).IsAssignableFrom(objectType)
+    End Function
+
+    Public Overrides Function ReadJson(ByVal reader As JsonReader, ByVal objectType As Type, ByVal existingValue As Object, ByVal serializer As JsonSerializer) As Object
+        Dim jo As Linq.JObject = Linq.JObject.Load(reader)
+        Dim evalue As String = CType(jo("e"), String)
+        Dim item As JWKSData
+
+        If evalue <> "" Then
+            item = New JWKSData0()
+        Else
+            item = New JWKSData1()
+        End If
+
+        serializer.Populate(jo.CreateReader(), item)
+        Return item
+    End Function
+
+    Public Overrides ReadOnly Property CanWrite As Boolean
+        Get
+            Return False
+        End Get
+    End Property
+
+    Public Overrides Sub WriteJson(ByVal writer As JsonWriter, ByVal value As Object, ByVal serializer As JsonSerializer)
+        Throw New NotImplementedException()
+    End Sub
+End Class
+
 
 Public Class ESICharacterVerificationData
     <JsonProperty("CharacterID")> Public CharacterID As String

@@ -373,15 +373,15 @@ Public Class frmMain
         UserUpwellStructureSettings = AllSettings.LoadUpwellStructureViewerSettings
         StructureBonusPopoutViewerSettings = AllSettings.LoadStructureBonusPopoutViewerSettings
 
-        UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
-        UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
-        UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Medium)
-        UserIndustryFlipBeltOreCheckSettings3 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Large)
-        UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
-        UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
+        'UserIndustryFlipBeltSettings = AllSettings.LoadIndustryFlipBeltColumnSettings
+        'UserIndustryFlipBeltOreCheckSettings1 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Small)
+        'UserIndustryFlipBeltOreCheckSettings2 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Medium)
+        'UserIndustryFlipBeltOreCheckSettings3 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Large)
+        'UserIndustryFlipBeltOreCheckSettings4 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Enormous)
+        'UserIndustryFlipBeltOreCheckSettings5 = AllSettings.LoadIndustryBeltOreChecksSettings(BeltType.Colossal)
 
-        UserIceBeltFlipSettings = AllSettings.LoadIceFlipBeltColumnSettings
-        UserIceBeltCheckSettings = AllSettings.LoadIceBeltOreChecksSettings
+        'UserIceBeltFlipSettings = AllSettings.LoadIceFlipBeltColumnSettings
+        'UserIceBeltCheckSettings = AllSettings.LoadIceBeltOreChecksSettings
 
         UserAssetWindowManufacturingTabSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ManufacturingTab)
         UserAssetWindowShoppingListSettings = AllSettings.LoadAssetWindowSettings(AssetWindow.ShoppingList)
@@ -448,7 +448,7 @@ Public Class frmMain
             Dim Items As New List(Of PriceItem)
             Dim TempItem As PriceItem
             rbtnPriceSourceFW.Checked = True ' Default with fuzzworks before download
-            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
 
             Dim rsPriceItems As SQLiteDataReader
             DBCommand = New SQLiteCommand("SELECT ITEM_ID, ITEM_GROUP, MANUFACTURE FROM ITEM_PRICES", EVEDB.DBREf)
@@ -495,6 +495,7 @@ Public Class frmMain
 
         ' Nothing in shopping List
         pnlShoppingList.Text = "No Items in Shopping List"
+
 
         Call SetProgress("Finalizing Forms...")
 
@@ -4198,12 +4199,7 @@ Public Class frmMain
         End If
 
         ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
-        If lstBPList.Visible = False Then
-            ' If they select enter, then load the BP
-            If e.KeyValue = Keys.Enter Then
-                Call LoadBPFromCombo()
-            End If
-        Else
+        If lstBPList.Visible Then
             ' They have the list down, so process up and down keys to work with selecting in the list
             e.Handled = True ' Don't process up and down in the combo when the list shown
             Select Case (e.KeyCode)
@@ -4215,20 +4211,35 @@ Public Class frmMain
                     If (lstBPList.SelectedIndex > 0) Then
                         lstBPList.SelectedIndex = lstBPList.SelectedIndex - 1
                     End If
-                Case Keys.Enter
-                    If (lstBPList.SelectedIndex > -1) Then
-                        SelectedBPText = lstBPList.SelectedItem.ToString()
-                        cmbBPBlueprintSelection.Text = SelectedBPText
-                        lstBPList.Visible = False
-                        BPSelected = True
-                        Call SelectBlueprint()
-                        BPSelected = False
-                    End If
                 Case Keys.Escape
                     lstBPList.Visible = False
             End Select
         End If
 
+    End Sub
+
+    ' Process enter key in keypress so it doesn't ding when losing focus (which happens for keydown)
+    Private Sub cmbBPBlueprintSelection_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPBlueprintSelection.KeyPress
+        ' If they hit the arrow keys when the combo is dropped down (just in the combo it won't throw this)
+        If lstBPList.Visible = False Then
+            ' If they select enter, then load the BP
+            If e.KeyChar = ControlChars.Cr Then
+                e.Handled = True
+                Call LoadBPFromCombo()
+            End If
+        Else
+            If e.KeyChar = ControlChars.Cr Then
+                If (lstBPList.SelectedIndex > -1) Then
+                    e.Handled = True
+                    SelectedBPText = lstBPList.SelectedItem.ToString()
+                    cmbBPBlueprintSelection.Text = SelectedBPText
+                    lstBPList.Visible = False
+                    BPSelected = True
+                    Call SelectBlueprint()
+                    BPSelected = False
+                End If
+            End If
+        End If
     End Sub
 
     Private Sub cmbBPBlueprintSelection_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPBlueprintSelection.DropDown
@@ -5734,6 +5745,8 @@ Public Class frmMain
         BPComponentMats = SelectedBlueprint.GetComponentMaterials.GetMaterialList
         BPBuiltItems = SelectedBlueprint.BuiltComponentList.GetBuiltItemList
 
+        Dim FoundItem As BuiltItem
+
         If chkBPBuildBuy.Checked Then
             lblBPComponentMats.Text = "Build/Buy Component Material List"
             lblBPRawMats.Text = "Build/Buy Raw Material List"
@@ -5779,18 +5792,6 @@ Public Class frmMain
                     complstViewRow.BackColor = Color.White
                 End If
 
-                ' If we want to build the item, then override the back color
-                If chkBPBuildBuy.Checked Then
-                    inhibitAutoCheck = False ' Don't let it reset the check based on previous value
-                    If BPComponentMats(i).GetBuildItem Then
-                        complstViewRow.BackColor = lblBPBuildColor.BackColor
-                        complstViewRow.Checked = True
-                    Else
-                        complstViewRow.BackColor = lblBPBuyColor.BackColor
-                        complstViewRow.Checked = False
-                    End If
-                End If
-
                 complstViewRow.SubItems.Add(TempME)
                 ' If the price is zero, highlight text as red
                 If BPComponentMats(i).GetCostPerItem = 0 Then
@@ -5800,6 +5801,42 @@ Public Class frmMain
                 End If
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetCostPerItem, 2))
                 complstViewRow.SubItems.Add(FormatNumber(BPComponentMats(i).GetTotalCost, 2))
+
+                ' If we want to build the item, then override the back color
+                If chkBPBuildBuy.Checked Then
+                    ' Adjust quanitity text color if forcing build because not enough items were on the market to buy for cheaper
+                    ' Look for item in built items, if there then we can check flag
+                    FoundItem = New BuiltItem
+                    ItemToFind = BPComponentMats(i)
+                    FoundItem = BPBuiltItems.Find(AddressOf FindBuiltItem)
+
+                    If Not IsNothing(FoundItem) Then
+                        ' Check the flag
+                        If FoundItem.BuiltNotEnoughBuyItemsOnMarket Then
+                            ' Color text
+                            complstViewRow.UseItemStyleForSubItems = False
+                            complstViewRow.SubItems.Item(1).BackColor = Color.LightSteelBlue
+                        Else
+                            ' built item without forcing, so just basic color
+                            complstViewRow.SubItems.Item(1).BackColor = lblBPBuildColor.BackColor
+                        End If
+                    End If
+
+                    inhibitAutoCheck = False ' Don't let it reset the check based on previous value
+                    If BPComponentMats(i).GetBuildItem Then
+                        complstViewRow.SubItems.Item(0).BackColor = lblBPBuildColor.BackColor
+                        complstViewRow.SubItems.Item(2).BackColor = lblBPBuildColor.BackColor
+                        complstViewRow.SubItems.Item(3).BackColor = lblBPBuildColor.BackColor
+                        complstViewRow.SubItems.Item(4).BackColor = lblBPBuildColor.BackColor
+                        complstViewRow.Checked = True
+                    Else
+                        complstViewRow.SubItems.Item(0).BackColor = lblBPBuyColor.BackColor
+                        complstViewRow.SubItems.Item(2).BackColor = lblBPBuyColor.BackColor
+                        complstViewRow.SubItems.Item(3).BackColor = lblBPBuyColor.BackColor
+                        complstViewRow.SubItems.Item(4).BackColor = lblBPBuyColor.BackColor
+                        complstViewRow.Checked = False
+                    End If
+                End If
                 Call lstBPComponentMats.Items.Add(complstViewRow)
             Next
             IgnoreListViewItemChecks = False
@@ -6122,6 +6159,17 @@ ExitForm:
         Application.DoEvents()
 
     End Sub
+
+    Private ItemToFind As Material
+
+    ' Predicate for finding a component item in the list
+    Public Function FindBuiltItem(ByVal Item As BuiltItem) As Boolean
+        If Item.ItemTypeID = ItemToFind.GetMaterialTypeID Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
 
     ' Runs the main blueprint functions
     Private Function RunBlueprint(ByVal BPID As Integer, ByVal SelectedRuns As Integer, ByVal BPME As Integer, ByVal BPTE As Integer,
@@ -7601,11 +7649,11 @@ ExitForm:
             txtItemsPriceModifier.Text = FormatPercent(.ItemsPriceModifier, 1)
 
             Select Case .PriceDataSource
-                Case DataSource.CCP
+                Case PricesDataSource.CCP
                     rbtnPriceSourceCCPData.Checked = True
-                Case DataSource.EVEMarketer
+                Case PricesDataSource.EVEMarketer
                     rbtnPriceSourceEM.Checked = True
-                Case DataSource.Fuzzworks
+                Case PricesDataSource.Fuzzworks
                     rbtnPriceSourceFW.Checked = True
             End Select
 
@@ -7837,11 +7885,11 @@ ExitForm:
             .Pirate = chkPricesT6.Checked
 
             If rbtnPriceSourceCCPData.Checked Then
-                .PriceDataSource = DataSource.CCP
+                .PriceDataSource = PricesDataSource.CCP
             ElseIf rbtnPriceSourceEM.Checked Then
-                .PriceDataSource = DataSource.EVEMarketer
+                .PriceDataSource = PricesDataSource.EVEMarketer
             ElseIf rbtnPriceSourceFW.Checked Then
-                .PriceDataSource = DataSource.Fuzzworks
+                .PriceDataSource = PricesDataSource.Fuzzworks
             End If
 
             If rbtnPriceSettingPriceProfile.Checked Then
@@ -8148,11 +8196,11 @@ ExitForm:
 
         ' Set the source for the entire update
         If rbtnPriceSourceEM.Checked Then
-            UpdatePricesDataSource = CStr(CInt(DataSource.EVEMarketer))
+            UpdatePricesDataSource = CStr(CInt(PricesDataSource.EVEMarketer))
         ElseIf rbtnPriceSourceFW.Checked Then
-            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
         ElseIf rbtnPriceSourceCCPData.Checked Then
-            UpdatePricesDataSource = CStr(CInt(DataSource.CCP))
+            UpdatePricesDataSource = CStr(CInt(PricesDataSource.CCP))
         End If
 
         Me.Refresh()

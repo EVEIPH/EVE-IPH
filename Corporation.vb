@@ -176,7 +176,7 @@ Public Class Corporation
         SQL &= BuildInsertFieldString(NoExpiry) & ","
         SQL &= BuildInsertFieldString(NoExpiry) & ","
         SQL &= BuildInsertFieldString(NoExpiry) & ","
-        SQL &= BuildInsertFieldString(NoExpiry) & ")"
+        SQL &= BuildInsertFieldString(NoExpiry) & ","
         SQL &= BuildInsertFieldString(NoExpiry) & ")"
 
         ' Insert the dummy corp

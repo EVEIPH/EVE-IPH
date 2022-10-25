@@ -1841,6 +1841,8 @@ Public Class BuiltItem
     Public TotalBuildCost As Double
     Public TotalExcessSellBuildCost As Double
 
+    Public BuiltNotEnoughBuyItemsOnMarket As Boolean ' If we forced to build this item because there weren't enough items on the market to buy
+
     Public Sub New()
         ItemTypeID = 0
         ItemName = ""
@@ -1861,6 +1863,8 @@ Public Class BuiltItem
 
         TotalBuildCost = 0
         TotalExcessSellBuildCost = 0
+
+        BuiltNotEnoughBuyItemsOnMarket = False
 
     End Sub
 
@@ -1884,6 +1888,7 @@ Public Class BuiltItem
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost
         CopyOfMe.TotalBuildCost = Me.TotalBuildCost
         CopyOfMe.TotalExcessSellBuildCost = Me.TotalExcessSellBuildCost
+        CopyOfMe.BuiltNotEnoughBuyItemsOnMarket = Me.BuiltNotEnoughBuyItemsOnMarket
         CopyOfMe.ComponentBuildList = New List(Of BuiltItem)
         ' Clone each built item in the list
         For Each BI In Me.ComponentBuildList

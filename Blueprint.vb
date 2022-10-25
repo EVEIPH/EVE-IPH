@@ -21,6 +21,7 @@ Public Class Blueprint
     Private ItemType As Integer
     Private BlueprintRace As Integer
     Private ItemVolume As Double ' Volume of produced item (1 item only)
+    Private BuiltNotEnoughBuyItemsOnMarket As Boolean ' If there are enough items of this on the market, then we set this to true - always assume yes
 
     ' If we compare the components for building or buying
     Private BuildBuy As Boolean
@@ -263,6 +264,8 @@ Public Class Blueprint
         Relic = ""
         TotalInventedRuns = 0
         NumInventionJobs = 0
+
+        BuiltNotEnoughBuyItemsOnMarket = False ' Assume they have enough items on market to compare price/build and not force build if selected in settings
 
         UsesReactions = False
 
@@ -760,11 +763,6 @@ Public Class Blueprint
                     ' Reset the component's material list for shopping list functionality
                     .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
-                    ' Add any built components to the list as well
-                    For Each BI In ComponentBlueprint.BuiltComponentList.GetBuiltItemList
-                        Call BuiltComponentList.AddBuiltItem(BI)
-                    Next
-
                     ' Set the variables
                     .ManufacturingFacility = ComponentBlueprint.MainManufacturingFacility
                     .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
@@ -803,6 +801,12 @@ Public Class Blueprint
                     ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GroupName, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
                     ComponentMaterials.InsertMaterial(TempMat)
+
+                    ' Add any built components to the list as well
+                    For Each BI In ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                        BI.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
+                        Call BuiltComponentList.AddBuiltItem(BI)
+                    Next
 
                     ' Building, so add the raw materials to the raw mats list
                     Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
@@ -1201,7 +1205,9 @@ Public Class Blueprint
                         ' If this item has buildable components, add those to this main list too so it nests up
                         If Not IsNothing(ExcessBuildMaterials) Then
                             For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
-                                BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                                Dim TempBuiltItem As BuiltItem = CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem)
+                                TempBuiltItem.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
+                                BuiltComponentList.AddBuiltItem(TempBuiltItem)
                             Next
                         End If
 
@@ -1225,6 +1231,7 @@ Public Class Blueprint
                                                     TempME, TempTE, ComponentBlueprint, BuildQuantity, SetTaxes, BrokerFeeData)
 
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetComponentMaterials
+                            TempBuiltItem.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
 
                             If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
                                 ' Add any buildable components to this item list
@@ -2082,7 +2089,7 @@ SkipProcessing:
     End Function
 
     ' Determines if the item we are building should be bought or built for the main bp
-    Private Function GetBuildFlag(ByVal ItemBlueprint As Blueprint, ByVal OneItemMarketCost As Double, ByVal Runs As Long,
+    Private Function GetBuildFlag(ByRef ItemBlueprint As Blueprint, ByVal OneItemMarketCost As Double, ByVal Runs As Long,
                                   ByVal OwnedBP As Boolean, ByVal SetTaxes As Boolean, ByVal BFData As BrokerFeeInfo) As Boolean
         Dim CheapertoBuild As Boolean = False
         Dim ExcessAmount As Double = 0
@@ -2114,12 +2121,62 @@ SkipProcessing:
         ' First time you run the bp, just use the base check 
         If NewBPRequest Then
             BuildItem = (OneItemMarketCost = 0) Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
+            ' even on a new request, override this if they set it
+            If UserApplicationSettings.BuildWhenNotEnoughItemsonMarket Then
+                ' Look up the items on the market if they want to force build if there isn't enough of the item on the market (note only works with CCP data)
+                BuildItem = BuildifNotEnoughItemsonMarket(ItemBlueprint, Runs, BuildItem)
+            End If
         Else
-            ' Look up the override value and if not found, use the default
-            BuildItem = ManualBuildBuyValue(ItemBlueprint.ItemID, CheapertoBuild)
+            ' First look for this, then allow them to override with check box
+            If UserApplicationSettings.BuildWhenNotEnoughItemsonMarket Then
+                ' Look up the items on the market if they want to force build if there isn't enough of the item on the market (note only works with CCP data)
+                BuildItem = BuildifNotEnoughItemsonMarket(ItemBlueprint, Runs, BuildItem)
+            End If
+            ' Look up the override value and if not found, use the default already set
+            BuildItem = ManualBuildBuyValue(ItemBlueprint.ItemID, BuildItem)
         End If
 
         Return BuildItem
+
+    End Function
+
+    ' If the item has a price from CCP market data, and that data shows enough of the items we need on market, then return the default build setting
+    ' that was calculated earlier (meaning there is enough to buy if that comes up) else, true to build
+    Private Function BuildifNotEnoughItemsonMarket(ByRef ItemBlueprint As Blueprint, NeededQuantity As Long, DefaultBuildSetting As Boolean) As Boolean
+        Dim rsData As SQLiteDataReader
+        Dim SQL As String
+
+        ' See if the item price they have loaded is from CCP data, if not then just work normally
+        SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0} AND PRICE_SOURCE = 0"
+        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ItemBlueprint.ItemID)), EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader()
+        rsData.Read()
+
+        ' They don't have the CCP data prices downloaded so just exit and treat normally
+        If Not rsData.HasRows Then
+            rsData.Close()
+            Return DefaultBuildSetting
+        End If
+
+        SQL = "SELECT SUM(VOLUME_REMAINING) FROM MARKET_ORDERS, ITEM_PRICES WHERE ITEM_ID ={0} AND ITEM_ID = TYPE_ID AND MARKET_ORDERS.PRICE = ITEM_PRICES.PRICE "
+        SQL &= "AND MARKET_ORDERS.IS_BUY_ORDER = 0 AND (ITEM_PRICES.REGIONORSYSTEM = REGION_ID OR ITEM_PRICES.REGIONORSYSTEM = SOLAR_SYSTEM_ID) AND PRICE_SOURCE = 0 "
+        SQL &= "GROUP BY ITEM_PRICES.PRICE" ' Just in case there is more than one
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ItemBlueprint.ItemID)), EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader()
+
+        ' Get the volume to do the check
+        While rsData.Read
+            If rsData.GetInt64(0) < NeededQuantity Then
+                ' Not enough, so need to build - need to mark the item so it gets set to blue later
+                ItemBlueprint.BuiltNotEnoughBuyItemsOnMarket = True
+                rsData.Close()
+                Return True
+            End If
+        End While
+
+        ' If it didn't return anything, or they have enough to start
+        Return DefaultBuildSetting
 
     End Function
 

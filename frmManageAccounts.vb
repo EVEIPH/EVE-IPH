@@ -165,6 +165,11 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub btnDeleteKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDeleteCharacter.Click
+        ' Make sure they want to delete
+        If MessageBox.Show("Are you sure you want to delete this account?", "Check", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
+            Exit Sub
+        End If
+
         Dim SQL As String
 
         If lstAccounts.SelectedItems.Count > 0 Then
