@@ -197,7 +197,7 @@ Public Class StructureProcessor
             End If
 
         Catch ex As Exception
-            If ex.Message <> "Thread was being aborted." Then
+            If ex.Message <> "Thread was being aborted." Then 'Der Thread wurde abgebrochen. = The thread has been aborted.
                 MsgBox("An error occured when importing structure data: " & ex.Message, vbInformation, Application.ProductName)
             End If
         End Try
