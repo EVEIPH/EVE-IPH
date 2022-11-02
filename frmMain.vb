@@ -1470,6 +1470,10 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub pictBP_DoubleClick(sender As Object, e As EventArgs) Handles pictBP.DoubleClick
+        Call SelectBlueprint()
+    End Sub
+
     ' Loads a BP sent from a double click on shopping list or manufacturing list, or loading history
     Public Sub LoadBPfromEvent(BPID As Long, BuildType As String, Inputs As String, SentFrom As SentFromLocation,
                                 BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, CapCompentFacility As IndustryFacility,
@@ -1896,6 +1900,14 @@ Public Class frmMain
 
         f1.Show()
 
+    End Sub
+
+    Private Sub mnuDiscord_Click(sender As Object, e As EventArgs) Handles mnuDiscord.Click
+        Call Process.Start("https://discord.gg/ZjpRUTPf")
+    End Sub
+
+    Private Sub mnuYouTube_Click(sender As Object, e As EventArgs) Handles mnuYouTube.Click
+        Call Process.Start("https://www.youtube.com/channel/UC77gzUD18mXkltZyhxJPCjg")
     End Sub
 
     Private Sub mnuViewESIStatus_Click(sender As Object, e As EventArgs) Handles mnuViewESIStatus.Click
@@ -4130,36 +4142,12 @@ Tabs:
         If Not UpdatingInventionChecks Then
             UpdatingInventionChecks = True
 
-            If chkBPIgnoreInvention.Checked Then
-                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                    ' Disable all first
-                    Call SetInventionEnabled("T2", False)
-                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
-
-                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                    ' Disable all first
-                    Call SetInventionEnabled("T3", False)
-                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
-                End If
-
-            Else ' Set it on the user settings
-                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                    ' Enable all first
-                    Call SetInventionEnabled("T2", True)
-                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
-
-                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                    ' Enable all first
-                    Call SetInventionEnabled("T3", True)
-                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
-                End If
-
-            End If
+            Call UpdateInventionTabs()
 
             ' Reset the ME/TE for the BP based on the invention check
-            If Not IsNothing(SelectedBlueprint) Then
+            If Not IsNothing(SelectedBlueprint) And chkBPIgnoreInvention.Checked = False Then
                 With SelectedBlueprint
-                    Call SetInventionData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID))
+                    Call SetOwnedBPData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID), True)
                 End With
             End If
 
@@ -4179,6 +4167,34 @@ Tabs:
             If Not FirstLoad And Not IgnoreRefresh Then
                 Call RefreshBP()
             End If
+        End If
+    End Sub
+
+    Private Sub UpdateInventionTabs()
+        If chkBPIgnoreInvention.Checked Then
+            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                ' Disable all first
+                Call SetInventionEnabled("T2", False)
+                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
+
+            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                ' Disable all first
+                Call SetInventionEnabled("T3", False)
+                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
+            End If
+
+        Else ' Set it on the user settings
+            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                ' Enable all first
+                Call SetInventionEnabled("T2", True)
+                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
+
+            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                ' Enable all first
+                Call SetInventionEnabled("T3", True)
+                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
+            End If
+
         End If
     End Sub
 
@@ -5136,44 +5152,14 @@ Tabs:
 
         ' Find what type of blueprint we want
         With Me
-            If .rbtnBPAmmoChargeBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Charge' "
-            ElseIf .rbtnBPDroneBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
-            ElseIf .rbtnBPModuleBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
-            ElseIf .rbtnBPShipBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Ship' "
-            ElseIf .rbtnBPSubsystemBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Subsystem' "
-            ElseIf .rbtnBPBoosterBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Implant' "
-            ElseIf .rbtnBPComponentBlueprints.Checked Then
-                SQL &= "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
-            ElseIf .rbtnBPMiscBlueprints.Checked Then
-                SQL &= "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
-            ElseIf .rbtnBPDeployableBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Deployable' "
-            ElseIf .rbtnBPCelestialsBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
-            ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components') "
-            ElseIf .rbtnBPStructureRigsBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Structure Rigs' "
-            ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
-            ElseIf .rbtnBPReactionsBlueprints.Checked Then
-                SQL &= "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas'"
-            ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL &= "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
-            ElseIf .rbtnBPOwnedBlueprints.Checked Then
+            If .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
                 SQL &= "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
                 SQL &= "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
                 SQL &= "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
+                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
                 SQL &= "CASE WHEN OWNED_BLUEPRINTS.FAVORITE IS NOT NULL THEN OWNED_BLUEPRINTS.FAVORITE ELSE "
                 SQL &= "CASE WHEN ALL_BLUEPRINTS.FAVORITE Is Not NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS MY_FAVORITE "
                 SQL &= "FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
@@ -5181,6 +5167,14 @@ Tabs:
                 SQL &= "And OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "And ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID And MY_FAVORITE = 1 "
                 SQL &= "And ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+            Else
+                SQL &= GetBlueprintSQLWhereQuery(.rbtnBPAmmoChargeBlueprints.Checked, .rbtnBPDroneBlueprints.Checked, .rbtnBPModuleBlueprints.Checked, .rbtnBPShipBlueprints.Checked,
+                                        .rbtnBPSubsystemBlueprints.Checked, .rbtnBPBoosterBlueprints.Checked, .rbtnBPComponentBlueprints.Checked, .rbtnBPMiscBlueprints.Checked,
+                                        .rbtnBPDeployableBlueprints.Checked, .rbtnBPCelestialsBlueprints.Checked, .rbtnBPStructureBlueprints.Checked, .rbtnBPStructureRigsBlueprints.Checked,
+                                        .rbtnBPStructureModulesBlueprints.Checked, .rbtnBPReactionsBlueprints.Checked, .rbtnBPRigBlueprints.Checked)
+                If SQL <> "" Then
+                    SQL = "AND " & SQL
+                End If
             End If
         End With
 
@@ -5238,7 +5232,7 @@ Tabs:
         End If
 
         ' Add the item types
-        SQL &= " And " & SQLItemType
+        SQL &= " AND " & SQLItemType
 
         Dim SizesClause As String = ""
 
@@ -5276,7 +5270,7 @@ Tabs:
         '    SQL &= " AND IGNORE = 0 "
         'End If
 
-        BuildBPSelectQuery = SQL
+        Return SQL
 
     End Function
 
@@ -5997,7 +5991,7 @@ Tabs:
         End If
 
         ' Set the invention info
-        Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
+        Call SetOwnedBPData(BPID, TempTech, NewBP, SentFrom, Reaction)
 
         ' If they want to drill down on reactions, check all types
         If BPHasProcRawMats(BPID, BuildMatType.RawMaterials) Or Reaction Then
@@ -6069,9 +6063,12 @@ Tabs:
 
     End Sub
 
-    Private Sub SetInventionData(BlueprintID As Integer, BPTech As Integer, NewBP As Boolean, SentFrom As SentFromLocation, Reaction As Boolean)
+    Private Sub SetOwnedBPData(BlueprintID As Integer, BPTech As Integer, NewBP As Boolean, SentFrom As SentFromLocation, Reaction As Boolean, Optional FromCheck As Boolean = False)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
+        Dim CheckBPIgnoreInventionValue As Boolean = False
+        Dim Uninventable As Boolean = False
+        Dim TempDName As String = ""
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
@@ -6083,8 +6080,8 @@ Tabs:
 
         If NewBP Then
             Call SetInventionEnabled("T" & CStr(BPTech), True) ' First enable then let the ignore invention check override if needed
-            If BPTech = 2 Then
-                chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+            If BPTech = 2 And Not FromCheck Then
+                CheckBPIgnoreInventionValue = UserBPTabSettings.IgnoreInvention
             End If
         End If
 
@@ -6116,20 +6113,17 @@ Tabs:
             TempBPType = BPType.NotOwned
         End If
 
-        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
+        ' Load the ME/TE - unless it's the check box selected, then go with base values
+        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab And Not FromCheck Then
             ' Use owned settings
-            If chkBPIgnoreInvention.Checked Or BPTech = 1 Then
-                txtBPME.Text = CStr(readerBP.GetInt32(0))
-                OwnedBPME = txtBPME.Text
-                txtBPTE.Text = CStr(readerBP.GetInt32(1))
-                OwnedBPPE = txtBPTE.Text
-                OwnedBP = True
-                txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
-                OwnedBPRuns = readerBP.GetInt32(3)
-            ElseIf BPTech <> 1 Then
-                Call SelectDecryptor(cmbBPInventionDecryptor.Text)
-            End If
-        Else ' If sent from manufacturing tab, use the values set from there or it's not owned
+            OwnedBP = True
+            txtBPME.Text = CStr(readerBP.GetInt32(0))
+            OwnedBPME = txtBPME.Text
+            txtBPTE.Text = CStr(readerBP.GetInt32(1))
+            OwnedBPPE = txtBPTE.Text
+            txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
+            OwnedBPRuns = readerBP.GetInt32(3)
+        Else ' If sent from manufacturing tab, use the values set from there, or set to not owned
             OwnedBP = False
             OwnedBPRuns = 1
             If BPTech = 1 Then ' All T1
@@ -6147,109 +6141,114 @@ Tabs:
                     End If
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
                 End If
-                TempBPType = BPType.NotOwned ' set to not owned for non bp load events
-            Else ' Default T2/T3 BPCs are going to be copies
-                If chkBPIgnoreInvention.Checked = True Then
-                    ' T2 BPO
-                    If readerBP.HasRows Then
-                        txtBPME.Text = CStr(readerBP.GetInt32(0))
-                        OwnedBPME = txtBPME.Text
-                        txtBPTE.Text = CStr(readerBP.GetInt32(1))
-                        OwnedBPPE = txtBPTE.Text
-                    Else
-                        txtBPME.Text = "0"
-                        txtBPTE.Text = "0"
-                    End If
-                Else
-                    ' Use invention numbers
-                    txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
-                    txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
-                    TempBPType = BPType.NotOwned
-                End If
             End If
         End If
 
-        readerBP.Close()
+        ' Set decryptors
+        If BPTech <> 1 Then
+            ' Default setting
+            txtBPME.Enabled = False
+            txtBPTE.Enabled = False
+            chkBPIgnoreInvention.Enabled = True ' All T2/T3 options need the toggle
 
-        IgnoreRefresh = True
-
-        If (BPTech <> 1 And TempBPType <> BPType.Original) Then
-            If BPTech = 2 And TempBPType = BPType.Copy And NewBP Then
-                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention when BP is first loaded
-                chkBPIgnoreInvention.Checked = True
-            End If
-
-            ' disable the me/te boxes if invented, else enable and ignore invention
-            If chkBPIgnoreInvention.Checked Then
+            ' If it's a T2 BPO, then don't check invention
+            If BPTech = 2 And TempBPType = BPType.Original And NewBP Then
+                ' Check the ignore invention, they own this T2 BPO and don't need to invent it
+                CheckBPIgnoreInventionValue = True
                 txtBPME.Enabled = True
                 txtBPTE.Enabled = True
-                Call SetInventionEnabled("T" & CStr(BPTech), False)
-            Else
-                txtBPME.Enabled = False
-                txtBPTE.Enabled = False
-            End If
-
-        ElseIf BPTech = 2 And TempBPType = BPType.Original Then
-            ' Check the ignore invention, they own this T2 BPO and don't need to invent it
-            chkBPIgnoreInvention.Checked = True
-
-            ' enable the me/te boxes
-            txtBPME.Enabled = True
-            txtBPTE.Enabled = True
-        End If
-
-        IgnoreRefresh = False
-
-        If BPTech <> 2 Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
-        Else
-            chkBPIgnoreInvention.Enabled = True ' All T2 options need the toggle
-        End If
-
-        ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
-        If NewBP And SentFrom = SentFromLocation.None Then
-            Dim TempDName As String = ""
-            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
-                ' Load the decryptor based on ME/TE
+            Else ' BPC
                 Dim TempD As New DecryptorList
-                LoadingInventionDecryptors = True
-                LoadingT3Decryptors = True
-                InventionDecryptorsLoaded = False
-                T3DecryptorsLoaded = False
-                ' Load up the decryptor based on data entered or BP data from an owned bp
+                ' Get the decryptor based on data entered or BP data from an owned bp
                 SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, BPTech)
                 If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
-                    TempDName = Unknown
+                    TempDName = NoDecryptor.Name
+                    Uninventable = True
+                    ' Can't invent this - either a BPC that was a T2 BPO copy or a hacking find
+                    CheckBPIgnoreInventionValue = True
+                    txtBPME.Enabled = True
+                    txtBPTE.Enabled = True
                 Else
                     TempDName = SelectedDecryptor.Name
                 End If
-
-                If BPTech = 2 Then
-                    cmbBPInventionDecryptor.Text = TempDName
-                ElseIf BPTech = 3 Then
-                    cmbBPT3Decryptor.Text = TempDName
-                End If
-
-                LoadingInventionDecryptors = False
-                LoadingT3Decryptors = False
-            Else
-                Call ResetDecryptorCombos(BPTech)
             End If
 
-            If BPTech = 3 Then
-                ' Load up the relic based on the bp data
-                Call LoadRelicTypes(BlueprintID)
-                Dim Tempstring As String
-                Tempstring = GetRelicfromInputs(SelectedDecryptor, BlueprintID, OwnedBPRuns)
-                If Tempstring <> "" Then
-                    LoadingRelics = True
-                    ' if found, set it else
-                    cmbBPRelic.Text = Tempstring
-                    LoadingRelics = False
+            ' Reset the combo for invention, and Load the relic types for BP selected for T2/T3 - If sent from, then it's set there
+            If NewBP And SentFrom = SentFromLocation.None Then
+                If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
+                    ' Save decryptor name
+                    If BPTech = 2 Then
+                        LoadingInventionDecryptors = True
+                        InventionDecryptorsLoaded = False
+                        cmbBPInventionDecryptor.Text = TempDName
+                        InventionDecryptorsLoaded = True
+                        LoadingInventionDecryptors = False
+                    ElseIf BPTech = 3 Then
+                        LoadingT3Decryptors = True
+                        T3DecryptorsLoaded = False
+                        cmbBPT3Decryptor.Text = TempDName
+                        LoadingT3Decryptors = False
+                        T3DecryptorsLoaded = True
+                    End If
+                Else
+                    Call ResetDecryptorCombos(BPTech)
                 End If
-            End If
 
+                ' If T3, refresh relic list
+                If BPTech = 3 Then
+                    ' Load up the relic based on the bp data
+                    Call LoadRelicTypes(BlueprintID)
+                    Dim Tempstring As String
+                    Tempstring = GetRelicfromInputs(SelectedDecryptor, BlueprintID, OwnedBPRuns)
+                    If Tempstring <> "" Then
+                        LoadingRelics = True
+                        ' if found, set it else
+                        cmbBPRelic.Text = Tempstring
+                        LoadingRelics = False
+                    End If
+                End If
+            ElseIf Not Uninventable Then
+                ' Load the decryptor selected for non-newBPs
+                Call SelectDecryptor(cmbBPInventionDecryptor.Text)
+            End If
+        Else
+            chkBPIgnoreInvention.Enabled = False ' Can't invent T1 - so don't allow toggle
         End If
+
+        ' Only update the check box if we select it, not if we come here from checking ignore invention
+        If Not FromCheck And BPTech <> 1 Then
+            IgnoreRefresh = True
+            UpdatingInventionChecks = True
+            chkBPIgnoreInvention.Checked = CheckBPIgnoreInventionValue
+            ' If this isn't on here, we need to show it anyway so add it here to update
+            If Not tabBPInventionEquip.TabPages.Contains(tabInventionCalcs) Then
+                tabBPInventionEquip.TabPages.Add(tabInventionCalcs)
+            End If
+            Call UpdateInventionTabs()
+            UpdatingInventionChecks = False
+            IgnoreRefresh = False
+        End If
+
+        If BPTech <> 1 Then
+            ' Now that we have the decryptor set, the IgnoreCheck set, we can load the ME/TE values for T2/T3
+            If chkBPIgnoreInvention.Checked = True Then
+                ' T2 BPO or non-invented (e.g., hacking find)
+                If readerBP.HasRows Then
+                    txtBPME.Text = CStr(readerBP.GetInt32(0))
+                    OwnedBPME = txtBPME.Text
+                    txtBPTE.Text = CStr(readerBP.GetInt32(1))
+                    OwnedBPPE = txtBPTE.Text
+                Else
+                    txtBPME.Text = "0"
+                    txtBPTE.Text = "0"
+                End If
+            Else
+                ' Use invention numbers
+                txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
+                txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
+            End If
+        End If
+        readerBP.Close()
 
     End Sub
 
@@ -14985,7 +14984,7 @@ ExitCalc:
 
         ' See if we are looking at User Owned blueprints or All
         If rbtnCalcBPOwned.Checked Then
-            WhereClause = WhereClause & "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
+            WhereClause &= "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
         End If
 
         SQL &= WhereClause & "GROUP BY ITEM_GROUP"
@@ -15539,15 +15538,15 @@ ExitCalc:
         End If
 
         ' Add all the items to the where clause
-        WhereClause = WhereClause & RaceClause & " AND (" & ItemTypes & ") AND (((" & ItemTypeNumbers & ") " & T2Query & T3Query & "))" & SizesClause & ComboType & NPCBPOsClause & " "
+        WhereClause &= RaceClause & " AND (" & ItemTypes & ") AND (((" & ItemTypeNumbers & ") " & T2Query & T3Query & "))" & SizesClause & ComboType & NPCBPOsClause & " "
 
         ' Finally add on text if they added it
         If Trim(txtCalcItemFilter.Text) <> "" Then
-            WhereClause = WhereClause & "AND " & GetSearchText(txtCalcItemFilter.Text, "X.ITEM_NAME", "X.ITEM_GROUP")
+            WhereClause &= "AND " & GetSearchText(txtCalcItemFilter.Text, "X.ITEM_NAME", "X.ITEM_GROUP")
         End If
 
         ' Only bps not ignored - no option for this yet
-        WhereClause = WhereClause & " AND IGNORE = 0 "
+        WhereClause &= " AND IGNORE = 0 "
 
         Return WhereClause
 
@@ -17799,15 +17798,6 @@ Leave:
             chkMineMoonMining.Enabled = False ' Can't moon mine ice
             chkMineRefinedOre.Enabled = True
 
-            ' No ice in wormholes
-            chkMineWH.Enabled = False
-            chkMineC1.Enabled = False
-            chkMineC2.Enabled = False
-            chkMineC3.Enabled = False
-            chkMineC4.Enabled = False
-            chkMineC5.Enabled = False
-            chkMineC6.Enabled = False
-
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Enabled = True
@@ -17821,23 +17811,6 @@ Leave:
             chkMineMoonMining.Enabled = True ' Moon mining
             chkMineRefinedOre.Enabled = True
 
-            chkMineWH.Enabled = True
-            If chkMineWH.Checked Then
-                chkMineC1.Enabled = True
-                chkMineC2.Enabled = True
-                chkMineC3.Enabled = True
-                chkMineC4.Enabled = True
-                chkMineC5.Enabled = True
-                chkMineC6.Enabled = True
-            Else
-                chkMineC1.Enabled = False
-                chkMineC2.Enabled = False
-                chkMineC3.Enabled = False
-                chkMineC4.Enabled = False
-                chkMineC5.Enabled = False
-                chkMineC6.Enabled = False
-            End If
-
         ElseIf cmbMineOreType.Text = "Gas" Then
             gbMiningRigs.Enabled = False
             chkMineIncludeHighYieldOre.Enabled = False
@@ -17847,14 +17820,6 @@ Leave:
             chkMineIncludeNullSec.Text = "Null Sec Gas"
             lstMineGrid.Columns(1).Text = "Gas Name"
             tabMiningDrones.Enabled = False
-            chkMineWH.Enabled = True
-            chkMineC1.Enabled = True
-            chkMineC2.Enabled = True
-            chkMineC3.Enabled = True
-            chkMineC4.Enabled = True
-            chkMineC5.Enabled = True
-            chkMineC6.Enabled = True
-
             chkMineMoonMining.Enabled = False ' Can't moon mine gas
 
             ' Dont allow refining for gas
@@ -17865,6 +17830,24 @@ Leave:
                 chkMineRefinedOre.Checked = False
             End If
 
+        End If
+
+        ' All three have wh options
+        chkMineWH.Enabled = True
+        If chkMineWH.Checked Then
+            chkMineC1.Enabled = True
+            chkMineC2.Enabled = True
+            chkMineC3.Enabled = True
+            chkMineC4.Enabled = True
+            chkMineC5.Enabled = True
+            chkMineC6.Enabled = True
+        Else
+            chkMineC1.Enabled = False
+            chkMineC2.Enabled = False
+            chkMineC3.Enabled = False
+            chkMineC4.Enabled = False
+            chkMineC5.Enabled = False
+            chkMineC6.Enabled = False
         End If
 
         Call UpdateBoosterDroneRigChecks()
@@ -18058,7 +18041,7 @@ Leave:
         Dim rsLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT 'X' FROM ATTRIB_LOOKUP WHERE typeName = '" & cmbMineMiningLaser.Text & "' "
+        SQL = "SELECT 'X' FROM ATTRIB_LOOKUP WHERE typeName = '" & FormatDBString(cmbMineMiningLaser.Text) & "' "
         SQL &= "AND attributeID IN (604,605) AND value IN (663,482)" ' 604 and 605 are used with charge groups...and the values returned are groupIDs for mercoxit mining crystal or mining crystal resp
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -19291,14 +19274,6 @@ Leave:
             Application.DoEvents()
         Next
 
-        ' Now sort this
-        Dim TempType As SortOrder
-        If MiningColumnSortType = SortOrder.Ascending Then
-            TempType = SortOrder.Descending
-        Else
-            TempType = SortOrder.Ascending
-        End If
-        Call ListViewColumnSorter(MiningColumnClicked, CType(lstMineGrid, ListView), MiningColumnClicked, TempType)
         Me.Cursor = Cursors.Default
 
         lstMineGrid.EndUpdate()
@@ -21677,7 +21652,7 @@ ProcExit:
     ' For sorting a list of Mining Ore
     Public Class MiningOreIPHComparer
 
-        Implements System.Collections.Generic.IComparer(Of MiningOre)
+        Implements IComparer(Of MiningOre)
 
         Public Function Compare(ByVal p1 As MiningOre, ByVal p2 As MiningOre) As Integer Implements IComparer(Of MiningOre).Compare
             ' swap p2 and p1 to do decending sort

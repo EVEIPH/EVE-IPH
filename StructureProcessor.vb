@@ -196,10 +196,11 @@ Public Class StructureProcessor
                 End With
             End If
 
+        Catch X As ThreadAbortException
+            ' Just continue as normal
+            Application.DoEvents()
         Catch ex As Exception
-            If ex.Message <> "Thread was being aborted." Then 'Der Thread wurde abgebrochen. = The thread has been aborted.
-                MsgBox("An error occured when importing structure data: " & ex.Message, vbInformation, Application.ProductName)
-            End If
+            MsgBox("An error occured when importing structure data: " & ex.Message, vbInformation, Application.ProductName)
         End Try
 
     End Sub
