@@ -775,10 +775,10 @@ Public Class frmShoppingList
 
                                     SQL = "SELECT typeName, SUM(Quantity) FROM "
                                     SQL &= "ASSETS, INVENTORY_TYPES "
-                                    SQL &= "WHERE (" & TempAssetWhereList & ") "
-                                    SQL &= " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
+                                    SQL &= "WHERE AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
                                     SQL &= " AND ASSETS.TypeID = " & ProcessList.GetMaterialList(j).GetMaterialTypeID
-                                    SQL &= " AND ID IN (" & IDString & ")"
+                                    SQL &= " AND ID IN (" & IDString & ") "
+                                    SQL &= " AND (" & TempAssetWhereList & ") "
 
                                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                     readerAssets = DBCommand.ExecuteReader
@@ -942,19 +942,16 @@ Public Class frmShoppingList
 
         If UserQuantity <= UsedQuantity Then
             ' Need to just delete the records because we are using everything we have in all locations
-            SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID IN"
+            SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND ID IN (" & IDString & ") AND LocationID IN"
             SQL &= " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
-            SQL &= " AND ID IN (" & IDString & ")"
 
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else ' Only using part of what we have
             ' Look up each item in their assets in their locations stored, and loop through them
-            SQL = "SELECT Quantity, LocationID FROM ASSETS, INVENTORY_TYPES WHERE LocationID IN"
-            SQL &= " (SELECT LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " AND ID IN (" & IDString & "))"
+            SQL = "SELECT Quantity, LocationID FROM ASSETS, INVENTORY_TYPES WHERE INVENTORY_TYPES.typeID = ASSETS.TypeID AND ASSETS.TypeID = " & MaterialTypeID
             SQL &= " AND ID IN (" & IDString & ")"
-            SQL &= " AND INVENTORY_TYPES.typeID = ASSETS.TypeID"
-            SQL &= " AND ASSETS.TypeID = " & MaterialTypeID
+            SQL &= " AND LocationID In (Select LocationID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ShoppingList) & " And ID In (" & IDString & "))"
             SQL &= " ORDER BY Quantity DESC"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -969,16 +966,14 @@ Public Class frmShoppingList
                 ' Keep track of what we need to update - we have more than we need to build this item, so need to update that total from our summed mins
                 If LocUserQuantity > UsedQuantityRemaining Then
                     ' Whatever we have in this location is greater than the quantity remaining, so update this and leave loop
-                    SQL = "UPDATE ASSETS SET Quantity = " & LocUserQuantity - UsedQuantityRemaining
-                    SQL &= " WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
-                    SQL &= " AND ID IN (" & IDString & ")"
+                    SQL = "UPDATE ASSETS Set Quantity = " & LocUserQuantity - UsedQuantityRemaining
+                    SQL &= " WHERE TypeID = " & MaterialTypeID & "AND ID IN (" & IDString & ") AND LocationID = " & CStr(LocationID) ' Locid set above so it's good
 
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                     Exit While
                 Else
                     ' Its less than or equal to the quantity so we need to delete this location's value and update the used quantity
-                    SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & " AND LocationID = " & CStr(LocationID)
-                    SQL &= " AND ID IN (" & IDString & ")"
+                    SQL = "DELETE FROM ASSETS WHERE TypeID = " & MaterialTypeID & "AND ID IN (" & IDString & ") AND LocationID = " & CStr(LocationID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     ' Update used quantity
@@ -1005,14 +1000,14 @@ Public Class frmShoppingList
     ' Clears the lists and variables
     Private Sub btnClear_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClear.Click
 
-        If MsgBox("Delete all items in the shopping list?", CType(vbYesNo + vbQuestion, MsgBoxStyle), Application.ProductName) = vbYes Then
+        If MsgBox("Delete all items In the shopping list?", CType(vbYesNo + vbQuestion, MsgBoxStyle), Application.ProductName) = vbYes Then
             Call ClearLists()
             btnClear.Enabled = False
             gbUpdateList.Enabled = False
             Call PlayNotifySound()
-            frmMain.pnlShoppingList.Text = "No Items in Shopping List"
+            frmMain.pnlShoppingList.Text = "No Items In Shopping List"
             frmMain.pnlShoppingList.ForeColor = Color.Black
-            lblTotalItemsInList.Text = "0" & vbCrLf & "Items in list"
+            lblTotalItemsInList.Text = "0" & vbCrLf & "Items In list"
         End If
 
     End Sub

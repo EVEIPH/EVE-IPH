@@ -97,9 +97,7 @@ Public Class EVEAssets
 
             ' Look up the type name
             SQL = "SELECT CASE WHEN typeName = 'Asset Safety Wrap' THEN 'Asset Safety' ELSE typeName END, groupName, categoryName "
-            SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
-            SQL &= "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-            SQL &= "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
+            SQL &= "FROM ITEM_LOOKUP WHERE typeID = " & TempAsset.TypeID & " "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
@@ -253,8 +251,9 @@ Public Class EVEAssets
                         ' since it's not the same as personal asset where you can query all IDs
                         ' Only send itemids that singleton is true, the locationid is an item (i.e., container not station), and the item is in the list of location ids
                         AssetIDs = New List(Of Double)
-                        SQL = "SELECT ItemID FROM ASSETS WHERE ID = {0} AND IsSingleton= -1 AND LocationID > 90000000 "
-                        SQL &= "AND ItemID IN (SELECT LocationID FROM ASSETS WHERE ID = {0})"
+                        SQL = "SELECT ItemID FROM ASSETS WHERE ID = {0} "
+                        SQL &= "AND ItemID IN (SELECT LocationID FROM ASSETS WHERE ID = {0}) "
+                        SQL &= "AND LocationID > 90000000 AND IsSingleton= -1"
                         DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ID)), EVEDB.DBREf)
                         rsLookup = DBCommand.ExecuteReader
                         While rsLookup.Read

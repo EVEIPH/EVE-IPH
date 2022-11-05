@@ -418,8 +418,6 @@ Public Class frmMain
             Application.DoEvents()
         End If
 
-        DBCommand = Nothing
-
         ' ESI Market Data
         If UserApplicationSettings.LoadESIMarketDataonStartup Then
             Application.UseWaitCursor = True
@@ -14494,9 +14492,7 @@ ExitCalc:
             ' Strip final OR
             TempAssetWhereList = TempAssetWhereList.Substring(0, Len(TempAssetWhereList) - 4)
 
-            SQL = "SELECT SUM(Quantity) FROM ASSETS WHERE (" & TempAssetWhereList & ") "
-            SQL &= " And ASSETS.TypeID = " & CStr(TypeID) & " And ID IN (" & IDString & ")"
-
+            SQL = "SELECT SUM(Quantity) FROM ASSETS WHERE ASSETS.TypeID = " & CStr(TypeID) & " AND ID IN (" & IDString & ") AND (" & TempAssetWhereList & ") "
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerAssets = DBCommand.ExecuteReader
             readerAssets.Read()

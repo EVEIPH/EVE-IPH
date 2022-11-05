@@ -889,16 +889,6 @@ Public Class ESI
                 rsLookup.Close()
 
                 TempBlueprint.LocationID = BP.location_id
-                ' Get the flag id for this location
-                DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagName = '" & BP.location_flag & "'", EVEDB.DBREf)
-                rsLookup = DBCommand.ExecuteReader
-                If rsLookup.Read Then
-                    TempBlueprint.FlagID = rsLookup.GetInt32(0)
-                Else
-                    TempBlueprint.FlagID = 0
-                End If
-                rsLookup.Close()
-
                 TempBlueprint.Quantity = BP.quantity
                 TempBlueprint.MaterialEfficiency = BP.material_efficiency
                 TempBlueprint.TimeEfficiency = BP.time_efficiency

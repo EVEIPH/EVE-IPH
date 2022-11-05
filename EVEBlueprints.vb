@@ -31,7 +31,7 @@ Public Class EVEBlueprints
         End If
 
         ' Load the blueprints
-        SQL = "SELECT ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, QUANTITY, ME, TE, "
+        SQL = "SELECT ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, ME, TE, "
         SQL &= "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS "
         SQL &= "FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CharID
 
@@ -44,16 +44,15 @@ Public Class EVEBlueprints
             TempBlueprint.LocationID = readerBlueprints.GetInt64(1)
             TempBlueprint.TypeID = readerBlueprints.GetInt64(2)
             TempBlueprint.TypeName = readerBlueprints.GetString(3)
-            TempBlueprint.FlagID = readerBlueprints.GetInt32(4)
-            TempBlueprint.Quantity = readerBlueprints.GetInt32(5)
-            TempBlueprint.TimeEfficiency = readerBlueprints.GetInt32(6)
-            TempBlueprint.MaterialEfficiency = readerBlueprints.GetInt32(7)
-            TempBlueprint.Runs = readerBlueprints.GetInt32(8)
-            TempBlueprint.BPType = CType(readerBlueprints.GetInt32(9), BPType)
-            TempBlueprint.Owned = CBool(readerBlueprints.GetInt32(10))
-            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(11))
-            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(12))
-            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(13)
+            TempBlueprint.Quantity = readerBlueprints.GetInt32(4)
+            TempBlueprint.TimeEfficiency = readerBlueprints.GetInt32(5)
+            TempBlueprint.MaterialEfficiency = readerBlueprints.GetInt32(6)
+            TempBlueprint.Runs = readerBlueprints.GetInt32(7)
+            TempBlueprint.BPType = CType(readerBlueprints.GetInt32(8), BPType)
+            TempBlueprint.Owned = CBool(readerBlueprints.GetInt32(9))
+            TempBlueprint.Scanned = CBool(readerBlueprints.GetInt32(10))
+            TempBlueprint.Favorite = CBool(readerBlueprints.GetInt32(11))
+            TempBlueprint.AdditionalCosts = readerBlueprints.GetDouble(12)
 
             ' Insert blueprint
             Blueprints.Add(TempBlueprint)
@@ -122,11 +121,11 @@ Public Class EVEBlueprints
 
                         With IndyBlueprints(i)
                             ' Load all bps in ALL_OWNED_BLUEPRINTS and only limit OWNED_BLUEPRINTS to single records
-                            SQL = "INSERT INTO ALL_OWNED_BLUEPRINTS (OWNER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, "
+                            SQL = "INSERT INTO ALL_OWNED_BLUEPRINTS (OWNER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, "
                             SQL &= "QUANTITY, ME, TE, RUNS, BP_TYPE) "
                             SQL &= "VALUES (" & CStr(TempID) & "," & CStr(.ItemID) & "," & CStr(.LocationID) & ","
-                            SQL &= CStr(.TypeID) & ",'" & FormatDBString(.TypeName) & "',"
-                            SQL &= CStr(.FlagID) & ",1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
+                            SQL &= CStr(.TypeID) & ",'" & FormatDBString(.TypeName) & "'"
+                            SQL &= ",1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
                             SQL &= .Runs & "," & CStr(.BPType) & ")"
 
                             Call EVEDB.ExecuteNonQuerySQL(SQL)
@@ -134,7 +133,7 @@ Public Class EVEBlueprints
                             ' Make sure it's not already in there before adding to owned
                             ' For now, only include unique BPs until I get the multiple BP support done - use Max ME for the determination or Max TE if they are the same ME
                             SQL = "SELECT ME, TE, BP_TYPE, ITEM_ID, OWNED, SCANNED FROM OWNED_BLUEPRINTS "
-                            SQL &= "WHERE BLUEPRINT_ID = " & .TypeID & " And USER_ID = " & CStr(TempID)
+                            SQL &= "WHERE USER_ID = " & CStr(TempID) & " AND BLUEPRINT_ID = " & .TypeID
 
                             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                             readerBlueprints = DBCommand.ExecuteReader
@@ -176,7 +175,7 @@ Public Class EVEBlueprints
                                 Dim CurrentBPType As BPType = .BPType
                                 ' If T2 and a copy, set to invented copy if the ME/TE match, else use what was sent
                                 If CurrentBPType = BPType.Copy Then
-                                    SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(.TypeID)
+                                    SQL = "SELECT TECH_LEVEL FROM ALL_BLUEPRINTS_FACT WHERE BLUEPRINT_ID = " & CStr(.TypeID)
                                     DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                                     readerCheck = DBCommand.ExecuteReader
                                     If readerCheck.Read() Then
@@ -194,17 +193,16 @@ Public Class EVEBlueprints
                                 End If
 
                                 If InsertBP Then
-                                    SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, FLAG_ID, "
+                                    SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, "
                                     SQL &= "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                                     SQL &= "VALUES (" & CStr(TempID) & "," & CStr(.ItemID) & "," & CStr(.LocationID) & ","
                                     SQL &= CStr(.TypeID) & ",'" & FormatDBString(.TypeName) & "',"
-                                    SQL &= CStr(.FlagID) & ",1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
+                                    SQL &= ",1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
                                     SQL &= .Runs & "," & CStr(CurrentBPType) & ",1," & CStr(ScannedFlag) & ", 0, 0)"
                                 Else
                                     ' Update the BP 
                                     SQL = "UPDATE OWNED_BLUEPRINTS SET "
                                     SQL &= "LOCATION_ID = " & CStr(.LocationID) & ","
-                                    SQL &= "FLAG_ID = " & CStr(.FlagID) & ","
                                     SQL &= "ME = " & CStr(.MaterialEfficiency) & ","
                                     SQL &= "TE = " & CStr(.TimeEfficiency) & ","
                                     SQL &= "RUNS = " & CStr(.Runs) & ","
@@ -222,10 +220,10 @@ Public Class EVEBlueprints
 
                                     If readerBlueprints.GetInt64(3) <> 0 Then
                                         ' Search with ITEM_ID
-                                        SQL &= "WHERE ITEM_ID = " & CStr(readerBlueprints.GetInt64(3)) & " AND USER_ID = " & CStr(TempID)
+                                        SQL &= "WHERE USER_ID = " & CStr(TempID) & " AND ITEM_ID = " & CStr(readerBlueprints.GetInt64(3))
                                     Else
                                         ' Search with the ID of the bp and the user ID - they must have saved this manually
-                                        SQL &= "WHERE BLUEPRINT_ID = " & .TypeID & " AND USER_ID = " & CStr(TempID)
+                                        SQL &= "WHERE USER_ID = " & CStr(TempID) & " AND BLUEPRINT_ID = " & .TypeID
                                     End If
 
                                 End If
@@ -260,7 +258,6 @@ Public Structure EVEBlueprint
     Dim LocationID As Long
     Dim TypeID As Long
     Dim TypeName As String
-    Dim FlagID As Integer
     Dim Quantity As Integer
     Dim TimeEfficiency As Integer
     Dim MaterialEfficiency As Integer

@@ -89,7 +89,6 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.ADDITIONAL_COSTS Is Not NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID Is Not NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
-                                            & "CASE WHEN OBP.FLAG_ID Is Not NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
                                             & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
                                             & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP, " _
                                             & "CASE WHEN IT2.marketGroupID Is NULL THEN 0 ELSE 1 END AS NPC_BPO " _
@@ -2596,9 +2595,9 @@ SkipItem:
 
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
-                SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
+                SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, "
                 SQL &= "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
+                SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,"
                 SQL &= CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 

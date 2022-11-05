@@ -581,9 +581,9 @@ Public Class frmReprocessingPlant
             ' Now get all the assets from the checked locations
             SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
             SQL &= "ASSETS, INVENTORY_TYPES AS IT "
-            SQL &= "WHERE (" & AssetLocationFlagList & ") "
-            SQL &= "AND IT.typeID = ASSETS.TypeID "
+            SQL &= "WHERE IT.typeID = ASSETS.TypeID "
             SQL &= "AND ID IN (" & IDString & ") "
+            SQL &= " AND (" & AssetLocationFlagList & ") "
             SQL &= "GROUP BY IT.typeID, IT.typeName, IT.volume "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
