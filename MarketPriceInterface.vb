@@ -371,6 +371,10 @@ Public Class MarketPriceInterface
         Dim rsCache As SQLiteDataReader
         Dim Cachedate As Date
 
+        If CacheType = MarketPriceCacheType.History Then
+            Return False
+        End If
+
         ' First look up the cache date to see if it's time to run the update
         If CacheType = MarketPriceCacheType.History Then
             TableName = "MARKET_HISTORY_UPDATE_CACHE"
