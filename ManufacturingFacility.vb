@@ -20,6 +20,7 @@ Public Class ManufacturingFacility
     Private LoadingSystems As Boolean
     Private LoadingFacilities As Boolean
     Private ChangingUsageChecks As Boolean
+    Private UpdatingFWComboText As Boolean
 
     ' To save previous values for checking and loading
     Private PreviousProductionType As ProductionType
@@ -586,6 +587,7 @@ Public Class ManufacturingFacility
         LoadingSystems = False
         LoadingFacilities = False
         ChangingUsageChecks = False
+        UpdatingFWComboText = False
 
         ' Load the selected facility with set bp
         Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech, True)
@@ -3136,6 +3138,7 @@ Public Class ManufacturingFacility
         End If
 
         rsFW.Close()
+        UpdatingFWComboText = True
 
         If Warzone And SelectedFacility.FacilityProductionType <> ProductionType.Reprocessing Then
             lblFacilityFWUpgrade.Enabled = True
@@ -3169,10 +3172,12 @@ Public Class ManufacturingFacility
             SelectedFacility.FWUpgradeLevel = -1
         End If
 
+        UpdatingFWComboText = False
+
     End Sub
 
     Private Sub cmbFWUpgrade_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilityFWUpgrade.SelectedIndexChanged
-        If Not FirstLoad Then
+        If Not FirstLoad And Not UpdatingFWComboText Then
             ' Set the selected level
             SelectedFacility.FWUpgradeLevel = GetFWUpgradeLevel(cmbFacilitySystem.Text)
             ' Facility is loaded, so save it to default and dynamic variable
