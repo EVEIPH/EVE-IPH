@@ -2776,15 +2776,6 @@ Public Class ManufacturingFacility
             Call SaveSelectedFacility(True)
         End If
 
-        If StructureViewer.ResetManualEntries Then
-            With SelectedFacility
-                .ManualCost = False
-                .ManualME = False
-                .ManualTax = False
-                .ManualTE = False
-            End With
-        End If
-
         Call SetResetRefresh()
 
     End Sub
