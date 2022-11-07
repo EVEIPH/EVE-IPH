@@ -37,16 +37,16 @@ Partial Class frmAbout
         Me.LabelCopyright = New System.Windows.Forms.Label()
         Me.LabelCompanyName = New System.Windows.Forms.Label()
         Me.TextBoxDescription = New System.Windows.Forms.TextBox()
-        Me.OKButton = New System.Windows.Forms.Button()
-        Me.pbPaypal = New System.Windows.Forms.PictureBox()
         Me.LogoPictureBox = New System.Windows.Forms.PictureBox()
+        Me.OKButton = New System.Windows.Forms.Button()
+        Me.pbEVEPartner = New System.Windows.Forms.PictureBox()
         Me.pbPatreon = New System.Windows.Forms.PictureBox()
-        Me.PictureBox1 = New System.Windows.Forms.PictureBox()
+        Me.pbPaypal = New System.Windows.Forms.PictureBox()
         Me.TableLayoutPanel.SuspendLayout()
-        CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.pbEVEPartner, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.pbPatreon, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'TableLayoutPanel
@@ -61,7 +61,7 @@ Partial Class frmAbout
         Me.TableLayoutPanel.Controls.Add(Me.TextBoxDescription, 1, 4)
         Me.TableLayoutPanel.Controls.Add(Me.LogoPictureBox, 0, 0)
         Me.TableLayoutPanel.Controls.Add(Me.OKButton, 1, 6)
-        Me.TableLayoutPanel.Controls.Add(Me.PictureBox1, 1, 7)
+        Me.TableLayoutPanel.Controls.Add(Me.pbEVEPartner, 1, 7)
         Me.TableLayoutPanel.Controls.Add(Me.pbPatreon, 0, 7)
         Me.TableLayoutPanel.Controls.Add(Me.pbPaypal, 0, 6)
         Me.TableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill
@@ -153,27 +153,6 @@ Partial Class frmAbout
         Me.TextBoxDescription.TabStop = False
         Me.TextBoxDescription.Text = resources.GetString("TextBoxDescription.Text")
         '
-        'OKButton
-        '
-        Me.OKButton.Anchor = System.Windows.Forms.AnchorStyles.Right
-        Me.OKButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.OKButton.Location = New System.Drawing.Point(318, 261)
-        Me.OKButton.Name = "OKButton"
-        Me.OKButton.Size = New System.Drawing.Size(75, 23)
-        Me.OKButton.TabIndex = 0
-        Me.OKButton.Text = "&OK"
-        '
-        'pbPaypal
-        '
-        Me.pbPaypal.BackColor = System.Drawing.Color.Transparent
-        Me.pbPaypal.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.PayPalButton
-        Me.pbPaypal.Location = New System.Drawing.Point(3, 257)
-        Me.pbPaypal.Name = "pbPaypal"
-        Me.pbPaypal.Size = New System.Drawing.Size(124, 32)
-        Me.pbPaypal.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
-        Me.pbPaypal.TabIndex = 4
-        Me.pbPaypal.TabStop = False
-        '
         'LogoPictureBox
         '
         Me.LogoPictureBox.Image = CType(resources.GetObject("LogoPictureBox.Image"), System.Drawing.Image)
@@ -185,13 +164,36 @@ Partial Class frmAbout
         Me.LogoPictureBox.TabIndex = 0
         Me.LogoPictureBox.TabStop = False
         '
+        'OKButton
+        '
+        Me.OKButton.Anchor = System.Windows.Forms.AnchorStyles.Right
+        Me.OKButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
+        Me.OKButton.Location = New System.Drawing.Point(318, 261)
+        Me.OKButton.Name = "OKButton"
+        Me.OKButton.Size = New System.Drawing.Size(75, 23)
+        Me.OKButton.TabIndex = 0
+        Me.OKButton.Text = "&OK"
+        '
+        'pbEVEPartner
+        '
+        Me.pbEVEPartner.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.pbEVEPartner.BackColor = System.Drawing.Color.Black
+        Me.pbEVEPartner.Image = CType(resources.GetObject("pbEVEPartner.Image"), System.Drawing.Image)
+        Me.pbEVEPartner.Location = New System.Drawing.Point(133, 295)
+        Me.pbEVEPartner.Name = "pbEVEPartner"
+        Me.pbEVEPartner.Size = New System.Drawing.Size(260, 32)
+        Me.pbEVEPartner.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
+        Me.pbEVEPartner.TabIndex = 6
+        Me.pbEVEPartner.TabStop = False
+        '
         'pbPatreon
         '
         Me.pbPatreon.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.pbPatreon.BackColor = System.Drawing.Color.Transparent
-        Me.pbPatreon.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.Digital_Patreon_Wordmark_FieryCoral
         Me.pbPatreon.Location = New System.Drawing.Point(3, 295)
         Me.pbPatreon.Name = "pbPatreon"
         Me.pbPatreon.Size = New System.Drawing.Size(124, 32)
@@ -199,19 +201,15 @@ Partial Class frmAbout
         Me.pbPatreon.TabIndex = 5
         Me.pbPatreon.TabStop = False
         '
-        'PictureBox1
+        'pbPaypal
         '
-        Me.PictureBox1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.PictureBox1.BackColor = System.Drawing.Color.Black
-        Me.PictureBox1.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.eve_partner1
-        Me.PictureBox1.Location = New System.Drawing.Point(133, 295)
-        Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(260, 32)
-        Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
-        Me.PictureBox1.TabIndex = 6
-        Me.PictureBox1.TabStop = False
+        Me.pbPaypal.BackColor = System.Drawing.Color.Transparent
+        Me.pbPaypal.Location = New System.Drawing.Point(3, 257)
+        Me.pbPaypal.Name = "pbPaypal"
+        Me.pbPaypal.Size = New System.Drawing.Size(124, 32)
+        Me.pbPaypal.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage
+        Me.pbPaypal.TabIndex = 4
+        Me.pbPaypal.TabStop = False
         '
         'frmAbout
         '
@@ -232,10 +230,10 @@ Partial Class frmAbout
         Me.Text = "About EVE Isk per Hour"
         Me.TableLayoutPanel.ResumeLayout(False)
         Me.TableLayoutPanel.PerformLayout()
-        CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.LogoPictureBox, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.pbEVEPartner, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.pbPatreon, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.pbPaypal, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -243,5 +241,5 @@ Partial Class frmAbout
     Friend WithEvents LogoPictureBox As PictureBox
     Friend WithEvents pbPaypal As PictureBox
     Friend WithEvents pbPatreon As PictureBox
-    Friend WithEvents PictureBox1 As PictureBox
+    Friend WithEvents pbEVEPartner As PictureBox
 End Class
