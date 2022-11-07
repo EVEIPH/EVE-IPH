@@ -2752,6 +2752,14 @@ Public Class ManufacturingFacility
 
         Call StructureViewer.Dispose()
 
+        ' If we updated the facility, save it first before loading as it may not have been saved yet
+        If StructureViewer.SavedFacility Then
+            ' Reset any manual settings
+            Call SelectedFacility.ResetManualToggles()
+            ' Save it here too but don't show the dialog
+            Call SaveSelectedFacility(True)
+        End If
+
         ' Reload the facility each time we return - use initialize and just load the one we changed
         If SelectedFacility.IsDefault Then
             ' If they saved fittings for the default, reset the default values
@@ -4703,7 +4711,6 @@ ExitBlock:
 
                 ' Save it
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-
                 rsCheck.Close()
             Next
 

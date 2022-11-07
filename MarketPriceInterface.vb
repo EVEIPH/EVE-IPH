@@ -371,6 +371,7 @@ Public Class MarketPriceInterface
         Dim rsCache As SQLiteDataReader
         Dim Cachedate As Date
 
+        'Temp fix for ESI issue on market/region/history endpoint - don't allow updates
         If CacheType = MarketPriceCacheType.History Then
             Return False
         End If
