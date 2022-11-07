@@ -716,6 +716,7 @@
   <ItemGroup>
     <Content Include="icon07_02.ico" />
     <Content Include="Resources\eve partner.png" />
+    <Content Include="Resources\patreon_sm.png" />
     <None Include="Resources\Digital-Patreon-Wordmark_FieryCoral.png" />
     <None Include="Resources\PayPalButton.png" />
     <None Include="PayPalDonate.jpg" />

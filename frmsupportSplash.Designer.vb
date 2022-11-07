@@ -22,6 +22,7 @@ Partial Class frmsupportSplash
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmsupportSplash))
         Me.btnClose = New System.Windows.Forms.Button()
         Me.pbPaypal = New System.Windows.Forms.PictureBox()
         Me.Label1 = New System.Windows.Forms.Label()
@@ -99,7 +100,7 @@ Partial Class frmsupportSplash
         'pbPaetron
         '
         Me.pbPaetron.BackColor = System.Drawing.Color.Transparent
-        Me.pbPaetron.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.patreon_sm
+        Me.pbPaetron.Image = CType(resources.GetObject("pbPaetron.Image"), System.Drawing.Image)
         Me.pbPaetron.Location = New System.Drawing.Point(132, 223)
         Me.pbPaetron.Name = "pbPaetron"
         Me.pbPaetron.Size = New System.Drawing.Size(124, 35)
