@@ -3314,9 +3314,6 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
-        Call LoadBPInventionDecryptors()
-    End Sub
 
     Private Sub cmbBPInventionDecryptor_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.SelectedIndexChanged
 
