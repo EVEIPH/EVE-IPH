@@ -1471,6 +1471,10 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub pictBP_DoubleClick(sender As Object, e As EventArgs) Handles pictBP.DoubleClick
+        Call SelectBlueprint()
+    End Sub
+
     ' Loads a BP sent from a double click on shopping list or manufacturing list, or loading history
     Public Sub LoadBPfromEvent(BPID As Long, BuildType As String, Inputs As String, SentFrom As SentFromLocation,
                                 BuildFacility As IndustryFacility, ComponentFacility As IndustryFacility, CapCompentFacility As IndustryFacility,
@@ -1919,6 +1923,14 @@ Public Class frmMain
 
         f1.Show()
 
+    End Sub
+
+    Private Sub mnuDiscord_Click(sender As Object, e As EventArgs) Handles mnuDiscord.Click
+        Call Process.Start("https://discord.gg/ZjpRUTPf")
+    End Sub
+
+    Private Sub mnuYouTube_Click(sender As Object, e As EventArgs) Handles mnuYouTube.Click
+        Call Process.Start("https://www.youtube.com/channel/UC77gzUD18mXkltZyhxJPCjg")
     End Sub
 
     Private Sub mnuViewESIStatus_Click(sender As Object, e As EventArgs) Handles mnuViewESIStatus.Click
@@ -3302,6 +3314,10 @@ Public Class frmMain
         End If
     End Sub
 
+    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
+        Call LoadBPInventionDecryptors()
+    End Sub
+
     Private Sub cmbBPInventionDecryptor_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.SelectedIndexChanged
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
@@ -3394,7 +3410,7 @@ Public Class frmMain
             Call UpdateInventionTabs()
 
             ' Reset the ME/TE for the BP based on the invention check
-            If Not IsNothing(SelectedBlueprint) Then
+            If Not IsNothing(SelectedBlueprint) And chkBPIgnoreInvention.Checked = False Then
                 With SelectedBlueprint
                     Call SetOwnedBPData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID), True)
                 End With
@@ -4403,44 +4419,14 @@ Public Class frmMain
 
         ' Find what type of blueprint we want
         With Me
-            If .rbtnBPAmmoChargeBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Charge' "
-            ElseIf .rbtnBPDroneBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY in ('Drone', 'Fighter') "
-            ElseIf .rbtnBPModuleBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%') "
-            ElseIf .rbtnBPShipBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Ship' "
-            ElseIf .rbtnBPSubsystemBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Subsystem' "
-            ElseIf .rbtnBPBoosterBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Implant' "
-            ElseIf .rbtnBPComponentBlueprints.Checked Then
-                SQL &= "AND (ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components') "
-            ElseIf .rbtnBPMiscBlueprints.Checked Then
-                SQL &= "AND ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block') "
-            ElseIf .rbtnBPDeployableBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Deployable' "
-            ElseIf .rbtnBPCelestialsBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
-            ElseIf .rbtnBPStructureBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components') "
-            ElseIf .rbtnBPStructureRigsBlueprints.Checked Then
-                SQL &= "AND ITEM_CATEGORY = 'Structure Rigs' "
-            ElseIf .rbtnBPStructureModulesBlueprints.Checked Then
-                SQL &= "AND (ITEM_CATEGORY = 'Structure Module' AND BLUEPRINT_GROUP NOT LIKE '%Rig Blueprint') "
-            ElseIf .rbtnBPReactionsBlueprints.Checked Then
-                SQL &= "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas'"
-            ElseIf .rbtnBPRigBlueprints.Checked Then
-                SQL &= "AND BLUEPRINT_GROUP LIKE '%Rig Blueprint' "
-            ElseIf .rbtnBPOwnedBlueprints.Checked Then
+            If .rbtnBPOwnedBlueprints.Checked Then
                 SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
                 SQL &= "OWNED_BLUEPRINTS WHERE OWNED <> 0 "
                 SQL &= "AND OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "AND ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
                 SQL &= "AND ALL_BLUEPRINTS.ITEM_ID = IT.typeID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
             ElseIf .rbtnBPFavoriteBlueprints.Checked Then
-                SQL = "Select ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
+                SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_NAME, REPLACE(LOWER(ALL_BLUEPRINTS.BLUEPRINT_NAME),'''','') AS X, "
                 SQL &= "CASE WHEN OWNED_BLUEPRINTS.FAVORITE IS NOT NULL THEN OWNED_BLUEPRINTS.FAVORITE ELSE "
                 SQL &= "CASE WHEN ALL_BLUEPRINTS.FAVORITE Is Not NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS MY_FAVORITE "
                 SQL &= "FROM ALL_BLUEPRINTS, INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2, "
@@ -4448,6 +4434,14 @@ Public Class frmMain
                 SQL &= "And OWNED_BLUEPRINTS.USER_ID IN (" & CharID & "," & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "And ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID And MY_FAVORITE = 1 "
                 SQL &= "And ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID "
+            Else
+                SQL &= GetBlueprintSQLWhereQuery(.rbtnBPAmmoChargeBlueprints.Checked, .rbtnBPDroneBlueprints.Checked, .rbtnBPModuleBlueprints.Checked, .rbtnBPShipBlueprints.Checked,
+                                        .rbtnBPSubsystemBlueprints.Checked, .rbtnBPBoosterBlueprints.Checked, .rbtnBPComponentBlueprints.Checked, .rbtnBPMiscBlueprints.Checked,
+                                        .rbtnBPDeployableBlueprints.Checked, .rbtnBPCelestialsBlueprints.Checked, .rbtnBPStructureBlueprints.Checked, .rbtnBPStructureRigsBlueprints.Checked,
+                                        .rbtnBPStructureModulesBlueprints.Checked, .rbtnBPReactionsBlueprints.Checked, .rbtnBPRigBlueprints.Checked)
+                If SQL <> "" Then
+                    SQL = "AND " & SQL
+                End If
             End If
         End With
 
@@ -4505,7 +4499,7 @@ Public Class frmMain
         End If
 
         ' Add the item types
-        SQL &= " And " & SQLItemType
+        SQL &= " AND " & SQLItemType
 
         Dim SizesClause As String = ""
 
@@ -4543,7 +4537,7 @@ Public Class frmMain
         '    SQL &= " AND IGNORE = 0 "
         'End If
 
-        BuildBPSelectQuery = SQL
+        Return SQL
 
     End Function
 
@@ -14574,7 +14568,7 @@ ExitCalc:
 
         ' See if we are looking at User Owned blueprints or All
         If rbtnCalcBPOwned.Checked Then
-            WhereClause = WhereClause & "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
+            WhereClause &= "And USER_ID = " & SelectedCharacter.ID & " And OWNED <> 0  "
         End If
 
         SQL &= WhereClause & "GROUP BY ITEM_GROUP"
@@ -15128,15 +15122,15 @@ ExitCalc:
         End If
 
         ' Add all the items to the where clause
-        WhereClause = WhereClause & RaceClause & " AND (" & ItemTypes & ") AND (((" & ItemTypeNumbers & ") " & T2Query & T3Query & "))" & SizesClause & ComboType & NPCBPOsClause & " "
+        WhereClause &= RaceClause & " AND (" & ItemTypes & ") AND (((" & ItemTypeNumbers & ") " & T2Query & T3Query & "))" & SizesClause & ComboType & NPCBPOsClause & " "
 
         ' Finally add on text if they added it
         If Trim(txtCalcItemFilter.Text) <> "" Then
-            WhereClause = WhereClause & "AND " & GetSearchText(txtCalcItemFilter.Text, "X.ITEM_NAME", "X.ITEM_GROUP")
+            WhereClause &= "AND " & GetSearchText(txtCalcItemFilter.Text, "X.ITEM_NAME", "X.ITEM_GROUP")
         End If
 
         ' Only bps not ignored - no option for this yet
-        WhereClause = WhereClause & " AND IGNORE = 0 "
+        WhereClause &= " AND IGNORE = 0 "
 
         Return WhereClause
 
@@ -17385,15 +17379,6 @@ Leave:
             chkMineMoonMining.Enabled = False ' Can't moon mine ice
             chkMineRefinedOre.Enabled = True
 
-            ' No ice in wormholes
-            chkMineWH.Enabled = False
-            chkMineC1.Enabled = False
-            chkMineC2.Enabled = False
-            chkMineC3.Enabled = False
-            chkMineC4.Enabled = False
-            chkMineC5.Enabled = False
-            chkMineC6.Enabled = False
-
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Enabled = True
@@ -17407,23 +17392,6 @@ Leave:
             chkMineMoonMining.Enabled = True ' Moon mining
             chkMineRefinedOre.Enabled = True
 
-            chkMineWH.Enabled = True
-            If chkMineWH.Checked Then
-                chkMineC1.Enabled = True
-                chkMineC2.Enabled = True
-                chkMineC3.Enabled = True
-                chkMineC4.Enabled = True
-                chkMineC5.Enabled = True
-                chkMineC6.Enabled = True
-            Else
-                chkMineC1.Enabled = False
-                chkMineC2.Enabled = False
-                chkMineC3.Enabled = False
-                chkMineC4.Enabled = False
-                chkMineC5.Enabled = False
-                chkMineC6.Enabled = False
-            End If
-
         ElseIf cmbMineOreType.Text = "Gas" Then
             gbMiningRigs.Enabled = False
             chkMineIncludeHighYieldOre.Enabled = False
@@ -17433,14 +17401,6 @@ Leave:
             chkMineIncludeNullSec.Text = "Null Sec Gas"
             lstMineGrid.Columns(1).Text = "Gas Name"
             tabMiningDrones.Enabled = False
-            chkMineWH.Enabled = True
-            chkMineC1.Enabled = True
-            chkMineC2.Enabled = True
-            chkMineC3.Enabled = True
-            chkMineC4.Enabled = True
-            chkMineC5.Enabled = True
-            chkMineC6.Enabled = True
-
             chkMineMoonMining.Enabled = False ' Can't moon mine gas
 
             ' Dont allow refining for gas
@@ -17451,6 +17411,24 @@ Leave:
                 chkMineRefinedOre.Checked = False
             End If
 
+        End If
+
+        ' All three have wh options
+        chkMineWH.Enabled = True
+        If chkMineWH.Checked Then
+            chkMineC1.Enabled = True
+            chkMineC2.Enabled = True
+            chkMineC3.Enabled = True
+            chkMineC4.Enabled = True
+            chkMineC5.Enabled = True
+            chkMineC6.Enabled = True
+        Else
+            chkMineC1.Enabled = False
+            chkMineC2.Enabled = False
+            chkMineC3.Enabled = False
+            chkMineC4.Enabled = False
+            chkMineC5.Enabled = False
+            chkMineC6.Enabled = False
         End If
 
         Call UpdateBoosterDroneRigChecks()
@@ -17644,7 +17622,7 @@ Leave:
         Dim rsLookup As SQLiteDataReader
         Dim SQL As String
 
-        SQL = "SELECT 'X' FROM ATTRIB_LOOKUP WHERE typeName = '" & cmbMineMiningLaser.Text & "' "
+        SQL = "SELECT 'X' FROM ATTRIB_LOOKUP WHERE typeName = '" & FormatDBString(cmbMineMiningLaser.Text) & "' "
         SQL &= "AND attributeID IN (604,605) AND value IN (663,482)" ' 604 and 605 are used with charge groups...and the values returned are groupIDs for mercoxit mining crystal or mining crystal resp
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -18877,14 +18855,6 @@ Leave:
             Application.DoEvents()
         Next
 
-        ' Now sort this
-        Dim TempType As SortOrder
-        If MiningColumnSortType = SortOrder.Ascending Then
-            TempType = SortOrder.Descending
-        Else
-            TempType = SortOrder.Ascending
-        End If
-        Call ListViewColumnSorter(MiningColumnClicked, CType(lstMineGrid, ListView), MiningColumnClicked, TempType)
         Me.Cursor = Cursors.Default
 
         lstMineGrid.EndUpdate()
@@ -21263,7 +21233,7 @@ ProcExit:
     ' For sorting a list of Mining Ore
     Public Class MiningOreIPHComparer
 
-        Implements System.Collections.Generic.IComparer(Of MiningOre)
+        Implements IComparer(Of MiningOre)
 
         Public Function Compare(ByVal p1 As MiningOre, ByVal p2 As MiningOre) As Integer Implements IComparer(Of MiningOre).Compare
             ' swap p2 and p1 to do decending sort
