@@ -943,31 +943,31 @@ Public Class frmMain
                 ' Init the manufacturing tab facilities
                 Select Case FacilityType
                     Case ProductionType.BoosterManufacturing
-                        Call CalcBoostersFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcBoostersFacility.InitializeFacilities(FacilityLocation, ProductionType.BoosterManufacturing)
                     Case ProductionType.CapitalComponentManufacturing
-                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation, ProductionType.CapitalComponentManufacturing)
                     Case ProductionType.CapitalManufacturing
-                        Call CalcCapitalsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcCapitalsFacility.InitializeFacilities(FacilityLocation, ProductionType.CapitalManufacturing)
                     Case ProductionType.ComponentManufacturing
-                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation, ProductionType.ComponentManufacturing)
                     Case ProductionType.Copying
-                        Call CalcCopyFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcCopyFacility.InitializeFacilities(FacilityLocation, ProductionType.Copying)
                     Case ProductionType.Invention
-                        Call CalcInventionFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcInventionFacility.InitializeFacilities(FacilityLocation, ProductionType.Invention)
                     Case ProductionType.Manufacturing
-                        Call CalcBaseFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcBaseFacility.InitializeFacilities(FacilityLocation, ProductionType.Manufacturing)
                     Case ProductionType.Reactions
-                        Call CalcReactionsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcReactionsFacility.InitializeFacilities(FacilityLocation, ProductionType.Reactions)
                     Case ProductionType.SubsystemManufacturing
-                        Call CalcSubsystemsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcSubsystemsFacility.InitializeFacilities(FacilityLocation, ProductionType.SubsystemManufacturing)
                     Case ProductionType.SuperManufacturing
-                        Call CalcSupersFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcSupersFacility.InitializeFacilities(FacilityLocation, ProductionType.SuperManufacturing)
                     Case ProductionType.T3CruiserManufacturing
-                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation, ProductionType.T3CruiserManufacturing)
                     Case ProductionType.T3DestroyerManufacturing
-                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation, ProductionType.T3DestroyerManufacturing)
                     Case ProductionType.T3Invention
-                        Call CalcT3InventionFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3InventionFacility.InitializeFacilities(FacilityLocation, ProductionType.T3Invention)
                 End Select
             End If
         End If
@@ -3264,10 +3264,6 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
-        Call LoadBPInventionDecryptors()
-    End Sub
-
     Private Sub LoadBPInventionDecryptors()
         If Not InventionDecryptorsLoaded Then
             ' Clear anything that was there
@@ -3327,11 +3323,15 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
+        Call LoadBPInventionDecryptors()
+    End Sub
+
     Private Sub cmbBPT3Decryptor_DropDown(sender As Object, e As System.EventArgs) Handles cmbBPT3Decryptor.DropDown
         Call LoadBPT3InventionDecryptors()
     End Sub
 
-    Private Sub cmbBPREDecryptor_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPT3Decryptor.SelectedIndexChanged
+    Private Sub cmbBPT3Decryptor_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPT3Decryptor.SelectedIndexChanged
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingT3Decryptors Then
@@ -3391,36 +3391,12 @@ Public Class frmMain
         If Not UpdatingInventionChecks Then
             UpdatingInventionChecks = True
 
-            If chkBPIgnoreInvention.Checked Then
-                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                    ' Disable all first
-                    Call SetInventionEnabled("T2", False)
-                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
-
-                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                    ' Disable all first
-                    Call SetInventionEnabled("T3", False)
-                    Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
-                End If
-
-            Else ' Set it on the user settings
-                If tabBPInventionEquip.Contains(tabInventionCalcs) Then
-                    ' Enable all first
-                    Call SetInventionEnabled("T2", True)
-                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
-
-                ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
-                    ' Enable all first
-                    Call SetInventionEnabled("T3", True)
-                    Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
-                End If
-
-            End If
+            Call UpdateInventionTabs()
 
             ' Reset the ME/TE for the BP based on the invention check
             If Not IsNothing(SelectedBlueprint) Then
                 With SelectedBlueprint
-                    Call SetInventionData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID))
+                    Call SetOwnedBPData(.GetBPID, .GetTechLevel, False, SentFromLocation.None, IsReaction(.GetItemGroupID), True)
                 End With
             End If
 
@@ -3440,6 +3416,34 @@ Public Class frmMain
             If Not FirstLoad And Not IgnoreRefresh Then
                 Call RefreshBP()
             End If
+        End If
+    End Sub
+
+    Private Sub UpdateInventionTabs()
+        If chkBPIgnoreInvention.Checked Then
+            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                ' Disable all first
+                Call SetInventionEnabled("T2", False)
+                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.Invention, False)
+
+            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                ' Disable all first
+                Call SetInventionEnabled("T3", False)
+                Call BPTabFacility.SetIgnoreInvention(True, ProductionType.T3Invention, False)
+            End If
+
+        Else ' Set it on the user settings
+            If tabBPInventionEquip.Contains(tabInventionCalcs) Then
+                ' Enable all first
+                Call SetInventionEnabled("T2", True)
+                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.Invention, True)
+
+            ElseIf tabBPInventionEquip.Contains(tabT3Calcs) Then
+                ' Enable all first
+                Call SetInventionEnabled("T3", True)
+                Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
+            End If
+
         End If
     End Sub
 
@@ -3582,7 +3586,7 @@ Public Class frmMain
         e.Handled = True
     End Sub
 
-    Private Sub cmbBPREDecryptor_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPT3Decryptor.KeyPress
+    Private Sub cmbBPT3Decryptor_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPT3Decryptor.KeyPress
         e.Handled = True
     End Sub
 
@@ -5296,7 +5300,7 @@ Public Class frmMain
         End If
 
         ' Set the invention info
-        Call SetInventionData(BPID, TempTech, NewBP, SentFrom, Reaction)
+        Call SetOwnedBPData(BPID, TempTech, NewBP, SentFrom, Reaction, False)
 
         ' If they want to drill down on reactions, check all types
         If BPHasProcRawMats(BPID, BuildMatType.RawMaterials) Or Reaction Then
@@ -5368,9 +5372,12 @@ Public Class frmMain
 
     End Sub
 
-    Private Sub SetInventionData(BlueprintID As Integer, BPTech As Integer, NewBP As Boolean, SentFrom As SentFromLocation, Reaction As Boolean)
+    Private Sub SetOwnedBPData(BlueprintID As Integer, BPTech As Integer, NewBP As Boolean, SentFrom As SentFromLocation, Reaction As Boolean, Optional FromCheck As Boolean = False)
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
+        Dim CheckBPIgnoreInventionValue As Boolean = False
+        Dim Uninventable As Boolean = False
+        Dim TempDName As String = ""
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
@@ -5382,8 +5389,8 @@ Public Class frmMain
 
         If NewBP Then
             Call SetInventionEnabled("T" & CStr(BPTech), True) ' First enable then let the ignore invention check override if needed
-            If BPTech = 2 Then
-                chkBPIgnoreInvention.Checked = UserBPTabSettings.IgnoreInvention
+            If BPTech = 2 And Not FromCheck Then
+                CheckBPIgnoreInventionValue = UserBPTabSettings.IgnoreInvention
             End If
         End If
 
@@ -5415,20 +5422,17 @@ Public Class frmMain
             TempBPType = BPType.NotOwned
         End If
 
-        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab Then
+        ' Load the ME/TE - unless it's the check box selected, then go with base values
+        If HasOwnedBP And Not SentFrom = SentFromLocation.ManufacturingTab And Not FromCheck Then
             ' Use owned settings
-            If chkBPIgnoreInvention.Checked Or BPTech = 1 Then
-                txtBPME.Text = CStr(readerBP.GetInt32(0))
-                OwnedBPME = txtBPME.Text
-                txtBPTE.Text = CStr(readerBP.GetInt32(1))
-                OwnedBPPE = txtBPTE.Text
-                OwnedBP = True
-                txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
-                OwnedBPRuns = readerBP.GetInt32(3)
-            ElseIf BPTech <> 1 Then
-                Call SelectDecryptor(cmbBPInventionDecryptor.Text)
-            End If
-        Else ' If sent from manufacturing tab, use the values set from there or it's not owned
+            OwnedBP = True
+            txtBPME.Text = CStr(readerBP.GetInt32(0))
+            OwnedBPME = txtBPME.Text
+            txtBPTE.Text = CStr(readerBP.GetInt32(1))
+            OwnedBPPE = txtBPTE.Text
+            txtBPAddlCosts.Text = FormatNumber(readerBP.GetDouble(2), 2)
+            OwnedBPRuns = readerBP.GetInt32(3)
+        Else ' If sent from manufacturing tab, use the values set from there, or set to not owned
             OwnedBP = False
             OwnedBPRuns = 1
             If BPTech = 1 Then ' All T1
@@ -5446,111 +5450,113 @@ Public Class frmMain
                     End If
                     txtBPTE.Text = CStr(UserApplicationSettings.DefaultBPTE)
                 End If
-                TempBPType = BPType.NotOwned ' set to not owned for non bp load events
-            Else ' Default T2/T3 BPCs are going to be copies
-                If chkBPIgnoreInvention.Checked = True Then
-                    ' T2 BPO
-                    If readerBP.HasRows Then
-                        txtBPME.Text = CStr(readerBP.GetInt32(0))
-                        OwnedBPME = txtBPME.Text
-                        txtBPTE.Text = CStr(readerBP.GetInt32(1))
-                        OwnedBPPE = txtBPTE.Text
-                    Else
-                        txtBPME.Text = "0"
-                        txtBPTE.Text = "0"
-                    End If
-                Else
-                    ' Use invention numbers
-                    txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
-                    txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
-                    TempBPType = BPType.NotOwned
-                End If
             End If
         End If
 
-        readerBP.Close()
+        ' Set decryptors
+        If BPTech <> 1 Then
+            ' Default setting
+            txtBPME.Enabled = False
+            txtBPTE.Enabled = False
+            chkBPIgnoreInvention.Enabled = True ' All T2/T3 options need the toggle
 
-        IgnoreRefresh = True
-
-        If (BPTech <> 1 And TempBPType <> BPType.Original) Then
-            If BPTech = 2 And TempBPType = BPType.Copy And NewBP Then
-                ' This is a copy of a T2 BPO or exploration find - likely can't invent this ME/TE combo so check ignore invention when BP is first loaded
-                chkBPIgnoreInvention.Checked = True
-            End If
-
-            ' disable the me/te boxes if invented, else enable and ignore invention
-            If chkBPIgnoreInvention.Checked Then
+            ' If it's a T2 BPO, then don't check invention
+            If BPTech = 2 And TempBPType = BPType.Original And NewBP Then
+                ' Check the ignore invention, they own this T2 BPO and don't need to invent it
+                CheckBPIgnoreInventionValue = True
                 txtBPME.Enabled = True
                 txtBPTE.Enabled = True
-                Call SetInventionEnabled("T" & CStr(BPTech), False)
-            Else
-                txtBPME.Enabled = False
-                txtBPTE.Enabled = False
-            End If
-
-        ElseIf BPTech = 2 And TempBPType = BPType.Original Then
-            ' Check the ignore invention, they own this T2 BPO and don't need to invent it
-            chkBPIgnoreInvention.Checked = True
-
-            ' enable the me/te boxes
-            txtBPME.Enabled = True
-            txtBPTE.Enabled = True
-        End If
-
-        IgnoreRefresh = False
-
-        If BPTech = 1 Then
-            chkBPIgnoreInvention.Enabled = False ' can't invent t1 - so don't allow toggle
-        Else
-            chkBPIgnoreInvention.Enabled = True ' All T2/T3 options need the toggle - since they can buy the invented BP
-        End If
-
-        ' Reset the combo for invention, and Load the relic types for BP selected for T3 - If sent from, then it's set there
-        If NewBP And SentFrom = SentFromLocation.None Then
-            Dim TempDName As String = ""
-            If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
-                ' Load the decryptor based on ME/TE
+            Else ' BPC
                 Dim TempD As New DecryptorList
-                LoadingInventionDecryptors = True
-                LoadingT3Decryptors = True
-                InventionDecryptorsLoaded = False
-                T3DecryptorsLoaded = False
-                ' Load up the decryptor based on data entered or BP data from an owned bp
+                ' Get the decryptor based on data entered or BP data from an owned bp
                 SelectedDecryptor = TempD.GetDecryptor(CInt(txtBPME.Text), CInt(txtBPTE.Text), OwnedBPRuns, BPTech)
                 If SelectedDecryptor.Name = None And CInt(txtBPME.Text) <> BaseT2T3ME And CInt(txtBPTE.Text) <> BaseT2T3TE And TempBPType = BPType.Copy Then
-                    TempDName = Unknown
+                    TempDName = NoDecryptor.Name
+                    Uninventable = True
+                    ' Can't invent this - either a BPC that was a T2 BPO copy or a hacking find
+                    CheckBPIgnoreInventionValue = True
+                    txtBPME.Enabled = True
+                    txtBPTE.Enabled = True
                 Else
                     TempDName = SelectedDecryptor.Name
                 End If
-
-                If BPTech = 2 Then
-                    cmbBPInventionDecryptor.Text = TempDName
-                ElseIf BPTech = 3 Then
-                    cmbBPT3Decryptor.Text = TempDName
-                End If
-
-                LoadingInventionDecryptors = False
-                LoadingT3Decryptors = False
-            Else
-                Call ResetDecryptorCombos(BPTech)
             End If
 
-            If BPTech = 3 Then
-                ' Load up the relic based on the bp data
-                Call LoadRelicTypes(BlueprintID)
-                Dim Tempstring As String
-                Tempstring = GetRelicfromInputs(SelectedDecryptor, BlueprintID, OwnedBPRuns)
-                If Tempstring <> "" Then
-                    LoadingRelics = True
-                    ' if found, set it else
-                    cmbBPRelic.Text = Tempstring
-                    LoadingRelics = False
+            ' Reset the combo for invention, and Load the relic types for BP selected for T2/T3 - If sent from, then it's set there
+            If NewBP And SentFrom = SentFromLocation.None Then
+                If TempBPType = BPType.InventedBPC Or TempBPType = BPType.Copy Then
+                    ' Save decryptor name
+                    If BPTech = 2 Then
+                        LoadingInventionDecryptors = True
+                        cmbBPInventionDecryptor.Text = TempDName
+                        LoadingInventionDecryptors = False
+                    ElseIf BPTech = 3 Then
+                        LoadingT3Decryptors = True
+                        cmbBPT3Decryptor.Text = TempDName
+                        LoadingT3Decryptors = False
+                    End If
+                Else
+                    Call ResetDecryptorCombos(BPTech)
                 End If
-            End If
 
+                ' If T3, refresh relic list
+                If BPTech = 3 Then
+                    ' Load up the relic based on the bp data
+                    Call LoadRelicTypes(BlueprintID)
+                    Dim Tempstring As String
+                    Tempstring = GetRelicfromInputs(SelectedDecryptor, BlueprintID, OwnedBPRuns)
+                    If Tempstring <> "" Then
+                        LoadingRelics = True
+                        ' if found, set it else
+                        cmbBPRelic.Text = Tempstring
+                        LoadingRelics = False
+                    End If
+                End If
+            ElseIf Not Uninventable Then
+                ' Load the decryptor selected for non-newBPs
+                Call SelectDecryptor(cmbBPInventionDecryptor.Text)
+            End If
+        Else
+            chkBPIgnoreInvention.Enabled = False ' Can't invent T1 - so don't allow toggle
         End If
 
+        ' Only update the check box if we select it, not if we come here from checking ignore invention
+        If Not FromCheck And BPTech <> 1 Then
+            IgnoreRefresh = True
+            UpdatingInventionChecks = True
+            chkBPIgnoreInvention.Checked = CheckBPIgnoreInventionValue
+            ' If this isn't on here, we need to show it anyway so add it here to update
+            If Not tabBPInventionEquip.TabPages.Contains(tabInventionCalcs) Then
+                tabBPInventionEquip.TabPages.Add(tabInventionCalcs)
+            End If
+            Call UpdateInventionTabs()
+            UpdatingInventionChecks = False
+            IgnoreRefresh = False
+        End If
+
+        If BPTech <> 1 Then
+            ' Now that we have the decryptor set, the IgnoreCheck set, we can load the ME/TE values for T2/T3
+            If chkBPIgnoreInvention.Checked = True Then
+                ' T2 BPO or non-invented (e.g., hacking find)
+                If readerBP.HasRows Then
+                    txtBPME.Text = CStr(readerBP.GetInt32(0))
+                    OwnedBPME = txtBPME.Text
+                    txtBPTE.Text = CStr(readerBP.GetInt32(1))
+                    OwnedBPPE = txtBPTE.Text
+                Else
+                    txtBPME.Text = "0"
+                    txtBPTE.Text = "0"
+                End If
+            Else
+                ' Use invention numbers
+                txtBPME.Text = CStr(BaseT2T3ME + SelectedDecryptor.MEMod)
+                txtBPTE.Text = CStr(BaseT2T3TE + SelectedDecryptor.TEMod)
+            End If
+        End If
+        readerBP.Close()
+
     End Sub
+
 
     ' Updates the lists with the correct materials for the selected item
     Public Sub UpdateBPGrids(ByVal BPID As Integer, ByVal BPTech As Integer, ByVal NewBPSelection As Boolean,
