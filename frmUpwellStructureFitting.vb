@@ -1805,53 +1805,35 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Sub btnSaveFitting_Click(sender As Object, e As EventArgs) Handles btnSaveFitting.Click
+        Dim SQL As String
 
         Try
-            Dim LocationList As New List(Of Integer)
-            Dim SQL As String
-            Dim LID As Integer
-
             EVEDB.BeginSQLiteTransaction()
-
-            ' See what type of character ID
-            Dim CharID As Long = 0
-            If UserApplicationSettings.SaveFacilitiesbyChar Then
-                CharID = SelectedCharacterID
-            Else
-                CharID = CommonSavedFacilitiesID
-            End If
-
-            If UserApplicationSettings.ShareSavedFacilities Then
-                ' Need to get each location for saving
-                For Each LID In System.Enum.GetValues(GetType(ProgramLocation))
-                    Call LocationList.Add(LID)
-                Next
-            Else
-                ' Just use the one sent
-                Call LocationList.Add(SelectedStructureLocation)
-            End If
-
             ' Delete everything first, then insert the new records
-            For Each LID In LocationList
-                EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
-                                                        AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} ",
-                                                        CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(LID), SelectedUpwellStructure.TypeID))
-            Next
+            EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} 
+            AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4} ",
+            SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), SelectedUpwellStructure.TypeID))
 
             ' Insert all the modules on the facility
             Dim Modules As New List(Of StructureModule)
             Modules = GetInstalledSlots()
             For Each InstalledModule In Modules
-                For Each LID In LocationList
-                    SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
-                    SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(LID), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                Next
+                SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
+                SelectedCharacterID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), SelectedUpwellStructure.TypeID, InstalledModule.typeID)
+                EVEDB.ExecuteNonQuerySQL(SQL)
             Next
 
             ' If there are rigs fit to this, then delete any saved multipliers they have saved manually
             If Not IsNothing(RigSlot1.Image) Or Not IsNothing(RigSlot2.Image) Or Not IsNothing(RigSlot3.Image) Then
-                ' Don't change tax value
+
+                ' See what type of character ID
+                Dim CharID As Long = 0
+                If UserApplicationSettings.SaveFacilitiesbyChar Then
+                    CharID = SelectedCharacterID
+                Else
+                    CharID = CommonSavedFacilitiesID
+                End If
+
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
                 SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
                 EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation)))

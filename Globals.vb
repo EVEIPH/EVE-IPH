@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "October 11, 2022 Release"
+    Public Const SDEVersion As String = "May 10, 2022 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -73,7 +73,7 @@ Public Module Public_Variables
     Public Const JitaPerimeter As String = "Jita/Perimeter"
 
     Public Const USER_BLUEPRINTS As String = "(SELECT ALL_BLUEPRINTS.BLUEPRINT_ID AS BP_ID, ALL_BLUEPRINTS.BLUEPRINT_GROUP, ALL_BLUEPRINTS.BLUEPRINT_NAME, " _
-                                            & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, CASE WHEN ITEM_GROUP LIKE 'RIG%' THEN 'RIG' ELSE ITEM_CATEGORY END AS ITEM_CATEGORY, " _
+                                            & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, CASE WHEN ITEM_GROUP Like 'Rig%' THEN 'Rig' ELSE ITEM_CATEGORY END AS ITEM_CATEGORY, " _
                                             & "ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
                                             & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME," _
                                             & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE," _
@@ -91,14 +91,13 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
                                             & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP, " _
-                                            & "CASE WHEN IT2.MARKETGROUPID IS NULL THEN 0 ELSE 1 END AS NPC_BPO " _
+                                            & "CASE WHEN IT2.marketGroupID Is NULL THEN 0 ELSE 1 END AS NPC_BPO " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
                                             & "(SELECT * FROM OWNED_BLUEPRINTS) AS OBP " _
                                             & "ON ALL_BLUEPRINTS.BLUEPRINT_ID = OBP.BLUEPRINT_ID " _
-                                            & "AND (OBP.USER_ID = @USERBP_USERID OR OBP.USER_ID = @USERBP_CORPID), " _
+                                            & "And (OBP.USER_ID = @USERBP_USERID Or OBP.USER_ID = @USERBP_CORPID), " _
                                             & "INVENTORY_TYPES AS IT, INVENTORY_TYPES AS IT2 " _
-                                            & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.TYPEID AND ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.TYPEID) AS X "
-
+                                            & "WHERE ALL_BLUEPRINTS.ITEM_ID = IT.typeID And ALL_BLUEPRINTS.BLUEPRINT_ID = IT2.typeID) AS X "
 
     ' Shopping List
     Public TotalShoppingList As New ShoppingList
@@ -2433,7 +2432,7 @@ SkipItem:
         Call EVEDB.ExecuteNonQuerySQL(SQL)
     End Sub
 
-    ' Try to catch exceptions when the clipboard errors for whatever reason
+    ' Try to catch exceptions when the clipboard errors for whatever reason: 
     Public Sub CopyTextToClipboard(TextToCopy As String)
         Dim ClipboardData = New DataObject
 
@@ -2446,49 +2445,6 @@ SkipItem:
         End Try
 
     End Sub
-
-    Public Function GetBlueprintSQLWhereQuery(AmmoCharges As Boolean, Drones As Boolean, Modules As Boolean, Ships As Boolean,
-                                              Subsystems As Boolean, Boosters As Boolean, Components As Boolean, Misc As Boolean,
-                                              Deployables As Boolean, Celestials As Boolean, Structures As Boolean, StructureRigs As Boolean,
-                                              StructureModules As Boolean, Reactions As Boolean, Rigs As Boolean) As String
-
-        Dim ReturnClause As String = ""
-
-        If AmmoCharges Then
-            ReturnClause &= "ITEM_CATEGORY = 'Charge'"
-        ElseIf Drones Then
-            ReturnClause &= "ITEM_CATEGORY in ('Drone', 'Fighter')"
-        ElseIf Modules Then
-            ReturnClause &= "(ITEM_CATEGORY ='Module' AND ITEM_GROUP NOT LIKE 'Rig%')"
-        ElseIf Ships Then
-            ReturnClause &= "ITEM_CATEGORY = 'Ship'"
-        ElseIf Subsystems Then
-            ReturnClause &= "ITEM_CATEGORY = 'Subsystem'"
-        ElseIf Boosters Then
-            ReturnClause &= "ITEM_CATEGORY = 'Implant'"
-        ElseIf Components Then
-            ReturnClause &= "(ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components')"
-        ElseIf Misc Then
-            ReturnClause &= "ITEM_GROUP IN ('Tool','Data Interfaces','Cyberimplant','Fuel Block')"
-        ElseIf Deployables Then
-            ReturnClause &= "ITEM_CATEGORY = 'Deployable'"
-        ElseIf Celestials Then
-            ReturnClause &= "ITEM_CATEGORY IN ('Celestial','Orbitals','Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades') "
-        ElseIf Structures Then
-            ReturnClause &= "(ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
-        ElseIf StructureRigs Then
-            ReturnClause &= "ITEM_CATEGORY = 'Structure Rigs' "
-        ElseIf StructureModules Then
-            ReturnClause &= "(ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%')"
-        ElseIf Reactions Then
-            ReturnClause &= "BLUEPRINT_GROUP LIKE '%Reaction Formulas'"
-        ElseIf Rigs Then
-            ReturnClause &= "(BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
-        End If
-
-        Return ReturnClause
-
-    End Function
 
     ' Deletes all data related to blueprints for the selected character and corporation they are part
     Public Sub ResetAllBPData()

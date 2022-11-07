@@ -188,10 +188,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
-    <Compile Include="AssetViewer.Designer.vb">
-      <DependentUpon>AssetViewer.vb</DependentUpon>
-    </Compile>
-    <Compile Include="AssetViewer.vb" />
     <Compile Include="Blueprint.vb" />
     <Compile Include="BuildBuyItems.vb" />
     <Compile Include="CacheBox.vb" />
@@ -539,9 +535,6 @@
     <Compile Include="TopMostMessageBox.vb" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AssetViewer.resx">
-      <DependentUpon>AssetViewer.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmAddCharacter.resx">
       <DependentUpon>frmAddCharacter.vb</DependentUpon>
     </EmbeddedResource>
@@ -565,6 +558,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmErrorLog.resx">
       <DependentUpon>frmErrorLog.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmESIStatus.resx">
       <DependentUpon>frmESIStatus.vb</DependentUpon>
@@ -695,6 +689,9 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="MyListView.resx">
+      <DependentUpon>MyListView.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.vb</DependentUpon>
     </EmbeddedResource>
@@ -722,8 +719,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon07_02.ico" />
-    <None Include="Resources\eve partner1.png" />
-    <None Include="Resources\eve partner.png" />
+    <None Include="Resources\16654_32.png" />
     <None Include="Resources\patreon_sm1.png" />
     <None Include="Resources\Digital-Patreon-Wordmark_FieryCoral.png" />
     <None Include="Resources\PayPalButton.png" />

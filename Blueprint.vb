@@ -2882,7 +2882,7 @@ SkipProcessing:
         Return TotalRawCost
     End Function
 
-    ' Returns the total build cost, which is everything except taxes and fees (? Not sure why I did this - it doesn't match up with double click to BP tab)
+    ' Returns the total build cost, which is everything except taxes and fees (? not sure why I did this)
     Public Function GetTotalBuildCost() As Double
         Return TotalRawCost
         'Dim BuildCost As Double = TotalRawCost

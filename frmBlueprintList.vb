@@ -286,16 +286,39 @@ Public Class frmBlueprintList
     End Function
 
     Private Function GetExtraJoinFilter() As String
-        Dim ReturnString As String = ""
-        ReturnString = GetBlueprintSQLWhereQuery(rbtnBPAmmoChargeBlueprints.Checked, rbtnBPDroneBlueprints.Checked, rbtnBPModuleBlueprints.Checked, rbtnBPShipBlueprints.Checked,
-                                        rbtnBPSubsystemBlueprints.Checked, rbtnBPBoosterBlueprints.Checked, rbtnBPComponentBlueprints.Checked, rbtnBPMiscBlueprints.Checked,
-                                        rbtnBPDeployableBlueprints.Checked, rbtnBPCelestialsBlueprints.Checked, rbtnBPStructureBlueprints.Checked, rbtnBPStructureRigsBlueprints.Checked,
-                                        rbtnBPStructureModuleBlueprints.Checked, rbtnBPReactionBlueprints.Checked, rbtnBPRigBlueprints.Checked)
-        If ReturnString <> "" Then
-            ReturnString = "AND " & ReturnString
+        If rbtnBPAmmoChargeBlueprints.Checked Then
+            Return "And ITEM_CATEGORY = 'Charge'"
+        ElseIf rbtnBPDroneBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY IN ('Drone', 'Fighter')"
+        ElseIf rbtnBPModuleBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%'"
+        ElseIf rbtnBPShipBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Ship'"
+        ElseIf rbtnBPSubsystemBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Subsystem'"
+        ElseIf rbtnBPBoosterBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Implant'"
+        ElseIf rbtnBPComponentBlueprints.Checked Then
+            Return "AND ITEM_GROUP LIKE '%Components%' AND ITEM_GROUP <> 'Station Components'"
+        ElseIf rbtnBPMiscBlueprints.Checked Then
+            Return "AND ITEM_GROUP IN ('Tool', 'Data Interfaces', 'Cyberimplant', 'Fuel Block')"
+        ElseIf rbtnBPDeployableBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Deployable'"
+        ElseIf rbtnBPCelestialsBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY IN ('Celestial', 'Orbitals', 'Sovereignty Structures', 'Station', 'Accessories', 'Infrastructure Upgrades')"
+        ElseIf rbtnBPStructureBlueprints.Checked Then
+            Return "AND (ITEM_CATEGORY IN ('Starbase','Structure') OR ITEM_GROUP = 'Station Components')"
+        ElseIf rbtnBPStructureRigsBlueprints.Checked Then
+            Return "AND ITEM_CATEGORY = 'Structure Rigs'"
+        ElseIf rbtnBPStructureModuleBlueprints.Checked Then
+            Return "AND (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP NOT LIKE '%Rig%') "
+        ElseIf rbtnBPReactionBlueprints.Checked Then
+            Return "AND BLUEPRINT_GROUP LIKE '%Reaction Formulas' "
+        ElseIf rbtnBPRigBlueprints.Checked Then
+            Return "AND (BLUEPRINT_GROUP = 'Rig Blueprint' OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%'))"
+        Else
+            Return ""
         End If
-
-        Return ReturnString
     End Function
 
     Private Function GetOwnedJoin() As String

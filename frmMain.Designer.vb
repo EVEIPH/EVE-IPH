@@ -85,9 +85,6 @@ Partial Class frmMain
         Me.mnuRestoreDefaultMining = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuResetBuildBuyManualSelections = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuAbout = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuHelp = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuYouTube = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuDiscord = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuPatchNotes = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCheckforUpdates = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
@@ -118,7 +115,6 @@ Partial Class frmMain
         Me.pnlShoppingList = New System.Windows.Forms.ToolStripStatusLabel()
         Me.pnlStatus = New System.Windows.Forms.ToolStripStatusLabel()
         Me.pnlProgressBar = New System.Windows.Forms.ToolStripProgressBar()
-        Me.txtListEdit = New System.Windows.Forms.TextBox()
         Me.ttBP = New System.Windows.Forms.ToolTip(Me.components)
         Me.OpenFileDialog = New System.Windows.Forms.OpenFileDialog()
         Me.SaveFileDialog = New System.Windows.Forms.SaveFileDialog()
@@ -137,7 +133,6 @@ Partial Class frmMain
         Me.chkMineEDENCOM = New System.Windows.Forms.CheckBox()
         Me.ttPI = New System.Windows.Forms.ToolTip(Me.components)
         Me.CalcImageList = New System.Windows.Forms.ImageList(Me.components)
-        Me.cmbEdit = New System.Windows.Forms.ComboBox()
         Me.tabPI = New System.Windows.Forms.TabPage()
         Me.btnPISaveSettings = New System.Windows.Forms.Button()
         Me.gbPIPlanets = New System.Windows.Forms.GroupBox()
@@ -780,6 +775,7 @@ Partial Class frmMain
         Me.chkStructureModules = New System.Windows.Forms.CheckBox()
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
+        Me.pbReactions = New System.Windows.Forms.PictureBox()
         Me.gbBPMEPEImage = New System.Windows.Forms.GroupBox()
         Me.gbBPSellExcess = New System.Windows.Forms.GroupBox()
         Me.btnBPListMats = New System.Windows.Forms.Button()
@@ -789,6 +785,7 @@ Partial Class frmMain
         Me.tabFacility = New System.Windows.Forms.TabPage()
         Me.BPTabFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabT3Calcs = New System.Windows.Forms.TabPage()
+        Me.chkBPOptimalT3Decryptor = New System.Windows.Forms.CheckBox()
         Me.lblBPT3Decryptor = New System.Windows.Forms.Label()
         Me.cmbBPT3Decryptor = New System.Windows.Forms.ComboBox()
         Me.lblBPT3Stats = New System.Windows.Forms.Label()
@@ -804,6 +801,7 @@ Partial Class frmMain
         Me.chkBPIncludeT3Time = New System.Windows.Forms.CheckBox()
         Me.chkBPIncludeT3Costs = New System.Windows.Forms.CheckBox()
         Me.tabInventionCalcs = New System.Windows.Forms.TabPage()
+        Me.chkBPOptimalT2Decryptor = New System.Windows.Forms.CheckBox()
         Me.lblBPCopyTime = New System.Windows.Forms.Label()
         Me.lblBPT2InventStatus = New System.Windows.Forms.Label()
         Me.lblBPCopyCosts = New System.Windows.Forms.Label()
@@ -1046,6 +1044,7 @@ Partial Class frmMain
         Me.gbItems.SuspendLayout()
         Me.gbPricesTech.SuspendLayout()
         Me.tabBlueprints.SuspendLayout()
+        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.gbBPMEPEImage.SuspendLayout()
         Me.gbBPSellExcess.SuspendLayout()
         Me.tabBPInventionEquip.SuspendLayout()
@@ -1120,6 +1119,7 @@ Partial Class frmMain
         Me.mnuItemUpdatePrices.Name = "mnuItemUpdatePrices"
         Me.mnuItemUpdatePrices.Size = New System.Drawing.Size(173, 22)
         Me.mnuItemUpdatePrices.Text = "Prices"
+        Me.mnuItemUpdatePrices.Visible = False
         '
         'SetPOSDataToolStripMenuItem
         '
@@ -1435,29 +1435,10 @@ Partial Class frmMain
         '
         'mnuAbout
         '
-        Me.mnuAbout.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuHelp, Me.mnuPatchNotes, Me.mnuCheckforUpdates, Me.ToolStripSeparator2, Me.mnuSelectionAbout})
+        Me.mnuAbout.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuPatchNotes, Me.mnuCheckforUpdates, Me.ToolStripSeparator2, Me.mnuSelectionAbout})
         Me.mnuAbout.Name = "mnuAbout"
         Me.mnuAbout.Size = New System.Drawing.Size(52, 20)
         Me.mnuAbout.Text = "About"
-        '
-        'mnuHelp
-        '
-        Me.mnuHelp.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuYouTube, Me.mnuDiscord})
-        Me.mnuHelp.Name = "mnuHelp"
-        Me.mnuHelp.Size = New System.Drawing.Size(171, 22)
-        Me.mnuHelp.Text = "Help"
-        '
-        'mnuYouTube
-        '
-        Me.mnuYouTube.Name = "mnuYouTube"
-        Me.mnuYouTube.Size = New System.Drawing.Size(241, 22)
-        Me.mnuYouTube.Text = "Open the IPH YouTube Channel"
-        '
-        'mnuDiscord
-        '
-        Me.mnuDiscord.Name = "mnuDiscord"
-        Me.mnuDiscord.Size = New System.Drawing.Size(241, 22)
-        Me.mnuDiscord.Text = "Join the IPH Discord Server"
         '
         'mnuPatchNotes
         '
@@ -1658,15 +1639,6 @@ Partial Class frmMain
         Me.pnlProgressBar.Step = 1
         Me.pnlProgressBar.Visible = False
         '
-        'txtListEdit
-        '
-        Me.txtListEdit.Location = New System.Drawing.Point(1032, 4)
-        Me.txtListEdit.Name = "txtListEdit"
-        Me.txtListEdit.Size = New System.Drawing.Size(48, 20)
-        Me.txtListEdit.TabIndex = 59
-        Me.txtListEdit.TabStop = False
-        Me.txtListEdit.Visible = False
-        '
         'ttBP
         '
         Me.ttBP.IsBalloon = True
@@ -1730,10 +1702,8 @@ Partial Class frmMain
         Me.chkMineEDENCOM.Location = New System.Drawing.Point(119, 75)
         Me.chkMineEDENCOM.Name = "chkMineEDENCOM"
         Me.chkMineEDENCOM.Size = New System.Drawing.Size(117, 17)
-        Me.chkMineEDENCOM.TabIndex = 7
+        Me.chkMineEDENCOM.TabIndex = 0
         Me.chkMineEDENCOM.Text = "EDENCOM System"
-        Me.ttMining.SetToolTip(Me.chkMineEDENCOM, "Mining in an EDENCOM system provides 10% mining bonus.")
-        Me.chkMineEDENCOM.UseVisualStyleBackColor = True
         '
         'CalcImageList
         '
@@ -1748,19 +1718,6 @@ Partial Class frmMain
         Me.CalcImageList.Images.SetKeyName(6, "Blank.bmp")
         Me.CalcImageList.Images.SetKeyName(7, "Green Up Arrow.bmp")
         Me.CalcImageList.Images.SetKeyName(8, "Red Down Arrow.bmp")
-        '
-        'cmbEdit
-        '
-        Me.cmbEdit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbEdit.FormattingEnabled = True
-        Me.cmbEdit.ItemHeight = 13
-        Me.cmbEdit.Items.AddRange(New Object() {"Yes", "No"})
-        Me.cmbEdit.Location = New System.Drawing.Point(950, 4)
-        Me.cmbEdit.Name = "cmbEdit"
-        Me.cmbEdit.Size = New System.Drawing.Size(48, 21)
-        Me.cmbEdit.TabIndex = 62
-        Me.cmbEdit.TabStop = False
-        Me.cmbEdit.Visible = False
         '
         'tabPI
         '
@@ -7414,6 +7371,7 @@ Partial Class frmMain
         Me.chkBPCs.Size = New System.Drawing.Size(102, 17)
         Me.chkBPCs.TabIndex = 19
         Me.chkBPCs.Text = "Blueprint Copies"
+        Me.chkBPCs.ThreeState = True
         Me.chkBPCs.UseVisualStyleBackColor = True
         '
         'chkRawMaterials
@@ -8454,6 +8412,7 @@ Partial Class frmMain
         'tabBlueprints
         '
         Me.tabBlueprints.BackColor = System.Drawing.Color.Transparent
+        Me.tabBlueprints.Controls.Add(Me.pbReactions)
         Me.tabBlueprints.Controls.Add(Me.gbBPMEPEImage)
         Me.tabBlueprints.Controls.Add(Me.btnBPBuiltComponents)
         Me.tabBlueprints.Controls.Add(Me.btnBPComponents)
@@ -8493,6 +8452,16 @@ Partial Class frmMain
         Me.tabBlueprints.TabIndex = 0
         Me.tabBlueprints.Text = "Blueprints"
         Me.tabBlueprints.UseVisualStyleBackColor = True
+        '
+        'pbReactions
+        '
+        Me.pbReactions.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources._16654_32
+        Me.pbReactions.Location = New System.Drawing.Point(1055, 235)
+        Me.pbReactions.Name = "pbReactions"
+        Me.pbReactions.Size = New System.Drawing.Size(32, 32)
+        Me.pbReactions.TabIndex = 139
+        Me.pbReactions.TabStop = False
+        Me.pbReactions.Visible = False
         '
         'gbBPMEPEImage
         '
@@ -8602,6 +8571,7 @@ Partial Class frmMain
         '
         'tabT3Calcs
         '
+        Me.tabT3Calcs.Controls.Add(Me.chkBPOptimalT3Decryptor)
         Me.tabT3Calcs.Controls.Add(Me.lblBPT3Decryptor)
         Me.tabT3Calcs.Controls.Add(Me.cmbBPT3Decryptor)
         Me.tabT3Calcs.Controls.Add(Me.lblBPT3Stats)
@@ -8623,6 +8593,16 @@ Partial Class frmMain
         Me.tabT3Calcs.TabIndex = 2
         Me.tabT3Calcs.Text = "Invention"
         Me.tabT3Calcs.UseVisualStyleBackColor = True
+        '
+        'chkBPOptimalT3Decryptor
+        '
+        Me.chkBPOptimalT3Decryptor.Location = New System.Drawing.Point(6, 94)
+        Me.chkBPOptimalT3Decryptor.Name = "chkBPOptimalT3Decryptor"
+        Me.chkBPOptimalT3Decryptor.Size = New System.Drawing.Size(61, 45)
+        Me.chkBPOptimalT3Decryptor.TabIndex = 55
+        Me.chkBPOptimalT3Decryptor.Text = "Optimal"
+        Me.chkBPOptimalT3Decryptor.ThreeState = True
+        Me.chkBPOptimalT3Decryptor.UseVisualStyleBackColor = True
         '
         'lblBPT3Decryptor
         '
@@ -8754,6 +8734,7 @@ Partial Class frmMain
         '
         'tabInventionCalcs
         '
+        Me.tabInventionCalcs.Controls.Add(Me.chkBPOptimalT2Decryptor)
         Me.tabInventionCalcs.Controls.Add(Me.lblBPCopyTime)
         Me.tabInventionCalcs.Controls.Add(Me.lblBPT2InventStatus)
         Me.tabInventionCalcs.Controls.Add(Me.lblBPCopyCosts)
@@ -8779,6 +8760,16 @@ Partial Class frmMain
         Me.tabInventionCalcs.TabIndex = 0
         Me.tabInventionCalcs.Text = "Invention"
         Me.tabInventionCalcs.UseVisualStyleBackColor = True
+        '
+        'chkBPOptimalT2Decryptor
+        '
+        Me.chkBPOptimalT2Decryptor.Location = New System.Drawing.Point(6, 94)
+        Me.chkBPOptimalT2Decryptor.Name = "chkBPOptimalT2Decryptor"
+        Me.chkBPOptimalT2Decryptor.Size = New System.Drawing.Size(61, 45)
+        Me.chkBPOptimalT2Decryptor.TabIndex = 37
+        Me.chkBPOptimalT2Decryptor.Text = "Optimal"
+        Me.chkBPOptimalT2Decryptor.ThreeState = True
+        Me.chkBPOptimalT2Decryptor.UseVisualStyleBackColor = True
         '
         'lblBPCopyTime
         '
@@ -10252,8 +10243,6 @@ Partial Class frmMain
         Me.AutoScroll = True
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1149, 691)
-        Me.Controls.Add(Me.cmbEdit)
-        Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.tabMain)
         Me.Controls.Add(Me.pnlMain)
         Me.Controls.Add(Me.mnuStripMain)
@@ -10441,6 +10430,7 @@ Partial Class frmMain
         Me.gbPricesTech.PerformLayout()
         Me.tabBlueprints.ResumeLayout(False)
         Me.tabBlueprints.PerformLayout()
+        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).EndInit()
         Me.gbBPMEPEImage.ResumeLayout(False)
         Me.gbBPMEPEImage.PerformLayout()
         Me.gbBPSellExcess.ResumeLayout(False)
@@ -10507,7 +10497,6 @@ Partial Class frmMain
     Friend WithEvents mnuCurrentResearchAgents As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents OpenFileDialog As System.Windows.Forms.OpenFileDialog
     Friend WithEvents SaveFileDialog As System.Windows.Forms.SaveFileDialog
-    Friend WithEvents txtListEdit As System.Windows.Forms.TextBox
     Friend WithEvents mnuPatchNotes As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuTools As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuCurrentIndustryJobs As System.Windows.Forms.ToolStripMenuItem
@@ -10562,7 +10551,6 @@ Partial Class frmMain
     Friend WithEvents CalcImageList As System.Windows.Forms.ImageList
     Friend WithEvents AddToShoppingListToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuClearBPHistory As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents cmbEdit As System.Windows.Forms.ComboBox
     Friend WithEvents mnuResetMarketHistory As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuResetMarketOrders As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuViewAssets As ToolStripMenuItem
@@ -11385,7 +11373,7 @@ Partial Class frmMain
     Friend WithEvents mnuMETECalculator As ToolStripMenuItem
     Friend WithEvents rbtnPriceSourceFW As RadioButton
     Friend WithEvents chkMineEDENCOM As CheckBox
-    Friend WithEvents mnuHelp As ToolStripMenuItem
-    Friend WithEvents mnuYouTube As ToolStripMenuItem
-    Friend WithEvents mnuDiscord As ToolStripMenuItem
+    Friend WithEvents pbReactions As PictureBox
+    Friend WithEvents chkBPOptimalT3Decryptor As CheckBox
+    Friend WithEvents chkBPOptimalT2Decryptor As CheckBox
 End Class
