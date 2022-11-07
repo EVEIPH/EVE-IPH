@@ -2825,14 +2825,15 @@ SkipProcessing:
         Return TotalRawCost
     End Function
 
-    ' Returns the total build cost, which is everything except taxes and fees
+    ' Returns the total build cost, which is everything except taxes and fees (? Not sure why I did this - it doesn't match up with double click to BP tab)
     Public Function GetTotalBuildCost() As Double
-        Dim BuildCost As Double = TotalRawCost
+        Return TotalRawCost
+        'Dim BuildCost As Double = TotalRawCost
 
-        If DisplayTaxes <> 0 Then
-            BuildCost -= Taxes
-        End If
-        Return BuildCost - BrokerFees
+        'If DisplayTaxes <> 0 Then
+        '    BuildCost -= Taxes
+        'End If
+        'Return BuildCost - BrokerFees
     End Function
 
     ' Returns the total cost of the blueprint using components

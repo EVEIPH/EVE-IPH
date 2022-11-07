@@ -2411,6 +2411,14 @@ Public Class ManufacturingFacility
 
         Call StructureViewer.Dispose()
 
+        ' If we updated the facility, save it first before loading as it may not have been saved yet
+        If StructureViewer.SavedFacility Then
+            ' Reset any manual settings
+            Call SelectedFacility.ResetManualToggles()
+            ' Save it here too but don't show the dialog
+            Call SaveSelectedFacility(True)
+        End If
+
         ' Reload the facility each time we return - use initialize and just load the one we changed
         If SelectedFacility.IsDefault Then
             ' If they saved fittings for the default, reset the default values
@@ -2418,13 +2426,6 @@ Public Class ManufacturingFacility
         Else
             ' If it's not the default, just load the facility so we get the changes from the fitting
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
-        End If
-
-        If StructureViewer.SavedFacility Then
-            ' Update the facility's bonuses based on new fitting
-            'Call SelectedFacility.UpdateProductionFittingInformation(SelectedCharacterID)
-            ' Save it here too but don't show the dialog
-            Call SaveSelectedFacility(True)
         End If
 
         If StructureViewer.ResetManualEntries Then
@@ -4237,6 +4238,12 @@ ExitBlock:
 
     End Function
 
+    Public Sub ResetManualToggles()
+        ManualME = False
+        ManualTE = False
+        ManualCost = False
+    End Sub
+
     Public Function SaveFacility(CharacterID As Long, Location As ProgramLocation, SupressNotice As Boolean) As Boolean
         Dim SQL As String
         Dim TempSQL As String
@@ -4259,8 +4266,7 @@ ExitBlock:
 
             For Each LID In LocationList
                 ' See if the record exists - only save one set of facilities for now
-                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}",
-                        CInt(FacilityProductionType), LID, CharacterID)
+                SQL = String.Format("SELECT 'X' FROM SAVED_FACILITIES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2}", CInt(FacilityProductionType), LID, CharacterID)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsCheck = DBCommand.ExecuteReader
 
@@ -4280,12 +4286,12 @@ ExitBlock:
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
                         ' for upwell structures, the base is updated when they make changes to the facility fitting
-                        If ManualTax Then
-                            TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
-                            ManualEntries = False ' Tax rate won't affect any of the multiplers so don't reset rigs
-                        Else
-                            TempSQL &= "FACILITY_TAX = NULL, "
-                        End If
+                        '    If ManualTax Then - Tax is always manual so just save what was set earlier. 
+                        TempSQL &= "FACILITY_TAX = " & CStr(TaxRate) & ", "
+                        ManualEntries = False ' Tax rate won't affect any of the multiplers so don't reset with rigs
+                        'Else
+                        '    TempSQL &= "FACILITY_TAX = NULL, "
+                        'End If
 
                         If ManualME Then
                             TempSQL &= "MATERIAL_MULTIPLIER = " & CStr(MaterialMultiplier) & ", "
@@ -4357,37 +4363,36 @@ ExitBlock:
 
                 ' Save it
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
-
                 rsCheck.Close()
-
-                ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
-                If FacilityType = FacilityTypes.UpwellStructure Then
-                    If ManualEntries Then
-                        SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
-                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
-                    End If
-                End If
-
-                ' Update FW upgrade
-                If FWUpgradeLevel <> -1 Then
-                    ' See if we update or insert
-                    SQL = "SELECT * FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " "
-
-                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                    rsCheck = DBCommand.ExecuteReader
-                    rsCheck.Read()
-
-                    If rsCheck.HasRows Then
-                        SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
-                        SQL &= " WHERE SOLAR_SYSTEM_ID = " & SolarSystemID
-                    Else
-                        SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SolarSystemID & "," & CStr(FWUpgradeLevel) & ")"
-                    End If
-
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-                    rsCheck.Close()
-                End If
             Next
+
+            ' If they save a structure with manual values, then delete any fittings they may have saved for this structure
+            If FacilityType = FacilityTypes.UpwellStructure Then
+                If ManualEntries Then
+                    SQL = "DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_ID = {4}"
+                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharacterID, CInt(FacilityProductionType), SolarSystemID, LID, FacilityID))
+                End If
+            End If
+
+            ' Update FW upgrade
+            If FWUpgradeLevel <> -1 Then
+                ' See if we update or insert
+                SQL = "SELECT * FROM FW_SYSTEM_UPGRADES WHERE SOLAR_SYSTEM_ID = " & CStr(SolarSystemID) & " "
+
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                rsCheck = DBCommand.ExecuteReader
+                rsCheck.Read()
+
+                If rsCheck.HasRows Then
+                    SQL = "UPDATE FW_SYSTEM_UPGRADES SET UPGRADE_LEVEL = " & CStr(FWUpgradeLevel)
+                    SQL &= " WHERE SOLAR_SYSTEM_ID = " & SolarSystemID
+                Else
+                    SQL = "INSERT INTO FW_SYSTEM_UPGRADES VALUES (" & SolarSystemID & "," & CStr(FWUpgradeLevel) & ")"
+                End If
+
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+                rsCheck.Close()
+            End If
 
             ' If this is an upwell, and we are saving multiple structures (shared) then we need to update all the shared structure modules as well
             If FacilityType = FacilityTypes.UpwellStructure And UserApplicationSettings.ShareSavedFacilities Then
@@ -4422,7 +4427,6 @@ ExitBlock:
                 End If
             End If
 
-
             ' Refresh the main facilites if sharing facility saves
             If UserApplicationSettings.ShareSavedFacilities Then
                 ' Refresh the facilities - except the one I just saved it on
@@ -4454,7 +4458,7 @@ ExitBlock:
                     '    Call CType(Application.OpenForms.Item("frmIndustryBeltFlip"), frmIndustryBeltFlip).InitializeReprocessingFacility()
                     'End If
                 Else
-                    ' non- reprocessing is just limited to bp and manufacturing tab
+                    ' Non-reprocessing is just limited to bp and manufacturing tab
                     If Location = ProgramLocation.BlueprintTab Then
                         Call frmMain.LoadFacilities(ProgramLocation.ManufacturingTab, FacilityProductionType)
                     Else

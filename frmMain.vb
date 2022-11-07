@@ -942,31 +942,31 @@ Public Class frmMain
                 ' Init the manufacturing tab facilities
                 Select Case FacilityType
                     Case ProductionType.BoosterManufacturing
-                        Call CalcBoostersFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcBoostersFacility.InitializeFacilities(FacilityLocation, ProductionType.BoosterManufacturing)
                     Case ProductionType.CapitalComponentManufacturing
-                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation, ProductionType.CapitalComponentManufacturing)
                     Case ProductionType.CapitalManufacturing
-                        Call CalcCapitalsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcCapitalsFacility.InitializeFacilities(FacilityLocation, ProductionType.CapitalManufacturing)
                     Case ProductionType.ComponentManufacturing
-                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcComponentsFacility.InitializeFacilities(FacilityLocation, ProductionType.ComponentManufacturing)
                     Case ProductionType.Copying
-                        Call CalcCopyFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcCopyFacility.InitializeFacilities(FacilityLocation, ProductionType.Copying)
                     Case ProductionType.Invention
-                        Call CalcInventionFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcInventionFacility.InitializeFacilities(FacilityLocation, ProductionType.Invention)
                     Case ProductionType.Manufacturing
-                        Call CalcBaseFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcBaseFacility.InitializeFacilities(FacilityLocation, ProductionType.Manufacturing)
                     Case ProductionType.Reactions
-                        Call CalcReactionsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcReactionsFacility.InitializeFacilities(FacilityLocation, ProductionType.Reactions)
                     Case ProductionType.SubsystemManufacturing
-                        Call CalcSubsystemsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcSubsystemsFacility.InitializeFacilities(FacilityLocation, ProductionType.SubsystemManufacturing)
                     Case ProductionType.SuperManufacturing
-                        Call CalcSupersFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcSupersFacility.InitializeFacilities(FacilityLocation, ProductionType.SuperManufacturing)
                     Case ProductionType.T3CruiserManufacturing
-                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation, ProductionType.T3CruiserManufacturing)
                     Case ProductionType.T3DestroyerManufacturing
-                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3ShipsFacility.InitializeFacilities(FacilityLocation, ProductionType.T3DestroyerManufacturing)
                     Case ProductionType.T3Invention
-                        Call CalcT3InventionFacility.InitializeFacilities(FacilityLocation)
+                        Call CalcT3InventionFacility.InitializeFacilities(FacilityLocation, ProductionType.T3Invention)
                 End Select
             End If
         End If
@@ -4023,10 +4023,6 @@ Tabs:
         End If
     End Sub
 
-    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
-        Call LoadBPInventionDecryptors()
-    End Sub
-
     Private Sub LoadBPInventionDecryptors()
         If Not InventionDecryptorsLoaded Then
             ' Clear anything that was there
@@ -4065,6 +4061,10 @@ Tabs:
         End If
     End Sub
 
+    Private Sub cmbBPInventionDecryptor_DropDown(ByVal sender As Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.DropDown
+        Call LoadBPInventionDecryptors()
+    End Sub
+
     Private Sub cmbBPInventionDecryptor_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.SelectedIndexChanged
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
@@ -4086,7 +4086,7 @@ Tabs:
         Call LoadBPT3InventionDecryptors()
     End Sub
 
-    Private Sub cmbBPREDecryptor_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPT3Decryptor.SelectedIndexChanged
+    Private Sub cmbBPT3Decryptor_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbBPT3Decryptor.SelectedIndexChanged
 
         ' Only load when the user selects a new decryptor from the list, not when changing the text
         If Not LoadingT3Decryptors Then
@@ -6179,16 +6179,12 @@ Tabs:
                     ' Save decryptor name
                     If BPTech = 2 Then
                         LoadingInventionDecryptors = True
-                        InventionDecryptorsLoaded = False
                         cmbBPInventionDecryptor.Text = TempDName
-                        InventionDecryptorsLoaded = True
                         LoadingInventionDecryptors = False
                     ElseIf BPTech = 3 Then
                         LoadingT3Decryptors = True
-                        T3DecryptorsLoaded = False
                         cmbBPT3Decryptor.Text = TempDName
                         LoadingT3Decryptors = False
-                        T3DecryptorsLoaded = True
                     End If
                 Else
                     Call ResetDecryptorCombos(BPTech)
