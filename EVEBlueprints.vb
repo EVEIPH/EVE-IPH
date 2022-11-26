@@ -197,7 +197,7 @@ Public Class EVEBlueprints
                                     SQL &= "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
                                     SQL &= "VALUES (" & CStr(TempID) & "," & CStr(.ItemID) & "," & CStr(.LocationID) & ","
                                     SQL &= CStr(.TypeID) & ",'" & FormatDBString(.TypeName) & "',"
-                                    SQL &= ",1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
+                                    SQL &= "1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
                                     SQL &= .Runs & "," & CStr(CurrentBPType) & ",1," & CStr(ScannedFlag) & ", 0, 0)"
                                 Else
                                     ' Update the BP 

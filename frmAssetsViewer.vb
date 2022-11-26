@@ -30,8 +30,6 @@ Public Class frmAssetsViewer
     ' Where the form was loaded from
     Private WindowForm As AssetWindow
 
-    Private AnchorNode As TreeNode
-
     'Private AssetTreeTest As TriStateTreeView
     ' For drawing checkboxes
     Private Const TVIF_STATE As Integer = &H8
@@ -377,6 +375,7 @@ Public Class frmAssetsViewer
         Dim SortOption As SortType
         Dim SearchItemList As List(Of Long)
         Dim OnlyBPCs As Boolean ' Pass through if the BPIDs we sent need to only be shown if a copy
+        Dim AnchorNode As New TreeNode
 
         pnlStatus.Text = ""
         Application.UseWaitCursor = True
@@ -392,7 +391,7 @@ Public Class frmAssetsViewer
         End If
 
         ' Set the tree object
-        AssetTree.Update()
+        AssetTree.BeginUpdate()
         AssetTree.Nodes.Clear()
 
         If rbtnSortName.Checked Then
@@ -470,12 +469,17 @@ Public Class frmAssetsViewer
             TokenData.CharacterID = entry.ID
             Application.DoEvents()
 
-            ' update assets only
-            TempCharacter = New Character
-            TempCharacter.LoadCharacterData(TokenData, False, True, False)
-            ' Get the asset locations saved for the character
-            Call SavedLocationIDs.AddRange(TempCharacter.Assets.GetAssetLocationIDs(WindowForm, TempCharacter.ID, TempCharacter.CharacterCorporation))
-            Call AssetCharacterList.Add(TempCharacter)
+            ' update assets only if not loaded character
+            If entry.ID <> SelectedCharacter.ID Then
+                TempCharacter = New Character
+                TempCharacter.LoadCharacterData(TokenData, False, True, False)
+                ' Get the asset locations saved for the character
+                Call SavedLocationIDs.AddRange(TempCharacter.Assets.GetAssetLocationIDs(WindowForm, TempCharacter.ID, TempCharacter.CharacterCorporation))
+                Call AssetCharacterList.Add(TempCharacter)
+            Else
+                AssetCharacterList.Add(SelectedCharacter)
+                TempCharacter = SelectedCharacter
+            End If
 
             ' Now run the tree build
             pnlStatus.Text = "Loading Assets for " & entry.Name
@@ -483,7 +487,8 @@ Public Class frmAssetsViewer
 
             ' Get the base node of the full tree (may want to save these options globally so we don't need to load them every time)
             If rbtnPersonalAssets.Checked Or rbtnAllAssets.Checked Then
-                BaseNode = TempCharacter.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, entry.Name & " - Personal Assets", entry.ID, SavedLocationIDs, OnlyBPCs)
+                BaseNode = TempCharacter.GetAssets.GetAssetTreeReturnNode(SortOption, SearchItemList, entry.Name & " - Personal Assets", entry.ID, SavedLocationIDs, OnlyBPCs)
+
                 ' Need to add it to the tree but as a clone
                 AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
             End If
@@ -497,7 +502,7 @@ Public Class frmAssetsViewer
             If (rbtnCorpAssets.Checked Or rbtnAllAssets.Checked) And Not LoadedCorpIDs.Contains(entry.CharacterCorporation.CorporationID) Then
                 pnlStatus.Text = "Loading Assets for " & entry.CharacterCorporation.Name
                 Application.DoEvents()
-                BaseNode = entry.CharacterCorporation.GetAssets.GetAssetTreeAnchorNode(SortOption, SearchItemList, entry.CharacterCorporation.Name & " - Corporation Assets", entry.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
+                BaseNode = entry.CharacterCorporation.GetAssets.GetAssetTreeReturnNode(SortOption, SearchItemList, entry.CharacterCorporation.Name & " - Corporation Assets", entry.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
                 ' Need to add it to the tree but as a clone
                 AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
                 Call LoadedCorpIDs.Add(entry.CharacterCorporation.CorporationID)

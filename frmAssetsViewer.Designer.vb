@@ -128,10 +128,9 @@ Partial Class frmAssetsViewer
         Me.rbtnSelectedAccount = New System.Windows.Forms.RadioButton()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.tabMain = New System.Windows.Forms.TabControl()
-        Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.pnlMain = New System.Windows.Forms.StatusStrip()
-        Me.pnlProgressBar = New System.Windows.Forms.ToolStripProgressBar()
         Me.pnlStatus = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.pnlProgressBar = New System.Windows.Forms.ToolStripProgressBar()
         Me.gbResearchEquipment.SuspendLayout()
         Me.gbReactionMaterials.SuspendLayout()
         Me.gbItems.SuspendLayout()
@@ -652,7 +651,7 @@ Partial Class frmAssetsViewer
         Me.AssetTree.DrawMode = System.Windows.Forms.TreeViewDrawMode.OwnerDrawAll
         Me.AssetTree.Location = New System.Drawing.Point(2, 4)
         Me.AssetTree.Name = "AssetTree"
-        Me.AssetTree.Size = New System.Drawing.Size(450, 660)
+        Me.AssetTree.Size = New System.Drawing.Size(454, 660)
         Me.AssetTree.TabIndex = 258
         '
         'ListOptionsMenu
@@ -1227,17 +1226,6 @@ Partial Class frmAssetsViewer
         Me.tabMain.Size = New System.Drawing.Size(284, 662)
         Me.tabMain.TabIndex = 257
         '
-        'btnCheckToggle
-        '
-        Me.btnCheckToggle.Enabled = False
-        Me.btnCheckToggle.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnCheckToggle.ForeColor = System.Drawing.SystemColors.AppWorkspace
-        Me.btnCheckToggle.Location = New System.Drawing.Point(299, 4)
-        Me.btnCheckToggle.Name = "btnCheckToggle"
-        Me.btnCheckToggle.Size = New System.Drawing.Size(25, 25)
-        Me.btnCheckToggle.TabIndex = 256
-        Me.btnCheckToggle.UseVisualStyleBackColor = False
-        '
         'pnlMain
         '
         Me.pnlMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.pnlStatus, Me.pnlProgressBar})
@@ -1248,6 +1236,13 @@ Partial Class frmAssetsViewer
         Me.pnlMain.TabIndex = 259
         Me.pnlMain.Text = "pnlMain"
         '
+        'pnlStatus
+        '
+        Me.pnlStatus.AutoSize = False
+        Me.pnlStatus.Name = "pnlStatus"
+        Me.pnlStatus.Size = New System.Drawing.Size(440, 17)
+        Me.pnlStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'pnlProgressBar
         '
         Me.pnlProgressBar.AutoSize = False
@@ -1255,13 +1250,6 @@ Partial Class frmAssetsViewer
         Me.pnlProgressBar.Size = New System.Drawing.Size(300, 16)
         Me.pnlProgressBar.Step = 1
         Me.pnlProgressBar.Visible = False
-        '
-        'pnlStatus
-        '
-        Me.pnlStatus.AutoSize = False
-        Me.pnlStatus.Name = "pnlStatus"
-        Me.pnlStatus.Size = New System.Drawing.Size(440, 17)
-        Me.pnlStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'frmAssetsViewer
         '
@@ -1272,7 +1260,6 @@ Partial Class frmAssetsViewer
         Me.Controls.Add(Me.pnlMain)
         Me.Controls.Add(Me.AssetTree)
         Me.Controls.Add(Me.tabMain)
-        Me.Controls.Add(Me.btnCheckToggle)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
@@ -1408,7 +1395,6 @@ Partial Class frmAssetsViewer
     Friend WithEvents tabAssetMain As TabPage
     Friend WithEvents GroupBox1 As GroupBox
     Friend WithEvents tabMain As TabControl
-    Friend WithEvents btnCheckToggle As Button
     Friend WithEvents ListOptionsMenu As ContextMenuStrip
     Friend WithEvents mnuCheckAll As ToolStripMenuItem
     Friend WithEvents mnuUncheckAll As ToolStripMenuItem

@@ -1987,7 +1987,7 @@ Public Class frmMain
 
             EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
 
-            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILTIES WHERE CHARACTER_ID <> 0")
+            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILITIES WHERE CHARACTER_ID <> 0")
 
             ' Load the dummy char
             Call SelectedCharacter.LoadDummyCharacter(True)

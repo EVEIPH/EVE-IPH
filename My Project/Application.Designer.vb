@@ -29,12 +29,18 @@ Namespace My
             Me.SaveMySettingsOnExit = true
             Me.ShutDownStyle = Global.Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses
         End Sub
-        
-        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
+
+        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>
         Protected Overrides Sub OnCreateMainForm()
-            Me.MainForm = Global.EVE_Isk_per_Hour.frmMain
+            Try
+                Me.MainForm = Global.EVE_Isk_per_Hour.frmMain
+            Catch ex As Exception
+                WriteMsgToLog("Error in program startup: " & ex.Message)
+                MsgBox("There was an error on startup: " & ex.Message & vbCrLf & vbCrLf & "At: " & ex.InnerException.StackTrace & vbCrLf & vbCrLf & "IPH will now close.")
+                End
+            End Try
         End Sub
-        
+
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateSplashScreen()
             Me.SplashScreen = Global.EVE_Isk_per_Hour.SplashScreen
