@@ -450,6 +450,7 @@ Public Class EVEAssets
         Dim TempLocationInfo As LocationInfo
         Dim InContainer As Boolean
         Dim BaseNodeAdded As Boolean
+        Dim UnknownStructureAdded As Boolean
         Dim Asset As New EVEAsset
         Dim BaseAssets As New List(Of EVEAsset)
 
@@ -488,6 +489,8 @@ Public Class EVEAssets
             BaseAssets = AssetList
         End If
 
+        UnknownStructureAdded = False
+
         ' Loop through each node and add all the items in it
         For Each Asset In AssetList
             InContainer = False
@@ -498,20 +501,27 @@ Public Class EVEAssets
             ' - ParentNodeID in .Tag and use -1 for base node
             ' When storing, it will use the item ID for the item, and location ID for the others
 
-            ' If we know the location and the node is a base node (flag less than 0), then add this first
-            If Asset.LocationName <> UnknownLocation And Asset.FlagID <= 0 Then
+            ' If the node is a base node (flag less than 0), then add this first
+            If Asset.FlagID <= 0 And (Asset.LocationName = "Unknown Structure" And Not UnknownStructureAdded) Then
                 ' Add base node (locationID)
                 TempNode = New TreeNode
-                TempNode.Name = CStr(Asset.FlagID)
+                TempNode.Name = CStr("-1") 'CStr(Asset.FlagID)
                 TempNode.Text = Asset.LocationName
                 TempNode.Tag = -1 ' Base node so no parents
 
                 TempLocationInfo = SetLocationInfo(AccountID, Asset.ItemID, Asset.FlagID)
                 TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
+                ' For ship with just fittings or any flags that we don't have a base node location id for - add unknown structure, and set a common flag 
+                ' to set the treenode pair lookup - then use below for adding any flags and items
+
                 TreeNodePair = New NodePair
                 TreeNodePair.ID = Asset.LocationID
-                TreeNodePair.FlagID = Asset.FlagID
+                TreeNodePair.FlagID = -1 'Asset.FlagID
+
+                If Asset.LocationName = "Unknown Structure" Then
+                    UnknownStructureAdded = True
+                End If
 
                 BaseNodeAdded = True
 
@@ -523,7 +533,7 @@ Public Class EVEAssets
 
             ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
             ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
-            If Asset.Container Then
+            If Asset.Container And Asset.LocationName <> "Unknown Structure" Then
                 TempNode = New TreeNode
                 TempNode.Name = CStr(Asset.FlagID)
                 TempNode.Text = Asset.FlagText
@@ -573,7 +583,6 @@ Public Class EVEAssets
         ' Populate tree
         Dim Node As New TreeNode
 
-
         For Each ID In AssetTreeViewNodes.Keys
             Node = AssetTreeViewNodes(ID)
             If CLng(Node.Tag) <> -1 Then
@@ -586,7 +595,7 @@ Public Class EVEAssets
                 TreeNodePair.ID = CLng(temp.Tag) ' Parent stored in Tag for lookup
                 TreeNodePair.FlagID = CInt(temp.Name)
 
-                ParentNode = AssetTreeViewNodes(TreeNodePair)
+                ParentNode = AssetTreeViewNodes(TreeNodePair) ' At some point add a check here so it doesn't error if not found
                 ParentNode.Nodes.Add(temp)
             Else
                 ReturnNode.Nodes.Add(Node)

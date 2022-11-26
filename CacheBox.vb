@@ -46,6 +46,8 @@ Public Class CacheBox
         Dim rsDate As SQLiteDataReader
         Dim UpdateInfo As CacheData
 
+        Return False
+
         UpdateInfo = GetCacheUpdateInfo(UpdateCacheType)
 
         If UpdateInfo.FieldName <> "" Then
