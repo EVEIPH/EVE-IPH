@@ -8,6 +8,7 @@ Public Class EVEAssets
     Private AssetType As ScanType
     Private CacheDate As Date
     Private ItemIDToFind As Long
+    Private NodeIDtoFind As TreeEntry
 
     Protected LocationToFind As LocationInfo
 
@@ -436,14 +437,18 @@ Public Class EVEAssets
 
     End Function
 
+    Private Structure TreeEntry
+        Dim Node As TreeNode
+        Dim FlagID As Integer
+    End Structure
+
     ' Gets the Tree base node for all assets - the list of checked nodes passed *** NEW
     Public Function GetAssetTreeReturnNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
                                            SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
         Dim Tree As New TreeView
         Dim ReturnNode As New TreeNode
         ' For building asset list tree views
-        Dim AssetTreeViewNodes As Dictionary(Of NodePair, TreeNode) = New Dictionary(Of NodePair, TreeNode)
-        Dim TreeNodePair As New NodePair
+        Dim AssetTreeViewNodes As New List(Of TreeEntry)
         Dim TempNode As New TreeNode
         Dim ContainerLocationID As Long
 
@@ -496,16 +501,16 @@ Public Class EVEAssets
             InContainer = False
             BaseNodeAdded = False
             ' All nodes will have 
-            ' - FlagID in .Name
+            ' - ItemID in .Name
             ' - Display name in .Text
             ' - ParentNodeID in .Tag and use -1 for base node
             ' When storing, it will use the item ID for the item, and location ID for the others
 
             ' If the node is a base node (flag less than 0), then add this first
-            If Asset.FlagID <= 0 And (Asset.LocationName = "Unknown Structure" And Not UnknownStructureAdded) Then
+            If Asset.FlagID <= 0 Then
                 ' Add base node (locationID)
                 TempNode = New TreeNode
-                TempNode.Name = CStr("-1") 'CStr(Asset.FlagID)
+                TempNode.Name = CStr(Asset.LocationID)
                 TempNode.Text = Asset.LocationName
                 TempNode.Tag = -1 ' Base node so no parents
 
@@ -513,20 +518,16 @@ Public Class EVEAssets
                 TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
                 ' For ship with just fittings or any flags that we don't have a base node location id for - add unknown structure, and set a common flag 
-                ' to set the treenode pair lookup - then use below for adding any flags and items
-
-                TreeNodePair = New NodePair
-                TreeNodePair.ID = Asset.LocationID
-                TreeNodePair.FlagID = -1 'Asset.FlagID
-
+                ' to set the treenode pair lookup - then use below for adding any flags and item
                 If Asset.LocationName = "Unknown Structure" Then
                     UnknownStructureAdded = True
+                    TempNode.Name = CStr(Asset.LocationID) ' Make a dummy node with this as main ID to look up later
                 End If
 
                 BaseNodeAdded = True
 
                 ' For base nodes, the lookup will be the locationid
-                Call AddDictionaryNode(AssetTreeViewNodes, TreeNodePair, TempNode)
+                Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
             End If
 
             ' Add a subnode to the list if the flag indicates it can have things within the location (e.g., bays and holds)
@@ -534,32 +535,24 @@ Public Class EVEAssets
             ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
             ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
             If Asset.Container And Asset.LocationName <> "Unknown Structure" Then
+                ContainerLocationID = -1 * Asset.LocationID ' Store negative locationID so it is unique for Parent ID to search 
+
                 TempNode = New TreeNode
-                TempNode.Name = CStr(Asset.FlagID)
+                TempNode.Name = CStr(ContainerLocationID)
                 TempNode.Text = Asset.FlagText
                 TempNode.Tag = Asset.LocationID ' Parent is base node above so use it's ID or location ID if we didn't add a base, same number
-
-                If BaseNodeAdded Then
-                    ContainerLocationID = -1 * Asset.LocationID ' Store negative locationID so it is unique for Parent ID to search 
-                Else
-                    ContainerLocationID = Asset.LocationID
-                End If
 
                 TempLocationInfo = SetLocationInfo(AccountID, Asset.ItemID, Asset.FlagID)
                 TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
-                TreeNodePair = New NodePair
-                TreeNodePair.ID = ContainerLocationID
-                TreeNodePair.FlagID = Asset.FlagID
-
                 ' Location node for the hanger is still in station location, just negative
-                Call AddDictionaryNode(AssetTreeViewNodes, TreeNodePair, TempNode)
+                Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
                 InContainer = True
             End If
 
             ' The location of the subnode is in the asset we are looking at
             TempNode = New TreeNode
-            TempNode.Name = CStr(Asset.FlagID)
+            TempNode.Name = CStr(Asset.ItemID)
             TempNode.Text = GetItemNodeText(Asset, False)
             If InContainer Then
                 ' The parent is the ContainerLocationID set above
@@ -570,35 +563,24 @@ Public Class EVEAssets
             TempLocationInfo = SetLocationInfo(AccountID, Asset.ItemID, Asset.FlagID)
             TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
-            TreeNodePair = New NodePair
-            TreeNodePair.ID = CLng(Asset.ItemID)
-            TreeNodePair.FlagID = Math.Abs(Asset.FlagID)
-
             ' Now store the item with ItemID
-
-            Call AddDictionaryNode(AssetTreeViewNodes, TreeNodePair, TempNode)
-
+            Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
         Next
 
-        ' Populate tree
-        Dim Node As New TreeNode
+        ' Sort list first
+        ' Call AssetTreeViewNodes.Sort(AddressOf AssetNameComparer)
 
-        For Each ID In AssetTreeViewNodes.Keys
-            Node = AssetTreeViewNodes(ID)
-            If CLng(Node.Tag) <> -1 Then
+        ' Populate tree
+        For Each Item In AssetTreeViewNodes
+            If CLng(Item.Node.Tag) <> -1 Then
                 ' Find Parent and add node to it
                 Dim ParentNode As New TreeNode
-                Dim temp As New TreeNode
-                temp = CType(Node.Clone, TreeNode)
+                NodeIDtoFind = Item ' Find based on Parent ID
+                ParentNode = AssetTreeViewNodes.Find(AddressOf FindAssetNode).Node ' At some point add a check here so it doesn't error if not found
 
-                TreeNodePair = New NodePair
-                TreeNodePair.ID = CLng(temp.Tag) ' Parent stored in Tag for lookup
-                TreeNodePair.FlagID = CInt(temp.Name)
-
-                ParentNode = AssetTreeViewNodes(TreeNodePair) ' At some point add a check here so it doesn't error if not found
-                ParentNode.Nodes.Add(temp)
+                ParentNode.Nodes.Add(Item.Node)
             Else
-                ReturnNode.Nodes.Add(Node)
+                ReturnNode.Nodes.Add(Item.Node)
             End If
         Next
 
@@ -609,21 +591,24 @@ Public Class EVEAssets
 
     End Function
 
-    Private Structure NodePair
-        Dim ID As Long
-        Dim FlagID As Integer
-    End Structure
-
-
-    ' Adds the node to the list if not already there
-    Private Sub AddDictionaryNode(ByRef NodesList As Dictionary(Of NodePair, TreeNode), ByVal AddNodePair As NodePair, ByVal Node As TreeNode)
-        If Not NodesList.TryGetValue(AddNodePair, Nothing) Then
-            ' Not there so add it
-            Call NodesList.Add(AddNodePair, Node)
+    ' Adds a tree node to the Tree list sent
+    Private Sub AddAssetTreeNode(ByRef NodeList As List(Of TreeEntry), ByVal Node As TreeEntry)
+        Dim FoundNode As TreeNode = Nothing
+        NodeIDtoFind = Node
+        FoundNode = NodeList.Find(AddressOf FindAssetNode)
+        If IsNothing(FoundNode) Then
+            Call NodeList.Add(Node)
         End If
     End Sub
 
-    Private Function FindDictionaryNode() As TreeNode
+    ' Predicate for finding the asset with the set itemid
+    Private Function FindAssetNode(ByVal SearchItem As TreeEntry) As Boolean
+
+        If SearchItem.FlagID = NodeIDtoFind.FlagID And SearchItem.name = node Then
+            Return True
+        Else
+            Return False
+        End If
 
     End Function
 
@@ -802,6 +787,7 @@ Public Class EVEAssets
 
     End Function
 
+#Region "Tree Sort functions"
     Private Class NodeNameSorter
         Implements IComparer
 
@@ -891,7 +877,9 @@ Public Class EVEAssets
         Return NodeQuantity
 
     End Function
+#End Region
 
+#Region "Asset List Sort Functions"
     ' For sorting assets by name
     Public Class AssetNameComparer
 
@@ -916,6 +904,9 @@ Public Class EVEAssets
 
     End Class
 
+#End Region
+
+    ' Returns count of assets in this object
     Public Function GetAssetCount() As Long
         Return AssetList.Count
     End Function
@@ -958,6 +949,7 @@ Public Class EVEAssets
 
     End Function
 
+    ' Gets the Cache date of these assets for updating
     ReadOnly Property CachedUntil() As Date
         Get
             Return CacheDate
