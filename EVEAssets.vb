@@ -8,8 +8,7 @@ Public Class EVEAssets
     Private AssetType As ScanType
     Private CacheDate As Date
     Private ItemIDToFind As Long
-    Private NodeIDtoFind As TreeEntry
-
+    Private ChildNode As TreeEntry
     Protected LocationToFind As LocationInfo
 
     Private LocationNames As List(Of LocationName)
@@ -440,23 +439,27 @@ Public Class EVEAssets
     Private Structure TreeEntry
         Dim Node As TreeNode
         Dim FlagID As Integer
+        Dim Text As String
+        Dim Name As String
+        Dim Tag As Object
     End Structure
 
     ' Gets the Tree base node for all assets - the list of checked nodes passed *** NEW
     Public Function GetAssetTreeReturnNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
                                            SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
         Dim Tree As New TreeView
-        Dim ReturnNode As New TreeNode
+        Dim ReturnNode As TreeNode
         ' For building asset list tree views
         Dim AssetTreeViewNodes As New List(Of TreeEntry)
-        Dim TempNode As New TreeNode
+        Dim TempNode As TreeNode
+        Dim TempTreeEntry As TreeEntry
         Dim ContainerLocationID As Long
 
         Dim TempLocationInfo As LocationInfo
         Dim InContainer As Boolean
         Dim BaseNodeAdded As Boolean
         Dim UnknownStructureAdded As Boolean
-        Dim Asset As New EVEAsset
+        Dim Asset As EVEAsset
         Dim BaseAssets As New List(Of EVEAsset)
 
         Tree.SuspendLayout()
@@ -497,13 +500,13 @@ Public Class EVEAssets
         UnknownStructureAdded = False
 
         ' Loop through each node and add all the items in it
-        For Each Asset In AssetList
+        For Each Asset In BaseAssets
             InContainer = False
             BaseNodeAdded = False
             ' All nodes will have 
-            ' - ItemID in .Name
-            ' - Display name in .Text
-            ' - ParentNodeID in .Tag and use -1 for base node
+            ' - .Text = Display name
+            ' - .Name = ItemID
+            ' - .Tag = ParentNodeID and use -1 for base node
             ' When storing, it will use the item ID for the item, and location ID for the others
 
             ' If the node is a base node (flag less than 0), then add this first
@@ -526,8 +529,13 @@ Public Class EVEAssets
 
                 BaseNodeAdded = True
 
+                TempTreeEntry = New TreeEntry
+                TempTreeEntry.Node = TempNode
+                TempTreeEntry.FlagID = Asset.FlagID
+
+
                 ' For base nodes, the lookup will be the locationid
-                Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
+                Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
             End If
 
             ' Add a subnode to the list if the flag indicates it can have things within the location (e.g., bays and holds)
@@ -545,8 +553,15 @@ Public Class EVEAssets
                 TempLocationInfo = SetLocationInfo(AccountID, Asset.ItemID, Asset.FlagID)
                 TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
+                TempTreeEntry = New TreeEntry
+                TempTreeEntry.Node = TempNode
+                TempTreeEntry.FlagID = Asset.FlagID
+                TempTreeEntry.Text = TempNode.Text
+                TempTreeEntry.Name = TempNode.Name
+                TempTreeEntry.Tag = TempNode.Tag
+
                 ' Location node for the hanger is still in station location, just negative
-                Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
+                Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
                 InContainer = True
             End If
 
@@ -563,8 +578,15 @@ Public Class EVEAssets
             TempLocationInfo = SetLocationInfo(AccountID, Asset.ItemID, Asset.FlagID)
             TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
 
+            TempTreeEntry = New TreeEntry
+            TempTreeEntry.Node = TempNode
+            TempTreeEntry.FlagID = Asset.FlagID
+            TempTreeEntry.Text = TempNode.Text
+            TempTreeEntry.Name = TempNode.Name
+            TempTreeEntry.Tag = TempNode.Tag
+
             ' Now store the item with ItemID
-            Call AddAssetTreeNode(AssetTreeViewNodes, TempNode)
+            Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
         Next
 
         ' Sort list first
@@ -575,8 +597,8 @@ Public Class EVEAssets
             If CLng(Item.Node.Tag) <> -1 Then
                 ' Find Parent and add node to it
                 Dim ParentNode As New TreeNode
-                NodeIDtoFind = Item ' Find based on Parent ID
-                ParentNode = AssetTreeViewNodes.Find(AddressOf FindAssetNode).Node ' At some point add a check here so it doesn't error if not found
+                ChildNode = Item ' Find based on Parent ID
+                ParentNode = AssetTreeViewNodes.Find(AddressOf FindParentNode).Node ' At some point add a check here so it doesn't error if not found
 
                 ParentNode.Nodes.Add(Item.Node)
             Else
@@ -592,19 +614,30 @@ Public Class EVEAssets
     End Function
 
     ' Adds a tree node to the Tree list sent
-    Private Sub AddAssetTreeNode(ByRef NodeList As List(Of TreeEntry), ByVal Node As TreeEntry)
-        Dim FoundNode As TreeNode = Nothing
-        NodeIDtoFind = Node
+    Private Sub AddAssetTreeNode(ByRef NodeList As List(Of TreeEntry), ByVal TreeItem As TreeEntry)
+        Dim FoundNode As TreeEntry = Nothing
+        ChildNode = TreeItem
         FoundNode = NodeList.Find(AddressOf FindAssetNode)
-        If IsNothing(FoundNode) Then
-            Call NodeList.Add(Node)
+        If IsNothing(FoundNode.Node) Then
+            Call NodeList.Add(TreeItem)
         End If
     End Sub
 
     ' Predicate for finding the asset with the set itemid
     Private Function FindAssetNode(ByVal SearchItem As TreeEntry) As Boolean
 
-        If SearchItem.FlagID = NodeIDtoFind.FlagID And SearchItem.name = node Then
+        If SearchItem.FlagID = ChildNode.FlagID And SearchItem.Node.Name = CStr(ChildNode.Node.Name) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    ' Predicate for finding the parent node Tree Entry
+    Private Function FindParentNode(ByVal SearchItem As TreeEntry) As Boolean
+
+        If SearchItem.FlagID = ChildNode.FlagID And SearchItem.Node.Name = CStr(ChildNode.Node.Tag) Then
             Return True
         Else
             Return False
