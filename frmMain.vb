@@ -1903,7 +1903,7 @@ Public Class frmMain
     End Sub
 
     Private Sub mnuDiscord_Click(sender As Object, e As EventArgs) Handles mnuDiscord.Click
-        Call Process.Start("https://discord.gg/ZjpRUTPf")
+        Call Process.Start("https://discord.com/invite/rGMMqft")
     End Sub
 
     Private Sub mnuYouTube_Click(sender As Object, e As EventArgs) Handles mnuYouTube.Click
@@ -2367,9 +2367,14 @@ Public Class frmMain
     End Sub
 
     Private Sub btnOpenMarketBrowser_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnOpenMarketBrowser.Click
-        'Call Process.Start("https://evetycoon.com/market")
-        ' Take them to eve marketer page
-        Call Process.Start("https://evemarketer.com/")
+        ''Call Process.Start("https://evetycoon.com/market")
+        '' Take them to eve marketer page
+        'Call Process.Start("https://evemarketer.com/")
+
+        ' Temp change while EVE Market History down
+        Dim f1 As New frmUploadPriceHistoryData
+        f1.Show()
+
     End Sub
 
     Private Sub mnuSelectionExit_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles mnuSelectionExit.Click

@@ -942,126 +942,126 @@ Partial Class frmMain
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
         Me.tabMain = New System.Windows.Forms.TabControl()
-        Me.mnuStripMain.SuspendLayout()
-        Me.pnlMain.SuspendLayout()
-        Me.ListOptionsMenu.SuspendLayout()
-        Me.tabPI.SuspendLayout()
-        Me.gbPIPlanets.SuspendLayout()
-        Me.tabMining.SuspendLayout()
-        Me.gbMineCrystalType.SuspendLayout()
-        Me.tabMiningDrones.SuspendLayout()
-        Me.tabShipDrones.SuspendLayout()
-        Me.tabBoosterDrones.SuspendLayout()
-        Me.gbMineCrystals.SuspendLayout()
-        Me.gbMineNumberMiners.SuspendLayout()
-        Me.gbMineOreProcessingType.SuspendLayout()
-        Me.gbMineTaxBroker.SuspendLayout()
-        Me.gbMineStripStats.SuspendLayout()
-        Me.gbMineHauling.SuspendLayout()
-        Me.gbMineBooster.SuspendLayout()
-        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbMineRefining.SuspendLayout()
-        Me.gbMineOreStuctureRates.SuspendLayout()
-        Me.tabMiningProcessingSkills.SuspendLayout()
-        Me.tabPageOres.SuspendLayout()
-        Me.tabPageMoonOres.SuspendLayout()
-        Me.tabPageIce.SuspendLayout()
-        Me.gbMineShipSetup.SuspendLayout()
-        Me.gbMineSelectShip.SuspendLayout()
-        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbMineShipEquipment.SuspendLayout()
-        Me.gbMiningRigs.SuspendLayout()
-        Me.gbMineSkills.SuspendLayout()
-        Me.gbMineMain.SuspendLayout()
-        Me.gbMineIncludeOres.SuspendLayout()
-        Me.gbMineOreLocSov.SuspendLayout()
-        Me.gbMineWHSpace.SuspendLayout()
-        Me.tabDatacores.SuspendLayout()
-        Me.gbDCOptions.SuspendLayout()
-        Me.gbDCAgentLocSov.SuspendLayout()
-        Me.gbDCTotalIPH.SuspendLayout()
-        Me.gbDCPrices.SuspendLayout()
-        Me.gbDCAgentTypes.SuspendLayout()
-        Me.gbDCBaseSkills.SuspendLayout()
-        Me.gbDCDatacores.SuspendLayout()
-        Me.gbDCCodes.SuspendLayout()
-        Me.gbDCCorpMinmatar.SuspendLayout()
-        Me.gbDCCorpAmarr.SuspendLayout()
-        Me.gbDCCorpsCaldari.SuspendLayout()
-        Me.gbDCCorpsGallente.SuspendLayout()
-        Me.tabManufacturing.SuspendLayout()
-        Me.gbCalcBPSelectOptions.SuspendLayout()
-        Me.gbCalcIgnoreinCalcs.SuspendLayout()
-        Me.gbIncludeTaxesFees.SuspendLayout()
-        Me.gbCalcSellExessItems.SuspendLayout()
-        Me.gbCalcIncludeItems.SuspendLayout()
-        Me.gbCalcMarketFilters.SuspendLayout()
-        Me.gbCalcSizeLimit.SuspendLayout()
-        Me.gbCalcProdLines.SuspendLayout()
-        Me.gbCalcCompareType.SuspendLayout()
-        Me.gbCalcTextColors.SuspendLayout()
-        Me.gbCalcInvention.SuspendLayout()
-        Me.gbCalcBPRace.SuspendLayout()
-        Me.gbTempMEPE.SuspendLayout()
-        Me.tabCalcFacilities.SuspendLayout()
-        Me.tabCalcFacilityBase.SuspendLayout()
-        Me.tabCalcFacilityComponents.SuspendLayout()
-        Me.tabCalcFacilityCopy.SuspendLayout()
-        Me.tabCalcFacilityT2Invention.SuspendLayout()
-        Me.tabCalcFacilityT3Invention.SuspendLayout()
-        Me.tabCalcFacilitySupers.SuspendLayout()
-        Me.tabCalcFacilityCapitals.SuspendLayout()
-        Me.tabCalcFacilityT3Ships.SuspendLayout()
-        Me.tabCalcFacilitySubsystems.SuspendLayout()
-        Me.tabCalcFacilityBoosters.SuspendLayout()
-        Me.tabCalcFacilityReactions.SuspendLayout()
-        Me.gbCalcFilter.SuspendLayout()
-        Me.gbCalcBPTech.SuspendLayout()
-        Me.gbCalcIncludeOwned.SuspendLayout()
-        Me.gbCalcTextFilter.SuspendLayout()
-        Me.gbCalcBPType.SuspendLayout()
-        Me.gbCalcBPSelect.SuspendLayout()
-        Me.gbCalcRelics.SuspendLayout()
-        Me.tabUpdatePrices.SuspendLayout()
-        Me.gbRawMaterials.SuspendLayout()
-        Me.gbReactionMaterials.SuspendLayout()
-        Me.gbResearchEquipment.SuspendLayout()
-        Me.gbSingleSource.SuspendLayout()
-        Me.gbMarketStructures.SuspendLayout()
-        Me.gbRegionSystemPrice.SuspendLayout()
-        Me.gbTradeHubSystems.SuspendLayout()
-        Me.gbPriceProfile.SuspendLayout()
-        Me.tabPriceProfile.SuspendLayout()
-        Me.tabPriceProfileRaw.SuspendLayout()
-        Me.tabPriceProfileManufactured.SuspendLayout()
-        Me.gbPPDefaultSettings.SuspendLayout()
-        Me.gbPriceOptions.SuspendLayout()
-        Me.gbPriceTypes.SuspendLayout()
-        Me.gbDataSource.SuspendLayout()
-        Me.gbManufacturedItems.SuspendLayout()
-        Me.gbComponents.SuspendLayout()
-        Me.gbReprocessables.SuspendLayout()
-        Me.gbItems.SuspendLayout()
-        Me.gbPricesTech.SuspendLayout()
-        Me.tabBlueprints.SuspendLayout()
-        Me.gbBPMEPEImage.SuspendLayout()
-        Me.gbBPSellExcess.SuspendLayout()
-        Me.tabBPInventionEquip.SuspendLayout()
-        Me.tabFacility.SuspendLayout()
-        Me.tabT3Calcs.SuspendLayout()
-        Me.tabInventionCalcs.SuspendLayout()
-        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.gbBPManualSystemCostIndex.SuspendLayout()
-        Me.gbBPIgnoreinCalcs.SuspendLayout()
-        Me.gbBPBlueprintType.SuspendLayout()
-        Me.gbBPBlueprintTech.SuspendLayout()
-        Me.gbFilters.SuspendLayout()
-        Me.gbBPInventionStats.SuspendLayout()
-        Me.gbBPShopandCopy.SuspendLayout()
-        Me.tabMain.SuspendLayout()
-        Me.SuspendLayout()
+        Me.mnuStripMain.SuspendLayout
+        Me.pnlMain.SuspendLayout
+        Me.ListOptionsMenu.SuspendLayout
+        Me.tabPI.SuspendLayout
+        Me.gbPIPlanets.SuspendLayout
+        Me.tabMining.SuspendLayout
+        Me.gbMineCrystalType.SuspendLayout
+        Me.tabMiningDrones.SuspendLayout
+        Me.tabShipDrones.SuspendLayout
+        Me.tabBoosterDrones.SuspendLayout
+        Me.gbMineCrystals.SuspendLayout
+        Me.gbMineNumberMiners.SuspendLayout
+        Me.gbMineOreProcessingType.SuspendLayout
+        Me.gbMineTaxBroker.SuspendLayout
+        Me.gbMineStripStats.SuspendLayout
+        Me.gbMineHauling.SuspendLayout
+        Me.gbMineBooster.SuspendLayout
+        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbMineRefining.SuspendLayout
+        Me.gbMineOreStuctureRates.SuspendLayout
+        Me.tabMiningProcessingSkills.SuspendLayout
+        Me.tabPageOres.SuspendLayout
+        Me.tabPageMoonOres.SuspendLayout
+        Me.tabPageIce.SuspendLayout
+        Me.gbMineShipSetup.SuspendLayout
+        Me.gbMineSelectShip.SuspendLayout
+        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbMineShipEquipment.SuspendLayout
+        Me.gbMiningRigs.SuspendLayout
+        Me.gbMineSkills.SuspendLayout
+        Me.gbMineMain.SuspendLayout
+        Me.gbMineIncludeOres.SuspendLayout
+        Me.gbMineOreLocSov.SuspendLayout
+        Me.gbMineWHSpace.SuspendLayout
+        Me.tabDatacores.SuspendLayout
+        Me.gbDCOptions.SuspendLayout
+        Me.gbDCAgentLocSov.SuspendLayout
+        Me.gbDCTotalIPH.SuspendLayout
+        Me.gbDCPrices.SuspendLayout
+        Me.gbDCAgentTypes.SuspendLayout
+        Me.gbDCBaseSkills.SuspendLayout
+        Me.gbDCDatacores.SuspendLayout
+        Me.gbDCCodes.SuspendLayout
+        Me.gbDCCorpMinmatar.SuspendLayout
+        Me.gbDCCorpAmarr.SuspendLayout
+        Me.gbDCCorpsCaldari.SuspendLayout
+        Me.gbDCCorpsGallente.SuspendLayout
+        Me.tabManufacturing.SuspendLayout
+        Me.gbCalcBPSelectOptions.SuspendLayout
+        Me.gbCalcIgnoreinCalcs.SuspendLayout
+        Me.gbIncludeTaxesFees.SuspendLayout
+        Me.gbCalcSellExessItems.SuspendLayout
+        Me.gbCalcIncludeItems.SuspendLayout
+        Me.gbCalcMarketFilters.SuspendLayout
+        Me.gbCalcSizeLimit.SuspendLayout
+        Me.gbCalcProdLines.SuspendLayout
+        Me.gbCalcCompareType.SuspendLayout
+        Me.gbCalcTextColors.SuspendLayout
+        Me.gbCalcInvention.SuspendLayout
+        Me.gbCalcBPRace.SuspendLayout
+        Me.gbTempMEPE.SuspendLayout
+        Me.tabCalcFacilities.SuspendLayout
+        Me.tabCalcFacilityBase.SuspendLayout
+        Me.tabCalcFacilityComponents.SuspendLayout
+        Me.tabCalcFacilityCopy.SuspendLayout
+        Me.tabCalcFacilityT2Invention.SuspendLayout
+        Me.tabCalcFacilityT3Invention.SuspendLayout
+        Me.tabCalcFacilitySupers.SuspendLayout
+        Me.tabCalcFacilityCapitals.SuspendLayout
+        Me.tabCalcFacilityT3Ships.SuspendLayout
+        Me.tabCalcFacilitySubsystems.SuspendLayout
+        Me.tabCalcFacilityBoosters.SuspendLayout
+        Me.tabCalcFacilityReactions.SuspendLayout
+        Me.gbCalcFilter.SuspendLayout
+        Me.gbCalcBPTech.SuspendLayout
+        Me.gbCalcIncludeOwned.SuspendLayout
+        Me.gbCalcTextFilter.SuspendLayout
+        Me.gbCalcBPType.SuspendLayout
+        Me.gbCalcBPSelect.SuspendLayout
+        Me.gbCalcRelics.SuspendLayout
+        Me.tabUpdatePrices.SuspendLayout
+        Me.gbRawMaterials.SuspendLayout
+        Me.gbReactionMaterials.SuspendLayout
+        Me.gbResearchEquipment.SuspendLayout
+        Me.gbSingleSource.SuspendLayout
+        Me.gbMarketStructures.SuspendLayout
+        Me.gbRegionSystemPrice.SuspendLayout
+        Me.gbTradeHubSystems.SuspendLayout
+        Me.gbPriceProfile.SuspendLayout
+        Me.tabPriceProfile.SuspendLayout
+        Me.tabPriceProfileRaw.SuspendLayout
+        Me.tabPriceProfileManufactured.SuspendLayout
+        Me.gbPPDefaultSettings.SuspendLayout
+        Me.gbPriceOptions.SuspendLayout
+        Me.gbPriceTypes.SuspendLayout
+        Me.gbDataSource.SuspendLayout
+        Me.gbManufacturedItems.SuspendLayout
+        Me.gbComponents.SuspendLayout
+        Me.gbReprocessables.SuspendLayout
+        Me.gbItems.SuspendLayout
+        Me.gbPricesTech.SuspendLayout
+        Me.tabBlueprints.SuspendLayout
+        Me.gbBPMEPEImage.SuspendLayout
+        Me.gbBPSellExcess.SuspendLayout
+        Me.tabBPInventionEquip.SuspendLayout
+        Me.tabFacility.SuspendLayout
+        Me.tabT3Calcs.SuspendLayout
+        Me.tabInventionCalcs.SuspendLayout
+        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).BeginInit
+        Me.gbBPManualSystemCostIndex.SuspendLayout
+        Me.gbBPIgnoreinCalcs.SuspendLayout
+        Me.gbBPBlueprintType.SuspendLayout
+        Me.gbBPBlueprintTech.SuspendLayout
+        Me.gbFilters.SuspendLayout
+        Me.gbBPInventionStats.SuspendLayout
+        Me.gbBPShopandCopy.SuspendLayout
+        Me.tabMain.SuspendLayout
+        Me.SuspendLayout
         '
         'mnuStripMain
         '
@@ -5453,6 +5453,7 @@ Partial Class frmMain
         Me.lstManufacturing.ContextMenuStrip = Me.ListOptionsMenu
         Me.lstManufacturing.FullRowSelect = True
         Me.lstManufacturing.GridLines = True
+        Me.lstManufacturing.HideSelection = False
         Me.lstManufacturing.Location = New System.Drawing.Point(8, 7)
         Me.lstManufacturing.Name = "lstManufacturing"
         Me.lstManufacturing.OwnerDraw = True
@@ -8448,7 +8449,7 @@ Partial Class frmMain
         Me.btnOpenMarketBrowser.Name = "btnOpenMarketBrowser"
         Me.btnOpenMarketBrowser.Size = New System.Drawing.Size(119, 32)
         Me.btnOpenMarketBrowser.TabIndex = 127
-        Me.btnOpenMarketBrowser.Text = "Open Market Browser"
+        Me.btnOpenMarketBrowser.Text = "Load Price History"
         Me.btnOpenMarketBrowser.UseVisualStyleBackColor = True
         '
         'tabBlueprints
@@ -10267,118 +10268,118 @@ Partial Class frmMain
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "EVE ISK per Hour"
         Me.mnuStripMain.ResumeLayout(False)
-        Me.mnuStripMain.PerformLayout()
+        Me.mnuStripMain.PerformLayout
         Me.pnlMain.ResumeLayout(False)
-        Me.pnlMain.PerformLayout()
+        Me.pnlMain.PerformLayout
         Me.ListOptionsMenu.ResumeLayout(False)
         Me.tabPI.ResumeLayout(False)
         Me.gbPIPlanets.ResumeLayout(False)
-        Me.gbPIPlanets.PerformLayout()
+        Me.gbPIPlanets.PerformLayout
         Me.tabMining.ResumeLayout(False)
-        Me.tabMining.PerformLayout()
+        Me.tabMining.PerformLayout
         Me.gbMineCrystalType.ResumeLayout(False)
-        Me.gbMineCrystalType.PerformLayout()
+        Me.gbMineCrystalType.PerformLayout
         Me.tabMiningDrones.ResumeLayout(False)
         Me.tabShipDrones.ResumeLayout(False)
-        Me.tabShipDrones.PerformLayout()
+        Me.tabShipDrones.PerformLayout
         Me.tabBoosterDrones.ResumeLayout(False)
-        Me.tabBoosterDrones.PerformLayout()
+        Me.tabBoosterDrones.PerformLayout
         Me.gbMineCrystals.ResumeLayout(False)
-        Me.gbMineCrystals.PerformLayout()
+        Me.gbMineCrystals.PerformLayout
         Me.gbMineNumberMiners.ResumeLayout(False)
-        Me.gbMineNumberMiners.PerformLayout()
+        Me.gbMineNumberMiners.PerformLayout
         Me.gbMineOreProcessingType.ResumeLayout(False)
-        Me.gbMineOreProcessingType.PerformLayout()
+        Me.gbMineOreProcessingType.PerformLayout
         Me.gbMineTaxBroker.ResumeLayout(False)
-        Me.gbMineTaxBroker.PerformLayout()
+        Me.gbMineTaxBroker.PerformLayout
         Me.gbMineStripStats.ResumeLayout(False)
-        Me.gbMineStripStats.PerformLayout()
+        Me.gbMineStripStats.PerformLayout
         Me.gbMineHauling.ResumeLayout(False)
-        Me.gbMineHauling.PerformLayout()
+        Me.gbMineHauling.PerformLayout
         Me.gbMineBooster.ResumeLayout(False)
-        Me.gbMineBooster.PerformLayout()
-        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.gbMineBooster.PerformLayout
+        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbMineRefining.ResumeLayout(False)
-        Me.gbMineRefining.PerformLayout()
+        Me.gbMineRefining.PerformLayout
         Me.gbMineOreStuctureRates.ResumeLayout(False)
-        Me.gbMineOreStuctureRates.PerformLayout()
+        Me.gbMineOreStuctureRates.PerformLayout
         Me.tabMiningProcessingSkills.ResumeLayout(False)
         Me.tabPageOres.ResumeLayout(False)
-        Me.tabPageOres.PerformLayout()
+        Me.tabPageOres.PerformLayout
         Me.tabPageMoonOres.ResumeLayout(False)
-        Me.tabPageMoonOres.PerformLayout()
+        Me.tabPageMoonOres.PerformLayout
         Me.tabPageIce.ResumeLayout(False)
-        Me.tabPageIce.PerformLayout()
+        Me.tabPageIce.PerformLayout
         Me.gbMineShipSetup.ResumeLayout(False)
         Me.gbMineSelectShip.ResumeLayout(False)
-        Me.gbMineSelectShip.PerformLayout()
-        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.gbMineSelectShip.PerformLayout
+        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbMineShipEquipment.ResumeLayout(False)
-        Me.gbMineShipEquipment.PerformLayout()
+        Me.gbMineShipEquipment.PerformLayout
         Me.gbMiningRigs.ResumeLayout(False)
         Me.gbMineSkills.ResumeLayout(False)
-        Me.gbMineSkills.PerformLayout()
+        Me.gbMineSkills.PerformLayout
         Me.gbMineMain.ResumeLayout(False)
-        Me.gbMineMain.PerformLayout()
+        Me.gbMineMain.PerformLayout
         Me.gbMineIncludeOres.ResumeLayout(False)
-        Me.gbMineIncludeOres.PerformLayout()
+        Me.gbMineIncludeOres.PerformLayout
         Me.gbMineOreLocSov.ResumeLayout(False)
-        Me.gbMineOreLocSov.PerformLayout()
+        Me.gbMineOreLocSov.PerformLayout
         Me.gbMineWHSpace.ResumeLayout(False)
-        Me.gbMineWHSpace.PerformLayout()
+        Me.gbMineWHSpace.PerformLayout
         Me.tabDatacores.ResumeLayout(False)
         Me.gbDCOptions.ResumeLayout(False)
         Me.gbDCAgentLocSov.ResumeLayout(False)
-        Me.gbDCAgentLocSov.PerformLayout()
+        Me.gbDCAgentLocSov.PerformLayout
         Me.gbDCTotalIPH.ResumeLayout(False)
-        Me.gbDCTotalIPH.PerformLayout()
+        Me.gbDCTotalIPH.PerformLayout
         Me.gbDCPrices.ResumeLayout(False)
-        Me.gbDCPrices.PerformLayout()
+        Me.gbDCPrices.PerformLayout
         Me.gbDCAgentTypes.ResumeLayout(False)
-        Me.gbDCAgentTypes.PerformLayout()
+        Me.gbDCAgentTypes.PerformLayout
         Me.gbDCBaseSkills.ResumeLayout(False)
-        Me.gbDCBaseSkills.PerformLayout()
+        Me.gbDCBaseSkills.PerformLayout
         Me.gbDCDatacores.ResumeLayout(False)
-        Me.gbDCDatacores.PerformLayout()
+        Me.gbDCDatacores.PerformLayout
         Me.gbDCCodes.ResumeLayout(False)
-        Me.gbDCCodes.PerformLayout()
+        Me.gbDCCodes.PerformLayout
         Me.gbDCCorpMinmatar.ResumeLayout(False)
-        Me.gbDCCorpMinmatar.PerformLayout()
+        Me.gbDCCorpMinmatar.PerformLayout
         Me.gbDCCorpAmarr.ResumeLayout(False)
-        Me.gbDCCorpAmarr.PerformLayout()
+        Me.gbDCCorpAmarr.PerformLayout
         Me.gbDCCorpsCaldari.ResumeLayout(False)
-        Me.gbDCCorpsCaldari.PerformLayout()
+        Me.gbDCCorpsCaldari.PerformLayout
         Me.gbDCCorpsGallente.ResumeLayout(False)
-        Me.gbDCCorpsGallente.PerformLayout()
+        Me.gbDCCorpsGallente.PerformLayout
         Me.tabManufacturing.ResumeLayout(False)
         Me.gbCalcBPSelectOptions.ResumeLayout(False)
-        Me.gbCalcBPSelectOptions.PerformLayout()
+        Me.gbCalcBPSelectOptions.PerformLayout
         Me.gbCalcIgnoreinCalcs.ResumeLayout(False)
-        Me.gbCalcIgnoreinCalcs.PerformLayout()
+        Me.gbCalcIgnoreinCalcs.PerformLayout
         Me.gbIncludeTaxesFees.ResumeLayout(False)
-        Me.gbIncludeTaxesFees.PerformLayout()
+        Me.gbIncludeTaxesFees.PerformLayout
         Me.gbCalcSellExessItems.ResumeLayout(False)
-        Me.gbCalcSellExessItems.PerformLayout()
+        Me.gbCalcSellExessItems.PerformLayout
         Me.gbCalcIncludeItems.ResumeLayout(False)
-        Me.gbCalcIncludeItems.PerformLayout()
+        Me.gbCalcIncludeItems.PerformLayout
         Me.gbCalcMarketFilters.ResumeLayout(False)
-        Me.gbCalcMarketFilters.PerformLayout()
+        Me.gbCalcMarketFilters.PerformLayout
         Me.gbCalcSizeLimit.ResumeLayout(False)
-        Me.gbCalcSizeLimit.PerformLayout()
+        Me.gbCalcSizeLimit.PerformLayout
         Me.gbCalcProdLines.ResumeLayout(False)
-        Me.gbCalcProdLines.PerformLayout()
+        Me.gbCalcProdLines.PerformLayout
         Me.gbCalcCompareType.ResumeLayout(False)
-        Me.gbCalcCompareType.PerformLayout()
+        Me.gbCalcCompareType.PerformLayout
         Me.gbCalcTextColors.ResumeLayout(False)
-        Me.gbCalcTextColors.PerformLayout()
+        Me.gbCalcTextColors.PerformLayout
         Me.gbCalcInvention.ResumeLayout(False)
-        Me.gbCalcInvention.PerformLayout()
+        Me.gbCalcInvention.PerformLayout
         Me.gbCalcBPRace.ResumeLayout(False)
-        Me.gbCalcBPRace.PerformLayout()
+        Me.gbCalcBPRace.PerformLayout
         Me.gbTempMEPE.ResumeLayout(False)
-        Me.gbTempMEPE.PerformLayout()
+        Me.gbTempMEPE.PerformLayout
         Me.tabCalcFacilities.ResumeLayout(False)
         Me.tabCalcFacilityBase.ResumeLayout(False)
         Me.tabCalcFacilityComponents.ResumeLayout(False)
@@ -10393,81 +10394,81 @@ Partial Class frmMain
         Me.tabCalcFacilityReactions.ResumeLayout(False)
         Me.gbCalcFilter.ResumeLayout(False)
         Me.gbCalcBPTech.ResumeLayout(False)
-        Me.gbCalcBPTech.PerformLayout()
+        Me.gbCalcBPTech.PerformLayout
         Me.gbCalcIncludeOwned.ResumeLayout(False)
-        Me.gbCalcIncludeOwned.PerformLayout()
+        Me.gbCalcIncludeOwned.PerformLayout
         Me.gbCalcTextFilter.ResumeLayout(False)
-        Me.gbCalcTextFilter.PerformLayout()
+        Me.gbCalcTextFilter.PerformLayout
         Me.gbCalcBPType.ResumeLayout(False)
-        Me.gbCalcBPType.PerformLayout()
+        Me.gbCalcBPType.PerformLayout
         Me.gbCalcBPSelect.ResumeLayout(False)
-        Me.gbCalcBPSelect.PerformLayout()
+        Me.gbCalcBPSelect.PerformLayout
         Me.gbCalcRelics.ResumeLayout(False)
-        Me.gbCalcRelics.PerformLayout()
+        Me.gbCalcRelics.PerformLayout
         Me.tabUpdatePrices.ResumeLayout(False)
-        Me.tabUpdatePrices.PerformLayout()
+        Me.tabUpdatePrices.PerformLayout
         Me.gbRawMaterials.ResumeLayout(False)
-        Me.gbRawMaterials.PerformLayout()
+        Me.gbRawMaterials.PerformLayout
         Me.gbReactionMaterials.ResumeLayout(False)
-        Me.gbReactionMaterials.PerformLayout()
+        Me.gbReactionMaterials.PerformLayout
         Me.gbResearchEquipment.ResumeLayout(False)
-        Me.gbResearchEquipment.PerformLayout()
+        Me.gbResearchEquipment.PerformLayout
         Me.gbSingleSource.ResumeLayout(False)
         Me.gbMarketStructures.ResumeLayout(False)
         Me.gbRegionSystemPrice.ResumeLayout(False)
         Me.gbTradeHubSystems.ResumeLayout(False)
-        Me.gbTradeHubSystems.PerformLayout()
+        Me.gbTradeHubSystems.PerformLayout
         Me.gbPriceProfile.ResumeLayout(False)
         Me.tabPriceProfile.ResumeLayout(False)
         Me.tabPriceProfileRaw.ResumeLayout(False)
         Me.tabPriceProfileManufactured.ResumeLayout(False)
         Me.gbPPDefaultSettings.ResumeLayout(False)
-        Me.gbPPDefaultSettings.PerformLayout()
+        Me.gbPPDefaultSettings.PerformLayout
         Me.gbPriceOptions.ResumeLayout(False)
-        Me.gbPriceOptions.PerformLayout()
+        Me.gbPriceOptions.PerformLayout
         Me.gbPriceTypes.ResumeLayout(False)
-        Me.gbPriceTypes.PerformLayout()
+        Me.gbPriceTypes.PerformLayout
         Me.gbDataSource.ResumeLayout(False)
-        Me.gbDataSource.PerformLayout()
+        Me.gbDataSource.PerformLayout
         Me.gbManufacturedItems.ResumeLayout(False)
-        Me.gbManufacturedItems.PerformLayout()
+        Me.gbManufacturedItems.PerformLayout
         Me.gbComponents.ResumeLayout(False)
-        Me.gbComponents.PerformLayout()
+        Me.gbComponents.PerformLayout
         Me.gbReprocessables.ResumeLayout(False)
-        Me.gbReprocessables.PerformLayout()
+        Me.gbReprocessables.PerformLayout
         Me.gbItems.ResumeLayout(False)
-        Me.gbItems.PerformLayout()
+        Me.gbItems.PerformLayout
         Me.gbPricesTech.ResumeLayout(False)
-        Me.gbPricesTech.PerformLayout()
+        Me.gbPricesTech.PerformLayout
         Me.tabBlueprints.ResumeLayout(False)
-        Me.tabBlueprints.PerformLayout()
+        Me.tabBlueprints.PerformLayout
         Me.gbBPMEPEImage.ResumeLayout(False)
-        Me.gbBPMEPEImage.PerformLayout()
+        Me.gbBPMEPEImage.PerformLayout
         Me.gbBPSellExcess.ResumeLayout(False)
         Me.tabBPInventionEquip.ResumeLayout(False)
         Me.tabFacility.ResumeLayout(False)
         Me.tabT3Calcs.ResumeLayout(False)
-        Me.tabT3Calcs.PerformLayout()
+        Me.tabT3Calcs.PerformLayout
         Me.tabInventionCalcs.ResumeLayout(False)
-        Me.tabInventionCalcs.PerformLayout()
-        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.tabInventionCalcs.PerformLayout
+        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbBPManualSystemCostIndex.ResumeLayout(False)
-        Me.gbBPManualSystemCostIndex.PerformLayout()
+        Me.gbBPManualSystemCostIndex.PerformLayout
         Me.gbBPIgnoreinCalcs.ResumeLayout(False)
-        Me.gbBPIgnoreinCalcs.PerformLayout()
+        Me.gbBPIgnoreinCalcs.PerformLayout
         Me.gbBPBlueprintType.ResumeLayout(False)
-        Me.gbBPBlueprintType.PerformLayout()
+        Me.gbBPBlueprintType.PerformLayout
         Me.gbBPBlueprintTech.ResumeLayout(False)
-        Me.gbBPBlueprintTech.PerformLayout()
+        Me.gbBPBlueprintTech.PerformLayout
         Me.gbFilters.ResumeLayout(False)
-        Me.gbFilters.PerformLayout()
+        Me.gbFilters.PerformLayout
         Me.gbBPInventionStats.ResumeLayout(False)
-        Me.gbBPInventionStats.PerformLayout()
+        Me.gbBPInventionStats.PerformLayout
         Me.gbBPShopandCopy.ResumeLayout(False)
-        Me.gbBPShopandCopy.PerformLayout()
+        Me.gbBPShopandCopy.PerformLayout
         Me.tabMain.ResumeLayout(False)
         Me.ResumeLayout(False)
-        Me.PerformLayout()
+        Me.PerformLayout
 
     End Sub
     Friend WithEvents mnuStripMain As System.Windows.Forms.MenuStrip

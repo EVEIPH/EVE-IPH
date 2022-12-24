@@ -1069,9 +1069,7 @@ Public Class frmShoppingList
         Dim FileName As String
         Dim OutputText As String
         Dim ListItem As ListViewItem
-
         Dim Items As ListView.ListViewItemCollection
-        Dim i As Integer = 0
 
         ' Show the dialog
         Dim ExportTypeString As String
@@ -1183,7 +1181,7 @@ Public Class frmShoppingList
                             Application.DoEvents()
 
                             ' Build the output text for checked items
-                            OutputText = ListItem.SubItems(1).Text & Separator
+                            OutputText = RemoveItemNameRuns(ListItem.SubItems(1).Text) & Separator
                             If ExportTypeString = SSVDataExport Then
                                 OutputText = OutputText & ConvertUStoEUDecimal(ListItem.SubItems(2).Text) & Separator
                             Else
