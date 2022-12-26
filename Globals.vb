@@ -12,6 +12,7 @@ Public Module Public_Variables
     Public Const SDEVersion As String = "October 11, 2022 Release"
     Public Const VersionNumber As String = "6.0.*"
 
+
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
 

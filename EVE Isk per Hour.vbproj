@@ -194,6 +194,12 @@
     <Compile Include="Character.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
+    <Compile Include="frmUploadPriceHistoryData.Designer.vb">
+      <DependentUpon>frmUploadPriceHistoryData.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmUploadPriceHistoryData.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FuzzworksMarket.vb" />
     <Compile Include="EVEMarketer.vb" />
     <Compile Include="frmAddCharacter.Designer.vb">
@@ -576,6 +582,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmSupportSplash.resx">
       <DependentUpon>frmSupportSplash.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmUploadPriceHistoryData.resx">
+      <DependentUpon>frmUploadPriceHistoryData.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmUpwellStructureFitting.resx">
       <DependentUpon>frmUpwellStructureFitting.vb</DependentUpon>
