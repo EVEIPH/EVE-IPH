@@ -469,7 +469,16 @@ Public Class frmAssetsViewer
             TokenData.CharacterID = entry.ID
             Application.DoEvents()
 
-            ' update assets only if not loaded character
+
+            'If BPScanType = ScanType.Personal Then
+            '    SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+            'Else
+            '    SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+            '                                                            SelectedCharacter.CharacterTokenData, True)
+            'End If
+
+
+            ' Update Assets only if only
             If entry.ID <> SelectedCharacter.ID Then
                 TempCharacter = New Character
                 TempCharacter.LoadCharacterData(TokenData, False, True, False)

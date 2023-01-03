@@ -12,16 +12,10 @@ Public Class EVEAssets
     Protected LocationToFind As LocationInfo
 
     Private LocationNames As List(Of LocationName)
+    Private Const UnknownLocation As String = "Unknown Location"
     Private UnknownLocationCounter As Integer
     Private LocationIDToFind As Long
-
-    Private Const IgnoreFlag As String = None
-    Private Const ShipHangar As String = "Ship Hangar"
-    Private Const CorpDivisions As String = "Corporation Divisions"
-
-    Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
-    Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
 
     Private ParentNodeID As Long
 
@@ -96,8 +90,8 @@ Public Class EVEAssets
                 Asset.ItemName = readerAssets.GetString(8)
             End If
 
-            ' Get the location name, update flagID (ref), set flag text (ref) and container (ref)
-            Asset.LocationName = GetAssetLocationAndFlagInfo(Asset.LocationID, Asset.FlagID, Asset.FlagText, Asset.Container, CharacterTokenData)
+            ' Get the location name, update flagID (ref), set flag text (ref), container (ref), Flagsort (ref)
+            Asset.LocationName = GetAssetLocationAndFlagInfo(Asset.LocationID, Asset.FlagID, Asset.FlagText, Asset.Container, Asset.FlagSort, CharacterTokenData)
 
             ' Look up the type name
             SQL = "SELECT typeName, groupName, categoryName FROM ITEM_LOOKUP WHERE typeID = " & Asset.TypeID & " "
@@ -301,7 +295,7 @@ Public Class EVEAssets
     End Function
 
     Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String,
-                                                 ByRef Container As Boolean, ByVal CharacterTokenData As SavedTokenData) As String
+                                                 ByRef Container As Boolean, ByRef FlagSortNumber As Integer, ByVal CharacterTokenData As SavedTokenData) As String
         Dim SQL As String
         Dim readerData As SQLiteDataReader
         Dim LocationName As String = ""
@@ -355,7 +349,7 @@ Public Class EVEAssets
 
                 If readerData.HasRows Then
                     ' Call this function again to get the location name
-                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, Container, CharacterTokenData)
+                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, Container, FlagSortNumber, CharacterTokenData)
                     readerData.Close()
                 Else
                     ' See if it's a upwell structure that they have access to
@@ -395,7 +389,7 @@ Public Class EVEAssets
         End If
 
         ' Look up the flag text
-        SQL = "SELECT FlagText, container FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(FlagID)) ' FlagID can be negative
+        SQL = "SELECT FlagText, container, sort_order FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(FlagID)) ' FlagID can be negative
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
@@ -404,9 +398,11 @@ Public Class EVEAssets
             ' Found it
             FlagText = CStr(readerData.GetValue(0))
             Container = CBool(readerData.GetValue(1))
+            FlagSortNumber = CInt(readerData.GetValue(2))
         Else
             FlagText = "Unknown"
             Container = False
+            FlagSortNumber = -1
         End If
 
         readerData.Close()
@@ -439,9 +435,13 @@ Public Class EVEAssets
     Private Structure TreeEntry
         Dim Node As TreeNode
         Dim FlagID As Integer
-        Dim Text As String
+        Dim FlagSort As Integer
+        Dim Container As Boolean
+        Dim DisplayText As String
         Dim Name As String
         Dim Tag As Object
+        Dim IsSingleton As Boolean
+        Dim Quantity As Long ' only store if IsSingleton is false
     End Structure
 
     ' Gets the Tree base node for all assets - the list of checked nodes passed *** NEW
@@ -453,6 +453,7 @@ Public Class EVEAssets
         Dim AssetTreeViewNodes As New List(Of TreeEntry)
         Dim TempNode As TreeNode
         Dim TempTreeEntry As TreeEntry
+        Dim FoundTreeEntry As TreeEntry
         Dim ContainerLocationID As Long
 
         Dim TempLocationInfo As LocationInfo
@@ -471,13 +472,6 @@ Public Class EVEAssets
             ReturnNode = Tree.Nodes.Add(NodeName & " - No Assets Loaded")
             Tree.EndUpdate()
             Return ReturnNode
-        End If
-
-        ' Sort assets first 
-        If SortOption = SortType.Name Then
-            AssetList.Sort(New AssetNameComparer)
-        Else
-            AssetList.Sort(New AssetQuantityComparer)
         End If
 
         ' Add the base node to the return variable
@@ -531,8 +525,14 @@ Public Class EVEAssets
 
                 TempTreeEntry = New TreeEntry
                 TempTreeEntry.Node = TempNode
+                TempTreeEntry.DisplayText = TempNode.Text
+                TempTreeEntry.Name = TempNode.Name
+                TempTreeEntry.Tag = TempNode.Tag
                 TempTreeEntry.FlagID = Asset.FlagID
-
+                TempTreeEntry.FlagSort = -1
+                TempTreeEntry.Container = True
+                TempTreeEntry.IsSingleton = True
+                TempTreeEntry.Quantity = 0
 
                 ' For base nodes, the lookup will be the locationid
                 Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
@@ -543,7 +543,12 @@ Public Class EVEAssets
             ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
             ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
             If Asset.Container And Asset.LocationName <> "Unknown Structure" Then
-                ContainerLocationID = -1 * Asset.LocationID ' Store negative locationID so it is unique for Parent ID to search 
+                If BaseNodeAdded Then
+                    ContainerLocationID = -1 * Asset.LocationID ' Store negative locationID so it is unique for Parent ID to search 
+                Else
+                    ' For just items in containers, (not item/shiphangar/station) container location is the negative of the id
+                    ContainerLocationID = -1 * Asset.ItemID
+                End If
 
                 TempNode = New TreeNode
                 TempNode.Name = CStr(ContainerLocationID)
@@ -555,13 +560,27 @@ Public Class EVEAssets
 
                 TempTreeEntry = New TreeEntry
                 TempTreeEntry.Node = TempNode
-                TempTreeEntry.FlagID = Asset.FlagID
-                TempTreeEntry.Text = TempNode.Text
+                TempTreeEntry.DisplayText = TempNode.Text
                 TempTreeEntry.Name = TempNode.Name
                 TempTreeEntry.Tag = TempNode.Tag
+                TempTreeEntry.FlagID = Asset.FlagID
+                TempTreeEntry.FlagSort = Asset.FlagSort
+                TempTreeEntry.Container = True
+                TempTreeEntry.IsSingleton = True
+                TempTreeEntry.Quantity = 0
 
-                ' Location node for the hanger is still in station location, just negative
-                Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
+                ' See if this container is already in the list with this FlagID and Location, and if so, update the tag to match that ItemID
+                ChildNode = TempTreeEntry
+                FoundTreeEntry = AssetTreeViewNodes.Find(AddressOf FindContainerEntry)
+
+                If Not IsNothing(FoundTreeEntry.Node) Then
+                    ' If it's in the list, just save the container location id for the item below
+                    ContainerLocationID = CLng(FoundTreeEntry.Name)
+                Else
+                    ' Location node for the hanger is still in station location, just negative
+                    Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
+                End If
+
                 InContainer = True
             End If
 
@@ -580,17 +599,35 @@ Public Class EVEAssets
 
             TempTreeEntry = New TreeEntry
             TempTreeEntry.Node = TempNode
-            TempTreeEntry.FlagID = Asset.FlagID
-            TempTreeEntry.Text = TempNode.Text
+            TempTreeEntry.DisplayText = TempNode.Text
             TempTreeEntry.Name = TempNode.Name
             TempTreeEntry.Tag = TempNode.Tag
+            TempTreeEntry.FlagID = Asset.FlagID
+            TempTreeEntry.FlagSort = Asset.FlagSort
+            TempTreeEntry.IsSingleton = Asset.IsSingleton
+            If Not Asset.IsSingleton Then
+                TempTreeEntry.Quantity = Asset.Quantity
+            Else
+                TempTreeEntry.Quantity = 0
+            End If
+
+            ' Special case to mark containers for sorting, if the group contains 'Container' and the category is Celestial, then mark the container flag
+            If Asset.TypeGroup.Contains("Container") And Asset.TypeCategory = "Celestial" Then
+                TempTreeEntry.Container = True
+            Else
+                TempTreeEntry.Container = False
+            End If
 
             ' Now store the item with ItemID
             Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
         Next
 
-        ' Sort list first
-        ' Call AssetTreeViewNodes.Sort(AddressOf AssetNameComparer)
+        ' Now sort the list
+        If SortOption = SortType.Name Then
+            AssetTreeViewNodes.Sort(New TreeEntryNameSorter)
+        Else
+            AssetTreeViewNodes.Sort(New TreeEntryQuantitySorter)
+        End If
 
         ' Populate tree
         For Each Item In AssetTreeViewNodes
@@ -599,7 +636,6 @@ Public Class EVEAssets
                 Dim ParentNode As New TreeNode
                 ChildNode = Item ' Find based on Parent ID
                 ParentNode = AssetTreeViewNodes.Find(AddressOf FindParentNode).Node ' At some point add a check here so it doesn't error if not found
-
                 ParentNode.Nodes.Add(Item.Node)
             Else
                 ReturnNode.Nodes.Add(Item.Node)
@@ -626,7 +662,19 @@ Public Class EVEAssets
     ' Predicate for finding the asset with the set itemid
     Private Function FindAssetNode(ByVal SearchItem As TreeEntry) As Boolean
 
-        If SearchItem.FlagID = ChildNode.FlagID And SearchItem.Node.Name = CStr(ChildNode.Node.Name) Then
+        If SearchItem.Node.Name = CStr(ChildNode.Node.Name) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    ' Predicate for finding the container with the same info
+    Private Function FindContainerEntry(ByVal SearchItem As TreeEntry) As Boolean
+
+        ' Find the same container name and FlagID
+        If SearchItem.Node.Text = CStr(ChildNode.Node.Text) And CStr(SearchItem.Tag) = CStr(ChildNode.Tag) Then
             Return True
         Else
             Return False
@@ -640,7 +688,12 @@ Public Class EVEAssets
         If SearchItem.FlagID = ChildNode.FlagID And SearchItem.Node.Name = CStr(ChildNode.Node.Tag) Then
             Return True
         Else
-            Return False
+            ' Flags aren't the same, so just look for the tag matching the name
+            If SearchItem.Node.Name = CStr(ChildNode.Node.Tag) Then
+                Return True
+            Else
+                Return False
+            End If
         End If
 
     End Function
@@ -677,8 +730,8 @@ Public Class EVEAssets
             ItemName = SentAsset.TypeName
         End If
 
-        ' Add the quantity if it's not a parent node with children
-        If Not ParentNode Then
+        ' Add the quantity if it's not a parent node with children or it's not a singleton (unpackaged)
+        If Not ParentNode And SentAsset.IsSingleton = False Then
             Return ItemName & QuantitySpacer & FormatNumber(SentAsset.Quantity, 0)
         Else
             Return ItemName
@@ -820,125 +873,6 @@ Public Class EVEAssets
 
     End Function
 
-#Region "Tree Sort functions"
-    Private Class NodeNameSorter
-        Implements IComparer
-
-        ' Compare the length of the strings, or the strings themselves, if they are the same length. 
-        Public Function Compare(ByVal x As Object, ByVal y As Object) As Integer Implements IComparer.Compare
-            Dim tx As TreeNode = CType(x, TreeNode)
-            Dim ty As TreeNode = CType(y, TreeNode)
-            Dim Qx As Long
-            Dim Qy As Long
-
-            ' Get the quantity for the nodes
-            Qx = GetNodeQuantity(tx)
-            Qy = GetNodeQuantity(ty)
-
-            ' Force Ship Hanger to top of tree
-            If tx.Text = "Ship Hangar" Then
-                ' y comes after x 
-                Return -1
-            ElseIf ty.Text = "Ship Hangar" Then
-                ' x comes after y
-                Return 1
-            End If
-
-            If Qx = 0 And Qy = 0 Then
-                ' Sort by name
-                Return String.Compare(tx.Text, ty.Text)
-            ElseIf Qx = 0 Or Qy = 0 Then
-                ' Sort assending, since a zero quantity is a base item and should go to the top
-                Return Qx.CompareTo(Qy)
-            Else
-                Return String.Compare(tx.Text, ty.Text)
-            End If
-
-        End Function
-
-    End Class
-
-    Private Class NodeQuantitySorter
-        Implements IComparer
-
-        ' Compare the length of the strings, or the strings  themselves, if they are the same length. 
-        Public Function Compare(ByVal x As Object, ByVal y As Object) As Integer Implements IComparer.Compare
-            Dim tx As TreeNode = CType(x, TreeNode)
-            Dim ty As TreeNode = CType(y, TreeNode)
-            Dim Qx As Long
-            Dim Qy As Long
-
-            ' Get the quantity for the nodes
-            Qx = GetNodeQuantity(tx)
-            Qy = GetNodeQuantity(ty)
-
-            ' Force Ship Hanger to top of tree
-            If tx.Text = "Ship Hangar" Then
-                ' y comes after x 
-                Return -1
-            ElseIf ty.Text = "Ship Hangar" Then
-                ' x comes after y
-                Return 1
-            End If
-
-            If Qx = 0 And Qy = 0 Then
-                ' Sort by name
-                Return String.Compare(tx.Text, ty.Text)
-            ElseIf Qx = 0 Or Qy = 0 Then
-                ' Sort assending, since a zero quanity is a base item and should go to the top
-                Return Qx.CompareTo(Qy)
-            Else
-                ' Sort descending
-                Return Qy.CompareTo(Qx)
-            End If
-
-        End Function
-
-    End Class
-
-    Private Shared Function GetNodeQuantity(ByRef SentTreeNode As TreeNode) As Long
-        Dim NodeQuantity As Long = 0
-
-        ' Get the quantity from the first string
-        If InStr(SentTreeNode.Text, QuantitySpacer) <> 0 Then
-            ' We can get the quantity - only find the last spacer at the end since the name can have dashes too
-            If IsNumeric(SentTreeNode.Text.Substring(SentTreeNode.Text.LastIndexOf(QuantitySpacer) + Len(QuantitySpacer) - 1)) Then
-                NodeQuantity = CLng(SentTreeNode.Text.Substring(SentTreeNode.Text.LastIndexOf(QuantitySpacer) + Len(QuantitySpacer) - 1))
-            End If
-        End If
-
-        Return NodeQuantity
-
-    End Function
-#End Region
-
-#Region "Asset List Sort Functions"
-    ' For sorting assets by name
-    Public Class AssetNameComparer
-
-        Implements IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by name alphabetically
-            Return p1.TypeName.CompareTo(p2.TypeName)
-        End Function
-
-    End Class
-
-    ' For sorting assets by quantity
-    Public Class AssetQuantityComparer
-
-        Implements IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by quantity decending
-            Return p2.Quantity.CompareTo(p1.Quantity)
-        End Function
-
-    End Class
-
-#End Region
-
     ' Returns count of assets in this object
     Public Function GetAssetCount() As Long
         Return AssetList.Count
@@ -989,6 +923,90 @@ Public Class EVEAssets
         End Get
     End Property
 
+    Private Class TreeEntryNameSorter
+        Implements IComparer(Of TreeEntry)
+
+        ' Compare the length of the strings, or the strings themselves, if they are the same length. 
+        Public Function Compare(ByVal x As TreeEntry, ByVal y As TreeEntry) As Integer Implements IComparer(Of TreeEntry).Compare
+
+            ' If container and has children then will go to the top but always use flag sort for order
+            If x.Container And y.Container And x.IsSingleton And y.IsSingleton Then
+                ' Do sort order, else compare the name if flagsort equal
+                If x.FlagSort < y.FlagSort Then
+                    ' y comes after x 
+                    Return -1
+                ElseIf x.FlagSort > y.FlagSort Then
+                    ' x comes after y
+                    Return 1
+                Else
+                    Return String.Compare(x.DisplayText, y.DisplayText)
+                End If
+            ElseIf (x.Container And x.IsSingleton) Or (y.Container And y.IsSingleton) Then ' One is a container so prioritize that
+                If x.Container Then ' y comes after x container
+                    Return -1
+                Else ' y is a container and x comes after it
+                    Return 1
+                End If
+            ElseIf (Not x.Container And x.IsSingleton) And (Not y.Container And y.IsSingleton) Then
+                ' Unpackaged items not containers, just compare names
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            ElseIf x.IsSingleton Or y.IsSingleton Then
+                ' Singleton items go above stacked items
+                If x.IsSingleton Then ' y comes after x unpackaged item
+                    Return -1
+                Else ' y is unpackaged and x comes after it
+                    Return 1
+                End If
+            Else
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            End If
+
+        End Function
+
+    End Class
+
+    Private Class TreeEntryQuantitySorter
+        Implements IComparer(Of TreeEntry)
+
+        ' Compare the length of the strings, or the strings themselves, if they are the same length. 
+        Public Function Compare(ByVal x As TreeEntry, ByVal y As TreeEntry) As Integer Implements IComparer(Of TreeEntry).Compare
+
+            ' If container and has children then will go to the top but always use flag sort for order
+            If x.Container And y.Container And x.IsSingleton And y.IsSingleton Then
+                ' Do sort order, else compare the name if flagsort equal
+                If x.FlagSort < y.FlagSort Then
+                    ' y comes after x 
+                    Return -1
+                ElseIf x.FlagSort > y.FlagSort Then
+                    ' x comes after y
+                    Return 1
+                Else
+                    Return String.Compare(x.DisplayText, y.DisplayText)
+                End If
+            ElseIf (x.Container And x.IsSingleton) Or (y.Container And y.IsSingleton) Then ' One is a container so prioritize that
+                If x.Container Then ' y comes after x container
+                    Return -1
+                Else ' y is a container and x comes after it
+                    Return 1
+                End If
+            ElseIf (Not x.Container And x.IsSingleton) And (Not y.Container And y.IsSingleton) Then
+                ' Unpackaged items not containers, just compare names
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            ElseIf x.IsSingleton Or y.IsSingleton Then
+                ' Singleton items go above stacked items
+                If x.IsSingleton Then ' y comes after x unpackaged item
+                    Return -1
+                Else ' y is unpackaged and x comes after it
+                    Return 1
+                End If
+            Else
+                Return y.Quantity.CompareTo(x.Quantity)
+            End If
+
+        End Function
+
+    End Class
+
 End Class
 
 Public Class EVEAsset
@@ -1002,6 +1020,7 @@ Public Class EVEAsset
     Public TypeCategory As String
     Public Quantity As Long
     Public FlagID As Integer
+    Public FlagSort As Integer ' How we sort this flag in relation to others
     Public FlagText As String ' Name of flag
     Public Container As Boolean ' if the item is in a container based on the flag
     Public IsSingleton As Boolean ' True is unpacked (not stackable), False is packed (stackable)
@@ -1017,6 +1036,7 @@ Public Class EVEAsset
         TypeGroup = ""
         Quantity = 0
         FlagID = 0
+        FlagSort = -1
         FlagText = ""
         Container = False
         IsSingleton = True
