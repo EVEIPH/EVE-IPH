@@ -56,7 +56,7 @@ Public Class frmUploadPriceHistoryData
         Dim RegionID As String = ""
 
         Dim rsItems As SQLiteDataReader
-        DBCommand = New SQLiteCommand("SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & cmbItems.Text & "'", EVEDB.DBREf)
+        DBCommand = New SQLiteCommand("SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_NAME = '" & FormatDBString(cmbItems.Text) & "'", EVEDB.DBREf)
         rsItems = DBCommand.ExecuteReader
 
         If rsItems.Read Then
