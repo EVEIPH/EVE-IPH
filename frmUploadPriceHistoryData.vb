@@ -137,7 +137,7 @@ Public Class frmUploadPriceHistoryData
                 SQL &= " WHERE ITEM_GROUP = '" & cmbItemGroup.Text & "'"
             End If
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(SQL & " ORDER BY ITEM_NAME", EVEDB.DBREf)
             rsItems = DBCommand.ExecuteReader
 
             While rsItems.Read()
