@@ -942,6 +942,7 @@ Partial Class frmMain
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
         Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.chkMineIncludeA0StarOres = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.ListOptionsMenu.SuspendLayout
@@ -3699,6 +3700,7 @@ Partial Class frmMain
         '
         'gbMineIncludeOres
         '
+        Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeA0StarOres)
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeHighSec)
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeNullSec)
         Me.gbMineIncludeOres.Controls.Add(Me.chkMineIncludeLowSec)
@@ -3713,7 +3715,7 @@ Partial Class frmMain
         'chkMineIncludeHighSec
         '
         Me.chkMineIncludeHighSec.AutoSize = True
-        Me.chkMineIncludeHighSec.Location = New System.Drawing.Point(9, 18)
+        Me.chkMineIncludeHighSec.Location = New System.Drawing.Point(9, 13)
         Me.chkMineIncludeHighSec.Name = "chkMineIncludeHighSec"
         Me.chkMineIncludeHighSec.Size = New System.Drawing.Size(95, 17)
         Me.chkMineIncludeHighSec.TabIndex = 0
@@ -3723,7 +3725,7 @@ Partial Class frmMain
         'chkMineIncludeNullSec
         '
         Me.chkMineIncludeNullSec.AutoSize = True
-        Me.chkMineIncludeNullSec.Location = New System.Drawing.Point(9, 52)
+        Me.chkMineIncludeNullSec.Location = New System.Drawing.Point(9, 47)
         Me.chkMineIncludeNullSec.Name = "chkMineIncludeNullSec"
         Me.chkMineIncludeNullSec.Size = New System.Drawing.Size(91, 17)
         Me.chkMineIncludeNullSec.TabIndex = 2
@@ -3733,7 +3735,7 @@ Partial Class frmMain
         'chkMineIncludeLowSec
         '
         Me.chkMineIncludeLowSec.AutoSize = True
-        Me.chkMineIncludeLowSec.Location = New System.Drawing.Point(9, 35)
+        Me.chkMineIncludeLowSec.Location = New System.Drawing.Point(9, 30)
         Me.chkMineIncludeLowSec.Name = "chkMineIncludeLowSec"
         Me.chkMineIncludeLowSec.Size = New System.Drawing.Size(93, 17)
         Me.chkMineIncludeLowSec.TabIndex = 1
@@ -3743,7 +3745,7 @@ Partial Class frmMain
         'chkMineIncludeHighYieldOre
         '
         Me.chkMineIncludeHighYieldOre.AutoSize = True
-        Me.chkMineIncludeHighYieldOre.Location = New System.Drawing.Point(9, 74)
+        Me.chkMineIncludeHighYieldOre.Location = New System.Drawing.Point(9, 81)
         Me.chkMineIncludeHighYieldOre.Name = "chkMineIncludeHighYieldOre"
         Me.chkMineIncludeHighYieldOre.Size = New System.Drawing.Size(99, 17)
         Me.chkMineIncludeHighYieldOre.TabIndex = 3
@@ -10246,6 +10248,16 @@ Partial Class frmMain
         Me.tabMain.Size = New System.Drawing.Size(1145, 641)
         Me.tabMain.TabIndex = 1
         '
+        'chkMineIncludeA0StarOres
+        '
+        Me.chkMineIncludeA0StarOres.AutoSize = True
+        Me.chkMineIncludeA0StarOres.Location = New System.Drawing.Point(9, 64)
+        Me.chkMineIncludeA0StarOres.Name = "chkMineIncludeA0StarOres"
+        Me.chkMineIncludeA0StarOres.Size = New System.Drawing.Size(86, 17)
+        Me.chkMineIncludeA0StarOres.TabIndex = 4
+        Me.chkMineIncludeA0StarOres.Text = "A0 Star Ores"
+        Me.chkMineIncludeA0StarOres.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -11389,4 +11401,5 @@ Partial Class frmMain
     Friend WithEvents mnuHelp As ToolStripMenuItem
     Friend WithEvents mnuYouTube As ToolStripMenuItem
     Friend WithEvents mnuDiscord As ToolStripMenuItem
+    Friend WithEvents chkMineIncludeA0StarOres As CheckBox
 End Class

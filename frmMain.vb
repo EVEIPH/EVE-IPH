@@ -17788,6 +17788,7 @@ Leave:
 
         If cmbMineOreType.Text = "Ice" Then
             chkMineIncludeHighYieldOre.Enabled = False
+            chkMineIncludeA0StarOres.Enabled = False
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Text = "High Yield Ice"
             chkMineIncludeHighSec.Text = "High Sec Ice"
@@ -17802,6 +17803,7 @@ Leave:
         ElseIf cmbMineOreType.Text = "Ore" Then
             gbMiningRigs.Enabled = True
             chkMineIncludeHighYieldOre.Enabled = True
+            chkMineIncludeA0StarOres.Enabled = True
             chkMineIncludeHighYieldOre.Text = "High Yield Ores"
             chkMineIncludeHighSec.Text = "High Sec Ore"
             chkMineIncludeLowSec.Text = "Low Sec Ore"
@@ -17815,6 +17817,7 @@ Leave:
         ElseIf cmbMineOreType.Text = "Gas" Then
             gbMiningRigs.Enabled = False
             chkMineIncludeHighYieldOre.Enabled = False
+            chkMineIncludeA0StarOres.Enabled = False
             chkMineIncludeHighYieldOre.Text = "High Yield Gas"
             chkMineIncludeHighSec.Text = "High Sec Gas"
             chkMineIncludeLowSec.Text = "Low Sec Gas"
@@ -18375,6 +18378,7 @@ Leave:
             cmbMineOreType.Text = .OreType
 
             chkMineIncludeHighYieldOre.Checked = .CheckHighYieldOres
+            chkMineIncludeA0StarOres.Checked = .CheckA0Ores
             chkMineIncludeHighSec.Checked = .CheckHighSecOres
             chkMineIncludeLowSec.Checked = .CheckLowSecOres
             chkMineIncludeNullSec.Checked = .CheckNullSecOres
@@ -18710,11 +18714,24 @@ Leave:
         ' First determine what type of stuff we are mining
         SQLMain = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE, BELT_TYPE FROM ORES, ORE_LOCATIONS "
         SQL = "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
+        Dim BeltTypes As New List(Of String)
+        Dim BeltTypeSQL As String = "AND ("
+        ' Always add type
+        BeltTypes.Add("'" & cmbMineOreType.Text & "'")
+
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
-            SQL &= "AND (BELT_TYPE = '" & cmbMineOreType.Text & "' OR BELT_TYPE LIKE '%Moon Asteroid%') "
-        Else
-            SQL &= "AND BELT_TYPE = '" & cmbMineOreType.Text & "' "
+            BeltTypes.Add("'%Moon Asteroid%'")
         End If
+
+        If chkMineIncludeA0StarOres.Checked Then
+            BeltTypes.Add("'A0 Ore'")
+        End If
+
+        For Each BT In BeltTypes
+            BeltTypeSQL &= "BELT_TYPE = " & BT & " OR "
+        Next
+
+        SQL &= BeltTypeSQL.Substring(0, Len(BeltTypeSQL) - 4) & ") "
 
         ' See if we want High yield ores
         If MiningType = MiningOreType.Ice Then
@@ -18731,13 +18748,13 @@ Leave:
         ' See where we want this for security
         SQL &= "AND SYSTEM_SECURITY IN ("
 
-        If chkMineIncludeHighSec.Checked = True Then
+        If chkMineIncludeHighSec.Checked Then
             SQL &= "'High Sec',"
         End If
-        If chkMineIncludeLowSec.Checked = True Then
+        If chkMineIncludeLowSec.Checked Then
             SQL &= "'Low Sec',"
         End If
-        If chkMineIncludeNullSec.Checked = True Then
+        If chkMineIncludeNullSec.Checked Then
             SQL &= "'Null Sec',"
         End If
 
@@ -19486,6 +19503,7 @@ Leave:
             .CheckLowSecOres = chkMineIncludeLowSec.Checked
             .CheckNullSecOres = chkMineIncludeNullSec.Checked
             .CheckHighYieldOres = chkMineIncludeHighYieldOre.Checked
+            .CheckA0Ores = chkMineIncludeA0StarOres.Checked
 
             .RefinedOre = chkMineRefinedOre.Checked
             .UnrefinedOre = chkMineUnrefinedOre.Checked
