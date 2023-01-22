@@ -351,6 +351,7 @@ Public Class ProgramSettings
     Public DefaultMiningCheckHighSecOres As Boolean = True
     Public DefaultMiningCheckLowSecOres As Boolean = False
     Public DefaultMiningCheckNullSecOres As Boolean = False
+    Public DefaultMiningCheckA0Ores As Boolean = False
     Public DefaultMiningCheckSovAmarr As Boolean = True
     Public DefaultMiningCheckSovCaldari As Boolean = True
     Public DefaultMiningCheckSovGallente As Boolean = True
@@ -2579,6 +2580,7 @@ Public Class ProgramSettings
                     .CheckHighSecOres = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckHighSecOres", DefaultMiningCheckHighSecOres))
                     .CheckLowSecOres = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckLowSecOres", DefaultMiningCheckLowSecOres))
                     .CheckNullSecOres = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckNullSecOres", DefaultMiningCheckNullSecOres))
+                    .CheckA0Ores = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckA0Ores", DefaultMiningCheckA0Ores))
                     .CheckSovAmarr = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovAmarr", DefaultMiningCheckSovAmarr))
                     .CheckSovCaldari = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovCaldari", DefaultMiningCheckSovCaldari))
                     .CheckSovGallente = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckSovGallente", DefaultMiningCheckSovGallente))
@@ -2703,6 +2705,7 @@ Public Class ProgramSettings
             .CheckHighSecOres = DefaultMiningCheckHighSecOres
             .CheckLowSecOres = DefaultMiningCheckLowSecOres
             .CheckNullSecOres = DefaultMiningCheckNullSecOres
+            .CheckA0Ores = DefaultMiningCheckA0Ores
             .CheckSovAmarr = DefaultMiningCheckSovAmarr
             .CheckSovCaldari = DefaultMiningCheckSovCaldari
             .CheckSovGallente = DefaultMiningCheckSovGallente
@@ -2811,7 +2814,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(98) As Setting
+        Dim MiningSettingsList(99) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2923,6 +2926,7 @@ Public Class ProgramSettings
             MiningSettingsList(97) = New Setting("CrystalTypeC", CStr(SentSettings.CrystalTypeC))
 
             MiningSettingsList(98) = New Setting("CheckEDENCOM", CStr(SentSettings.CheckEDENCOM))
+            MiningSettingsList(99) = New Setting("CheckA0Ores", CStr(SentSettings.CheckA0Ores))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5787,6 +5791,7 @@ Public Structure MiningTabSettings
     Dim CheckHighSecOres As Boolean
     Dim CheckLowSecOres As Boolean
     Dim CheckNullSecOres As Boolean
+    Dim CheckA0Ores As Boolean
 
     Dim CheckSovAmarr As Boolean
     Dim CheckSovCaldari As Boolean
