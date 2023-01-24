@@ -18296,22 +18296,18 @@ Leave:
         ' First determine what type of stuff we are mining
         SQLMain = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE, BELT_TYPE FROM ORES, ORE_LOCATIONS "
         SQL = "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
-        Dim BeltTypes As New List(Of String)
+        Dim BeltTypes As String = ""
         Dim BeltTypeSQL As String = "AND ("
         ' Always add type
-        BeltTypes.Add("'" & cmbMineOreType.Text & "'")
+        BeltTypeSQL &= "BELT_TYPE = '" & cmbMineOreType.Text & "' OR "
 
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
-            BeltTypes.Add("'%Moon Asteroid%'")
+            BeltTypeSQL &= "BELT_TYPE LIKE('%Moon Asteroid%') OR "
         End If
 
         If chkMineIncludeA0StarOres.Checked Then
-            BeltTypes.Add("'A0 Ore'")
+            BeltTypeSQL &= "BELT_TYPE = 'A0 Ore' OR "
         End If
-
-        For Each BT In BeltTypes
-            BeltTypeSQL &= "BELT_TYPE = " & BT & " OR "
-        Next
 
         SQL &= BeltTypeSQL.Substring(0, Len(BeltTypeSQL) - 4) & ") "
 
