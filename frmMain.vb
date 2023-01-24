@@ -18714,22 +18714,19 @@ Leave:
         ' First determine what type of stuff we are mining
         SQLMain = "SELECT ORES.ORE_ID, ORE_NAME, ORE_VOLUME, UNITS_TO_REFINE, SPACE, BELT_TYPE FROM ORES, ORE_LOCATIONS "
         SQL = "WHERE ORES.ORE_ID = ORE_LOCATIONS.ORE_ID "
-        Dim BeltTypes As New List(Of String)
+
         Dim BeltTypeSQL As String = "AND ("
+
         ' Always add type
-        BeltTypes.Add("'" & cmbMineOreType.Text & "'")
+        BeltTypeSQL &= "BELT_TYPE = '" & cmbMineOreType.Text & "' OR "
 
         If chkMineMoonMining.Checked = True And chkMineMoonMining.Enabled = True Then
-            BeltTypes.Add("'%Moon Asteroid%'")
+            BeltTypeSQL &= "BELT_TYPE LIKE('%Moon Asteroid%') OR "
         End If
 
         If chkMineIncludeA0StarOres.Checked Then
-            BeltTypes.Add("'A0 Ore'")
+            BeltTypeSQL &= "BELT_TYPE = 'A0 Ore' OR "
         End If
-
-        For Each BT In BeltTypes
-            BeltTypeSQL &= "BELT_TYPE = " & BT & " OR "
-        Next
 
         SQL &= BeltTypeSQL.Substring(0, Len(BeltTypeSQL) - 4) & ") "
 
@@ -19254,18 +19251,19 @@ Leave:
                 MoonType = ""
                 If OreList(i).Space = "Moon" Then
                     ' Add the type of moon this comes from
-                    Select Case OreList(i).OreName
-                        Case "Bitumens", "Coesite", "Sylvite", "Zeolites"
+                    With OreList(i).OreName
+                        If .Contains("Bitumens") Or .Contains("Coesite") Or .Contains("Sylvite") Or .Contains("Zeolites") Then
                             MoonType = " (R4)"
-                        Case "Cobaltite", "Euxenite", "Scheelite", "Titanite"
+                        ElseIf .Contains("Cobaltite") Or .Contains("Euxenite") Or .Contains("Scheelite") Or .Contains("Titanite") Then
                             MoonType = " (R8)"
-                        Case "Chromite", "Otavite", "Sperrylite", "Vanadinite"
+                        ElseIf .Contains("Chromite") Or .Contains("Otavite") Or .Contains("Sperrylite") Or .Contains("Vanadinite") Then
                             MoonType = " (R16)"
-                        Case "Carnotite", "Cinnabar", "Pollucite", "Zircon"
+                        ElseIf .Contains("Carnotite") Or .Contains("Cinnabar") Or .Contains("Pollucite") Or .Contains("Zircon") Then
                             MoonType = " (R32)"
-                        Case "Loparite", "Monazite", "Xenotime", "Ytterbite"
+                        ElseIf .Contains("Loparite") Or .Contains("Monazite") Or .Contains("Xenotime") Or .Contains("Ytterbite") Then
                             MoonType = " (R64)"
-                    End Select
+                        End If
+                    End With
                 End If
                 lstOreRow.SubItems.Add(OreList(i).OreName & MoonType)
                 lstOreRow.SubItems.Add(OreList(i).RefineType)
