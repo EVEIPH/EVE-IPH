@@ -18832,18 +18832,19 @@ Leave:
                 MoonType = ""
                 If OreList(i).Space = "Moon" Then
                     ' Add the type of moon this comes from
-                    Select Case OreList(i).OreName
-                        Case "Bitumens", "Coesite", "Sylvite", "Zeolites"
+                    With OreList(i).OreName
+                        If .Contains("Bitumens") Or .Contains("Coesite") Or .Contains("Sylvite") Or .Contains("Zeolites") Then
                             MoonType = " (R4)"
-                        Case "Cobaltite", "Euxenite", "Scheelite", "Titanite"
+                        ElseIf .Contains("Cobaltite") Or .Contains("Euxenite") Or .Contains("Scheelite") Or .Contains("Titanite") Then
                             MoonType = " (R8)"
-                        Case "Chromite", "Otavite", "Sperrylite", "Vanadinite"
+                        ElseIf .Contains("Chromite") Or .Contains("Otavite") Or .Contains("Sperrylite") Or .Contains("Vanadinite") Then
                             MoonType = " (R16)"
-                        Case "Carnotite", "Cinnabar", "Pollucite", "Zircon"
+                        ElseIf .Contains("Carnotite") Or .Contains("Cinnabar") Or .Contains("Pollucite") Or .Contains("Zircon") Then
                             MoonType = " (R32)"
-                        Case "Loparite", "Monazite", "Xenotime", "Ytterbite"
+                        ElseIf .Contains("Loparite") Or .Contains("Monazite") Or .Contains("Xenotime") Or .Contains("Ytterbite") Then
                             MoonType = " (R64)"
-                    End Select
+                        End If
+                    End With
                 End If
                 lstOreRow.SubItems.Add(OreList(i).OreName & MoonType)
                 lstOreRow.SubItems.Add(OreList(i).RefineType)
