@@ -127,6 +127,7 @@ Public Class ProgramSettings
     Public DefaultAlphaAccount As Boolean = False
     Public DefaultUseActiveSkills As Boolean = False
     Public DefaultLoadMaxAlphaSkills As Boolean = False
+    Public DefaultCorpJobsViewOverride As Boolean = False
 
     ' SVR Stuff
     Public DefaultIgnoreSVRThresholdValue As Double = 0.0
@@ -1278,6 +1279,7 @@ Public Class ProgramSettings
                     .AlphaAccount = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlphaAccount", DefaultAlphaAccount))
                     .UseActiveSkillLevels = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "UseActiveSkillLevels", DefaultUseActiveSkills))
                     .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
+                    .CorpJobsViewOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "CorpJobsViewOverride", DefaultCorpJobsViewOverride))
                     .ShareSavedFacilities = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShareSavedFacilities", DefaultDisableGATracking))
                     .RefineDrillDown = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "RefineDrillDown", DefaultRefineDrillDown))
                 End With
@@ -1332,6 +1334,7 @@ Public Class ProgramSettings
             .AlphaAccount = DefaultAlphaAccount
             .UseActiveSkillLevels = DefaultUseActiveSkills
             .LoadMaxAlphaSkills = DefaultLoadMaxAlphaSkills
+            .CorpJobsViewOverride = DefaultCorpJobsViewOverride
 
             .DisableSVR = DefaultDisableSVR
             .DisableGATracking = DefaultDisableGATracking
@@ -1413,6 +1416,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(38) = New Setting("RefineDrillDown", CStr(SentSettings.RefineDrillDown))
             ApplicationSettingsList(39) = New Setting("AlwaysBuyFuelBlocks", CStr(SentSettings.AlwaysBuyFuelBlocks))
             ApplicationSettingsList(40) = New Setting("AlwaysBuyRAMs", CStr(SentSettings.AlwaysBuyRAMs))
+            ApplicationSettingsList(36) = New Setting("CorpJobsViewOverride", CStr(SentSettings.CorpJobsViewOverride))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -5406,6 +5410,7 @@ Public Structure ApplicationSettings
     Dim AlphaAccount As Boolean ' Check to determine if they are using an alpha account or not
     Dim UseActiveSkillLevels As Boolean ' Use active skill levels instead of trained - useful for omega on alpha currently
     Dim LoadMaxAlphaSkills As Boolean ' Load the max alpha skills for dummy accounts
+    Dim CorpJobsViewOverride As Boolean ' Allow viewing of corp industry jobs regardless of default character roles
 
     ' For shopping list
     Dim ShopListIncludeInventMats As Boolean

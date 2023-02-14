@@ -18,7 +18,7 @@ Partial Class frmSettings
     Private components As System.ComponentModel.IContainer
 
     'NOTE: The following procedure is required by the Windows Form Designer
-    'It can be modified using the Windows Form Designer.  
+    'It can be modified using the Windows Form Designer.
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
@@ -95,6 +95,7 @@ Partial Class frmSettings
         Me.chkLoadMaxAlphaSkills = New System.Windows.Forms.CheckBox()
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
+        Me.chkCorpJobsViewOverride = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -121,7 +122,7 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(348, 413)
+        Me.btnSave.Location = New System.Drawing.Point(347, 419)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
@@ -130,7 +131,7 @@ Partial Class frmSettings
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(558, 413)
+        Me.btnCancel.Location = New System.Drawing.Point(559, 418)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
@@ -344,7 +345,7 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(453, 413)
+        Me.btnReset.Location = New System.Drawing.Point(454, 418)
         Me.btnReset.Name = "btnReset"
         Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
@@ -360,7 +361,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 174)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 191)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
@@ -618,9 +619,9 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(246, 347)
+        Me.gbExportOptions.Location = New System.Drawing.Point(246, 365)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(95, 102)
+        Me.gbExportOptions.Size = New System.Drawing.Size(95, 84)
         Me.gbExportOptions.TabIndex = 38
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
@@ -628,7 +629,7 @@ Partial Class frmSettings
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 71)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 61)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -639,7 +640,7 @@ Partial Class frmSettings
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 48)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 40)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -650,7 +651,7 @@ Partial Class frmSettings
         'rbtnExportDefault
         '
         Me.rbtnExportDefault.AutoSize = True
-        Me.rbtnExportDefault.Location = New System.Drawing.Point(9, 25)
+        Me.rbtnExportDefault.Location = New System.Drawing.Point(9, 19)
         Me.rbtnExportDefault.Name = "rbtnExportDefault"
         Me.rbtnExportDefault.Size = New System.Drawing.Size(59, 17)
         Me.rbtnExportDefault.TabIndex = 0
@@ -744,9 +745,9 @@ Partial Class frmSettings
         Me.gbProxySettings.Controls.Add(Me.lblProxyAddress)
         Me.gbProxySettings.Controls.Add(Me.txtProxyPort)
         Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
-        Me.gbProxySettings.Location = New System.Drawing.Point(347, 347)
+        Me.gbProxySettings.Location = New System.Drawing.Point(347, 365)
         Me.gbProxySettings.Name = "gbProxySettings"
-        Me.gbProxySettings.Size = New System.Drawing.Size(311, 60)
+        Me.gbProxySettings.Size = New System.Drawing.Size(311, 52)
         Me.gbProxySettings.TabIndex = 41
         Me.gbProxySettings.TabStop = False
         Me.gbProxySettings.Text = "Proxy Settings:"
@@ -790,9 +791,10 @@ Partial Class frmSettings
         Me.gbCharacterOptions.Controls.Add(Me.chkLoadMaxAlphaSkills)
         Me.gbCharacterOptions.Controls.Add(Me.chkUseActiveSkills)
         Me.gbCharacterOptions.Controls.Add(Me.chkAlphaAccount)
+        Me.gbCharacterOptions.Controls.Add(Me.chkCorpJobsViewOverride)
         Me.gbCharacterOptions.Location = New System.Drawing.Point(246, 265)
         Me.gbCharacterOptions.Name = "gbCharacterOptions"
-        Me.gbCharacterOptions.Size = New System.Drawing.Size(160, 80)
+        Me.gbCharacterOptions.Size = New System.Drawing.Size(160, 100)
         Me.gbCharacterOptions.TabIndex = 39
         Me.gbCharacterOptions.TabStop = False
         Me.gbCharacterOptions.Text = "Character Options:"
@@ -827,12 +829,22 @@ Partial Class frmSettings
         Me.chkAlphaAccount.Text = "Alpha Account (2% tax)"
         Me.chkAlphaAccount.UseVisualStyleBackColor = True
         '
+        'chkCorpJobsViewOverride
+        '
+        Me.chkCorpJobsViewOverride.AutoSize = True
+        Me.chkCorpJobsViewOverride.Location = New System.Drawing.Point(9, 77)
+        Me.chkCorpJobsViewOverride.Name = "chkCorpJobsViewOverride"
+        Me.chkCorpJobsViewOverride.Size = New System.Drawing.Size(152, 17)
+        Me.chkCorpJobsViewOverride.TabIndex = 43
+        Me.chkCorpJobsViewOverride.Text = "View Industry Job Override"
+        Me.chkCorpJobsViewOverride.UseVisualStyleBackColor = True
+        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(665, 452)
+        Me.ClientSize = New System.Drawing.Size(665, 454)
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
@@ -950,6 +962,7 @@ Partial Class frmSettings
     Friend WithEvents chkAlphaAccount As CheckBox
     Friend WithEvents chkSupressESImsgs As CheckBox
     Friend WithEvents chkLoadMaxAlphaSkills As CheckBox
+    Friend WithEvents chkCorpJobsViewOverride As CheckBox
     Friend WithEvents chkShareFacilities As CheckBox
     Friend WithEvents chkAlwaysBuyRAMs As CheckBox
     Friend WithEvents chkAlwaysBuyFuelBlocks As CheckBox

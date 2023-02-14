@@ -353,6 +353,7 @@ Public Class frmSettings
                 .SetToolTip(chkAlphaAccount, "When checked, IPH will calculate costs adding the 2% industry tax on industry and science jobs")
                 .SetToolTip(chkUseActiveSkills, "When checked, IPH will use active skills instead of trained skills for calculations (useful for unsubscribed Omega accounts in Alpha)")
                 .SetToolTip(chkLoadMaxAlphaSkills, "When checked, IPH will load the maximum trainable alpha skills for a dummy character.")
+                .SetToolTip(chkCorpJobsViewOverride, "Allow viewing of corporation industry jobs even when the default character does not have the required roles")
 
                 ' Tips by Group box
                 .SetToolTip(gbImplants, "Select implants to use with selected characters for industry calculations")
@@ -485,6 +486,7 @@ Public Class frmSettings
             chkAlphaAccount.Checked = .AlphaAccount
             chkUseActiveSkills.Checked = .UseActiveSkillLevels
             chkLoadMaxAlphaSkills.Checked = .LoadMaxAlphaSkills
+            chkCorpJobsViewOverride.Checked = .CorpJobsViewOverride
 
             chkLinksInCopyText.Checked = .IncludeInGameLinksinCopyText
 
@@ -683,6 +685,7 @@ Public Class frmSettings
                 .AlphaAccount = chkAlphaAccount.Checked
                 .UseActiveSkillLevels = chkUseActiveSkills.Checked
                 .LoadMaxAlphaSkills = chkLoadMaxAlphaSkills.Checked
+                .CorpJobsViewOverride = chkCorpJobsViewOverride.Checked
 
                 .ShopListIncludeInventMats = chkIncludeShopListInventMats.Checked
                 .ShopListIncludeCopyMats = chkIncludeShopListCopyMats.Checked
@@ -733,7 +736,7 @@ Public Class frmSettings
 
             ' If they changed what the original value was for the shared facilities, reload them
             If ReloadFacilties Then
-                ' Load all the forms' facilities 
+                ' Load all the forms' facilities
                 Call frmMain.LoadFacilities()
 
                 If ReprocessingPlantOpen Then

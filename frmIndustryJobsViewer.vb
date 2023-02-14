@@ -99,7 +99,7 @@ Public Class frmIndustryJobsViewer
         Else
             gbInventionJobs.Enabled = True
 
-            If SelectedCharacter.CharacterCorporation.JobsAccess Then
+            If SelectedCharacter.CharacterCorporation.JobsAccess Or UserApplicationSettings.CorpJobsViewOverride Then
                 rbtnBothJobs.Enabled = True
                 rbtnCorpJobs.Enabled = True
             Else
@@ -301,7 +301,7 @@ Public Class frmIndustryJobsViewer
             End Select
 
             lstIndustryJobs.ListViewItemSorter = Nothing
-            ' Always add the end time to column 0 for sorting 
+            ' Always add the end time to column 0 for sorting
             lstJobRow = New ListViewItem(rsJobs.GetString(6))
             lstJobRow.UseItemStyleForSubItems = False
 
