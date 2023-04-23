@@ -9,7 +9,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "November 8, 2022 Release"
+    Public Const SDEVersion As String = "March 15, 2023 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -595,7 +595,7 @@ Public Module Public_Variables
 
     ' Converts a time in d h m s to a long of seconds - 3d 12h 2m 33s or 1 Day 12:23:33
     Public Function ConvertDHMSTimetoSeconds(ByVal SentTime As String) As Long
-        Dim Days As Integer = 0
+        Dim Days As Long = 0
         Dim Hours As Integer = 0
         Dim Minutes As Integer = 0
         Dim Seconds As Integer = 0
@@ -2056,16 +2056,32 @@ SkipItem:
     End Function
 
     Public Function ConvertEUDecimaltoUSDecimal(ByVal EUFormatedValue As String) As String
-        Dim TempString As String = ""
+        Dim TempValue As String = EUFormatedValue
 
+        ' EU string can be 1.000.000,00 or 1000000,00
         If EUFormatedValue.Contains(",") Then
-            ' This is the EU decimal so change to us
-            TempString = EUFormatedValue.Replace(",", ".")
-        Else
-            TempString = EUFormatedValue
+            ' This is the EU decimal so change to US version
+            TempValue = EUFormatedValue.Replace(",", ".")
         End If
 
-        Return TempString
+        Return TempValue
+
+    End Function
+
+    Public Function ConvertPriceHistoryEUDecimal(ByVal HistoryValue As String) As String
+        Dim TempValue As String = HistoryValue
+
+        If Len(HistoryValue) > 2 Then
+            If HistoryValue.Substring(Len(HistoryValue) - 3, 1) = "," Then
+                ' EU value, so convert remove the decimals
+                TempValue = HistoryValue.Replace(".", "")
+                TempValue = TempValue.Replace(",", ".")
+            End If
+            ' Both formats need commas removed if there are any
+            TempValue = TempValue.Replace(",", "")
+        End If
+
+        Return TempValue
 
     End Function
 

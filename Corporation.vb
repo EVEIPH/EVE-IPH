@@ -38,7 +38,7 @@ Public Class Corporation
     End Sub
 
     ' Loads the corporation data from token information sent
-    Public Sub LoadCorporationData(ByVal CorpID As Long, ByVal CharacterID As Long, ByVal CharacterTokenData As SavedTokenData,
+    Public Sub LoadCorporationData(ByVal CorpID As Long, ByVal CharacterTokenData As SavedTokenData,
                                    RefreshAssets As Boolean, RefreshBlueprints As Boolean, Optional ResetData As Boolean = True)
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
@@ -78,7 +78,7 @@ Public Class Corporation
 
         ' See what permissions we have access to in the corporation for this character and only query those we can see
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationMembership) Then
-            Dim CharacterCorpRoles As List(Of String) = GetCorporationRoles(CharacterID, CorporationID, CharacterTokenData)
+            Dim CharacterCorpRoles As List(Of String) = GetCorporationRoles(CorporationID, CharacterTokenData)
 
             For Each Role In CharacterCorpRoles
                 Select Case Role
@@ -183,7 +183,7 @@ Public Class Corporation
 
     End Sub
 
-    Private Function GetCorporationRoles(CharacterID As Long, CorporationID As Long, TokenData As SavedTokenData) As List(Of String)
+    Public Function GetCorporationRoles(CorporationID As Long, TokenData As SavedTokenData) As List(Of String)
         Dim RoleESI As New ESI
         Dim RoleData As List(Of ESICorporationRoles)
         Dim ReturnRoles As New List(Of String)
@@ -195,10 +195,10 @@ Public Class Corporation
 
         If CB.DataUpdateable(CacheDateType.CorporateRoles, CorporationID) Then
             ' Get all the roles for all characters in corporation. Note, the roles can only be pulled for a character with personnel manager
-            RoleData = RoleESI.GetCorporationRoles(CharacterID, CorporationID, TokenData, CacheDate)
+            RoleData = RoleESI.GetCorporationRoles(TokenData.CharacterID, CorporationID, TokenData, CacheDate)
 
             ' Delete current role data and update
-            Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}", CorporationID, CharacterID))
+            Call EVEDB.ExecuteNonQuerySQL(String.Format("DELETE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}", CorporationID, TokenData.CharacterID))
 
             If Not IsNothing(RoleData) Then
                 Call EVEDB.BeginSQLiteTransaction()
@@ -217,7 +217,7 @@ Public Class Corporation
 
         ' Look up roles for the character sent in DB
         SQL = "SELECT ROLE FROM ESI_CORPORATION_ROLES WHERE CORPORATION_ID = {0} AND CHARACTER_ID = {1}"
-        DBCommand = New SQLiteCommand(String.Format(SQL, CorporationID, CharacterID), EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(String.Format(SQL, CorporationID, TokenData.CharacterID), EVEDB.DBREf)
         rsRoles = DBCommand.ExecuteReader
 
         While rsRoles.Read

@@ -49,6 +49,7 @@ Public Class frmAddCharacter
     Private Sub btnEVESSOLogin_Click(sender As Object, e As EventArgs) Handles btnEVESSOLogin.Click
         Dim ESIConnection As New ESI
         Dim CharacterData As New SavedTokenData
+        Dim CharCorpID As Long = 0
 
         Me.Cursor = Cursors.WaitCursor
         Call EnableDisableForm(False) ' Disable until we return
@@ -61,15 +62,15 @@ Public Class frmAddCharacter
         ESIScopesString = "esi-skills.read_skills.v1 " & ESIScopesString
 
         ' Set the new character data first. This will load the data in the table or update it if they choose a character already loaded
-        If ESIConnection.SetCharacterData(False, CharacterData, "", False, True) Then
+        If ESIConnection.SetCharacterData(False, CharacterData, "", False, True, CharCorpID) Then
 
             ' Refresh the token data to get new scopes list if they added/removed
-            If SelectedCharacter.ID <> DummyCharacterID And SelectedCharacter.ID > 0 Then
-                Call SelectedCharacter.RefreshTokenData()
+            If CharacterData.CharacterID <> DummyCharacterID And CharacterData.CharacterID > 0 Then
+                Call SelectedCharacter.RefreshTokenData(CharacterData.CharacterID, CharCorpID)
             End If
 
             ' If they loaded a character for the first time, set it from Dummy to this character as the default
-            If SelectedCharacter.ID = DummyCharacterID Then
+            If CharacterData.CharacterID = DummyCharacterID Then
                 ' See if only one other character exists in db (the one we just added)
                 Dim rsCheck As SQLiteDataReader
                 DBCommand = New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & DummyCharacterID, EVEDB.DBREf)

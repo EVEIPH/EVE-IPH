@@ -86,10 +86,11 @@ Partial Class AssetViewer
         Me.chkCapitalShipComponents = New System.Windows.Forms.CheckBox()
         Me.chkCapT2Components = New System.Windows.Forms.CheckBox()
         Me.gbItems = New System.Windows.Forms.GroupBox()
+        Me.chkNobuild = New System.Windows.Forms.CheckBox()
+        Me.chkImplants = New System.Windows.Forms.CheckBox()
         Me.chkBoosters = New System.Windows.Forms.CheckBox()
         Me.chkDeployables = New System.Windows.Forms.CheckBox()
         Me.chkStructureModules = New System.Windows.Forms.CheckBox()
-        Me.chkImplants = New System.Windows.Forms.CheckBox()
         Me.chkCelestials = New System.Windows.Forms.CheckBox()
         Me.chkStructures = New System.Windows.Forms.CheckBox()
         Me.chkStructureRigs = New System.Windows.Forms.CheckBox()
@@ -118,7 +119,6 @@ Partial Class AssetViewer
         Me.btnToggleRetract = New System.Windows.Forms.Button()
         Me.btnCheckToggle = New System.Windows.Forms.Button()
         Me.btnToggleExpand = New System.Windows.Forms.Button()
-        Me.chkNobuild = New System.Windows.Forms.CheckBox()
         Me.tabMain.SuspendLayout()
         Me.tabAssetMain.SuspendLayout()
         Me.gbAssetTypes.SuspendLayout()
@@ -821,6 +821,26 @@ Partial Class AssetViewer
         Me.gbItems.TabStop = False
         Me.gbItems.Text = "Items"
         '
+        'chkNobuild
+        '
+        Me.chkNobuild.AutoSize = True
+        Me.chkNobuild.Location = New System.Drawing.Point(182, 111)
+        Me.chkNobuild.Name = "chkNobuild"
+        Me.chkNobuild.Size = New System.Drawing.Size(66, 17)
+        Me.chkNobuild.TabIndex = 21
+        Me.chkNobuild.Text = "No Build"
+        Me.chkNobuild.UseVisualStyleBackColor = True
+        '
+        'chkImplants
+        '
+        Me.chkImplants.AutoSize = True
+        Me.chkImplants.Location = New System.Drawing.Point(119, 111)
+        Me.chkImplants.Name = "chkImplants"
+        Me.chkImplants.Size = New System.Drawing.Size(65, 17)
+        Me.chkImplants.TabIndex = 251
+        Me.chkImplants.Text = "Implants"
+        Me.chkImplants.UseVisualStyleBackColor = True
+        '
         'chkBoosters
         '
         Me.chkBoosters.AutoSize = True
@@ -850,16 +870,6 @@ Partial Class AssetViewer
         Me.chkStructureModules.TabIndex = 254
         Me.chkStructureModules.Text = "Structure Modules"
         Me.chkStructureModules.UseVisualStyleBackColor = True
-        '
-        'chkImplants
-        '
-        Me.chkImplants.AutoSize = True
-        Me.chkImplants.Location = New System.Drawing.Point(119, 111)
-        Me.chkImplants.Name = "chkImplants"
-        Me.chkImplants.Size = New System.Drawing.Size(65, 17)
-        Me.chkImplants.TabIndex = 251
-        Me.chkImplants.Text = "Implants"
-        Me.chkImplants.UseVisualStyleBackColor = True
         '
         'chkCelestials
         '
@@ -1137,16 +1147,6 @@ Partial Class AssetViewer
         Me.btnToggleExpand.Size = New System.Drawing.Size(25, 25)
         Me.btnToggleExpand.TabIndex = 255
         Me.btnToggleExpand.UseVisualStyleBackColor = False
-        '
-        'chkNobuild
-        '
-        Me.chkNobuild.AutoSize = True
-        Me.chkNobuild.Location = New System.Drawing.Point(182, 111)
-        Me.chkNobuild.Name = "chkNobuild"
-        Me.chkNobuild.Size = New System.Drawing.Size(66, 17)
-        Me.chkNobuild.TabIndex = 21
-        Me.chkNobuild.Text = "No Build"
-        Me.chkNobuild.UseVisualStyleBackColor = True
         '
         'AssetViewer
         '

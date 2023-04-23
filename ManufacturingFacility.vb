@@ -2141,8 +2141,9 @@ Public Class ManufacturingFacility
             btnFacilityFitting.Visible = False
         End If
 
-        ' Enable the FW settings 
-        Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
+        ' Enable the FW settings - no more bonus for FW systems with uprising
+        'Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
+
         If SelectedLocation = ProgramLocation.BlueprintTab Then
             Call CostIndexUpdateText()
         End If
@@ -3120,6 +3121,7 @@ Public Class ManufacturingFacility
         ' Load the faction warfare upgrade
         Dim rsFW As SQLiteDataReader
         Dim SSID As Long
+        Dim Warzone As Boolean = False
 
         ' Format system name
         If SolarSystemName.Contains("(") Then
@@ -3130,7 +3132,6 @@ Public Class ManufacturingFacility
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsFW = DBCommand.ExecuteReader
 
-        Dim Warzone As Boolean
         If rsFW.Read Then
             Warzone = CBool(rsFW.GetInt32(0))
             SSID = rsFW.GetInt64(1)

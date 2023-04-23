@@ -1360,21 +1360,9 @@ Public Class AssetViewer
             ' Enable checks
             gbRawMaterials.Enabled = True
             gbManufacturedItems.Enabled = True
+            Call UpdateTechChecks()
         End If
     End Sub
-
-    Private Sub chkToggle_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkToggle.CheckedChanged
-
-    End Sub
-
-    Private Sub ToggleNodeChecks(SentNode As TreeNode, Check As Boolean)
-
-        For Each child As TreeNode In SentNode.Nodes
-            child.Checked = Check
-            If child.Nodes.Count > 0 Then ToggleNodeChecks(child, Check)
-        Next
-    End Sub
-
 
 #End Region
 

@@ -6074,6 +6074,11 @@ Tabs:
         Dim CheckBPIgnoreInventionValue As Boolean = False
         Dim Uninventable As Boolean = False
         Dim TempDName As String = ""
+        Dim PolarizedItem As Boolean = False
+
+        If cmbBPBlueprintSelection.Text.Contains("Polarized") Then
+            PolarizedItem = True
+        End If
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
@@ -6150,7 +6155,7 @@ Tabs:
         End If
 
         ' Set decryptors
-        If BPTech <> 1 Then
+        If BPTech <> 1 And Not PolarizedItem Then
             ' Default setting
             txtBPME.Enabled = False
             txtBPTE.Enabled = False
@@ -6217,7 +6222,7 @@ Tabs:
         End If
 
         ' Only update the check box if we select it, not if we come here from checking ignore invention
-        If Not FromCheck And BPTech <> 1 Then
+        If Not FromCheck And BPTech <> 1 And Not PolarizedItem Then
             IgnoreRefresh = True
             UpdatingInventionChecks = True
             chkBPIgnoreInvention.Checked = CheckBPIgnoreInventionValue
@@ -6230,7 +6235,7 @@ Tabs:
             IgnoreRefresh = False
         End If
 
-        If BPTech <> 1 Then
+        If BPTech <> 1 And Not PolarizedItem Then
             ' Now that we have the decryptor set, the IgnoreCheck set, we can load the ME/TE values for T2/T3
             If chkBPIgnoreInvention.Checked = True Then
                 ' T2 BPO or non-invented (e.g., hacking find)
@@ -6427,7 +6432,7 @@ Tabs:
                                           UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
 
         ' Set the T2 and T3 inputs if necessary
-        If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
+        If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False And chkBPIgnoreInvention.Enabled = True Then
             ' Invent this bp
             txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
                                   InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
@@ -10460,6 +10465,9 @@ ExitPRocessing:
                 OutputText &= FoundItem.ItemName & vbCrLf
             Next
 
+            ' Remove last vbCRLF
+            OutputText = OutputText.TrimEnd
+
             Call CopyTextToClipboard(OutputText)
 
         ElseIf e.KeyCode = Keys.A AndAlso e.Control = True Then ' Select all
@@ -13307,6 +13315,8 @@ CheckTechs:
 
         Dim ItemIsReaction As Boolean
 
+        Dim PolarizedWeapon As Boolean
+
         ' Set this now and enable it if they calculate
         AddToShoppingListToolStripMenuItem.Enabled = False
 
@@ -13523,6 +13533,12 @@ CheckTechs:
                 InsertItem.ItemName = readerBPs.GetString(8)
                 InsertItem.AddlCosts = readerBPs.GetDouble(21)
 
+                PolarizedWeapon = False
+
+                If readerBPs.GetString(2).Contains("Polarized") Then
+                    PolarizedWeapon = True
+                End If
+
                 ' 1, 2, 14 are T1, T2, T3
                 ' 3 is Storyline
                 ' 15 is Pirate Faction
@@ -13579,7 +13595,9 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPME = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = No Then
+                        If PolarizedWeapon Then
+                            InsertItem.BPME = 0
+                        ElseIf InsertItem.Owned = No Then
                             InsertItem.BPME = BaseT2T3ME
                         Else
                             ' Use what they entered
@@ -13604,7 +13622,9 @@ CheckTechs:
                         ' Storyline, Pirate, and Navy can't be updated
                         InsertItem.BPTE = 0
                     Case 2, 14 ' T2 or T3 - either Invented, or BPO
-                        If InsertItem.Owned = No Then
+                        If PolarizedWeapon Then
+                            InsertItem.BPTE = 0
+                        ElseIf InsertItem.Owned = No Then
                             InsertItem.BPTE = BaseT2T3TE
                         Else
                             ' Use what they entered
@@ -13651,7 +13671,6 @@ CheckTechs:
                 InsertItem.ReactionFacility = New IndustryFacility
 
                 Dim TempFacility As New ManufacturingFacility
-
                 Dim BuildType As ProductionType
 
                 ' Set the facility for manufacturing and set it to the current selected facility for this type
@@ -13699,7 +13718,7 @@ CheckTechs:
                 ' If T2, first select each decryptor, then select Compare types (raw and components)
                 ' If T3, first choose a decryptor, then Relic, then select compare types (raw and components)
                 ' Insert each different combination
-                If InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3" Then
+                If (InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And Not PolarizedWeapon Then
                     ' For determining the owned blueprints
                     Dim TempDecryptors As New DecryptorList
                     Dim OriginalRelicUsed As String = ""
@@ -13944,7 +13963,7 @@ CheckTechs:
 
                     ' Set the number of BPs
                     With InsertItem
-                        If (.TechLevel = "T2" Or .TechLevel = "T3") And chkCalcAutoCalcT2NumBPs.Checked = True And (.BlueprintType = BPType.InventedBPC Or .BlueprintType = BPType.NotOwned) Then
+                        If (.TechLevel = "T2" Or .TechLevel = "T3") And chkCalcAutoCalcT2NumBPs.Checked = True And (.BlueprintType = BPType.InventedBPC Or .BlueprintType = BPType.NotOwned) And Not PolarizedWeapon Then
                             ' For T3 or if they have calc checked, we will never have a BPO so determine the number of BPs
                             NumberofBlueprints = GetUsedNumBPs(.BPID, CInt(.TechLevel.Substring(1, 1)), .Runs, .ProductionLines, .NumBPs, .Decryptor.RunMod)
                         Else
@@ -13960,7 +13979,8 @@ CheckTechs:
                                                            chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
                     ' Set the T2 and T3 inputs if necessary
-                    If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
+                    If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False _
+                        And Not PolarizedWeapon Then
 
                         ' Strip off the relic if in here for the decryptor
                         If InsertItem.Inputs.Contains("-") Then
@@ -14173,7 +14193,8 @@ CheckTechs:
                                                         InsertItem.ComponentManufacturingFacility, InsertItem.CapComponentManufacturingFacility,
                                                         InsertItem.ReactionFacility, chkCalcSellExessItems.Checked, UserManufacturingTabSettings.BuildT2T3Materials, True)
 
-                            If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False Then
+                            If ((InsertItem.TechLevel = "T2" Or InsertItem.TechLevel = "T3") And InsertItem.BlueprintType = BPType.InventedBPC) And chkCalcIgnoreInvention.Checked = False _
+                                And Not PolarizedWeapon Then
                                 ' Construct the T2/T3 BP
                                 ManufacturingBlueprint.InventBlueprint(CInt(txtCalcLabLines.Text), SelectedDecryptor, InsertItem.InventionFacility,
                                                                        InsertItem.CopyFacility, GetInventItemTypeID(InsertItem.BPID, InsertItem.Relic))
@@ -14256,7 +14277,6 @@ CheckTechs:
 
                             End If
                         Else
-
                             ' Just look at each one individually
                             If rbtnCalcCompareComponents.Checked Then
                                 ' Use the Component values

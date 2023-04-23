@@ -561,7 +561,8 @@ Public Class ESI
     Public Function SetCharacterData(ByVal AccountRefresh As Boolean, Optional ByRef CharacterTokenData As SavedTokenData = Nothing,
                                      Optional ByVal ManualAuthToken As String = "",
                                      Optional ByVal IgnoreCacheDate As Boolean = False,
-                                     Optional ByVal SupressMessages As Boolean = False) As Boolean
+                                     Optional ByVal SupressMessages As Boolean = False,
+                                     Optional ByRef CorporationID As Long = -1) As Boolean
         Dim TokenData As ESITokenData
         Dim CharacterData As New ESICharacterPublicData
         Dim CharacterID As Long
@@ -621,6 +622,9 @@ Public Class ESI
                 If IsNothing(CharacterData) Then
                     Return False
                 End If
+
+                ' Save the corporationID for reference
+                CorporationID = CharacterData.corporation_id
 
                 ' Save it in the table if not there, or update it if they selected the character again
                 Dim rsCheck As SQLiteDataReader

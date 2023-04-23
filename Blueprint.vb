@@ -54,6 +54,8 @@ Public Class Blueprint
 
     ' Base Fees for activity
     Private JobFee As Double
+    Private AlphaCloneTax As Double
+    Private AlphaFacilityTax As Double
     Private TotalUsage As Double
 
     ' How much it costs to use each facility to manufacture items and parts
@@ -255,6 +257,8 @@ Public Class Blueprint
 
         BaseJobCost = 0
         JobFee = 0
+        AlphaCloneTax = 0
+        AlphaFacilityTax = 0
         TotalUsage = 0
 
         InventionDecryptor = NoDecryptor
@@ -329,21 +333,21 @@ Public Class Blueprint
         ' See if we want to include the costs
         IncludeManufacturingUsage = BPProductionFacility.IncludeActivityUsage
 
-        ' Set the faction warfare bonus for the usage calculations
-        Select Case MainManufacturingFacility.FWUpgradeLevel
-            Case 1
-                FWManufacturingCostBonus = 0.9
-            Case 2
-                FWManufacturingCostBonus = 0.8
-            Case 3
-                FWManufacturingCostBonus = 0.7
-            Case 4
-                FWManufacturingCostBonus = 0.6
-            Case 5
-                FWManufacturingCostBonus = 0.5
-            Case Else
-                FWManufacturingCostBonus = 1
-        End Select
+        '' Set the faction warfare bonus for the usage calculations
+        'Select Case MainManufacturingFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWManufacturingCostBonus = 0.9
+        '    Case 2
+        '        FWManufacturingCostBonus = 0.8
+        '    Case 3
+        '        FWManufacturingCostBonus = 0.7
+        '    Case 4
+        '        FWManufacturingCostBonus = 0.6
+        '    Case 5
+        '        FWManufacturingCostBonus = 0.5
+        '    Case Else
+        '        FWManufacturingCostBonus = 1
+        'End Select
 
         ' Set the flag if the user sent to this blueprint can invent it
         CanInventRE = False ' Can invent T1 BP to this T2 BP
@@ -1012,6 +1016,11 @@ Public Class Blueprint
                     IgnoreBuild = True
                 End If
 
+                ' For R.A.M.s and Fuel Blocks
+                If (CurrentMaterialGroupID = 1136 And BPUserSettings.AlwaysBuyFuelBlocks) Or (CurrentMaterialGroupID = 332 And BPUserSettings.AlwaysBuyRAMs) Then
+                    IgnoreBuild = True
+                End If
+
                 ' If this is an advanced composite reaction, and the advanced option is selected, then don't build anything and add as raw material
                 If (ItemGroupID = ItemIDs.ReactionCompositesGroupID Or ItemGroupID = ItemIDs.ReactionMolecularForgedGroupID) And T2T3MaterialType = BuildMatType.AdvMaterials Then
                     IgnoreBuild = True
@@ -1307,23 +1316,23 @@ Public Class Blueprint
 
                 Else ' Just raw material 
                     If readerME.HasRows Then
-                            ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
-                            ' For example, see modulated core strip miner and polarized heavy pulse weapons.
-                            Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
-                            CurrentMaterial.SetItemME(CStr(TempME))
-                        End If
-
-                        ' We are not building these
-                        CurrentMaterial.SetBuildItem(False)
-
-                        ' Insert the raw mats
-                        RawMaterials.InsertMaterial(CurrentMaterial)
-                        ' Also insert into component list
-                        ComponentMaterials.InsertMaterial(CurrentMaterial)
-                        ' These are from the bp and not a component
-                        BPRawMats.InsertMaterial(CurrentMaterial)
-
+                        ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
+                        ' For example, see modulated core strip miner and polarized heavy pulse weapons.
+                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                        CurrentMaterial.SetItemME(CStr(TempME))
                     End If
+
+                    ' We are not building these
+                    CurrentMaterial.SetBuildItem(False)
+
+                    ' Insert the raw mats
+                    RawMaterials.InsertMaterial(CurrentMaterial)
+                    ' Also insert into component list
+                    ComponentMaterials.InsertMaterial(CurrentMaterial)
+                    ' These are from the bp and not a component
+                    BPRawMats.InsertMaterial(CurrentMaterial)
+
+                End If
 
                 readerME.Close()
 
@@ -2013,21 +2022,25 @@ SkipProcessing:
         Dim FacilityUsage As Double = 0
         Dim TempFacilityUsage As Double = 0
 
+        AlphaCloneTax = 0
+        AlphaFacilityTax = 0
+
         If IncludeManufacturingUsage Then
             ' baseJobCost = Sum(eachmaterialquantity * adjustedPrice) - set in build function
-            ' jobFee = baseJobCost * systemCostIndex * runs
+            ' jobFee = baseJobCost * systemCostIndex * runs
             JobFee = CLng(BaseJobCost * UserRuns) * MainManufacturingFacility.CostIndex
-            JobFee = JobFee * MainManufacturingFacility.CostMultiplier
+            JobFee *= MainManufacturingFacility.CostMultiplier
 
             ' facilityUsage = jobFee * taxRate
             If BPUserSettings.AlphaAccount Then
-                FacilityUsage = JobFee * (MainManufacturingFacility.TaxRate + AlphaAccountTaxRate)
-            Else
-                FacilityUsage = JobFee * MainManufacturingFacility.TaxRate
+                AlphaCloneTax = BaseJobCost * AlphaAccountTaxRate
+                AlphaFacilityTax = AlphaCloneTax * 0.1 ' 10% tax for facility based on alpha clone
             End If
 
+            FacilityUsage = (JobFee * MainManufacturingFacility.TaxRate) + AlphaCloneTax + AlphaFacilityTax
+
             ' totalInstallationCost = jobFee + facilityUsage
-            TempFacilityUsage = (JobFee + FacilityUsage) * FWManufacturingCostBonus
+            TempFacilityUsage = JobFee + FacilityUsage '* FWManufacturingCostBonus
         Else
             TempFacilityUsage = 0
         End If

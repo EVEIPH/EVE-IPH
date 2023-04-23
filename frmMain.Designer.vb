@@ -325,6 +325,7 @@ Partial Class frmMain
         Me.lblMineDeepCore = New System.Windows.Forms.Label()
         Me.gbMineMain = New System.Windows.Forms.GroupBox()
         Me.gbMineIncludeOres = New System.Windows.Forms.GroupBox()
+        Me.chkMineIncludeA0StarOres = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeHighSec = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeNullSec = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeLowSec = New System.Windows.Forms.CheckBox()
@@ -942,7 +943,6 @@ Partial Class frmMain
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
         Me.tabMain = New System.Windows.Forms.TabControl()
-        Me.chkMineIncludeA0StarOres = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.ListOptionsMenu.SuspendLayout
@@ -3711,6 +3711,16 @@ Partial Class frmMain
         Me.gbMineIncludeOres.TabIndex = 4
         Me.gbMineIncludeOres.TabStop = False
         Me.gbMineIncludeOres.Text = "Include:"
+        '
+        'chkMineIncludeA0StarOres
+        '
+        Me.chkMineIncludeA0StarOres.AutoSize = True
+        Me.chkMineIncludeA0StarOres.Location = New System.Drawing.Point(9, 64)
+        Me.chkMineIncludeA0StarOres.Name = "chkMineIncludeA0StarOres"
+        Me.chkMineIncludeA0StarOres.Size = New System.Drawing.Size(86, 17)
+        Me.chkMineIncludeA0StarOres.TabIndex = 4
+        Me.chkMineIncludeA0StarOres.Text = "A0 Star Ores"
+        Me.chkMineIncludeA0StarOres.UseVisualStyleBackColor = True
         '
         'chkMineIncludeHighSec
         '
@@ -9181,7 +9191,7 @@ Partial Class frmMain
         'rbtnBPRawT2MatType
         '
         Me.rbtnBPRawT2MatType.AutoSize = True
-        Me.rbtnBPRawT2MatType.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.rbtnBPRawT2MatType.BackColor = System.Drawing.Color.Transparent
         Me.rbtnBPRawT2MatType.Location = New System.Drawing.Point(668, 236)
         Me.rbtnBPRawT2MatType.Name = "rbtnBPRawT2MatType"
         Me.rbtnBPRawT2MatType.Size = New System.Drawing.Size(47, 17)
@@ -9193,7 +9203,7 @@ Partial Class frmMain
         'rbtnBPProcT2MatType
         '
         Me.rbtnBPProcT2MatType.AutoSize = True
-        Me.rbtnBPProcT2MatType.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.rbtnBPProcT2MatType.BackColor = System.Drawing.Color.Transparent
         Me.rbtnBPProcT2MatType.Location = New System.Drawing.Point(594, 236)
         Me.rbtnBPProcT2MatType.Name = "rbtnBPProcT2MatType"
         Me.rbtnBPProcT2MatType.Size = New System.Drawing.Size(75, 17)
@@ -9205,7 +9215,7 @@ Partial Class frmMain
         'rbtnBPAdvT2MatType
         '
         Me.rbtnBPAdvT2MatType.AutoSize = True
-        Me.rbtnBPAdvT2MatType.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.rbtnBPAdvT2MatType.BackColor = System.Drawing.Color.Transparent
         Me.rbtnBPAdvT2MatType.Location = New System.Drawing.Point(522, 236)
         Me.rbtnBPAdvT2MatType.Name = "rbtnBPAdvT2MatType"
         Me.rbtnBPAdvT2MatType.Size = New System.Drawing.Size(74, 17)
@@ -9216,7 +9226,7 @@ Partial Class frmMain
         '
         'lblBPT2MatTypeSelector
         '
-        Me.lblBPT2MatTypeSelector.BackColor = System.Drawing.SystemColors.Window
+        Me.lblBPT2MatTypeSelector.BackColor = System.Drawing.Color.Transparent
         Me.lblBPT2MatTypeSelector.Location = New System.Drawing.Point(414, 234)
         Me.lblBPT2MatTypeSelector.Name = "lblBPT2MatTypeSelector"
         Me.lblBPT2MatTypeSelector.Size = New System.Drawing.Size(308, 20)
@@ -10247,16 +10257,6 @@ Partial Class frmMain
         Me.tabMain.SelectedIndex = 0
         Me.tabMain.Size = New System.Drawing.Size(1145, 641)
         Me.tabMain.TabIndex = 1
-        '
-        'chkMineIncludeA0StarOres
-        '
-        Me.chkMineIncludeA0StarOres.AutoSize = True
-        Me.chkMineIncludeA0StarOres.Location = New System.Drawing.Point(9, 64)
-        Me.chkMineIncludeA0StarOres.Name = "chkMineIncludeA0StarOres"
-        Me.chkMineIncludeA0StarOres.Size = New System.Drawing.Size(86, 17)
-        Me.chkMineIncludeA0StarOres.TabIndex = 4
-        Me.chkMineIncludeA0StarOres.Text = "A0 Star Ores"
-        Me.chkMineIncludeA0StarOres.UseVisualStyleBackColor = True
         '
         'frmMain
         '
