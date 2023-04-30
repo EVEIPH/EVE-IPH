@@ -2141,8 +2141,8 @@ Public Class ManufacturingFacility
             btnFacilityFitting.Visible = False
         End If
 
-        ' Enable the FW settings - no more bonus for FW systems with uprising
-        'Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
+        ' Enable the FW settings 
+        Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
 
         If SelectedLocation = ProgramLocation.BlueprintTab Then
             Call CostIndexUpdateText()
