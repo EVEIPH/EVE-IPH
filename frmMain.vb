@@ -3456,6 +3456,10 @@ Tabs:
             DataEntered = ProcessCutCopyPasteSelect(txtListEdit, e)
         End If
 
+        If e.KeyCode = Keys.Delete Or e.KeyCode = Keys.Back Then
+            DataEntered = True
+        End If
+
         If e.KeyCode = Keys.Enter Then
             IgnoreFocus = True
             Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
@@ -8350,6 +8354,8 @@ ExitForm:
         TempSettings.SelectedSystem = ""
         If cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
             TempSettings.SelectedSystem = cmbPriceSystems.Text
+        ElseIf cmbPriceSystems.Text = AllSystems Then
+            TempSettings.SelectedSystem = AllSystems
         Else
             For i = 1 To SystemCheckBoxes.Count - 1
                 If SystemCheckBoxes(i).Checked Then
@@ -13000,6 +13006,8 @@ CheckTechs:
                 txtCalcTempME.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcTempME.Text = "0"
         End If
 
         If Trim(txtCalcTempTE.Text) <> "" Then
@@ -13008,6 +13016,8 @@ CheckTechs:
                 txtCalcTempTE.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcTempTE.Text = "0"
         End If
 
         If Trim(txtCalcSVRThreshold.Text) <> "" Then
@@ -13016,6 +13026,18 @@ CheckTechs:
                 txtCalcSVRThreshold.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcSVRThreshold.Text = "0"
+        End If
+
+        If Trim(txtCalcRuns.Text) <> "" Then
+            If Not IsNumeric(txtCalcRuns.Text) Then
+                MsgBox("Invalid Runs Value", vbExclamation, Application.ProductName)
+                txtCalcProdLines.Focus()
+                Exit Sub
+            End If
+        Else
+            txtCalcRuns.Text = "1"
         End If
 
         If Trim(txtCalcProdLines.Text) <> "" Then
@@ -13024,6 +13046,8 @@ CheckTechs:
                 txtCalcProdLines.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcProdLines.Text = "1"
         End If
 
         If Trim(txtCalcLabLines.Text) <> "" Then
@@ -13032,14 +13056,18 @@ CheckTechs:
                 txtCalcLabLines.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcLabLines.Text = "1"
         End If
 
-        If Trim(txtCalcRuns.Text) <> "" Then
+        If Trim(txtCalcNumBPs.Text) <> "" Then
             If Not IsNumeric(txtCalcRuns.Text) Then
-                MsgBox("Invalid Runs Value", vbExclamation, Application.ProductName)
-                txtCalcRuns.Focus()
+                MsgBox("Invalid Number of BPs Value", vbExclamation, Application.ProductName)
+                txtCalcNumBPs.Focus()
                 Exit Sub
             End If
+        Else
+            txtCalcNumBPs.Text = "1"
         End If
 
         ' Save the column order and width first
@@ -13173,6 +13201,7 @@ CheckTechs:
             .CheckIncludeT3Owned = chkCalcIncludeT3Owned.Checked
 
             .CheckSVRIncludeNull = chkCalcSVRIncludeNull.Checked
+
             .ProductionLines = CInt(txtCalcProdLines.Text)
             .LaboratoryLines = CInt(txtCalcLabLines.Text)
             .Runs = CInt(txtCalcRuns.Text)
@@ -14058,7 +14087,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14130,7 +14159,7 @@ CheckTechs:
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14139,7 +14168,7 @@ CheckTechs:
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
                             InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
                             InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
-                            InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
+                            InsertItem.ROI = ManufacturingBlueprint.GetTotalRawProfit / ManufacturingBlueprint.GetTotalRawCost
 
                             If chkCalcPPU.Checked Then
                                 InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -14220,7 +14249,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14229,7 +14258,7 @@ CheckTechs:
                                 InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
                                 InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
                                 InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
-                                InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalRawProfit / ManufacturingBlueprint.GetTotalRawCost
 
                                 If chkCalcPPU.Checked Then
                                     InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -14291,6 +14320,7 @@ CheckTechs:
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalComponentCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
                             ElseIf rbtnCalcCompareRawMats.Checked Then
                                 ' Use the Raw values 
                                 InsertItem.ProfitPercent = ManufacturingBlueprint.GetTotalRawProfitPercent
@@ -14304,6 +14334,7 @@ CheckTechs:
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalRawProfit / ManufacturingBlueprint.GetTotalRawCost
                             ElseIf rbtnCalcCompareBuildBuy.Checked Then
                                 ' Use the Build/Buy best rate values (the blueprint was set to get these values above)
                                 InsertItem.ProfitPercent = ManufacturingBlueprint.GetTotalRawProfitPercent
@@ -14317,12 +14348,13 @@ CheckTechs:
                                     InsertItem.SVRxIPH = FormatNumber(CType(InsertItem.SVR, Double) * InsertItem.IPH, 2)
                                 End If
                                 InsertItem.TotalCost = ManufacturingBlueprint.GetTotalBuildCost
+                                InsertItem.ROI = ManufacturingBlueprint.GetTotalRawProfit / ManufacturingBlueprint.GetTotalRawCost
                             End If
 
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14331,7 +14363,6 @@ CheckTechs:
                             InsertItem.TotalVolume = ManufacturingBlueprint.GetTotalItemVolume
                             InsertItem.MaterialCost = ManufacturingBlueprint.GetRawMaterials.GetTotalMaterialsCost
                             InsertItem.SellExcess = ManufacturingBlueprint.GetExcessMaterials.GetTotalMaterialsCost
-                            InsertItem.ROI = ManufacturingBlueprint.GetTotalComponentProfit / ManufacturingBlueprint.GetTotalComponentCost
 
                             If chkCalcPPU.Checked Then
                                 InsertItem.DivideUnits = CInt(ManufacturingBlueprint.GetTotalUnits)
@@ -19067,9 +19098,9 @@ Leave:
 
                     If ShipMiningYield = 0 Then
                         ' This is just drone yield
-                        ShipMiningYield = TotalDroneIceBlocksPerHour / 3600
+                        'ShipMiningYield = TotalDroneIceBlocksPerHour / 3600
                     End If
-                    IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                    IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield) + TotalDroneIceBlocksPerHour
 
                     ' Total ice blocks per cycle
                     TempOre.OreUnitsPerCycle = ShipMiningYield * 1000 ' Ice is 1000 m3
@@ -19300,7 +19331,11 @@ Leave:
                 ' Modify all three by mining multiplier
                 'lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitsPerCycle * MinerMultiplier, 2))
                 ' For drone yield, we only apply the miner multipler to drone yield from mining ships, not booster
-                lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 1)) ' Multiplier for drone mining calculated above
+                If MiningType = MiningOreType.Ice Then
+                    lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 0)) ' Multiplier for drone mining calculated above
+                Else
+                    lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 1)) ' Multiplier for drone mining calculated above
+                End If
                 lstOreRow.SubItems.Add(FormatNumber(Math.Round(OreList(i).UnitsPerHour * MinerMultiplier), 0))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).IPH * MinerMultiplier, 2))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).CycleTime, 1) & " s")
@@ -19337,7 +19372,7 @@ Leave:
             End If
             If IceMining Then
                 ' Convert to blocks
-                Yield = CInt(Math.Floor(Yield))
+                Yield = CInt(Math.Floor(Yield) / 1000)
             End If
         End If
 
@@ -20032,6 +20067,7 @@ Leave:
                 End If
 
                 ' Set the amount of m3 per hour for all the drones we have
+                lblMineMiningDroneM3.Text = "Yield (m3/Hr):"
                 YieldLabel.Text = FormatNumber(MiningAmtVariable, 1)
             Else
                 Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
@@ -20058,7 +20094,9 @@ Leave:
 
                 MiningAmtVariable = CInt(NumDrones) * (3600 / (IceHarvestDroneCycleTime / 1000) * DroneMiningAmountpCycle)
 
-                YieldLabel.Text = FormatNumber(MiningAmtVariable, 1)
+                ' Convert to blocks
+                lblMineMiningDroneM3.Text = "Yield (blks/Hr):"
+                YieldLabel.Text = FormatNumber(CInt(Math.Floor(MiningAmtVariable) / 1000), 0)
 
             End If
         End If

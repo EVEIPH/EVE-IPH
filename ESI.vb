@@ -336,6 +336,8 @@ Public Class ESI
         Dim myWebHeaderCollection As New WebHeaderCollection
         Dim Expires As String = Nothing
         Dim Pages As Integer = Nothing
+        Dim ESIErrorLimitRemain As Integer = -1
+        Dim ESIErrorLimitReset As Integer = -1
 
         Try
 
@@ -357,6 +359,8 @@ Public Class ESI
             myWebHeaderCollection = WC.ResponseHeaders
             Expires = myWebHeaderCollection.Item("Expires")
             Pages = CInt(myWebHeaderCollection.Item("X-Pages"))
+            ESIErrorLimitRemain = CInt(myWebHeaderCollection.Item("X-ESI-Error-Limit-Remain"))
+            ESIErrorLimitReset = CInt(myWebHeaderCollection.Item("X-ESI-Error-Limit-Reset"))
 
             If Not IsNothing(Expires) Then
                 CacheDate = CDate(Expires.Replace("GMT", "").Substring(InStr(Expires, ",") + 1)) ' Expiration date is in GMT

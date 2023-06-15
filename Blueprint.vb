@@ -48,14 +48,13 @@ Public Class Blueprint
     Private DisplayBrokerFees As Double ' Public updatable number for display updates, for easy updates when clicked
 
     ' New cost variables
-    Private BaseJobCost As Double ' Total per material used * average price
+    Private EIV As Double ' Estimated Item Value - Total per material used * average price 
     Private BaseCopyJobCost As Double ' Total job cost for copying (need to use the BPC job cost)
     Private BaseInventionJobCost As Double ' Total job cost for invention (need to use the BPC job cost)
 
     ' Base Fees for activity
     Private JobFee As Double
     Private AlphaCloneTax As Double
-    Private AlphaFacilityTax As Double
     Private TotalUsage As Double
 
     ' How much it costs to use each facility to manufacture items and parts
@@ -172,7 +171,7 @@ Public Class Blueprint
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
 
-    Private FWManufacturingCostBonus As Double
+    '  Private FWManufacturingCostBonus As Double
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
@@ -255,10 +254,9 @@ Public Class Blueprint
         CopyUsage = 0
         InventionUsage = 0
 
-        BaseJobCost = 0
+        EIV = 0
         JobFee = 0
         AlphaCloneTax = 0
-        AlphaFacilityTax = 0
         TotalUsage = 0
 
         InventionDecryptor = NoDecryptor
@@ -650,7 +648,7 @@ Public Class Blueprint
                         BrokerFees += .GetSalesBrokerFees
 
                         ' New cost variables
-                        BaseJobCost += .GetBaseJobCost
+                        EIV += .GetEstimatedItemValue
 
                         ' Base Fees for activity
                         JobFee += .GetJobFee
@@ -962,7 +960,7 @@ Public Class Blueprint
                 Call MainManufacturingFacility.RefreshMMTMCMBonuses(ItemGroupID, ItemCategoryID)
 
                 ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
-                BaseJobCost += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
+                EIV += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
                 CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
@@ -2020,36 +2018,33 @@ SkipProcessing:
     ' Sets the fees for setting up a job to build this item
     Private Sub SetManufacturingCostsAndFees()
         Dim FacilityUsage As Double = 0
-        Dim TempFacilityUsage As Double = 0
+        Dim TotalEIV As Double = 0
+        Dim Indexbonuses As Double = 0
 
         AlphaCloneTax = 0
-        AlphaFacilityTax = 0
+
+        ' Formula: FacilityUsage = EstItemValue * ((SystemCostIndex * bonuses) + FacilityTax + SCC + AlphaClone) 
 
         If IncludeManufacturingUsage Then
-            ' baseJobCost = Sum(eachmaterialquantity * adjustedPrice) - set in build function
-            ' jobFee = baseJobCost * systemCostIndex * runs
-            JobFee = CLng(BaseJobCost * UserRuns) * MainManufacturingFacility.CostIndex
-            JobFee *= MainManufacturingFacility.CostMultiplier
+            ' EIV = Sum(eachmaterialquantity * adjustedPrice) - set in build function
+            TotalEIV = CLng(EIV * UserRuns)
+            Indexbonuses = MainManufacturingFacility.CostIndex * MainManufacturingFacility.CostMultiplier
 
-            ' facilityUsage = jobFee * taxRate
+            ' Set Alpha tax
             If BPUserSettings.AlphaAccount Then
-                AlphaCloneTax = BaseJobCost * AlphaAccountTaxRate
-                AlphaFacilityTax = AlphaCloneTax * 0.1 ' 10% tax for facility based on alpha clone
+                AlphaCloneTax = AlphaAccountTaxRate
             End If
 
-            FacilityUsage = (JobFee * MainManufacturingFacility.TaxRate) + AlphaCloneTax + AlphaFacilityTax
-
-            ' totalInstallationCost = jobFee + facilityUsage
-            TempFacilityUsage = JobFee + FacilityUsage '* FWManufacturingCostBonus
+            FacilityUsage = TotalEIV * (Indexbonuses + MainManufacturingFacility.TaxRate + SCCIndustryFeeSurcharge + AlphaCloneTax)
         Else
-            TempFacilityUsage = 0
+            FacilityUsage = 0
         End If
 
         If MainManufacturingFacility.FacilityProductionType = ProductionType.Reactions Then
-            ReactionFacilityUsage = TempFacilityUsage
-            TotalReactionFacilityUsage += TempFacilityUsage
+            ReactionFacilityUsage = FacilityUsage
+            TotalReactionFacilityUsage += FacilityUsage
         Else
-            ManufacturingFacilityUsage = TempFacilityUsage
+            ManufacturingFacilityUsage = FacilityUsage
         End If
 
     End Sub
@@ -2698,8 +2693,8 @@ SkipProcessing:
     End Function
 
     ' Returns the base job cost for this blueprint
-    Public Function GetBaseJobCost() As Double
-        Return BaseJobCost
+    Public Function GetEstimatedItemValue() As Double
+        Return EIV
     End Function
 
     ' Returns the base job cost for the BPC to make this bp

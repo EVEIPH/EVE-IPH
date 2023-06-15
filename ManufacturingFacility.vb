@@ -3123,6 +3123,9 @@ Public Class ManufacturingFacility
         Dim SSID As Long
         Dim Warzone As Boolean = False
 
+        ' No longer in game with Viridian
+        Exit Sub
+
         ' Format system name
         If SolarSystemName.Contains("(") Then
             SolarSystemName = SolarSystemName.Substring(0, InStr(SolarSystemName, "(") - 2)
