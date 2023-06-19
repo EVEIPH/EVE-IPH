@@ -85,6 +85,12 @@ Public Class Blueprint
     Private AIImplantValue As Double ' Advanced Industry Implant on character
     Private CopyImplantValue As Double ' Copy implant value for this character
 
+    Private CharAdvIndustialShipConstruction As Integer ' Industry skill for advanced indy ships (T2)
+    Private CharAdvCapitalShipConstruction As Integer ' Industry skill for advanced Cap ships (T2) - Lancers
+
+    Private Const AdvISCSkill As Integer = 3396
+    Private Const AdvCSCSkill As Integer = 77725
+
     ' Can do variables
     Private CanInventRE As Boolean ' if the sent character for the blueprint can invent it from a T1 or artifact
     Private CanBuildBP As Boolean ' if the user can build this BP
@@ -1741,8 +1747,24 @@ SkipProcessing:
         Dim FullJobSessions As Long = 0
         Dim JobsPerBatch As Long = 0
 
+        ' If this is using advanced Industrial/Capital skills, then add this bonus as well to build time
+        Dim AdvIndySkill As Double = 1
+        Dim AdvCapskill As Double = 1
+        Dim TempSkill As Integer = 0
+
+        ' Include advanced industry skill bonuses
+        TempSkill = ReqBuildSkills.GetSkillLevel(AdvISCSkill)
+        If TempSkill <> 0 Then
+            AdvIndySkill = 1 - (BPCharacter.Skills.GetSkillLevel(AdvISCSkill) * 0.01) ' 1% reduction in time per level
+        End If
+
+        TempSkill = ReqBuildSkills.GetSkillLevel(AdvCSCSkill)
+        If TempSkill <> 0 Then
+            AdvCapskill = 1 - (BPCharacter.Skills.GetSkillLevel(AdvCSCSkill) * 0.01) ' 1% reduction in time per level
+        End If
+
         ' For 1 run of this item add in the modifier plus skill level modifiers
-        BPProductionTime = BaseProductionTime * SetBPTimeModifier() * AdvManufacturingSkillLevelBonus
+        BPProductionTime = BaseProductionTime * SetBPTimeModifier() * AdvManufacturingSkillLevelBonus * AdvIndySkill * AdvCapskill
 
         ' Figure out how many jobs per batch we need to run, find the smallest of the two
         If NumberofBlueprints > NumberofProductionLines Then
@@ -1994,10 +2016,10 @@ SkipProcessing:
                 End If
 
                 If SkillFound Then
-                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) < RequiredSkills.GetSkillList(i).Level Then
+                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) <RequiredSkills.GetSkillList(i).Level Then
                         ' They have this skill but it isn't the correct level
-                        ' They don't have this, so just leave
-                        Return False
+                                                                                                 ' They don't have this, so just leave
+                                                                                                 Return False
                     End If
                 Else
                     ' Skill not found, just leave
@@ -2078,7 +2100,7 @@ SkipProcessing:
         For i = 0 To BuildSkills.NumSkills - 1
             Select Case BuildSkills.GetSkillList(i).TypeID
                 Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449
-                    ' each skill is mulitplied by 1 then normalized percentage, then mulitiplied to any others to get the bonus
+                    ' each skill is mulitplied by 1% then normalized percentage, then mulitiplied to any others to get the bonus
                     BonusSum = BonusSum * (1 - 0.01 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
             End Select
         Next

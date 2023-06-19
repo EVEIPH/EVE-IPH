@@ -1,7 +1,7 @@
 
 Imports Newtonsoft.Json
 
-' Class for querying data from EVE Markterer prices
+' Class for querying data from Fuzzworks prices
 
 Public Class FuzzworksMarket
 
@@ -27,7 +27,7 @@ Public Class FuzzworksMarket
         End If
     End Function
 
-    ' Function takes an array of strings for Regions and a TypeID list, returns an array of EVE Marketeer prices
+    ' Function takes an array of strings for Regions and a TypeID list, returns an array of prices from Fuzzworks
     Public Function GetPrices(ByVal TypeIDList As List(Of PriceItem)) As List(Of FuzzworksMarketPrice)
         Dim PriceRecords As New List(Of FuzzworksMarketPrice)
         Dim TempRecord As FuzzworksMarketPrice
@@ -86,6 +86,8 @@ Public Class FuzzworksMarket
         ' Add whatever is left in the process lists
         Call FinalQueryList.AddRange(ProcessQueryList)
 
+        PriceUpdateDown = False
+
         For Each Record In FinalQueryList
             Try
                 ' Example get
@@ -94,6 +96,10 @@ Public Class FuzzworksMarket
                 Dim Output As String = GetJSONFile(FuzzworksMarketMainQuery & Record.RegionOrSystemHeader & Record.PriceLocation & "&" & Record.ItemList.Substring(0, Len(Record.ItemList) - 1), "Fuzzwork Market Prices")
                 ' Parse the out put into the object and process
                 PriceOutput = JsonConvert.DeserializeObject(Of Dictionary(Of Long, FuzzworksMarketType))(Output)
+
+                If PriceUpdateDown Then
+                    Return PriceRecords
+                End If
 
                 If Not IsNothing(PriceOutput) Then
                     For Each Price In PriceOutput

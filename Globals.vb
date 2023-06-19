@@ -247,6 +247,8 @@ Public Module Public_Variables
     Public MarketHistoryCallsPerMinute As Integer = 0
     Public LastMarketHistoryUpdate As Date = NoDate
 
+    Public PriceUpdateDown As Boolean = False
+
     ' For scanning assets
     Public Enum ScanType
         Personal = 0
@@ -2991,6 +2993,10 @@ SkipItem:
         Catch ex As Exception
             If Not IgnoreExceptions Then
                 MsgBox("Unable to download data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
+                If UpdateType = "Fuzzwork Market Prices" Or UpdateType = "EVE Marketer Prices" Then
+                    ' Don't error again
+                    PriceUpdateDown = True
+                End If
                 Output = ""
             End If
 
