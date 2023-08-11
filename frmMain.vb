@@ -20022,7 +20022,7 @@ Leave:
         MiningAmtVariable = 0
 
         ' Calculate the m3 and range based on ship selected
-        If DroneName <> None And DroneSkill <> "0" And OreType <> "Gas" Then
+        If DroneName <> None And DroneName <> "" And DroneSkill <> "0" And OreType <> "Gas" Then
             Dim AttribLookup As New EVEAttributes
             Dim DroneMiningAmountpCycle As Double = 0
             ' Update the optimal range for this drone first
@@ -20061,10 +20061,8 @@ Leave:
                     DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.OreDroneMiningYield))
                 End If
 
-                ' Amount of cycles we can do in an hour times the amount per cycle
-                If DroneName <> "" Then
-                    MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
-                End If
+                ' Amount of cycles we can do in an hour times the amount per cyclen
+                MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
 
                 ' Set the amount of m3 per hour for all the drones we have
                 lblMineMiningDroneM3.Text = "Yield (m3/Hr):"

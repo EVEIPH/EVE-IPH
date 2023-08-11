@@ -230,10 +230,10 @@ Public Module Public_Variables
     Public MaxStationID As Long = 67000000
     Public MinStationID As Long = 60000000
 
-    Public BaseSalesTaxRate As Double = 4 ' Sales tax base is 8 and during holidays they may change to 50%
+    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8 and during holidays they may change to 50%
     Public BaseBrokerFeeRate As Double = 3
     Public SCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
-    Public SCCIndustryFeeSurcharge As Double = 0.0025 ' Fixed rate of 0.25%
+    Public SCCIndustryFeeSurcharge As Double = 0.0075 ' Fixed rate of 0.75%
 
     Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
 
