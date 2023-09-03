@@ -425,36 +425,36 @@ Public Class Blueprint
         CopyFacility.RefreshMMTMCMBonuses(0, 9)
         InventionFacility.RefreshMMTMCMBonuses(0, 9)
 
-        ' Set the FW bonus levels
-        Select Case CopyFacility.FWUpgradeLevel
-            Case 1
-                FWCopyingCostBonus = 0.9
-            Case 2
-                FWCopyingCostBonus = 0.8
-            Case 3
-                FWCopyingCostBonus = 0.7
-            Case 4
-                FWCopyingCostBonus = 0.6
-            Case 5
-                FWCopyingCostBonus = 0.5
-            Case Else
-                FWCopyingCostBonus = 1
-        End Select
+        '' Set the FW bonus levels
+        'Select Case CopyFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWCopyingCostBonus = 0.9
+        '    Case 2
+        '        FWCopyingCostBonus = 0.8
+        '    Case 3
+        '        FWCopyingCostBonus = 0.7
+        '    Case 4
+        '        FWCopyingCostBonus = 0.6
+        '    Case 5
+        '        FWCopyingCostBonus = 0.5
+        '    Case Else
+        '        FWCopyingCostBonus = 1
+        'End Select
 
-        Select Case InventionFacility.FWUpgradeLevel
-            Case 1
-                FWInventionCostBonus = 0.9
-            Case 2
-                FWInventionCostBonus = 0.8
-            Case 3
-                FWInventionCostBonus = 0.7
-            Case 4
-                FWInventionCostBonus = 0.6
-            Case 5
-                FWInventionCostBonus = 0.5
-            Case Else
-                FWInventionCostBonus = 1
-        End Select
+        'Select Case InventionFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWInventionCostBonus = 0.9
+        '    Case 2
+        '        FWInventionCostBonus = 0.8
+        '    Case 3
+        '        FWInventionCostBonus = 0.7
+        '    Case 4
+        '        FWInventionCostBonus = 0.6
+        '    Case 5
+        '        FWInventionCostBonus = 0.5
+        '    Case Else
+        '        FWInventionCostBonus = 1
+        'End Select
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
@@ -722,7 +722,7 @@ Public Class Blueprint
                         ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
                         TempComponentFacility = MainManufacturingFacility
                         'ElseIf GroupID = ItemIDs.ReactionBiochemicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
-                        TempComponentFacility = ReactionFacility
+                        '    TempComponentFacility = ReactionFacility
                     Else ' Components
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
@@ -969,7 +969,7 @@ Public Class Blueprint
                 EIV += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
 
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
-                CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
+                CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(MainManufacturingFacility), 2))))
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
@@ -1936,10 +1936,10 @@ SkipProcessing:
     End Function
 
     ' Calculates the total material muliplier for the blueprint based on the bp, and facility
-    Private Function SetBPMaterialModifier() As Double
+    Private Function SetBPMaterialModifier(ByRef SentFacility As IndustryFacility) As Double
 
         ' Material modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set
-        Return (1 - (iME / 100)) * MainManufacturingFacility.MaterialMultiplier
+        Return (1 - (iME / 100)) * SentFacility.MaterialMultiplier
 
     End Function
 
