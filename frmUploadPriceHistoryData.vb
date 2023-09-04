@@ -95,14 +95,15 @@ Public Class frmUploadPriceHistoryData
                 If i Mod 6 = 0 And i <> 0 Then
                     ' Every 6th item, insert
                     PriceDate = ItemData(i - 6).Replace(".", "-")
-                    EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO MARKET_HISTORY VALUES({0},{1},'{2}',{3},{4},{5},{6},{7})",
+                    Dim insertsql As String = String.Format("INSERT INTO MARKET_HISTORY VALUES({0},{1},'{2}',{3},{4},{5},{6},{7})",
                                                            ItemID, RegionID,
                                                            Format(DateValue(PriceDate.Substring(0, 10)), SQLiteDateFormat),
-                                                           ItemData(i - 3).Replace(" ISK", "").Replace(",", ""),
-                                                           ItemData(i - 2).Replace(" ISK", "").Replace(",", ""),
-                                                           ItemData(i - 1).Replace(" ISK", "").Replace(",", ""),
-                                                           ItemData(i - 5).Replace(",", ""),
-                                                           ItemData(i - 4).Replace(",", "")))
+                                                           ConvertPriceHistoryEUDecimal(ItemData(i - 3).Replace(" ISK", "")),
+                                                           ConvertPriceHistoryEUDecimal(ItemData(i - 2).Replace(" ISK", "")),
+                                                           ConvertPriceHistoryEUDecimal(ItemData(i - 1).Replace(" ISK", "")),
+                                                           ConvertPriceHistoryEUDecimal(ItemData(i - 5)),
+                                                           ConvertPriceHistoryEUDecimal(ItemData(i - 4)))
+                    EVEDB.ExecuteNonQuerySQL(insertsql)
                 End If
             Next
 

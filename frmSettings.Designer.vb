@@ -812,7 +812,7 @@ Partial Class frmSettings
         'chkLoadMaxAlphaSkills
         '
         Me.chkLoadMaxAlphaSkills.AutoSize = True
-        Me.chkLoadMaxAlphaSkills.Location = New System.Drawing.Point(9, 37)
+        Me.chkLoadMaxAlphaSkills.Location = New System.Drawing.Point(9, 38)
         Me.chkLoadMaxAlphaSkills.Name = "chkLoadMaxAlphaSkills"
         Me.chkLoadMaxAlphaSkills.Size = New System.Drawing.Size(147, 17)
         Me.chkLoadMaxAlphaSkills.TabIndex = 33
@@ -832,11 +832,11 @@ Partial Class frmSettings
         'chkAlphaAccount
         '
         Me.chkAlphaAccount.AutoSize = True
-        Me.chkAlphaAccount.Location = New System.Drawing.Point(9, 17)
+        Me.chkAlphaAccount.Location = New System.Drawing.Point(9, 16)
         Me.chkAlphaAccount.Name = "chkAlphaAccount"
-        Me.chkAlphaAccount.Size = New System.Drawing.Size(136, 17)
+        Me.chkAlphaAccount.Size = New System.Drawing.Size(145, 17)
         Me.chkAlphaAccount.TabIndex = 31
-        Me.chkAlphaAccount.Text = "Alpha Account (2% tax)"
+        Me.chkAlphaAccount.Text = "Alpha Account (.25% tax)"
         Me.chkAlphaAccount.UseVisualStyleBackColor = True
         '
         'frmSettings

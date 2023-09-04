@@ -33,6 +33,12 @@ Public Class MarketPriceInterface
         Dim ReturnValue As Boolean = True
         Dim Threads As New ThreadingArray
 
+        ' If the last time we called for history update was one minute, then reset the last date called and calls per minute counter
+        If DateDiff(DateInterval.Second, LastMarketHistoryUpdate, Now) > 60 Then
+            MarketHistoryCallsPerMinute = 0
+            LastMarketHistoryUpdate = Now
+        End If
+
         ' Build the pairs
         For i = 0 To SentTypeIDs.Count - 1
             ' Only add data we want to query
@@ -40,7 +46,14 @@ Public Class MarketPriceInterface
             TempPair.ItemID = SentTypeIDs(i)
             TempPair.RegionID = UpdateRegionID
             If UpdatableMarketData(TempPair, MarketPriceCacheType.History) Then
-                Pairs.Add(TempPair)
+                ' Check if we reached the max per calls and then don't add anything else
+                If MarketHistoryCallsPerMinute < MaxMarketHIstoryCallsPerMinute Then
+                    Pairs.Add(TempPair)
+                    MarketHistoryCallsPerMinute += 1
+                Else
+                    ' Can't do more than max calls
+                    Exit For
+                End If
             End If
         Next
 
@@ -373,7 +386,7 @@ Public Class MarketPriceInterface
 
         'Temp fix for ESI issue on market/region/history endpoint - don't allow updates
         If CacheType = MarketPriceCacheType.History Then
-            Return False
+            'Return False
         End If
 
         ' First look up the cache date to see if it's time to run the update
