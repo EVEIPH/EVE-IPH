@@ -464,8 +464,6 @@ Public Class Blueprint
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
-        ' Estimated item value for calculating usage
-        EstimatedT1ItemValue = GetEstimatedItemValue(InventionBPCTypeID)
 
         ' Set the Decryptor data
         InventionDecryptor = BPDecryptor
@@ -2511,7 +2509,7 @@ SkipProcessing:
     ' Sets the cost of doing the number of invention jobs sent
     Private Function GetInventionUsage(InventionJobs As Double) As Double
         ' 2% of EIV * System Cost Index - FW bonus - Structure Role Bonus
-        Dim JobGrossCost As Double = (EstimatedItemValue * 0.02) * InventionFacility.CostIndex * FWInventionCostBonus * InventionFacility.CostMultiplier
+        Dim JobGrossCost As Double = (EIV * 0.02) * InventionFacility.CostIndex * FWInventionCostBonus * InventionFacility.CostMultiplier
 
         ' FacilityTax = JobGrossCost * taxRate
         Dim InventionFacilityTax As Double = JobGrossCost * InventionFacility.TaxRate
@@ -2556,7 +2554,7 @@ SkipProcessing:
     ' Sets and returns the copy cost for the number of copies sent
     Private Function GetCopyUsage(NumberofCopies As Integer) As Double
         ' 2% of EIV (of T1 item) * System Cost Index - FW bonus - Structure Role Bonus
-        Dim JobGrossCost As Double = (EstimatedT1ItemValue * 0.02) * CopyFacility.CostIndex * FWCopyingCostBonus * CopyFacility.CostMultiplier
+        Dim JobGrossCost As Double = (EIV * 0.02) * CopyFacility.CostIndex * FWCopyingCostBonus * CopyFacility.CostMultiplier
 
         ' FacilityTax = JobGrossCost * taxRate
         Dim CopyFacilityTax As Double = JobGrossCost * CopyFacility.TaxRate
@@ -2636,35 +2634,6 @@ SkipProcessing:
         readerItems.Close()
 
     End Sub
-
-    ' Gets the EIV for the BPC and not the current T2/T3 bp
-    Private Function GetEstimatedItemValue(ByVal BPCTypeID As Long) As Double
-        Dim SQL As String
-        Dim readerLookup As SQLiteDataReader
-        Dim BaseCost As Double = 0
-
-        ' If this is a T3 BP, then we need to get the build cost from the BPC, and not the relic used to invent it
-        If TechLevel = BPTechLevel.T3 Then
-            BPCTypeID = BlueprintID
-        End If
-
-        ' Look up the sum of the quantity from the sent BPC ID 
-        SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS_FACT "
-        SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL &= "WHERE BLUEPRINT_ID =" & BPCTypeID & " AND ACTIVITY IN (1,11) "
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerLookup = DBCommand.ExecuteReader
-
-        While readerLookup.Read
-            BaseCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
-        End While
-
-        readerLookup.Close()
-
-        Return BaseCost
-
-    End Function
 
 #End Region
 
