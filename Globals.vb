@@ -144,8 +144,6 @@ Public Module Public_Variables
     Public Const NumManufacturingTabColumns As Integer = 110
     Public Const NumIndustryJobColumns As Integer = 21
 
-    Public Const AlphaAccountTaxRate As Double = 0.02
-
     Public Const BaseRefineRate As Double = 0.5
 
     Public Const NoDate As Date = #1/1/1900#
@@ -202,7 +200,7 @@ Public Module Public_Variables
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
 
     Public Const DefaultStructureTaxRate = 0.0 ' 0% to start for structures
-    Public Const DefaultStationTaxRate = 0.1 ' 10% for all stations
+    Public Const DefaultStationTaxRate = 0.0025 ' 0.25% for all stations
 
     ' Mining Ship Name constants
     Public Const Procurer As String = "Procurer"
@@ -233,15 +231,17 @@ Public Module Public_Variables
     Public MaxStationID As Long = 67000000
     Public MinStationID As Long = 60000000
 
+    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8 and during holidays they may change to 50%
+    Public BaseBrokerFeeRate As Double = 3
+    Public SCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
+    Public SCCIndustryFeeSurcharge As Double = 0.0075 ' Fixed rate of 0.75%
+
+    Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
+
     ' Opened forms from menu
     Public ReprocessingPlantOpen As Boolean
     Public OreBeltFlipOpen As Boolean
     Public IceBeltFlipOpen As Boolean
-
-    Public BuyListDataChange As Boolean = True
-
-    ' This limits all regions queries to regions players use
-    Public Const RegionFilterString As String = "regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
 
     ' For scanning assets
     Public Enum ScanType
@@ -514,7 +514,7 @@ Public Module Public_Variables
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 11%, Max/Base Sales Tax: 8%, Min Sales Tax: 3.6%
         ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
-        Return (8 - (Accounting * 0.11 * 8)) / 100 * ItemMarketCost
+        Return (BaseSalesTaxRate - (Accounting * 0.11 * BaseSalesTaxRate)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -524,13 +524,14 @@ Public Module Public_Variables
 
         If BrokerFee.IncludeFee = BrokerFeeType.Fee Then
             ' 3%-(0.3%*BrokerRelationsLevel)-(0.03%*FactionStanding)-(0.02%*CorpStanding) - uses unmodified standings
-            ' Base broker fee - 3%, Min broker fees: 1.0%
+            ' Base broker fee = 3%, Min broker fees: 1.0%
             ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
-            Dim BrokerTax = 3 - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+            ' and https://www.eveonline.com/de/news/view/viridian-expansion-notes
+            Dim BrokerTax = BaseBrokerFeeRate - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
             TempFee = (BrokerTax / 100) * ItemMarketCost
         ElseIf BrokerFee.IncludeFee = BrokerFeeType.SpecialFee Then
-            ' use a flat rate to set the fee
-            TempFee = BrokerFee.FixedRate * ItemMarketCost
+            ' use a flat rate to set the fee - Since they are setting this, assume they are in an Upwell and add in the SCC fixed rate fee added in Viridian
+            TempFee = (BrokerFee.FixedRate * ItemMarketCost) + (SCCBrokerFeeSurcharge * ItemMarketCost)
         Else
             Return 0
         End If
@@ -610,7 +611,7 @@ Public Module Public_Variables
 
     ' Converts a time in d h m s to a long of seconds - 3d 12h 2m 33s or 1 Day 12:23:33
     Public Function ConvertDHMSTimetoSeconds(ByVal SentTime As String) As Long
-        Dim Days As Integer = 0
+        Dim Days As Long = 0
         Dim Hours As Integer = 0
         Dim Minutes As Integer = 0
         Dim Seconds As Integer = 0
@@ -2137,16 +2138,32 @@ SkipItem:
     End Function
 
     Public Function ConvertEUDecimaltoUSDecimal(ByVal EUFormatedValue As String) As String
-        Dim TempString As String = ""
+        Dim TempValue As String = EUFormatedValue
 
+        ' EU string can be 1.000.000,00 or 1000000,00
         If EUFormatedValue.Contains(",") Then
-            ' This is the EU decimal so change to us
-            TempString = EUFormatedValue.Replace(",", ".")
-        Else
-            TempString = EUFormatedValue
+            ' This is the EU decimal so change to US version
+            TempValue = EUFormatedValue.Replace(",", ".")
         End If
 
-        Return TempString
+        Return TempValue
+
+    End Function
+
+    Public Function ConvertPriceHistoryEUDecimal(ByVal HistoryValue As String) As String
+        Dim TempValue As String = HistoryValue
+
+        If Len(HistoryValue) > 2 Then
+            If HistoryValue.Substring(Len(HistoryValue) - 3, 1) = "," Then
+                ' EU value, so convert remove the decimals
+                TempValue = HistoryValue.Replace(".", "")
+                TempValue = TempValue.Replace(",", ".")
+            End If
+            ' Both formats need commas removed if there are any
+            TempValue = TempValue.Replace(",", "")
+        End If
+
+        Return TempValue
 
     End Function
 
@@ -2242,7 +2259,7 @@ SkipItem:
                 OutputString = "'" & FormatDBString(CStr(inValue)) & "'"
             End If
         Else
-                OutputString = "NULL"
+            OutputString = "NULL"
         End If
 
         Return OutputString
@@ -3045,6 +3062,10 @@ SkipItem:
         Catch ex As Exception
             If Not IgnoreExceptions Then
                 MsgBox("Unable to download data for " & UpdateType & vbCrLf & "Error: " & ex.Message, vbInformation, Application.ProductName)
+                If UpdateType = "Fuzzwork Market Prices" Or UpdateType = "EVE Marketer Prices" Then
+                    ' Don't error again
+                    PriceUpdateDown = True
+                End If
                 Output = ""
             End If
 

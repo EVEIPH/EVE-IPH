@@ -48,12 +48,14 @@ Public Class Blueprint
     Private BrokerFees As Double ' See above - Sell Order or Buy Order
     Private DisplayBrokerFees As Double ' Public updatable number for display updates, for easy updates when clicked
 
-    ' New cost variable for usage calcuations
-    Private EstimatedItemValue As Double
-    Private EstimatedT1ItemValue As Double ' For copy calcuations, need T1 item EIV
+    ' New cost variables
+    Private EIV As Double ' Estimated Item Value - Total per material used * average price 
+    Private BaseCopyJobCost As Double ' Total job cost for copying (need to use the BPC job cost)
+    Private BaseInventionJobCost As Double ' Total job cost for invention (need to use the BPC job cost)
 
     ' Base Fees for activity
     Private JobFee As Double
+    Private AlphaCloneTax As Double
     Private TotalUsage As Double
 
     ' How much it costs to use each facility to manufacture items and parts
@@ -83,6 +85,12 @@ Public Class Blueprint
     Private ScienceSkill As Integer
     Private AIImplantValue As Double ' Advanced Industry Implant on character
     Private CopyImplantValue As Double ' Copy implant value for this character
+
+    Private CharAdvIndustialShipConstruction As Integer ' Industry skill for advanced indy ships (T2)
+    Private CharAdvCapitalShipConstruction As Integer ' Industry skill for advanced Cap ships (T2) - Lancers
+
+    Private Const AdvISCSkill As Integer = 3396
+    Private Const AdvCSCSkill As Integer = 77725
 
     ' Can do variables
     Private CanInventRE As Boolean ' if the sent character for the blueprint can invent it from a T1 or artifact
@@ -172,7 +180,7 @@ Public Class Blueprint
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
 
-    Private FWManufacturingCostBonus As Double
+    '  Private FWManufacturingCostBonus As Double
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
@@ -255,9 +263,9 @@ Public Class Blueprint
         CopyUsage = 0
         InventionUsage = 0
 
-        EstimatedItemValue = GetEstimatedItemValue(BlueprintID) ' For calcuating usage
-        EstimatedT1ItemValue = 0 ' Will calcluate in invention if needed
+        EIV = 0
         JobFee = 0
+        AlphaCloneTax = 0
         TotalUsage = 0
 
         InventionDecryptor = NoDecryptor
@@ -335,21 +343,21 @@ Public Class Blueprint
         ' See if we want to include the costs
         IncludeManufacturingUsage = BPProductionFacility.IncludeActivityUsage
 
-        ' Set the faction warfare bonus for the usage calculations
-        Select Case MainManufacturingFacility.FWUpgradeLevel
-            Case 1
-                FWManufacturingCostBonus = 0.9
-            Case 2
-                FWManufacturingCostBonus = 0.8
-            Case 3
-                FWManufacturingCostBonus = 0.7
-            Case 4
-                FWManufacturingCostBonus = 0.6
-            Case 5
-                FWManufacturingCostBonus = 0.5
-            Case Else
-                FWManufacturingCostBonus = 1
-        End Select
+        '' Set the faction warfare bonus for the usage calculations
+        'Select Case MainManufacturingFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWManufacturingCostBonus = 0.9
+        '    Case 2
+        '        FWManufacturingCostBonus = 0.8
+        '    Case 3
+        '        FWManufacturingCostBonus = 0.7
+        '    Case 4
+        '        FWManufacturingCostBonus = 0.6
+        '    Case 5
+        '        FWManufacturingCostBonus = 0.5
+        '    Case Else
+        '        FWManufacturingCostBonus = 1
+        'End Select
 
         ' Set the flag if the user sent to this blueprint can invent it
         CanInventRE = False ' Can invent T1 BP to this T2 BP
@@ -423,36 +431,36 @@ Public Class Blueprint
         CopyFacility.RefreshMMTMCMBonuses(0, 9)
         InventionFacility.RefreshMMTMCMBonuses(0, 9)
 
-        ' Set the FW bonus levels
-        Select Case CopyFacility.FWUpgradeLevel
-            Case 1
-                FWCopyingCostBonus = 0.9
-            Case 2
-                FWCopyingCostBonus = 0.8
-            Case 3
-                FWCopyingCostBonus = 0.7
-            Case 4
-                FWCopyingCostBonus = 0.6
-            Case 5
-                FWCopyingCostBonus = 0.5
-            Case Else
-                FWCopyingCostBonus = 1
-        End Select
+        '' Set the FW bonus levels
+        'Select Case CopyFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWCopyingCostBonus = 0.9
+        '    Case 2
+        '        FWCopyingCostBonus = 0.8
+        '    Case 3
+        '        FWCopyingCostBonus = 0.7
+        '    Case 4
+        '        FWCopyingCostBonus = 0.6
+        '    Case 5
+        '        FWCopyingCostBonus = 0.5
+        '    Case Else
+        '        FWCopyingCostBonus = 1
+        'End Select
 
-        Select Case InventionFacility.FWUpgradeLevel
-            Case 1
-                FWInventionCostBonus = 0.9
-            Case 2
-                FWInventionCostBonus = 0.8
-            Case 3
-                FWInventionCostBonus = 0.7
-            Case 4
-                FWInventionCostBonus = 0.6
-            Case 5
-                FWInventionCostBonus = 0.5
-            Case Else
-                FWInventionCostBonus = 1
-        End Select
+        'Select Case InventionFacility.FWUpgradeLevel
+        '    Case 1
+        '        FWInventionCostBonus = 0.9
+        '    Case 2
+        '        FWInventionCostBonus = 0.8
+        '    Case 3
+        '        FWInventionCostBonus = 0.7
+        '    Case 4
+        '        FWInventionCostBonus = 0.6
+        '    Case 5
+        '        FWInventionCostBonus = 0.5
+        '    Case Else
+        '        FWInventionCostBonus = 1
+        'End Select
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
@@ -654,7 +662,7 @@ Public Class Blueprint
                         BrokerFees += .GetSalesBrokerFees
 
                         ' New cost variables
-                        EstimatedItemValue += .GetEstItemValue
+                        EIV += .GetEstimatedItemValue
 
                         ' Base Fees for activity
                         JobFee += .GetJobFee
@@ -722,7 +730,7 @@ Public Class Blueprint
                         ' Want to build this in the manufacturing facility we are using for base T1 items used in T2
                         TempComponentFacility = MainManufacturingFacility
                         'ElseIf GroupID = ItemIDs.ReactionBiochemicalsGroupID Or GroupID = ItemIDs.ReactionCompositesGroupID Or GroupID = ItemIDs.ReactionPolymersGroupID Or GroupID = ItemIDs.ReactionsIntermediateGroupID Then
-                        TempComponentFacility = ReactionFacility
+                        '    TempComponentFacility = ReactionFacility
                     Else ' Components
                         TempComponentFacility = ComponentManufacturingFacility
                     End If
@@ -964,8 +972,11 @@ Public Class Blueprint
                 ' Refresh the facility bonuses before we start calculations of ME/TE
                 Call MainManufacturingFacility.RefreshMMTMCMBonuses(ItemGroupID, ItemCategoryID)
 
+                ' Save the base costs - before applying ME - if value is null (no price record) then set to 0
+                EIV += CurrentMaterial.GetQuantity * If(IsDBNull(readerBP.GetValue(9)), 0, readerBP.GetDouble(9))
+
                 ' Set the quantity: required = max(runs,ceil(round(runs * baseQuantity * materialModifier,2))
-                CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(), 2))))
+                CurrentMatQuantity = CLng(Math.Max(UserRuns, Math.Ceiling(Math.Round(UserRuns * CurrentMaterial.GetQuantity * SetBPMaterialModifier(MainManufacturingFacility), 2))))
                 ' Update the quantity - just add the negative percent of the ME modifier to 1 and multiply
                 Call CurrentMaterial.SetQuantity(CurrentMatQuantity)
 
@@ -1013,6 +1024,11 @@ Public Class Blueprint
 
                 ' For molecular forged materials, these are reactions but are like advanced T2 components, so don't build them if advanced selected to match other components
                 If T2T3MaterialType = BuildMatType.AdvMaterials And CurrentMaterialGroupID = ItemIDs.ReactionMolecularForgedGroupID Then
+                    IgnoreBuild = True
+                End If
+
+                ' For R.A.M.s and Fuel Blocks
+                If (CurrentMaterialGroupID = 1136 And BPUserSettings.AlwaysBuyFuelBlocks) Or (CurrentMaterialGroupID = 332 And BPUserSettings.AlwaysBuyRAMs) Then
                     IgnoreBuild = True
                 End If
 
@@ -1743,8 +1759,24 @@ SkipProcessing:
         Dim FullJobSessions As Long = 0
         Dim JobsPerBatch As Long = 0
 
+        ' If this is using advanced Industrial/Capital skills, then add this bonus as well to build time
+        Dim AdvIndySkill As Double = 1
+        Dim AdvCapskill As Double = 1
+        Dim TempSkill As Integer = 0
+
+        ' Include advanced industry skill bonuses
+        TempSkill = ReqBuildSkills.GetSkillLevel(AdvISCSkill)
+        If TempSkill <> 0 Then
+            AdvIndySkill = 1 - (BPCharacter.Skills.GetSkillLevel(AdvISCSkill) * 0.01) ' 1% reduction in time per level
+        End If
+
+        TempSkill = ReqBuildSkills.GetSkillLevel(AdvCSCSkill)
+        If TempSkill <> 0 Then
+            AdvCapskill = 1 - (BPCharacter.Skills.GetSkillLevel(AdvCSCSkill) * 0.01) ' 1% reduction in time per level
+        End If
+
         ' For 1 run of this item add in the modifier plus skill level modifiers
-        BPProductionTime = BaseProductionTime * SetBPTimeModifier() * AdvManufacturingSkillLevelBonus
+        BPProductionTime = BaseProductionTime * SetBPTimeModifier() * AdvManufacturingSkillLevelBonus * AdvIndySkill * AdvCapskill
 
         ' Figure out how many jobs per batch we need to run, find the smallest of the two
         If NumberofBlueprints > NumberofProductionLines Then
@@ -1916,10 +1948,10 @@ SkipProcessing:
     End Function
 
     ' Calculates the total material muliplier for the blueprint based on the bp, and facility
-    Private Function SetBPMaterialModifier() As Double
+    Private Function SetBPMaterialModifier(ByRef SentFacility As IndustryFacility) As Double
 
         ' Material modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set
-        Return (1 - (iME / 100)) * MainManufacturingFacility.MaterialMultiplier
+        Return (1 - (iME / 100)) * SentFacility.MaterialMultiplier
 
     End Function
 
@@ -2020,32 +2052,33 @@ SkipProcessing:
     ' Sets the fees for setting up a job to build this item
     Private Sub SetManufacturingCostsAndFees()
         Dim FacilityUsage As Double = 0
-        Dim TempFacilityUsage As Double = 0
+        Dim TotalEIV As Double = 0
+        Dim Indexbonuses As Double = 0
+
+        AlphaCloneTax = 0
+
+        ' Formula: FacilityUsage = EstItemValue * ((SystemCostIndex * bonuses) + FacilityTax + SCC + AlphaClone) 
 
         If IncludeManufacturingUsage Then
-            ' EIV = Sum(each material quantity * adjustedPrice)
-            ' jobFee = baseJobCost * systemCostIndex * runs
-            JobFee = CLng(EstimatedItemValue * UserRuns) * MainManufacturingFacility.CostIndex
-            JobFee = JobFee * MainManufacturingFacility.CostMultiplier
+            ' EIV = Sum(eachmaterialquantity * adjustedPrice) - set in build function
+            TotalEIV = CLng(EIV * UserRuns)
+            Indexbonuses = MainManufacturingFacility.CostIndex * MainManufacturingFacility.CostMultiplier
 
-            ' facilityUsage = jobFee * taxRate
+            ' Set Alpha tax
             If BPUserSettings.AlphaAccount Then
-                FacilityUsage = JobFee * (MainManufacturingFacility.TaxRate + AlphaAccountTaxRate)
-            Else
-                FacilityUsage = JobFee * MainManufacturingFacility.TaxRate
+                AlphaCloneTax = AlphaAccountTaxRate
             End If
 
-            ' totalInstallationCost = jobFee + facilityUsage
-            TempFacilityUsage = (JobFee + FacilityUsage) * FWManufacturingCostBonus
+            FacilityUsage = TotalEIV * (Indexbonuses + MainManufacturingFacility.TaxRate + SCCIndustryFeeSurcharge + AlphaCloneTax)
         Else
-            TempFacilityUsage = 0
+            FacilityUsage = 0
         End If
 
         If MainManufacturingFacility.FacilityProductionType = ProductionType.Reactions Then
-            ReactionFacilityUsage = TempFacilityUsage
-            TotalReactionFacilityUsage += TempFacilityUsage
+            ReactionFacilityUsage = FacilityUsage
+            TotalReactionFacilityUsage += FacilityUsage
         Else
-            ManufacturingFacilityUsage = TempFacilityUsage
+            ManufacturingFacilityUsage = FacilityUsage
         End If
 
     End Sub
@@ -2079,7 +2112,7 @@ SkipProcessing:
         For i = 0 To BuildSkills.NumSkills - 1
             Select Case BuildSkills.GetSkillList(i).TypeID
                 Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449
-                    ' each skill is mulitplied by 1 then normalized percentage, then mulitiplied to any others to get the bonus
+                    ' each skill is mulitplied by 1% then normalized percentage, then mulitiplied to any others to get the bonus
                     BonusSum = BonusSum * (1 - 0.01 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
             End Select
         Next
@@ -2747,8 +2780,18 @@ SkipProcessing:
     End Function
 
     ' Returns the base job cost for this blueprint
-    Public Function GetEstItemValue() As Double
-        Return EstimatedItemValue
+    Public Function GetEstimatedItemValue() As Double
+        Return EIV
+    End Function
+
+    ' Returns the base job cost for the BPC to make this bp
+    Public Function GetBaseInventionJobCost() As Double
+        Return BaseInventionJobCost
+    End Function
+
+    ' Returns the base job cost for the BPC to make the invention bpc
+    Public Function GetBaseCopyJobCost() As Double
+        Return BaseCopyJobCost
     End Function
 
     ' Returns the Job fee based on the system index
