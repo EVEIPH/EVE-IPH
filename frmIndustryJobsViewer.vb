@@ -96,13 +96,23 @@ Public Class frmIndustryJobsViewer
 
             gbInventionJobs.Enabled = False
             Exit Sub
+        Else
+            gbInventionJobs.Enabled = True
+
+            If SelectedCharacter.CharacterCorporation.JobsAccess Then
+                rbtnBothJobs.Enabled = True
+                rbtnCorpJobs.Enabled = True
+            Else
+                rbtnBothJobs.Enabled = False
+                rbtnCorpJobs.Enabled = False
+            End If
         End If
 
         If UserIndustryJobsColumnSettings.ViewJobType = rbtnPersonalJobs.Text Then
             rbtnPersonalJobs.Checked = True
-        ElseIf UserIndustryJobsColumnSettings.ViewJobType = rbtnCorpJobs.Text Then
+        ElseIf UserIndustryJobsColumnSettings.ViewJobType = rbtnCorpJobs.Text And rbtnCorpJobs.Enabled Then
             rbtnCorpJobs.Checked = True
-        ElseIf UserIndustryJobsColumnSettings.ViewJobType = rbtnBothJobs.Text Then
+        ElseIf UserIndustryJobsColumnSettings.ViewJobType = rbtnBothJobs.Text And rbtnBothJobs.Enabled Then
             rbtnBothJobs.Checked = True
         Else
             rbtnPersonalJobs.Checked = True

@@ -86,8 +86,6 @@ Public Class EVEMarketer
         ' Add whatever is left in the process lists
         Call FinalQueryList.AddRange(ProcessQueryList)
 
-        PriceUpdateDown = False
-
         For Each Record In FinalQueryList
             Try
                 ' Example get
@@ -96,10 +94,6 @@ Public Class EVEMarketer
                 Dim Output As String = GetJSONFile(EVEMarketerMainQuery & Record.ItemList.Substring(0, Len(Record.ItemList) - 1) & Record.PriceLocationHeader & Record.PriceLocation, "EVE Marketer Prices")
                 ' Parse the out put into the object and process
                 PriceOutput = JsonConvert.DeserializeObject(Of List(Of EMType))(Output)
-
-                If PriceUpdateDown Then
-                    Return PriceRecords
-                End If
 
                 If Not IsNothing(PriceOutput) Then
                     For Each Price In PriceOutput

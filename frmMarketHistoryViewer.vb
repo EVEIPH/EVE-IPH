@@ -408,7 +408,6 @@ Public Class frmMarketHistoryViewer
             ' For volume
             .AxisY2.Minimum = 0
             .AxisY2.Maximum = Volumes.Max * 5
-            .AxisY2.LabelStyle.Format = "#,##0"
             .AxisX2.MajorGrid.LineDashStyle = ChartDashStyle.NotSet
         End With
 
