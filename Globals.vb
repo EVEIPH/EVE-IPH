@@ -243,6 +243,11 @@ Public Module Public_Variables
     Public OreBeltFlipOpen As Boolean
     Public IceBeltFlipOpen As Boolean
 
+    Public BuyListDataChange As Boolean = True
+
+    ' This limits all regions queries to regions players use
+    Public Const RegionFilterString As String = "regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
+
     ' For scanning assets
     Public Enum ScanType
         Personal = 0
