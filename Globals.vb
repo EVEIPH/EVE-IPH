@@ -238,10 +238,17 @@ Public Module Public_Variables
 
     Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
 
+    Public PriceUpdateDown As Boolean = False
+
     ' Opened forms from menu
     Public ReprocessingPlantOpen As Boolean
     Public OreBeltFlipOpen As Boolean
     Public IceBeltFlipOpen As Boolean
+
+    ' Limits for Market History endpoint
+    Public Const MaxMarketHistoryCallsPerMinute As Integer = 300
+    Public MarketHistoryCallsPerMinute As Integer = 0
+    Public LastMarketHistoryUpdate As Date = NoDate
 
     Public BuyListDataChange As Boolean = True
 

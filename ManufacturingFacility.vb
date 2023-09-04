@@ -2483,7 +2483,7 @@ Public Class ManufacturingFacility
         End If
 
         ' Enable the FW settings 
-        Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
+        'Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
         If SelectedLocation = ProgramLocation.BlueprintTab Then
             Call CostIndexUpdateText()
         End If
@@ -3414,7 +3414,7 @@ Public Class ManufacturingFacility
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsFW = DBCommand.ExecuteReader
 
-            Dim Warzone As Boolean
+            Dim Warzone As Boolean = False
             If rsFW.Read Then
                 Warzone = CBool(rsFW.GetInt32(0))
                 SSID = rsFW.GetInt64(1)

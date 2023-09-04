@@ -2797,414 +2797,6 @@ Public Class frmMain
 #Region "Blueprints Tab"
 
 #Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
-
-    Private Sub BPOptimalTriCheck_Click(sender As Object, e As EventArgs) Handles chkBPOptimalT3Decryptor.Click, chkBPOptimalT2Decryptor.Click
-        Call UpdateOptimalBPTriCheck(CType(sender, CheckBox))
-    End Sub
-
-    Private Sub UpdateOptimalBPTriCheck(SentCheck As CheckBox)
-        ' Change the name based on the check state
-        If SentCheck.CheckState = CheckState.Unchecked Then
-            SentCheck.Text = "Optimal"
-        ElseIf SentCheck.CheckState = CheckState.Checked Then
-            SentCheck.Text = "Optimal IPH"
-        ElseIf SentCheck.CheckState = CheckState.Indeterminate Then
-            SentCheck.Text = "Optimal Profit"
-        End If
-
-        ' Will just run the bp again
-        Call UpdateInventionCostsTime(SentCheck)
-
-    End Sub
-
-    ' Determines where the previous and next item boxes will be based on what they clicked - used in tab event handling
-    Private Sub SetNextandPreviousCells(ListRef As ListView, Optional CellType As String = "")
-        Dim iSubIndex As Integer = 0
-
-        ' Normal Row
-        If CellType = "Next" Then
-            CurrentRow = NextCellRow
-        ElseIf CellType = "Previous" Then
-            CurrentRow = PreviousCellRow
-        End If
-
-        ' Get index of column
-        iSubIndex = CurrentRow.SubItems.IndexOf(CurrentCell)
-
-        ' Get next and previous rows. If at end, wrap to top. If at top, wrap to bottom
-        If ListRef.Items.Count = 1 Then
-            NextRow = CurrentRow
-            PreviousRow = CurrentRow
-        ElseIf CurrentRow.Index <> ListRef.Items.Count - 1 And CurrentRow.Index <> 0 Then
-            ' Not the last line, so set the next and previous
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        ElseIf CurrentRow.Index = 0 Then
-            NextRow = ListRef.Items.Item(CurrentRow.Index + 1)
-            ' Wrap to bottom
-            PreviousRow = ListRef.Items.Item(ListRef.Items.Count - 1)
-        ElseIf CurrentRow.Index = ListRef.Items.Count - 1 Then
-            ' Need to wrap up to top
-            NextRow = ListRef.Items.Item(0)
-            PreviousRow = ListRef.Items.Item(CurrentRow.Index - 1)
-        End If
-
-        If ListRef.Name <> lstPricesView.Name And ListRef.Name <> lstMineGrid.Name _
-            And ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Then
-
-            ' For the update grids in the Blueprint Tab, only show the box if
-            ' 1 - If the ME is clicked and it has something other than a '-' in it (meaning no BP)
-            ' 2 - If the Price is clicked and the ME box has '-' in it
-
-            ' The next row must be an ME or Price box on the next row 
-            ' or a previous ME or price box on the previous row
-            If iSubIndex = 2 Or iSubIndex = 3 Then
-                ' Set the next and previous ME boxes (subitems)
-                ' If the next row ME box is a '-' then the next row cell is Price
-                If NextRow.SubItems(2).Text = "-" Then
-                    NextCell = NextRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    NextCell = NextRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                NextCellRow = NextRow
-
-                'If the previous row ME box is a '-' then the previous row is Price
-                If PreviousRow.SubItems(2).Text = "-" Then
-                    PreviousCell = PreviousRow.SubItems.Item(3) ' Next row price box
-                Else ' It can be the ME box in the next row
-                    PreviousCell = PreviousRow.SubItems.Item(2) ' Next row ME box
-                End If
-
-                PreviousCellRow = PreviousRow
-
-                If iSubIndex = 2 Then
-                    MEUpdate = True
-                    PriceUpdate = False
-                Else
-                    MEUpdate = False
-                    PriceUpdate = True
-                End If
-
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-
-        ElseIf ListRef.Name = lstRawPriceProfile.Name Or ListRef.Name = lstManufacturedPriceProfile.Name Then
-
-            If iSubIndex <> 0 Then
-                ' Set the next and previous combo boxes
-                If iSubIndex = 4 Then
-                    NextCell = NextRow.SubItems.Item(1) ' Next now price type box
-                    NextCellRow = NextRow
-                Else
-                    NextCell = CurrentRow.SubItems.Item(iSubIndex + 1) ' current row, next cell
-                    NextCellRow = CurrentRow
-                End If
-
-                If iSubIndex = 1 Then
-                    PreviousCell = PreviousRow.SubItems.Item(4) ' Previous row price mod
-                    PreviousCellRow = PreviousRow
-                Else
-                    PreviousCell = CurrentRow.SubItems.Item(iSubIndex - 1) ' Same row, just back a cell
-                    PreviousCellRow = CurrentRow
-                End If
-
-                ' Reset update type
-                Call SetPriceProfileVariables(iSubIndex)
-
-            Else
-                NextCell = Nothing
-                PreviousCell = Nothing
-                CurrentCell = Nothing
-            End If
-
-        Else ' Price list 
-            ' For this, just go up and down the rows
-            NextCell = NextRow.SubItems.Item(3)
-            NextCellRow = NextRow
-            PreviousCell = PreviousRow.SubItems.Item(3)
-            PreviousCellRow = PreviousRow
-            PriceUpdate = True
-            MEUpdate = False
-        End If
-
-    End Sub
-
-    ' Shows the text box on the grid where clicked if enabled
-    Private Sub ShowEditBox(ListRef As ListView)
-
-        ' Save the center location of the edit box
-        SavedListClickLoc.X = CurrentCell.Bounds.Left + CInt(CurrentCell.Bounds.Width / 2)
-        SavedListClickLoc.Y = CurrentCell.Bounds.Top + CInt(CurrentCell.Bounds.Height / 2)
-
-        ' Get the boundry data for the control now
-        Dim pTop As Integer = ListRef.Top + CurrentCell.Bounds.Top
-        Dim pLeft As Integer = ListRef.Left + CurrentCell.Bounds.Left + 2 ' pad right by 2 to align better
-        Dim CurrentParent As Control
-
-        CurrentParent = ListRef.Parent
-        ' Look up all locations of parent controls to get the location for the control boundaries when shown
-        Do Until CurrentParent.Name = "frmMain"
-            pTop = pTop + CurrentParent.Top
-            pLeft = pLeft + CurrentParent.Left
-            CurrentParent = CurrentParent.Parent
-        Loop
-
-        If ListRef.Name <> lstRawPriceProfile.Name And ListRef.Name <> lstManufacturedPriceProfile.Name Or PriceModifierUpdate Then
-            With txtListEdit
-                .Hide()
-                ' Set the bounds of the control
-                .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                .Text = CurrentCell.Text
-                .Show()
-                If CurrentRow.SubItems(2).Text = txtListEdit.Text Then
-                    .TextAlign = HorizontalAlignment.Center
-                Else
-                    .TextAlign = HorizontalAlignment.Right
-                End If
-
-                .Focus()
-            End With
-            cmbEdit.Visible = False
-        Else ' updates on the price profile grids
-
-            With cmbEdit
-                UpdatingCombo = True
-
-                If PriceRegionUpdate Then
-                    Call LoadRegionCombo(cmbEdit, CurrentCell.Text)
-                    ' Set the bounds of the control
-                    .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                    .Show()
-                    .Focus()
-                Else
-                    .Hide()
-                    .BeginUpdate()
-                    .Items.Clear()
-                    Dim rsData As SQLiteDataReader
-                    Dim SQL As String = ""
-
-                    If PriceSystemUpdate Then
-                        ' Base it off the data in the region cell
-                        SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS, REGIONS "
-                        SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
-                        SQL &= "AND REGIONS.regionName = '" & PreviousCell.Text & "' "
-                        SQL &= "ORDER BY solarSystemName"
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                        rsData = DBCommand.ExecuteReader
-
-                        ' Add all systems if it's the system
-                        .Items.Add(AllSystems)
-                        While rsData.Read
-                            .Items.Add(rsData.GetString(0))
-                            ' Special processing for The Forge
-                            If PreviousCell.Text = "The Forge" And rsData.GetString(0) = "Jita" Then
-                                .Items.Add(JitaPerimeter)
-                            End If
-                        End While
-
-                        rsData.Close()
-
-                    ElseIf PriceTypeUpdate Then
-                        ' Manually enter these
-                        .Items.Add("Min Sell")
-                        .Items.Add("Max Sell")
-                        .Items.Add("Avg Sell")
-                        .Items.Add("Median Sell")
-                        .Items.Add("Percentile Sell")
-                        .Items.Add("Min Buy")
-                        .Items.Add("Max Buy")
-                        .Items.Add("Avg Buy")
-                        .Items.Add("Median Buy")
-                        .Items.Add("Percentile Buy")
-                        .Items.Add("Split Price")
-                    End If
-
-                    ' Set the bounds of the control
-                    .SetBounds(pLeft, pTop, CurrentCell.Bounds.Width, CurrentCell.Bounds.Height)
-                    .Text = CurrentCell.Text
-                    .EndUpdate()
-                    .Show()
-                    .Focus()
-                End If
-                DataEntered = False ' We just updated so reset
-                UpdatingCombo = False
-            End With
-            txtListEdit.Visible = False
-        End If
-    End Sub
-
-    ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
-    Protected Overrides Function ProcessTabKey(ByVal TabForward As Boolean) As Boolean
-        Dim ac As Control = Me.ActiveControl
-
-        TabPressed = True
-
-        If TabForward Then
-            If ac Is txtListEdit Or ac Is cmbEdit Then
-                Call ProcessKeyDownEdit(Keys.Tab, SelectedGrid)
-                Return True
-            End If
-        Else
-            If ac Is txtListEdit Or ac Is cmbEdit Then
-                ' This is Shift + Tab but just send Shift for ease of processing
-                Call ProcessKeyDownEdit(Keys.ShiftKey, SelectedGrid)
-                Return True
-            End If
-        End If
-
-        Return MyBase.ProcessTabKey(TabForward)
-
-    End Function
-
-    Private Sub cmbEdit_DropDownClosed(sender As Object, e As System.EventArgs) Handles cmbEdit.DropDownClosed
-        If (PriceRegionUpdate And cmbEdit.Text <> PreviousRegion) Or
-            (PriceSystemUpdate And cmbEdit.Text <> PreviousSystem) Or
-            (PriceTypeUpdate And cmbEdit.Text <> PreviousPriceType) And Not UpdatingCombo Then
-            DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-    End Sub
-
-    Private Sub cmbEdit_SelectedIndexChanged(sender As Object, e As System.EventArgs) Handles cmbEdit.SelectedIndexChanged
-        If Not DataUpdated Then
-            DataEntered = True
-        End If
-    End Sub
-
-    Private Sub cmbEdit_LostFocus(sender As Object, e As System.EventArgs) Handles cmbEdit.LostFocus
-        ' Lost focus some other way than tabbing
-        If ((PriceRegionUpdate And cmbEdit.Text <> PreviousRegion) Or
-            (PriceSystemUpdate And cmbEdit.Text <> PreviousSystem) Or
-            (PriceTypeUpdate And cmbEdit.Text <> PreviousPriceType)) _
-            And Not TabPressed And Not UpdatingCombo Then
-            DataEntered = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-        cmbEdit.Visible = False
-        TabPressed = False
-    End Sub
-
-    Private Sub txtListEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.GotFocus
-        Call txtListEdit.SelectAll()
-    End Sub
-
-    Private Sub txtListEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtListEdit.KeyDown
-        If Not DataEntered Then ' If data already entered, then they didn't do it through paste
-            DataEntered = ProcessCutCopyPasteSelect(txtListEdit, e)
-        End If
-
-        If e.KeyCode = Keys.Enter Then
-            IgnoreFocus = True
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-            IgnoreFocus = False
-        End If
-    End Sub
-
-    Private Sub txtListEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtListEdit.KeyPress
-        ' Make sure it's the right format for ME or Price update
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If MEUpdate Then
-                If allowedMETEChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            ElseIf PriceUpdate Then
-                If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
-                    ' Invalid Character
-                    e.Handled = True
-                Else
-                    DataEntered = True
-                End If
-            ElseIf PriceModifierUpdate Then
-                e.Handled = CheckPercentCharEntry(e, txtListEdit)
-                If e.Handled = False Then
-                    DataEntered = True
-                End If
-            End If
-        End If
-
-    End Sub
-
-    Private Sub txtListEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.LostFocus
-        If Not RefreshingGrid And DataEntered And Not IgnoreFocus And (PriceModifierUpdate And txtListEdit.Text <> PreviousPriceMod) Then
-            Call ProcessKeyDownEdit(Keys.Enter, SelectedGrid)
-        End If
-        txtListEdit.Visible = False
-    End Sub
-
-    Private Sub txtListEdit_TextChanged(sender As Object, e As System.EventArgs) Handles txtListEdit.TextChanged
-        If MEUpdate Then ' make sure they only enter 0-10 for values
-            Call VerifyMETEEntry(txtListEdit, "ME")
-        End If
-    End Sub
-
-    ' Sets the variables for price profiles
-    Private Sub SetPriceProfileVariables(Index As Integer)
-        PriceTypeUpdate = False
-        PriceRegionUpdate = False
-        PriceSystemUpdate = False
-        PriceModifierUpdate = False
-
-        Select Case Index
-            Case 1
-                PriceTypeUpdate = True
-                PreviousPriceType = CurrentCell.Text
-            Case 2
-                PriceRegionUpdate = True
-                PreviousRegion = CurrentCell.Text
-            Case 3
-                PriceSystemUpdate = True
-                PreviousSystem = CurrentCell.Text
-            Case 4
-                PriceModifierUpdate = True
-                PreviousPriceMod = CurrentCell.Text
-        End Select
-
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBPComponentMats_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBPComponentMats.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstBPRawMats_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBPRawMats.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstPricesView_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstPricesView.ProcMsg
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstRawPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-    ' Detects Scroll event and hides boxes
-    Private Sub lstManufacturedPriceProfile_ProcMsg(ByVal m As System.Windows.Forms.Message)
-        txtListEdit.Hide()
-        cmbEdit.Hide()
-    End Sub
-
-#End Region
-
-#Region "Blueprints Tab"
-
-#Region "Blueprints Tab User Objects (Check boxes, Text, Buttons) Functions/Procedures "
-
     Private Sub btnBPComponents_Click(sender As Object, e As EventArgs) Handles btnBPComponents.Click
         lstBPComponentMats.Visible = True
         lstBPBuiltComponents.Visible = False
@@ -14067,7 +13659,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14139,7 +13731,7 @@ CheckTechs:
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14229,7 +13821,7 @@ CheckTechs:
                                 InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                                 InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                                 InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                                InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                                 InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                                 InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                                 InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -14334,7 +13926,7 @@ CheckTechs:
                             InsertItem.Taxes = ManufacturingBlueprint.GetSalesTaxes
                             InsertItem.BrokerFees = ManufacturingBlueprint.GetSalesBrokerFees
                             InsertItem.SingleInventedBPCRunsperBPC = ManufacturingBlueprint.GetSingleInventedBPCRuns
-                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetBaseJobCost
+                            InsertItem.BaseJobCost = ManufacturingBlueprint.GetEstimatedItemValue
                             InsertItem.JobFee = ManufacturingBlueprint.GetJobFee
                             InsertItem.NumBPs = ManufacturingBlueprint.GetUsedNumBPs
                             InsertItem.InventionChance = ManufacturingBlueprint.GetInventionChance
@@ -20027,7 +19619,7 @@ Leave:
                     DroneMiningAmountpCycle *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.OreDroneMiningYield))
                 End If
 
-                ' Amount of cycles we can do in an hour times the amount per cyclen
+                ' Amount of cycles we can do in an hour times the amount per cycle
                 MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
 
                 ' Set the amount of m3 per hour for all the drones we have

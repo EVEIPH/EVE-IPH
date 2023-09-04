@@ -246,7 +246,7 @@ Public Class Character
                         CharacterCorporation = New Corporation()
                         ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
                         If .GetInt64(2) > 2000000 Then
-                            CharacterCorporation.LoadCorporationData(.GetInt64(2), ID, CharacterTokenData, LoadAssets, LoadBPs, ResetCorporationData)
+                            CharacterCorporation.LoadCorporationData(.GetInt64(2), CharacterTokenData, LoadAssets, LoadBPs)
                         End If
 
                         UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
@@ -351,18 +351,18 @@ Public Class Character
         Return Blueprints
     End Function
 
-    Public Sub RefreshTokenData()
+    Public Sub RefreshTokenData(ByVal CharID As Long, ByVal CorpID As Long)
         ' Refresh the character token data if it's been updated
         Dim SQL As String
         Dim rsToken As SQLiteDataReader
 
         SQL = "SELECT ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, TOKEN_TYPE, SCOPES FROM ESI_CHARACTER_DATA "
-        SQL &= "WHERE CHARACTER_ID = " & CStr(ID)
+        SQL &= "WHERE CHARACTER_ID = " & CStr(CharID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsToken = DBCommand.ExecuteReader
 
         If rsToken.Read Then
-            CharacterTokenData.CharacterID = ID
+            CharacterTokenData.CharacterID = CharID
             CharacterTokenData.AccessToken = rsToken.GetString(0)
             CharacterTokenData.TokenExpiration = CDate(rsToken.GetString(1))
             CharacterTokenData.RefreshToken = rsToken.GetString(2)
@@ -373,7 +373,9 @@ Public Class Character
         rsToken.Close()
 
         ' Reset the corporation data to set the role flags - set reset data flag to false and don't reload jobs, bps, and assets
-        CharacterCorporation.LoadCorporationData(CharacterCorporation.CorporationID, ID, CharacterTokenData, False, False, False)
+        CharacterCorporation.LoadCorporationData(CorpID, CharacterTokenData, False, False, False)
+        ' Update roles as well
+        CharacterCorporation.GetCorporationRoles(CorpID, CharacterTokenData)
 
     End Sub
 
