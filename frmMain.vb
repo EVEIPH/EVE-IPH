@@ -297,23 +297,23 @@ Public Class frmMain
 
         ' See if they've disabled GA tracking
         If Not UserApplicationSettings.DisableGATracking Then
-            ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
-            On Error Resume Next
+            '' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
+            'On Error Resume Next
 
-            Dim GATracker As New AnalyticsService()
-            Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
+            'Dim GATracker As New AnalyticsService()
+            'Call GATracker.Initialize("G-9M7G9N107Q", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
 
-            Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
-            Dim EventData As New ServiceModel.EventParameter
+            'Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
+            'Dim EventData As New ServiceModel.EventParameter
 
-            EventData.Category = "Program Usage"
-            EventData.Action = "Open IPH"
-            EventData.Label = "Initialized"
-            EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
+            'EventData.Category = "Program Usage"
+            'EventData.Action = "Open IPH"
+            'EventData.Label = "Initialized"
+            'EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
 
-            Call GATracker.TrackEvent(EventData)
+            'Call GATracker.TrackEvent(EventData)
 
-            On Error GoTo 0
+            'On Error GoTo 0
         End If
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
