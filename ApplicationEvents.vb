@@ -19,15 +19,16 @@
 
             Dim f2 = New frmError
             frmErrorText = "An Unhandled Exception has occured and EVE Isk per Hour will now close."
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "Please fill out the following information so I can reproduce the bug"
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "What is your Operating System? "
-            frmErrorText = frmErrorText & Environment.NewLine & "What tab or screen did the error occur? "
-            frmErrorText = frmErrorText & Environment.NewLine & "What are the steps to reproduce the Error? "
-            frmErrorText = frmErrorText & Environment.NewLine & "Web link to a screenshot of your error: "
-            frmErrorText = frmErrorText & Environment.NewLine & "In addition to a screenshot, copy the data below and send to developer."
-            frmErrorText = frmErrorText & Environment.NewLine & Environment.NewLine & "Source: " & e.Exception.Source
-            frmErrorText = frmErrorText & Environment.NewLine & "Message: " & e.Exception.Message & vbCrLf
-            frmErrorText = frmErrorText & "Raw Error Text: " & e.Exception.ToString & vbCrLf
+            frmErrorText &= Environment.NewLine & "This error occured in EVE IPH Version: " & My.Application.Info.Version.ToString
+            frmErrorText &= Environment.NewLine & Environment.NewLine & "Please fill out the following information so I can reproduce the bug"
+            frmErrorText &= Environment.NewLine & Environment.NewLine & "What is your Operating System? "
+            frmErrorText &= Environment.NewLine & "What tab or screen did the error occur? "
+            frmErrorText &= Environment.NewLine & "What are the steps to reproduce the Error? "
+            frmErrorText &= Environment.NewLine & "Web link to a screenshot of your error: "
+            frmErrorText &= Environment.NewLine & "In addition to a screenshot, copy the data below and send to developer."
+            frmErrorText &= Environment.NewLine & Environment.NewLine & "Source: " & e.Exception.Source
+            frmErrorText &= Environment.NewLine & "Message: " & e.Exception.Message & vbCrLf
+            frmErrorText &= "Raw Error Text: " & e.Exception.ToString & vbCrLf
             If ErrorTracker <> "" Then
                 frmErrorText &= "Error Tracking: " & ErrorTracker
             End If
