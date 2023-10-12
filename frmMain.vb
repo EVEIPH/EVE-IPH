@@ -331,23 +331,23 @@ Public Class frmMain
 
         ' See if they've disabled GA tracking
         If Not UserApplicationSettings.DisableGATracking Then
-            ' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
-            On Error Resume Next
+            '' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
+            'On Error Resume Next
 
-            Dim GATracker As New AnalyticsService()
-            Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
+            'Dim GATracker As New AnalyticsService()
+            'Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
 
-            Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
-            Dim EventData As New ServiceModel.EventParameter
+            'Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
+            'Dim EventData As New ServiceModel.EventParameter
 
-            EventData.Category = "Program Usage"
-            EventData.Action = "Open IPH"
-            EventData.Label = "Initialized"
-            EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
+            'EventData.Category = "Program Usage"
+            'EventData.Action = "Open IPH"
+            'EventData.Label = "Initialized"
+            'EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
 
-            Call GATracker.TrackEvent(EventData)
+            'Call GATracker.TrackEvent(EventData)
 
-            On Error GoTo 0
+            'On Error GoTo 0
         End If
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
@@ -9442,8 +9442,8 @@ ExitSub:
                     RGN = "Advanced Moon Materials"
                 Case "Molecular-Forged Materials"
                     RGN = "Molecular-Forged Materials"
-                Case "Materials and Compounds", "Artifacts and Prototypes", "Named Components", "'Rogue Drone Components"
-                    RGN = "Materials & Compounds"
+                Case "Named Components"
+                    RGN = "Named Components"
                 Case "Biochemical Material"
                     RGN = "Booster Materials"
 
@@ -18396,6 +18396,9 @@ Leave:
     Private MiningDronem3Hr As Double
     Private BoosterMiningDronem3Hr As Double
     Private DroneNamesLoaded As Boolean
+    Private SavedOreShipName As String ' Whatever ship was saved in settings, which may change locally for funcationality
+    Private SavedIceShipName As String
+    Private SavedGasShipName As String
 
     Private Enum MiningShipTypeID
         Venture = 32880
@@ -18566,6 +18569,7 @@ Leave:
             If .OreType = "Ore" Then
                 gbMiningRigs.Enabled = True
                 cmbMineShipName.Text = .OreMiningShip
+                SavedOreShipName = .OreMiningShip
                 cmbMineMiningLaser.Text = .OreStrip
                 cmbMineDroneName.Text = .MiningDrone
                 cmbMineNumMiningDrones.Text = CStr(.NumMiningDrones)
@@ -18582,6 +18586,7 @@ Leave:
             ElseIf .OreType = "Ice" Then
                 gbMiningRigs.Enabled = True
                 cmbMineShipName.Text = .IceMiningShip
+                SavedIceShipName = .IceMiningShip
                 cmbMineMiningLaser.Text = .IceStrip
                 cmbMineDroneName.Text = .IceMiningDrone
                 cmbMineNumMiningDrones.Text = CStr(.NumIceMiningDrones)
@@ -18599,6 +18604,7 @@ Leave:
                 cmbMineDroneName.Text = None
                 cmbMineNumMiningDrones.Text = ""
                 cmbMineShipName.Text = .GasMiningShip
+                SavedGasShipName = .GasMiningShip
                 cmbMineMiningLaser.Text = .GasHarvester
                 cmbMineMiningUpgrade.Text = .GasUpgrade
                 cmbMineNumLasers.Text = CStr(.NumGasHarvesters)
@@ -19096,10 +19102,6 @@ Leave:
                         TotalDroneIceBlocksPerHour += CInt(Math.Floor(BoosterMiningDronem3Hr / 1000))
                     End If
 
-                    If ShipMiningYield = 0 Then
-                        ' This is just drone yield
-                        'ShipMiningYield = TotalDroneIceBlocksPerHour / 3600
-                    End If
                     IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield) + TotalDroneIceBlocksPerHour
 
                     ' Total ice blocks per cycle
@@ -19118,39 +19120,49 @@ Leave:
                 If chkMineUseHauler.Checked = False Then
                     ' Treat Ore and Gas the same
                     If Not MiningType = MiningOreType.Ice Then
-                        ' How long to fill the cargo?
-                        SecondstoFill = CDbl(txtMineHaulerM3.Text) / Orem3PerSecond
-                        ' How many cycles where in this session?
-                        FillCycles = SecondstoFill / BaseCycleTime
+                        If ShipMiningYield <> 0 Then
+                            ' How long to fill the cargo?
+                            SecondstoFill = CDbl(txtMineHaulerM3.Text) / Orem3PerSecond
+                            ' How many cycles where in this session?
+                            FillCycles = SecondstoFill / BaseCycleTime
 
-                        ' Add on the round trip time and recalculate cycle time
-                        CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
+                            ' Add on the round trip time and recalculate cycle time
+                            CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
 
-                        ' Recalculate with new cycle time
-                        If cmbMineOreType.Text = "Ore" Then
-                            Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(TotalDroneOrePerHour) / 3600)
-                        Else ' Gas
-                            Orem3PerSecond = ShipMiningYield / CycleTime
+                            ' Recalculate with new cycle time
+                            If cmbMineOreType.Text = "Ore" Then
+                                Orem3PerSecond = (CrystalMiningYield / CycleTime) + (CDbl(TotalDroneOrePerHour) / 3600)
+                            Else ' Gas
+                                Orem3PerSecond = ShipMiningYield / CycleTime
+                            End If
+
+                            ' This is the m3 per second, but need to get CycleTime ORE per second based on it's volume
+                            OrePerSecond = Orem3PerSecond / TempOre.OreVolume
+                        Else
+                            Orem3PerSecond = 0
                         End If
-
-                        ' This is the m3 per second, but need to get CycleTime ORE per second based on it's volume
-                        OrePerSecond = Orem3PerSecond / TempOre.OreVolume
 
                     Else ' Ice
                         ' How much can fit in cargo?
                         IceBlocksPerLoad = CInt(Math.Floor(CDbl(txtMineHaulerM3.Text) / TempOre.OreVolume))
 
-                        ' How many full cycles to fill the cargo?
-                        FillCycles = CInt(Math.Ceiling(IceBlocksPerLoad / ShipMiningYield))
+                        ShipMiningYield += TotalDroneIceBlocksPerHour
 
-                        ' Add on the round trip time and recalculate cycle time
-                        CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
+                        If ShipMiningYield <> 0 Then
+                            ' How many full cycles to fill the cargo?
+                            FillCycles = CInt(Math.Ceiling(IceBlocksPerLoad / ShipMiningYield))
 
-                        ' Recalculate with new cycle time
-                        IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+                            ' Add on the round trip time and recalculate cycle time
+                            CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
 
-                        ' Total ice blocks per hour
-                        IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                            ' Recalculate with new cycle time
+                            IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+
+                            ' Total ice blocks per hour
+                            IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                        Else
+                            IceBlocksPerLoad = 0
+                        End If
                     End If
                 End If
 
@@ -19565,6 +19577,7 @@ Leave:
             ' Upgrades and miner types - different for Ice, Ore, or Gas
             If .OreType = "Ore" Then
                 .OreMiningShip = cmbMineShipName.Text
+                SavedOreShipName = .OreMiningShip
                 .MiningDrone = cmbMineDroneName.Text
                 .NumMiningDrones = cmbMineNumMiningDrones.Text
                 .DroneOpSkill = cmbMineDroneOpSkill.Text
@@ -19597,6 +19610,7 @@ Leave:
                 .BoosterDroneInterfaceSkill = cmbMineBoosterDroneInterfacingSkill.Text
             ElseIf .OreType = "Ice" Then
                 .IceMiningShip = cmbMineShipName.Text
+                SavedIceShipName = .IceMiningShip
                 .IceMiningDrone = cmbMineDroneName.Text
                 .NumIceMiningDrones = cmbMineNumMiningDrones.Text
                 .IceDroneOpSkill = cmbMineDroneOpSkill.Text
@@ -19624,6 +19638,7 @@ Leave:
                 .BoosterIceDroneInterfaceSkill = cmbMineBoosterDroneInterfacingSkill.Text
             ElseIf .OreType = "Gas" Then
                 .GasMiningShip = cmbMineShipName.Text
+                SavedGasShipName = .GasMiningShip
                 .GasHarvester = cmbMineMiningLaser.Text
                 .GasUpgrade = None
                 .NumGasHarvesters = CInt(cmbMineNumLasers.Text)
@@ -20769,7 +20784,7 @@ Leave:
         ' Set the names and numbers for upgrades and strips
         If cmbMineOreType.Text = "Ore" Then
             ' Set the number of MLUs
-            If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+            If UserMiningTabSettings.NumOreUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumOreUpgrades Or ShipName <> SavedOreShipName Then
                 cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
             Else
                 cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumOreUpgrades)
@@ -20779,7 +20794,7 @@ Leave:
             cmbMineMiningUpgrade.Text = UserMiningTabSettings.OreUpgrade
 
             ' Set number of strips
-            If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> UserMiningTabSettings.OreMiningShip Then
+            If UserMiningTabSettings.NumOreMiners = 0 Or LaserCount < UserMiningTabSettings.NumOreMiners Or ShipName <> SavedOreShipName Then
                 cmbMineNumLasers.Text = CStr(LaserCount)
             Else
                 cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumOreMiners)
@@ -20798,7 +20813,7 @@ Leave:
 
         ElseIf cmbMineOreType.Text = "Ice" Then
             ' Set the number of MLUs
-            If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+            If UserMiningTabSettings.NumIceUpgrades = 0 Or MLUCount < UserMiningTabSettings.NumIceUpgrades Or ShipName <> SavedIceShipName Then
                 cmbMineNumMiningUpgrades.Text = CStr(MLUCount)
             Else
                 cmbMineNumMiningUpgrades.Text = CStr(UserMiningTabSettings.NumIceUpgrades)
@@ -20808,7 +20823,7 @@ Leave:
             cmbMineMiningUpgrade.Text = UserMiningTabSettings.IceUpgrade
 
             ' Set number of strips
-            If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> UserMiningTabSettings.IceMiningShip Then
+            If UserMiningTabSettings.NumIceMiners = 0 Or LaserCount < UserMiningTabSettings.NumIceMiners Or ShipName <> SavedIceShipName Then
                 cmbMineNumLasers.Text = CStr(LaserCount)
             Else
                 ' Update with the user settings they have, up to the max the ship can use
@@ -20832,7 +20847,7 @@ Leave:
             cmbMineMiningUpgrade.Text = UserMiningTabSettings.GasUpgrade
 
             ' Set number of strips
-            If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> UserMiningTabSettings.GasMiningShip Then
+            If UserMiningTabSettings.NumIceMiners = 0 Or MLUCount < UserMiningTabSettings.NumGasHarvesters Or ShipName <> SavedGasShipName Then
                 cmbMineNumLasers.Text = CStr(LaserCount)
             Else
                 cmbMineNumLasers.Text = CStr(UserMiningTabSettings.NumGasHarvesters)
@@ -20850,6 +20865,16 @@ Leave:
 
         lblMineCycleTime.Text = ""
         lblMineRange.Text = ""
+
+        If cmbMineMiningRig1.Text = "" Then
+            cmbMineMiningRig1.Text = None
+        End If
+        If cmbMineMiningRig2.Text = "" Then
+            cmbMineMiningRig2.Text = None
+        End If
+        If cmbMineMiningRig3.Text = "" Then
+            cmbMineMiningRig3.Text = None
+        End If
 
         AddHandler cmbMineMiningRig1.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
         AddHandler cmbMineMiningRig2.SelectedIndexChanged, AddressOf ShipMiningDroneRigs_SelectedIndexChanged
