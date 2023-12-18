@@ -1142,8 +1142,8 @@ Public Class ESI
 
     End Function
 
-    ' Updates the db with orders from structures for the items and region sent
-    Public Function UpdateStructureMarketOrders(RegionIDs As List(Of String), PriceSystem As String, ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
+    ' Updates the DB with orders from structures for all items on the market in the structure for the system/region pair sent
+    Public Function UpdateStructureMarketOrders(PriceSystemRegions As List(Of SystemRegion), ByVal Tokendata As SavedTokenData, ByRef refPG As ToolStripProgressBar) As Boolean
         Dim SQL As String
         Dim rsCheck As SQLiteDataReader
         Dim CacheDate As Date = NoDate
@@ -1152,32 +1152,31 @@ Public Class ESI
         Dim StructureIDs As New List(Of Long)
         Dim RegionList As String = ""
 
-        If RegionIDs.Count = 0 Then
+        If PriceSystemRegions.Count = 0 Then
             Return True
         End If
 
-        If PriceSystem <> "" Then
-            ' Only look up structures in this system
-            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & PriceSystem & " And STATION_ID >70000000"
-        Else
-            For Each ID In RegionIDs
-                RegionList &= ID & ","
-            Next
-            ' Strip last comma
-            RegionList = RegionList.Substring(0, Len(RegionList) - 1)
+        ' Build the list of structures to check
+        For Each item In PriceSystemRegions
+            If item.SystemID <> "" Then
+                ' Only look up structures in this system
+                SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE SOLAR_SYSTEM_ID =" & item.SystemID & " AND STATION_ID >70000000"
+            Else
+                ' Get all the structures in that region
+                SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID =" & item.RegionID & " AND STATION_ID >70000000"
+            End If
 
-            ' Get all the structures in that region
-            SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID IN (" & RegionList & ") And STATION_ID >70000000"
-        End If
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsCheck = DBCommand.ExecuteReader
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsCheck = DBCommand.ExecuteReader
+            While rsCheck.Read
+                If Not StructureIDs.Contains(rsCheck.GetInt64(0)) Then
+                    StructureIDs.Add(rsCheck.GetInt64(0))
+                End If
+            End While
 
-        While rsCheck.Read
-            StructureIDs.Add(rsCheck.GetInt64(0))
-        End While
-
-        rsCheck.Close()
+            rsCheck.Close()
+        Next
 
         If StructureIDs.Count > 0 Then
             ' For processing
@@ -1504,6 +1503,7 @@ Public Class ESI
         Dim rsCache As SQLiteDataReader
         Dim CacheDate As Date = NoDate
         Dim PublicData As String = ""
+        Dim DataFound As Boolean = True
 
         If Not IgnoreCacheLookup Then
             ' First look up the cache date to see if it's time to run the update
@@ -1564,16 +1564,17 @@ Public Class ESI
                     Next
 
                 End If
+                DataFound = True
             Else
                 ' Json file didn't download
-                Return False
+                DataFound = False
             End If
 
             ' Set the Cache Date for everything queried 
             Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID))
             Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (" & CStr(TypeID) & "," & CStr(RegionID) & "," & "'" & Format(CacheDate, SQLiteDateFormat) & "')")
 
-            Return True
+            Return DataFound
 
         Else
             Return False

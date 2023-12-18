@@ -1918,10 +1918,18 @@ Public Class ManufacturingFacility
                             SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, SelectedFacility.BaseME)
                         Else
                             SelectedFacility.BaseTax = DefaultStationTaxRate
-                            ' For production in stations, they are always 1
-                            SelectedFacility.BaseME = 1
-                            SelectedFacility.BaseTE = 1
                             SelectedFacility.BaseCost = 1
+
+                            ' Special case to update for Fulcrum if the BP is a sub-cap Angel or Gurista ship
+                            If GetFulcrumBonusFlagforItem(FacilityID, SelectedBPID) Then
+                                ' Override the ME and TE bonus for fulcrum on this bp
+                                SelectedFacility.BaseME = 0.94
+                                SelectedFacility.BaseTE = 0.3
+                            Else
+                                ' For production in stations, they are always 1
+                                SelectedFacility.BaseME = 1
+                                SelectedFacility.BaseTE = 1
+                            End If
                         End If
 
                     Case FacilityTypes.UpwellStructure
@@ -3122,9 +3130,6 @@ Public Class ManufacturingFacility
         Dim rsFW As SQLiteDataReader
         Dim SSID As Long
         Dim Warzone As Boolean = False
-
-        ' No longer in game with Viridian
-        Exit Sub
 
         ' Format system name
         If SolarSystemName.Contains("(") Then
