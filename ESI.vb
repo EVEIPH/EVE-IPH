@@ -369,9 +369,15 @@ Public Class ESI
             End If
 
             ' Do standard validation checks
-            ' Audience first
             With ReturnedToken
-                If .Audiences(0) <> JWK_AUDIENCE Then
+                Dim audienceFound As Boolean = False
+                For i = 0 To .Audiences.Count - 1
+                    If .Audiences(i) = JWK_AUDIENCE Then
+                        audienceFound = True
+                        Exit For
+                    End If
+                Next
+                If Not audienceFound Then
                     Throw New Exception("Invalid Audience")
                 End If
 
