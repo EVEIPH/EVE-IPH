@@ -7638,9 +7638,9 @@ ExitForm:
             Select Case .PriceDataSource
                 Case PricesDataSource.CCP
                     rbtnPriceSourceCCPData.Checked = True
-                Case PriceDataSource.EVEMarketer ' Just check Fuzzworks if marketer setting, Marketer is offline
+                Case PricesDataSource.EVEMarketer ' Just check Fuzzworks if marketer setting, Marketer is offline
                     rbtnPriceSourceFW.Checked = True
-                Case PriceDataSource.Fuzzworks
+                Case PricesDataSource.Fuzzworks
                     rbtnPriceSourceFW.Checked = True
             End Select
 
@@ -7878,7 +7878,7 @@ ExitForm:
             If rbtnPriceSourceCCPData.Checked Then
                 .PriceDataSource = PricesDataSource.CCP
             ElseIf rbtnPriceSourceEM.Checked Then
-                .PriceDataSource = DataSource.Fuzzworks
+                .PriceDataSource = PricesDataSource.Fuzzworks
             ElseIf rbtnPriceSourceFW.Checked Then
                 .PriceDataSource = PricesDataSource.Fuzzworks
             End If
@@ -8187,7 +8187,7 @@ ExitForm:
 
         ' Set the source for the entire update
         If rbtnPriceSourceEM.Checked Then
-            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
         ElseIf rbtnPriceSourceFW.Checked Then
             UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
         ElseIf rbtnPriceSourceCCPData.Checked Then
