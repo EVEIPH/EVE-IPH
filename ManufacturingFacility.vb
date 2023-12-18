@@ -1363,7 +1363,7 @@ Public Class ManufacturingFacility
                     Application.UseWaitCursor = False
 
                 End If
-                    If (String.IsNullOrEmpty(cmbFacilityRegion.Text)) Then
+                If (String.IsNullOrEmpty(cmbFacilityRegion.Text)) Then
                     lstFacilityRegion.Items.Clear()
                     lstFacilityRegion.Visible = False
                 End If

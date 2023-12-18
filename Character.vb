@@ -244,10 +244,7 @@ Public Class Character
                     ' Only ignore the cache date if we aren't updating industry jobs
                     If TempESI.SetCharacterData(False, CharacterTokenData) Then
                         CharacterCorporation = New Corporation()
-                        ' Character corporations have ID's greater than 2 million, so only run if a char corporation not npc
-                        If .GetInt64(2) > 2000000 Then
-                            CharacterCorporation.LoadCorporationData(.GetInt64(2), CharacterTokenData, LoadAssets, LoadBPs)
-                        End If
+                        CharacterCorporation.LoadCorporationData(.GetInt64(2), CharacterTokenData, LoadAssets, LoadBPs)
 
                         UserApplicationSettings.AllowSkillOverride = CBool(.GetInt32(14))
                         IsDefault = CBool(.GetInt32(15))

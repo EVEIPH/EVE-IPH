@@ -1451,6 +1451,8 @@ Public Class frmUpwellStructureFitting
                 Exit Sub
             End If
 
+            SQL &= " ORDER BY groupName, typeName"
+
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsReader = DBCommand.ExecuteReader
 

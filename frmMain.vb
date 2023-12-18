@@ -6858,7 +6858,7 @@ ExitForm:
         ' Disable tab
         gbRawMaterials.Enabled = Not Value
         gbManufacturedItems.Enabled = Not Value
-        gbTradeHubSystems.Enabled = Not Value
+        'gbTradeHubSystems.Enabled = Not Value
         gbPriceOptions.Enabled = Not Value
         txtPriceItemFilter.Enabled = Not Value
         lblItemFilter.Enabled = Not Value
@@ -7392,7 +7392,8 @@ ExitForm:
     Private Sub rbtnPriceSettingPriceProfile_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnPriceSettingPriceProfile.CheckedChanged
         ' set in init, and use this to toggle
         If rbtnPriceSettingPriceProfile.Checked Then
-            gbSingleSource.Enabled = False
+            gbTradeHubSystems.Enabled = False
+            gbRegionSystemPrice.Enabled = False
             gbPriceProfile.Enabled = True
             ' Disable other buttons and lists
             cmbRawMatsSplitPrices.Enabled = False
@@ -7404,7 +7405,8 @@ ExitForm:
             txtRawPriceModifier.Enabled = False
             txtItemsPriceModifier.Enabled = False
         Else
-            gbSingleSource.Enabled = True
+            gbTradeHubSystems.Enabled = True
+            gbRegionSystemPrice.Enabled = True
             gbPriceProfile.Enabled = False
             ' Enable other buttons and lists
             cmbRawMatsSplitPrices.Enabled = True
@@ -7636,15 +7638,16 @@ ExitForm:
             Select Case .PriceDataSource
                 Case PricesDataSource.CCP
                     rbtnPriceSourceCCPData.Checked = True
-                Case PricesDataSource.EVEMarketer
-                    rbtnPriceSourceEM.Checked = True
-                Case PricesDataSource.Fuzzworks
+                Case PriceDataSource.EVEMarketer ' Just check Fuzzworks if marketer setting, Marketer is offline
+                    rbtnPriceSourceFW.Checked = True
+                Case PriceDataSource.Fuzzworks
                     rbtnPriceSourceFW.Checked = True
             End Select
 
             If .UsePriceProfile Then
                 rbtnPriceSettingPriceProfile.Checked = True
-                gbSingleSource.Enabled = False
+                gbTradeHubSystems.Enabled = False
+                gbRegionSystemPrice.Enabled = False
                 gbPriceProfile.Enabled = True
                 ' Disable other buttons and lists
                 cmbRawMatsSplitPrices.Enabled = False
@@ -7657,7 +7660,8 @@ ExitForm:
                 txtItemsPriceModifier.Enabled = False
             Else
                 rbtnPriceSettingSingleSelect.Checked = True
-                gbSingleSource.Enabled = True
+                gbTradeHubSystems.Enabled = True
+                gbRegionSystemPrice.Enabled = True
                 gbPriceProfile.Enabled = False
                 ' Enable other buttons and lists
                 cmbRawMatsSplitPrices.Enabled = True
@@ -7874,7 +7878,7 @@ ExitForm:
             If rbtnPriceSourceCCPData.Checked Then
                 .PriceDataSource = PricesDataSource.CCP
             ElseIf rbtnPriceSourceEM.Checked Then
-                .PriceDataSource = PricesDataSource.EVEMarketer
+                .PriceDataSource = DataSource.Fuzzworks
             ElseIf rbtnPriceSourceFW.Checked Then
                 .PriceDataSource = PricesDataSource.Fuzzworks
             End If
@@ -8183,7 +8187,7 @@ ExitForm:
 
         ' Set the source for the entire update
         If rbtnPriceSourceEM.Checked Then
-            UpdatePricesDataSource = CStr(CInt(PricesDataSource.EVEMarketer))
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
         ElseIf rbtnPriceSourceFW.Checked Then
             UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
         ElseIf rbtnPriceSourceCCPData.Checked Then
@@ -8386,7 +8390,7 @@ ExitSub:
         Dim ESIData As New ESI
         Dim RegionID As String = ""
         Dim PriceRegions As New List(Of String)
-        Dim PriceSystem As String = ""
+        Dim StructurePriceLocations As New List(Of SystemRegion)
         Dim PriceType As String = "" ' Default
         Dim Items As New List(Of TypeIDRegion)
 
@@ -8395,6 +8399,7 @@ ExitSub:
             ' Loop through each item and set it's pair for query
             For i = 0 To SentItems.Count - 1
                 Dim Temp As New TypeIDRegion
+                Dim SystemRegionData As New SystemRegion
                 Temp.TypeIDs.Add(CStr(SentItems(i).TypeID))
 
                 ' Look up regionID since we can only look up regions in ESI
@@ -8405,10 +8410,18 @@ ExitSub:
                     RegionID = CStr(readerPrices.GetInt64(0))
                     readerPrices.Close()
                     DBCommand = Nothing
-                    PriceSystem = SentItems(i).SystemID
+                    SystemRegionData.SystemID = SentItems(i).SystemID
+                    SystemRegionData.RegionID = RegionID
                 Else
                     ' for ESI, only one region per update
                     RegionID = SentItems(i).RegionID
+                    SystemRegionData.SystemID = ""
+                    SystemRegionData.RegionID = RegionID
+                End If
+
+                ' Save for structures later
+                If Not StructurePriceLocations.Contains(SystemRegionData) Then
+                    StructurePriceLocations.Add(SystemRegionData)
                 End If
 
                 ' Set the region
@@ -8456,7 +8469,7 @@ ExitSub:
                 ' First, make sure we have structures in the table to query
                 Call ESIData.UpdatePublicStructureswithMarkets()
 
-                If Not ESIData.UpdateStructureMarketOrders(PriceRegions, PriceSystem, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
+                If Not ESIData.UpdateStructureMarketOrders(StructurePriceLocations, SelectedCharacter.CharacterTokenData, pnlProgressBar) Then
                     ' Update Failed, don't reload everything
                     Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
                     pnlStatus.Text = ""
@@ -8637,12 +8650,12 @@ ExitSub:
                 If SentItems(i).SystemID <> "" Then
                     ' Set the main from using both CCP Data price locations
                     SQL &= ", SOLAR_SYSTEM_ID FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
-                    SQL &= "And SOLAR_SYSTEM_ID In (" & RegionorSystemList & ") "
+                    SQL &= "AND SOLAR_SYSTEM_ID IN (" & RegionorSystemList & ") "
                 Else
                     ' Use the region
                     ' Set the main from using both CCP Data price locations
                     SQL &= ", REGION_ID FROM (SELECT * FROM MARKET_ORDERS UNION ALL SELECT * FROM STRUCTURE_MARKET_ORDERS) WHERE TYPE_ID = " & CStr(SentItems(i).TypeID) & " "
-                    SQL &= "And REGION_ID = " & RegionorSystemList & " "
+                    SQL &= "AND REGION_ID = " & RegionorSystemList & " "
                 End If
 
                 ' See if we limit to buy/sell only
@@ -8659,18 +8672,36 @@ ExitSub:
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerPrices = DBCommand.ExecuteReader
 
-            ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
+            Dim DownloadedPrice As Double
+            Dim DownloadedLocation As String
+
+            ' Grab the first record, which will be the latest one, if no record then set to zero
             If readerPrices.Read Then
                 If Not IsDBNull(readerPrices.GetValue(0)) Then
-                    ' Modify the price depending on modifier
-                    SelectedPrice = readerPrices.GetDouble(0) * (1 + SentItems(i).PriceModifier)
-
-                    ' Now Update the ITEM_PRICES table, set price, price type, Data source, and RegionORSystem used for the price
-                    SQL = "UPDATE ITEM_PRICES_FACT Set PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' "
-                    SQL &= ", RegionORSystem = " & CStr(readerPrices.GetValue(1)) & ", PRICE_SOURCE = " & UpdatePricesDataSource
-                    SQL &= " WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                    DownloadedPrice = readerPrices.GetDouble(0)
+                    DownloadedLocation = CStr(readerPrices.GetValue(1))
+                Else
+                    DownloadedPrice = 0
+                    If SentItems(i).JitaPerimeterPrice Then
+                        DownloadedLocation = SentItems(i).SystemID
+                    Else
+                        DownloadedLocation = RegionorSystemList
+                    End If
                 End If
+
+                ' Modify the price depending on modifier
+                SelectedPrice = DownloadedPrice * (1 + SentItems(i).PriceModifier)
+
+                ' Now Update the ITEM_PRICES table, set price, price type, Data source, and RegionORSystem used for the price
+                SQL = "UPDATE ITEM_PRICES_FACT Set PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' "
+                SQL &= ", RegionORSystem = " & DownloadedLocation & ", PRICE_SOURCE = " & UpdatePricesDataSource
+                SQL &= " WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
+                ' Only overwrite a user price if it's downloaded, if zero - keep it there
+                If DownloadedPrice = 0 Then
+                    SQL &= " AND PRICE_TYPE <> 'User'"
+                End If
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
                 readerPrices.Close()
             End If
 
@@ -8881,7 +8912,7 @@ LocalCancelUpdatePrices:
         End If
 
         ' return 2 decimals
-        Return FormatNumber(value, 2)
+        Return Format(value, "0.##")
 
     End Function
 

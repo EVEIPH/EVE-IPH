@@ -2094,6 +2094,38 @@ SkipItem:
         Application.DoEvents()
     End Sub
 
+    ' Check for Fulcrum bonus - if it's an angel or gurista's subcap and they are using Fulcrum station, return true
+    Public Function GetFulcrumBonusFlagforItem(ByVal FacilityID As Long, ByVal BlueprintID As Long) As Boolean
+
+        If FacilityID = 60015187 Then
+            Dim rsShip As SQLiteDataReader
+            Dim SQL As String
+
+            ' Get the ItemID from the BP ID
+            Dim ItemID As Long = 0
+            DBCommand = New SQLiteCommand("SELECT ITEM_ID FROM ALL_BLUEPRINTS_FACT WHERE BLUEPRINT_ID = " & CStr(BlueprintID), EVEDB.DBREf)
+            rsShip = DBCommand.ExecuteReader
+            If rsShip.Read Then
+                ItemID = rsShip.GetInt64(0)
+            End If
+
+            SQL = "SELECT 'X' FROM INVENTORY_GROUPS, INVENTORY_TYPES WHERE typeID = {0} AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
+            SQL &= "AND categoryID = 6 AND factionID IN (500010,500011) AND INVENTORY_GROUPS.groupID NOT IN (883, 547, 485, 1538, 513, 902, 30) " ' No caps
+
+            DBCommand = New SQLiteCommand(String.Format(SQL, ItemID), EVEDB.DBREf)
+            rsShip = DBCommand.ExecuteReader
+
+            If rsShip.HasRows Then
+                rsShip.Close()
+                Return True
+            End If
+            rsShip.Close()
+        End If
+
+        Return False
+
+    End Function
+
     ' Checks for program updates
     Public Sub CheckForUpdates(ByVal ShowFinalMessage As Boolean, ByVal ProgramIcon As Icon)
         Dim Response As DialogResult
@@ -3107,6 +3139,11 @@ SkipItem:
             TypeIDs = New List(Of String)
         End Sub
     End Class
+
+    Public Structure SystemRegion
+        Dim SystemID As String ' could be empty string
+        Dim RegionID As String
+    End Structure
 
     ' Gets the MAC address for a unique ID
     Public Function GetMacAddress() As String

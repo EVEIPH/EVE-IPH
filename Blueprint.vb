@@ -180,11 +180,13 @@ Public Class Blueprint
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
 
-    '  Private FWManufacturingCostBonus As Double
+    Private FWManufacturingCostBonus As Double
     Private FWCopyingCostBonus As Double
     Private FWInventionCostBonus As Double
 
     Private ReactionBPGroups As New List(Of Integer)(New Integer() {1888, 1889, 1890, 4097})
+
+    Private FulcrumBonusesApply As Boolean
 
     ' BP Constructor
     Public Sub New(ByVal BPBlueprintID As Long, ByVal BPRuns As Long, ByVal BPME As Integer, ByVal BPTE As Integer,
@@ -340,24 +342,26 @@ Public Class Blueprint
         OreConversionSettings = CompressedOreSettings
         ReprocessingFacility = BPReprocessingFacility
 
+        FulcrumBonusesApply = GetFulcrumBonusFlagforItem(MainManufacturingFacility.FacilityID, BlueprintID)
+
         ' See if we want to include the costs
         IncludeManufacturingUsage = BPProductionFacility.IncludeActivityUsage
 
-        '' Set the faction warfare bonus for the usage calculations
-        'Select Case MainManufacturingFacility.FWUpgradeLevel
-        '    Case 1
-        '        FWManufacturingCostBonus = 0.9
-        '    Case 2
-        '        FWManufacturingCostBonus = 0.8
-        '    Case 3
-        '        FWManufacturingCostBonus = 0.7
-        '    Case 4
-        '        FWManufacturingCostBonus = 0.6
-        '    Case 5
-        '        FWManufacturingCostBonus = 0.5
-        '    Case Else
-        '        FWManufacturingCostBonus = 1
-        'End Select
+        ' Set the faction warfare bonus for the usage calculations
+        Select Case MainManufacturingFacility.FWUpgradeLevel
+            Case 1
+                FWManufacturingCostBonus = 0.9
+            Case 2
+                FWManufacturingCostBonus = 0.8
+            Case 3
+                FWManufacturingCostBonus = 0.7
+            Case 4
+                FWManufacturingCostBonus = 0.6
+            Case 5
+                FWManufacturingCostBonus = 0.5
+            Case Else
+                FWManufacturingCostBonus = 1
+        End Select
 
         ' Set the flag if the user sent to this blueprint can invent it
         CanInventRE = False ' Can invent T1 BP to this T2 BP
@@ -431,36 +435,36 @@ Public Class Blueprint
         CopyFacility.RefreshMMTMCMBonuses(0, 9)
         InventionFacility.RefreshMMTMCMBonuses(0, 9)
 
-        '' Set the FW bonus levels
-        'Select Case CopyFacility.FWUpgradeLevel
-        '    Case 1
-        '        FWCopyingCostBonus = 0.9
-        '    Case 2
-        '        FWCopyingCostBonus = 0.8
-        '    Case 3
-        '        FWCopyingCostBonus = 0.7
-        '    Case 4
-        '        FWCopyingCostBonus = 0.6
-        '    Case 5
-        '        FWCopyingCostBonus = 0.5
-        '    Case Else
-        '        FWCopyingCostBonus = 1
-        'End Select
+        ' Set the FW bonus levels
+        Select Case CopyFacility.FWUpgradeLevel
+            Case 1
+                FWCopyingCostBonus = 0.9
+            Case 2
+                FWCopyingCostBonus = 0.8
+            Case 3
+                FWCopyingCostBonus = 0.7
+            Case 4
+                FWCopyingCostBonus = 0.6
+            Case 5
+                FWCopyingCostBonus = 0.5
+            Case Else
+                FWCopyingCostBonus = 1
+        End Select
 
-        'Select Case InventionFacility.FWUpgradeLevel
-        '    Case 1
-        '        FWInventionCostBonus = 0.9
-        '    Case 2
-        '        FWInventionCostBonus = 0.8
-        '    Case 3
-        '        FWInventionCostBonus = 0.7
-        '    Case 4
-        '        FWInventionCostBonus = 0.6
-        '    Case 5
-        '        FWInventionCostBonus = 0.5
-        '    Case Else
-        '        FWInventionCostBonus = 1
-        'End Select
+        Select Case InventionFacility.FWUpgradeLevel
+            Case 1
+                FWInventionCostBonus = 0.9
+            Case 2
+                FWInventionCostBonus = 0.8
+            Case 3
+                FWInventionCostBonus = 0.7
+            Case 4
+                FWInventionCostBonus = 0.6
+            Case 5
+                FWInventionCostBonus = 0.5
+            Case Else
+                FWInventionCostBonus = 1
+        End Select
 
         ' Invention variable inputs - The BPC or Relic first
         InventionBPCTypeID = InventionItemTypeID
@@ -536,7 +540,7 @@ Public Class Blueprint
                 Batches = CInt(Math.Ceiling(UserRuns / (MaxRunsPerBP * NumberofProductionLines)))
             End If
 
-            ' set the minimum per bp, shouldn't go over the runs per bp since the user sends in the total numbps they need
+            ' Set the minimum per bp, shouldn't go over the runs per bp since the user sends in the total numbps they need
             RunsPerLine = CInt(Math.Floor(UserRuns / NumberofBlueprints))
             ExtraRuns = CInt(UserRuns - (RunsPerLine * NumberofBlueprints))
 
@@ -548,7 +552,7 @@ Public Class Blueprint
                 For j = 0 To NumberofProductionLines - 1
                     ' As we add the runs, adjust with extra runs proportionally until they are gone
                     If ExtraRuns <> 0 Then
-                        ' Since it's a fraction of a total batch run, this will always just be one until gone ** not right?
+                        ' Since it's a fraction of a total batch run, this will always just be one until gone 
                         AdjRunsperBP = RunsPerLine + 1
                         ExtraRuns = ExtraRuns - 1 ' Adjust extra
                     Else
@@ -778,7 +782,7 @@ Public Class Blueprint
                     Dim ItemPrice As Double = 0
                     Dim OwnedBP As Boolean
 
-                    Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
+                    Call GetMETEforBP(ComponentBlueprint.BlueprintID, ComponentBlueprint.TechLevel, ComponentBlueprint.ItemGroupID, BPUserSettings.DefaultBPME, BPUserSettings.DefaultBPTE, OwnedBP)
 
                     ' Reset item name
                     If .ItemName.Contains("(") Then
@@ -1072,7 +1076,7 @@ Public Class Blueprint
                 End If
 
                 ' If it has a value in the main bp table, then the item can be built from it's own BP - do a check if they want to use reactions to drill down to raw mats
-                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
+                SQL = "SELECT BLUEPRINT_ID, TECH_LEVEL, ITEM_GROUP_ID FROM ALL_BLUEPRINTS_FACT WHERE ITEM_ID =" & CurrentMaterial.GetMaterialTypeID & SQLAdd
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 readerME = DBCommand.ExecuteReader
 
@@ -1081,7 +1085,7 @@ Public Class Blueprint
                     HasBuildableComponents = True
 
                     ' Look up the ME/TE and owned data for the bp
-                    Call GetMETEforBP(readerME.GetInt32(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                    Call GetMETEforBP(readerME.GetInt32(0), readerME.GetInt32(1), readerME.GetInt32(2), TempME, TempTE, OwnedBP)
 
                     ' Update the current material's ME
                     CurrentMaterial.SetItemME(CStr(TempME))
@@ -1332,7 +1336,7 @@ Public Class Blueprint
                     If readerME.HasRows Then
                         ' This is a component, so look up the ME of the item to put on the material before adding (fixes issue when searching for shopping list items of the same type - no ME is "-" and these have an me
                         ' For example, see modulated core strip miner and polarized heavy pulse weapons.
-                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), TempME, TempTE, OwnedBP)
+                        Call GetMETEforBP(readerME.GetInt64(0), readerME.GetInt32(1), readerME.GetInt32(2), TempME, TempTE, OwnedBP)
                         CurrentMaterial.SetItemME(CStr(TempME))
                     End If
 
@@ -1564,6 +1568,7 @@ SkipProcessing:
     ' So if they have a 10 minute component, and 5, 1 minute components, we can make all in 2 jobs and the total time is 10 min. If they go over max jobs,
     ' then take the max component and add on the max job of the 2nd component
     ' TODO - FIX
+
     Private Function GetComponentProductionTime(ByVal SentTimes As List(Of Double)) As Double
         Dim MaxComponentTime As Double = 0
         Dim RemainingTimeSum As Double = 0
@@ -1947,14 +1952,22 @@ SkipProcessing:
 
     ' Calculates the total material muliplier for the blueprint based on the bp, and facility
     Private Function SetBPMaterialModifier(ByRef SentFacility As IndustryFacility) As Double
+        Dim FacilityMultiplier As Double
+
+        ' Check for Fulcrum bonus
+        If FulcrumBonusesApply Then
+            FacilityMultiplier = 0.94 ' 6% reduction
+        Else
+            FacilityMultiplier = SentFacility.MaterialMultiplier
+        End If
 
         ' Material modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set
-        Return (1 - (iME / 100)) * SentFacility.MaterialMultiplier
+        Return (1 - (iME / 100)) * FacilityMultiplier
 
     End Function
 
     ' Gets the ME/TE for the BP
-    Public Sub GetMETEforBP(ByVal BlueprintID As Long, ByVal BPTech As Integer, ByRef RefME As Integer, ByRef RefTE As Integer, ByRef OwnedBP As Boolean)
+    Public Sub GetMETEforBP(ByVal BlueprintID As Long, ByVal BPTech As Integer, ByVal BPItemGroup As Integer, ByRef RefME As Integer, ByRef RefTE As Integer, ByRef OwnedBP As Boolean)
         Dim SQL As String
         Dim readerLookup As SQLiteDataReader
 
@@ -1968,8 +1981,8 @@ SkipProcessing:
         End If
 
         ' The user can't define an ME or TE for this blueprint, so just look it up
-        SQL = "Select ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID In (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
-        SQL &= " And BLUEPRINT_ID =" & CStr(BlueprintID) & " And OWNED <> 0 "
+        SQL = "SELECT ME, TE, OWNED FROM OWNED_BLUEPRINTS WHERE USER_ID IN (" & UserID & "," & BPCharacter.CharacterCorporation.CorporationID & ") "
+        SQL &= " AND BLUEPRINT_ID =" & CStr(BlueprintID) & " AND OWNED <> 0 "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerLookup = DBCommand.ExecuteReader
 
@@ -1984,7 +1997,7 @@ SkipProcessing:
                 RefME = BaseT2T3ME
                 RefTE = BaseT2T3TE
             Else
-                If Not IsReaction(ItemGroupID) Then
+                If Not IsReaction(BPItemGroup) Then
                     RefME = BPUserSettings.DefaultBPME
                     RefTE = BPUserSettings.DefaultBPTE
                 Else
@@ -2002,6 +2015,14 @@ SkipProcessing:
     ' Calculates the total time muliplier for the blueprint based on the bp, facility, amd implants
     Private Function SetBPTimeModifier() As Double
         Dim Modifier As Double
+        Dim FacilityMultiplier As Double
+
+        ' Check for Fulcrum bonus
+        If FulcrumBonusesApply Then
+            FacilityMultiplier = 0.3 ' 70% reduction
+        Else
+            FacilityMultiplier = MainManufacturingFacility.TimeMultiplier
+        End If
 
         ' Time modifier is the BP ME, and Facility - Facility is saved as a straight multiplier, the others need to be set, then do the skills
         Modifier = (1 - (iTE / 100)) * MainManufacturingFacility.TimeMultiplier * AIImplantValue * (1 - (IndustrySkill * 0.04)) * (1 - (AdvancedIndustrySkill * 0.03))
@@ -2060,14 +2081,21 @@ SkipProcessing:
         If IncludeManufacturingUsage Then
             ' EIV = Sum(eachmaterialquantity * adjustedPrice) - set in build function
             TotalEIV = CLng(EIV * UserRuns)
-            Indexbonuses = MainManufacturingFacility.CostIndex * MainManufacturingFacility.CostMultiplier
+            Indexbonuses = MainManufacturingFacility.CostIndex * MainManufacturingFacility.CostMultiplier * FWManufacturingCostBonus
 
             ' Set Alpha tax
             If BPUserSettings.AlphaAccount Then
                 AlphaCloneTax = AlphaAccountTaxRate
             End If
 
-            FacilityUsage = TotalEIV * (Indexbonuses + MainManufacturingFacility.TaxRate + SCCIndustryFeeSurcharge + AlphaCloneTax)
+            Dim ModSCCSurcharge As Double = SCCIndustryFeeSurcharge
+            With SelectedCharacter.CharacterCorporation
+                If MainManufacturingFacility.FacilityID = 60015187 And (.FactionID = 500010 Or .FactionID = 500011) Then
+                    ModSCCSurcharge *= 0.1 ' 90% reduction if in pirate factions at fulcrum for any build
+                End If
+            End With
+
+            FacilityUsage = TotalEIV * (Indexbonuses + MainManufacturingFacility.TaxRate + ModSCCSurcharge + AlphaCloneTax)
         Else
             FacilityUsage = 0
         End If
