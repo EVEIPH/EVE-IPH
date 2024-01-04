@@ -8,42 +8,33 @@ Public Class frmAddCharacter
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        chkManagePlanets.Visible = False ' Not in use
 
         ' Always check all
         ESIScopesString = ""
-        chkReadAgentsResearch.Checked = True
-        chkReadAssets.Checked = True
-        chkReadBlueprints.Checked = True
-        chkReadCharacterJobs.Checked = True
-        chkReadCorporationAssets.Checked = True
-        chkReadCorporationBlueprints.Checked = True
-        chkReadCorporationJobs.Checked = True
-        chkReadCorporationMembership.Checked = True
-        chkReadCorporationDivisions.Checked = True
-        chkReadStandings.Checked = True
-        chkReadStructures.Checked = True
-        chkReadStructureMarkets.Checked = True
-        'chkManagePlanets.Checked = True
+        Call SelectCheckboxes(True) ' Check all as default
 
         ' Set the tool tips for api
         With ttAPI
-            .SetToolTip(chkReadAgentsResearch, "Reads a list of research agents' information for a character")
-            .SetToolTip(chkReadAssets, "Reads a list of the character's assets")
-            .SetToolTip(chkReadBlueprints, "Reads a list of blueprints the character owns")
-            .SetToolTip(chkReadCharacterJobs, "Reads a list of the character's industry jobs")
-            .SetToolTip(chkReadStandings, "Reads a list of character standings from agents, NPC corporations, and factions")
+            .SetToolTip(chkReadCharacterAgentsResearch, "Reads a list of research agents' information for a character.")
+            .SetToolTip(chkReadCharacterAssets, "Reads a list of the character's assets.")
+            .SetToolTip(chkReadCharacterBlueprints, "Reads a list of blueprints the character owns.")
+            .SetToolTip(chkReadCharacterJobs, "Reads a list of the character's industry jobs.")
+            .SetToolTip(chkReadCharacterStandings, "Reads a list of character standings from agents, NPC corporations, and factions.")
+            .SetToolTip(chkReadCharacterOrders, "Reads a list of all open market orders on the market for a character and allows a list of cancelled and expired market orders placed by the character up to 90 days in the past.")
+            .SetToolTip(chkReadCharacterWallet, "Reads the wallet balance, transactions, and journal of a character going 30 days back.")
+            .SetToolTip(chkReadCharacterPlanetary, "Reads a list of all planetary colonies and layouts owned by a character.")
 
-            .SetToolTip(chkReadCorporationAssets, "Reads a list of the corporation assets")
-            .SetToolTip(chkReadCorporationBlueprints, "Reads a list of blueprints the corporation owns")
-            .SetToolTip(chkReadCorporationJobs, "List industry jobs run by a corporation")
-            .SetToolTip(chkReadCorporationMembership, "List of the current members a corporation and titles (for corp roles)")
-            .SetToolTip(chkReadCorporationDivisions, "Lists the names of corporation hanger and wallet division names if not default")
+            .SetToolTip(chkReadCorporationAssets, "Reads a list of the corporation assets.")
+            .SetToolTip(chkReadCorporationBlueprints, "Reads a list of blueprints the corporation owns. Must have Director or Factory Manager role to see Corporation Blueprints.")
+            .SetToolTip(chkReadCorporationJobs, "List industry jobs run by a corporation. Must have Director or Factory Manager role to see Corporation Jobs.")
+            .SetToolTip(chkReadCorporationMembership, "List of the current members a corporation and titles (for corp roles).")
+            .SetToolTip(chkReadCorporationDivisions, "Lists the names of corporation hanger and wallet division names if not default.")
+            .SetToolTip(chkReadCorporationOrders, "Reads a list of all open market orders on the market for a corporation and allows a list of cancelled and expired market orders placed by the corporation up to 90 days in the past. Must have the Director, Accountant, or Trader role to see Corporation orders.")
+            .SetToolTip(chkReadCharacterWallet, "Reads the wallet balance, transactions, and journal of a corporation going 30 days back. Must have Director, Accountant, or Junior Accountant role to see Corporation Wallet.")
 
-            .SetToolTip(chkReadStructures, "Reads information about specific structures")
-            .SetToolTip(chkReadStructureMarkets, "Reads market orders from a specific structure")
+            .SetToolTip(chkReadStructures, "Returns information on requested structure if you are on the Access Control List.")
+            .SetToolTip(chkReadStructureMarkets, "Reads market orders from a specific structure with a market installed.")
 
-            .SetToolTip(chkManagePlanets, "Reads a list of all planetary colonies and layouts owned by a character")
         End With
 
     End Sub
@@ -129,99 +120,169 @@ Public Class frmAddCharacter
 
     End Sub
 
-    Private Sub chkReadStandings_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadStandings.CheckedChanged, CheckBox4.CheckedChanged
-        With chkReadStandings
-            Call UpdateScopesString(.Text, .Checked)
+    Private Sub btnSelectAll_Click(sender As Object, e As EventArgs) Handles btnSelectAll.Click
+        Call SelectCheckboxes(True)
+    End Sub
+
+    Private Sub btnDeselectAll_Click(sender As Object, e As EventArgs) Handles btnDeselectAll.Click
+        Call SelectCheckboxes(False)
+    End Sub
+
+    Private Sub chkReadCharacterStandings_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterStandings.CheckedChanged
+        With chkReadCharacterStandings
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
-    Private Sub chkReadAgentsResearch_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadAgentsResearch.CheckedChanged, CheckBox3.CheckedChanged
-        With chkReadAgentsResearch
-            Call UpdateScopesString(.Text, .Checked)
+    Private Sub chkReadCharacterAgentsResearch_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterAgentsResearch.CheckedChanged
+        With chkReadCharacterAgentsResearch
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
-    Private Sub chkReadCharacterJobs_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterJobs.CheckedChanged, CheckBox5.CheckedChanged
+    Private Sub chkReadCharacterJobs_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterJobs.CheckedChanged
         With chkReadCharacterJobs
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
-    Private Sub chkReadAssets_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadAssets.CheckedChanged, CheckBox2.CheckedChanged
-        With chkReadAssets
-            Call UpdateScopesString(.Text, .Checked)
+    Private Sub chkReadCharacterAssets_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterAssets.CheckedChanged
+        With chkReadCharacterAssets
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
-    Private Sub chkReadBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadBlueprints.CheckedChanged, CheckBox1.CheckedChanged
-        With chkReadBlueprints
-            Call UpdateScopesString(.Text, .Checked)
+    Private Sub chkReadBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterBlueprints.CheckedChanged
+        With chkReadCharacterBlueprints
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
-    Private Sub chkManagePlanets_CheckedChanged(sender As Object, e As EventArgs) Handles chkManagePlanets.CheckedChanged
-        With chkManagePlanets
-            Call UpdateScopesString(.Text, .Checked)
+    Private Sub chkReadCharacterOrders_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterOrders.CheckedChanged
+        With chkReadCharacterOrders
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
+    Private Sub chkReadCharacterWallet_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterWallet.CheckedChanged
+        With chkReadCharacterWallet
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
+    Private Sub chkReadCharacterLoyalty_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterLoyalty.CheckedChanged
+        With chkReadCharacterLoyalty
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
+    Private Sub chkManagePlanets_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterPlanetary.CheckedChanged
+        With chkReadCharacterPlanetary
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadCorporationMembership_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationMembership.CheckedChanged
         With chkReadCorporationMembership
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadCorporationDivisions_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationDivisions.CheckedChanged
         With chkReadCorporationDivisions
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadCorporationJobs_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationJobs.CheckedChanged
         With chkReadCorporationJobs
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadCorporationAssets_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationAssets.CheckedChanged
         With chkReadCorporationAssets
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadCorporationBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationBlueprints.CheckedChanged
         With chkReadCorporationBlueprints
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
+    Private Sub chkReadCorporationOrders_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationOrders.CheckedChanged
+        With chkReadCorporationOrders
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
+    Private Sub chkReadCorporationWallet_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCorporationWallet.CheckedChanged
+        With chkReadCorporationWallet
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadStructures_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadStructures.CheckedChanged
         With chkReadStructures
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub chkReadStructureMarkets_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadStructureMarkets.CheckedChanged
         With chkReadStructureMarkets
-            Call UpdateScopesString(.Text, .Checked)
+            Call UpdateScopesString(CStr(.Tag), .Checked)
         End With
     End Sub
 
     Private Sub EnableDisableForm(Setting As Boolean)
         btnEVESSOLogin.Enabled = False
-        chkManagePlanets.Enabled = Setting
-        chkReadAgentsResearch.Enabled = Setting
-        chkReadAssets.Enabled = Setting
-        chkReadBlueprints.Enabled = Setting
+        chkReadCharacterPlanetary.Enabled = Setting
+        chkReadCharacterAgentsResearch.Enabled = Setting
+        chkReadCharacterAssets.Enabled = Setting
+        chkReadCharacterBlueprints.Enabled = Setting
         chkReadCharacterJobs.Enabled = Setting
+        chkReadCharacterOrders.Enabled = Setting
+        chkReadCharacterWallet.Enabled = Setting
+        chkReadCharacterLoyalty.Enabled = Setting
+        chkReadCharacterPlanetary.Enabled = Setting
+
         chkReadCorporationAssets.Enabled = Setting
         chkReadCorporationBlueprints.Enabled = Setting
         chkReadCorporationJobs.Enabled = Setting
         chkReadCorporationMembership.Enabled = Setting
         chkReadCorporationDivisions.Enabled = Setting
-        chkReadStandings.Enabled = Setting
+        chkReadCorporationWallet.Enabled = Setting
+        chkReadCorporationOrders.Enabled = Setting
+        chkReadCharacterStandings.Enabled = Setting
+
         chkReadStructures.Enabled = Setting
         chkReadStructureMarkets.Enabled = Setting
+    End Sub
+
+    Private Sub SelectCheckboxes(Setting As Boolean)
+        chkReadCharacterPlanetary.Checked = Setting
+        chkReadCharacterAgentsResearch.Checked = Setting
+        chkReadCharacterAssets.Checked = Setting
+        chkReadCharacterBlueprints.Checked = Setting
+        chkReadCharacterJobs.Checked = Setting
+        chkReadCharacterOrders.Checked = Setting
+        chkReadCharacterWallet.Checked = Setting
+        chkReadCharacterLoyalty.Checked = Setting
+        chkReadCharacterPlanetary.Checked = Setting
+
+        chkReadCorporationAssets.Checked = Setting
+        chkReadCorporationBlueprints.Checked = Setting
+        chkReadCorporationJobs.Checked = Setting
+        chkReadCorporationMembership.Checked = Setting
+        chkReadCorporationDivisions.Checked = Setting
+        chkReadCorporationWallet.Checked = Setting
+        chkReadCorporationOrders.Checked = Setting
+        chkReadCharacterStandings.Checked = Setting
+
+        chkReadStructures.Checked = Setting
+        chkReadStructureMarkets.Checked = Setting
     End Sub
 
 End Class

@@ -216,12 +216,9 @@ Partial Class frmMain
         Me.btnMineRefresh = New System.Windows.Forms.Button()
         Me.gbMineBooster = New System.Windows.Forms.GroupBox()
         Me.chkMineBoosterDroneRig3 = New System.Windows.Forms.CheckBox()
-        Me.pictMineLaserOptmize = New System.Windows.Forms.PictureBox()
-        Me.pictMineRangeLink = New System.Windows.Forms.PictureBox()
         Me.chkMineBoosterDroneRig2 = New System.Windows.Forms.CheckBox()
         Me.chkMineBoosterDroneRig1 = New System.Windows.Forms.CheckBox()
         Me.chkMineBoosterUseDrones = New System.Windows.Forms.CheckBox()
-        Me.pictMineFleetBoostShip = New System.Windows.Forms.PictureBox()
         Me.chkMineForemanLaserRangeBoost = New System.Windows.Forms.CheckBox()
         Me.chkMineIndyCoreDeployedMode = New System.Windows.Forms.CheckBox()
         Me.cmbMineBoosterShipSkill = New System.Windows.Forms.ComboBox()
@@ -289,7 +286,6 @@ Partial Class frmMain
         Me.chkOreProcessing12 = New System.Windows.Forms.CheckBox()
         Me.gbMineShipSetup = New System.Windows.Forms.GroupBox()
         Me.gbMineSelectShip = New System.Windows.Forms.GroupBox()
-        Me.pictMineSelectedShip = New System.Windows.Forms.PictureBox()
         Me.lblMineSelectShip = New System.Windows.Forms.Label()
         Me.cmbMineBaseShipSkill = New System.Windows.Forms.ComboBox()
         Me.cmbMineAdvShipSkill = New System.Windows.Forms.ComboBox()
@@ -511,7 +507,6 @@ Partial Class frmMain
         Me.rbtnCalcRawT2MatType = New System.Windows.Forms.RadioButton()
         Me.chkCalcSellExessItems = New System.Windows.Forms.CheckBox()
         Me.chkCalcNPCBPOs = New System.Windows.Forms.CheckBox()
-        Me.btnCalcShowAssets = New System.Windows.Forms.Button()
         Me.gbCalcIncludeItems = New System.Windows.Forms.GroupBox()
         Me.chkCalcCanInvent = New System.Windows.Forms.CheckBox()
         Me.chkCalcCanBuild = New System.Windows.Forms.CheckBox()
@@ -779,9 +774,7 @@ Partial Class frmMain
         Me.chkStructureModules = New System.Windows.Forms.CheckBox()
         Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
-        Me.pbReactions = New System.Windows.Forms.PictureBox()
         Me.gbBPMEPEImage = New System.Windows.Forms.GroupBox()
-        Me.gbBPSellExcess = New System.Windows.Forms.GroupBox()
         Me.btnBPListMats = New System.Windows.Forms.Button()
         Me.chkBPSellExcessItems = New System.Windows.Forms.CheckBox()
         Me.btnBPSaveBP = New System.Windows.Forms.Button()
@@ -824,7 +817,6 @@ Partial Class frmMain
         Me.chkBPIncludeInventionCosts = New System.Windows.Forms.CheckBox()
         Me.btnBPSaveSettings = New System.Windows.Forms.Button()
         Me.txtBPLines = New System.Windows.Forms.TextBox()
-        Me.pictBP = New System.Windows.Forms.PictureBox()
         Me.gbBPManualSystemCostIndex = New System.Windows.Forms.GroupBox()
         Me.btnBPUpdateCostIndex = New System.Windows.Forms.Button()
         Me.lblBPSystemCostIndexManual = New System.Windows.Forms.Label()
@@ -887,8 +879,6 @@ Partial Class frmMain
         Me.chkBPSmall = New System.Windows.Forms.CheckBox()
         Me.cmbBPBlueprintSelection = New System.Windows.Forms.ComboBox()
         Me.btnBPListView = New System.Windows.Forms.Button()
-        Me.btnBPForward = New System.Windows.Forms.Button()
-        Me.btnBPBack = New System.Windows.Forms.Button()
         Me.lblBPSelectBlueprint = New System.Windows.Forms.Label()
         Me.gbBPInventionStats = New System.Windows.Forms.GroupBox()
         Me.txtBPBrokerFeeRate = New System.Windows.Forms.TextBox()
@@ -944,6 +934,21 @@ Partial Class frmMain
         Me.lstBPRawMats = New EVE_Isk_per_Hour.MyListView()
         Me.lstBPBuiltComponents = New EVE_Isk_per_Hour.MyListView()
         Me.tabMain = New System.Windows.Forms.TabControl()
+        Me.tabOptions = New System.Windows.Forms.TabPage()
+        Me.chkBPIncludeBPCCost = New System.Windows.Forms.CheckBox()
+        Me.pbMarketBP = New System.Windows.Forms.PictureBox()
+        Me.pbLPStoreBP = New System.Windows.Forms.PictureBox()
+        Me.pbReactions = New System.Windows.Forms.PictureBox()
+        Me.pictBP = New System.Windows.Forms.PictureBox()
+        Me.btnBPForward = New System.Windows.Forms.Button()
+        Me.btnBPBack = New System.Windows.Forms.Button()
+        Me.btnCalcShowAssets = New System.Windows.Forms.Button()
+        Me.pictMineLaserOptmize = New System.Windows.Forms.PictureBox()
+        Me.pictMineRangeLink = New System.Windows.Forms.PictureBox()
+        Me.pictMineFleetBoostShip = New System.Windows.Forms.PictureBox()
+        Me.pictMineSelectedShip = New System.Windows.Forms.PictureBox()
+        Me.txtBPBPCCCost = New System.Windows.Forms.TextBox()
+        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.mnuStripMain.SuspendLayout
         Me.pnlMain.SuspendLayout
         Me.ListOptionsMenu.SuspendLayout
@@ -961,9 +966,6 @@ Partial Class frmMain
         Me.gbMineStripStats.SuspendLayout
         Me.gbMineHauling.SuspendLayout
         Me.gbMineBooster.SuspendLayout
-        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).BeginInit
-        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit
-        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit
         Me.gbMineRefining.SuspendLayout
         Me.gbMineOreStuctureRates.SuspendLayout
         Me.tabMiningProcessingSkills.SuspendLayout
@@ -972,7 +974,6 @@ Partial Class frmMain
         Me.tabPageIce.SuspendLayout
         Me.gbMineShipSetup.SuspendLayout
         Me.gbMineSelectShip.SuspendLayout
-        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit
         Me.gbMineShipEquipment.SuspendLayout
         Me.gbMiningRigs.SuspendLayout
         Me.gbMineSkills.SuspendLayout
@@ -1048,14 +1049,11 @@ Partial Class frmMain
         Me.gbItems.SuspendLayout
         Me.gbPricesTech.SuspendLayout
         Me.tabBlueprints.SuspendLayout
-        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).BeginInit
         Me.gbBPMEPEImage.SuspendLayout
-        Me.gbBPSellExcess.SuspendLayout
         Me.tabBPInventionEquip.SuspendLayout
         Me.tabFacility.SuspendLayout
         Me.tabT3Calcs.SuspendLayout
         Me.tabInventionCalcs.SuspendLayout
-        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).BeginInit
         Me.gbBPManualSystemCostIndex.SuspendLayout
         Me.gbBPIgnoreinCalcs.SuspendLayout
         Me.gbBPBlueprintType.SuspendLayout
@@ -1064,6 +1062,15 @@ Partial Class frmMain
         Me.gbBPInventionStats.SuspendLayout
         Me.gbBPShopandCopy.SuspendLayout
         Me.tabMain.SuspendLayout
+        Me.tabOptions.SuspendLayout
+        CType(Me.pbMarketBP, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pbLPStoreBP, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).BeginInit
+        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).BeginInit
         Me.SuspendLayout
         '
         'mnuStripMain
@@ -2622,22 +2629,6 @@ Partial Class frmMain
         Me.chkMineBoosterDroneRig3.ThreeState = True
         Me.chkMineBoosterDroneRig3.UseVisualStyleBackColor = True
         '
-        'pictMineLaserOptmize
-        '
-        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(528, 64)
-        Me.pictMineLaserOptmize.Name = "pictMineLaserOptmize"
-        Me.pictMineLaserOptmize.Size = New System.Drawing.Size(32, 32)
-        Me.pictMineLaserOptmize.TabIndex = 139
-        Me.pictMineLaserOptmize.TabStop = False
-        '
-        'pictMineRangeLink
-        '
-        Me.pictMineRangeLink.Location = New System.Drawing.Point(528, 24)
-        Me.pictMineRangeLink.Name = "pictMineRangeLink"
-        Me.pictMineRangeLink.Size = New System.Drawing.Size(32, 32)
-        Me.pictMineRangeLink.TabIndex = 138
-        Me.pictMineRangeLink.TabStop = False
-        '
         'chkMineBoosterDroneRig2
         '
         Me.chkMineBoosterDroneRig2.AutoSize = True
@@ -2669,16 +2660,6 @@ Partial Class frmMain
         Me.chkMineBoosterUseDrones.TabIndex = 141
         Me.chkMineBoosterUseDrones.Text = "Use Mining Drones"
         Me.chkMineBoosterUseDrones.UseVisualStyleBackColor = True
-        '
-        'pictMineFleetBoostShip
-        '
-        Me.pictMineFleetBoostShip.BackColor = System.Drawing.Color.White
-        Me.pictMineFleetBoostShip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.pictMineFleetBoostShip.Location = New System.Drawing.Point(170, 17)
-        Me.pictMineFleetBoostShip.Name = "pictMineFleetBoostShip"
-        Me.pictMineFleetBoostShip.Size = New System.Drawing.Size(68, 69)
-        Me.pictMineFleetBoostShip.TabIndex = 137
-        Me.pictMineFleetBoostShip.TabStop = False
         '
         'chkMineForemanLaserRangeBoost
         '
@@ -3343,16 +3324,6 @@ Partial Class frmMain
         Me.gbMineSelectShip.TabIndex = 0
         Me.gbMineSelectShip.TabStop = False
         Me.gbMineSelectShip.Text = "Select Ship:"
-        '
-        'pictMineSelectedShip
-        '
-        Me.pictMineSelectedShip.BackColor = System.Drawing.Color.White
-        Me.pictMineSelectedShip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.pictMineSelectedShip.Location = New System.Drawing.Point(21, 95)
-        Me.pictMineSelectedShip.Name = "pictMineSelectedShip"
-        Me.pictMineSelectedShip.Size = New System.Drawing.Size(68, 69)
-        Me.pictMineSelectedShip.TabIndex = 138
-        Me.pictMineSelectedShip.TabStop = False
         '
         'lblMineSelectShip
         '
@@ -5645,15 +5616,6 @@ Partial Class frmMain
         Me.chkCalcNPCBPOs.TabIndex = 15
         Me.chkCalcNPCBPOs.Text = "NPC BPOs"
         Me.chkCalcNPCBPOs.UseVisualStyleBackColor = True
-        '
-        'btnCalcShowAssets
-        '
-        Me.btnCalcShowAssets.Image = CType(resources.GetObject("btnCalcShowAssets.Image"), System.Drawing.Image)
-        Me.btnCalcShowAssets.Location = New System.Drawing.Point(219, 205)
-        Me.btnCalcShowAssets.Name = "btnCalcShowAssets"
-        Me.btnCalcShowAssets.Size = New System.Drawing.Size(48, 48)
-        Me.btnCalcShowAssets.TabIndex = 28
-        Me.btnCalcShowAssets.UseVisualStyleBackColor = True
         '
         'gbCalcIncludeItems
         '
@@ -8450,14 +8412,9 @@ Partial Class frmMain
         'tabBlueprints
         '
         Me.tabBlueprints.BackColor = System.Drawing.Color.Transparent
-        Me.tabBlueprints.Controls.Add(Me.pbReactions)
         Me.tabBlueprints.Controls.Add(Me.gbBPMEPEImage)
         Me.tabBlueprints.Controls.Add(Me.btnBPBuiltComponents)
         Me.tabBlueprints.Controls.Add(Me.btnBPComponents)
-        Me.tabBlueprints.Controls.Add(Me.rbtnBPRawT2MatType)
-        Me.tabBlueprints.Controls.Add(Me.rbtnBPProcT2MatType)
-        Me.tabBlueprints.Controls.Add(Me.rbtnBPAdvT2MatType)
-        Me.tabBlueprints.Controls.Add(Me.lblBPT2MatTypeSelector)
         Me.tabBlueprints.Controls.Add(Me.lstBPList)
         Me.tabBlueprints.Controls.Add(Me.gbBPBlueprintType)
         Me.tabBlueprints.Controls.Add(Me.gbBPBlueprintTech)
@@ -8491,26 +8448,23 @@ Partial Class frmMain
         Me.tabBlueprints.Text = "Blueprints"
         Me.tabBlueprints.UseVisualStyleBackColor = True
         '
-        'pbReactions
-        '
-        Me.pbReactions.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources._16654_32
-        Me.pbReactions.Location = New System.Drawing.Point(1055, 235)
-        Me.pbReactions.Name = "pbReactions"
-        Me.pbReactions.Size = New System.Drawing.Size(32, 32)
-        Me.pbReactions.TabIndex = 139
-        Me.pbReactions.TabStop = False
-        Me.pbReactions.Visible = False
-        '
         'gbBPMEPEImage
         '
         Me.gbBPMEPEImage.BackColor = System.Drawing.Color.Transparent
-        Me.gbBPMEPEImage.Controls.Add(Me.gbBPSellExcess)
+        Me.gbBPMEPEImage.Controls.Add(Me.chkBPIncludeBPCCost)
+        Me.gbBPMEPEImage.Controls.Add(Me.txtBPBPCCCost)
+        Me.gbBPMEPEImage.Controls.Add(Me.pbMarketBP)
+        Me.gbBPMEPEImage.Controls.Add(Me.rbtnBPRawT2MatType)
+        Me.gbBPMEPEImage.Controls.Add(Me.pbLPStoreBP)
+        Me.gbBPMEPEImage.Controls.Add(Me.rbtnBPProcT2MatType)
+        Me.gbBPMEPEImage.Controls.Add(Me.pbReactions)
+        Me.gbBPMEPEImage.Controls.Add(Me.rbtnBPAdvT2MatType)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveBP)
+        Me.gbBPMEPEImage.Controls.Add(Me.lblBPT2MatTypeSelector)
         Me.gbBPMEPEImage.Controls.Add(Me.tabBPInventionEquip)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPSaveSettings)
         Me.gbBPMEPEImage.Controls.Add(Me.txtBPLines)
         Me.gbBPMEPEImage.Controls.Add(Me.pictBP)
-        Me.gbBPMEPEImage.Controls.Add(Me.gbBPManualSystemCostIndex)
         Me.gbBPMEPEImage.Controls.Add(Me.txtBPNumBPs)
         Me.gbBPMEPEImage.Controls.Add(Me.btnBPRefreshBP)
         Me.gbBPMEPEImage.Controls.Add(Me.lblBPLines)
@@ -8524,26 +8478,15 @@ Partial Class frmMain
         Me.gbBPMEPEImage.Controls.Add(Me.txtBPTE)
         Me.gbBPMEPEImage.Controls.Add(Me.lblBPPE)
         Me.gbBPMEPEImage.Controls.Add(Me.lblBPNumBPs)
-        Me.gbBPMEPEImage.Controls.Add(Me.gbBPIgnoreinCalcs)
         Me.gbBPMEPEImage.Location = New System.Drawing.Point(392, 8)
         Me.gbBPMEPEImage.Name = "gbBPMEPEImage"
         Me.gbBPMEPEImage.Size = New System.Drawing.Size(455, 224)
         Me.gbBPMEPEImage.TabIndex = 6
         Me.gbBPMEPEImage.TabStop = False
         '
-        'gbBPSellExcess
-        '
-        Me.gbBPSellExcess.Controls.Add(Me.btnBPListMats)
-        Me.gbBPSellExcess.Controls.Add(Me.chkBPSellExcessItems)
-        Me.gbBPSellExcess.Location = New System.Drawing.Point(238, 7)
-        Me.gbBPSellExcess.Name = "gbBPSellExcess"
-        Me.gbBPSellExcess.Size = New System.Drawing.Size(82, 60)
-        Me.gbBPSellExcess.TabIndex = 21
-        Me.gbBPSellExcess.TabStop = False
-        '
         'btnBPListMats
         '
-        Me.btnBPListMats.Location = New System.Drawing.Point(6, 35)
+        Me.btnBPListMats.Location = New System.Drawing.Point(148, 78)
         Me.btnBPListMats.Name = "btnBPListMats"
         Me.btnBPListMats.Size = New System.Drawing.Size(72, 22)
         Me.btnBPListMats.TabIndex = 24
@@ -8552,9 +8495,10 @@ Partial Class frmMain
         '
         'chkBPSellExcessItems
         '
-        Me.chkBPSellExcessItems.Location = New System.Drawing.Point(3, 7)
+        Me.chkBPSellExcessItems.AutoSize = True
+        Me.chkBPSellExcessItems.Location = New System.Drawing.Point(11, 82)
         Me.chkBPSellExcessItems.Name = "chkBPSellExcessItems"
-        Me.chkBPSellExcessItems.Size = New System.Drawing.Size(79, 32)
+        Me.chkBPSellExcessItems.Size = New System.Drawing.Size(131, 17)
         Me.chkBPSellExcessItems.TabIndex = 1
         Me.chkBPSellExcessItems.Text = "Sell excess build items"
         Me.chkBPSellExcessItems.UseVisualStyleBackColor = True
@@ -8574,10 +8518,11 @@ Partial Class frmMain
         Me.tabBPInventionEquip.Controls.Add(Me.tabFacility)
         Me.tabBPInventionEquip.Controls.Add(Me.tabT3Calcs)
         Me.tabBPInventionEquip.Controls.Add(Me.tabInventionCalcs)
+        Me.tabBPInventionEquip.Controls.Add(Me.tabOptions)
         Me.tabBPInventionEquip.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
         Me.tabBPInventionEquip.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
         Me.tabBPInventionEquip.ItemSize = New System.Drawing.Size(49, 20)
-        Me.tabBPInventionEquip.Location = New System.Drawing.Point(141, 68)
+        Me.tabBPInventionEquip.Location = New System.Drawing.Point(142, 11)
         Me.tabBPInventionEquip.Multiline = True
         Me.tabBPInventionEquip.Name = "tabBPInventionEquip"
         Me.tabBPInventionEquip.Padding = New System.Drawing.Point(0, 0)
@@ -8609,9 +8554,10 @@ Partial Class frmMain
         '
         'tabT3Calcs
         '
-        Me.tabT3Calcs.Controls.Add(Me.chkBPOptimalT3Decryptor)
-        Me.tabT3Calcs.Controls.Add(Me.lblBPT3Decryptor)
         Me.tabT3Calcs.Controls.Add(Me.cmbBPT3Decryptor)
+        Me.tabT3Calcs.Controls.Add(Me.lblBPT3Decryptor)
+        Me.tabT3Calcs.Controls.Add(Me.CheckBox1)
+        Me.tabT3Calcs.Controls.Add(Me.chkBPOptimalT3Decryptor)
         Me.tabT3Calcs.Controls.Add(Me.lblBPT3Stats)
         Me.tabT3Calcs.Controls.Add(Me.lblBPRelic)
         Me.tabT3Calcs.Controls.Add(Me.txtBPRelicLines)
@@ -8629,14 +8575,14 @@ Partial Class frmMain
         Me.tabT3Calcs.Name = "tabT3Calcs"
         Me.tabT3Calcs.Size = New System.Drawing.Size(261, 142)
         Me.tabT3Calcs.TabIndex = 2
-        Me.tabT3Calcs.Text = "Invention"
+        Me.tabT3Calcs.Text = "Inv."
         Me.tabT3Calcs.UseVisualStyleBackColor = True
         '
         'chkBPOptimalT3Decryptor
         '
-        Me.chkBPOptimalT3Decryptor.Location = New System.Drawing.Point(6, 94)
+        Me.chkBPOptimalT3Decryptor.Location = New System.Drawing.Point(4, 93)
         Me.chkBPOptimalT3Decryptor.Name = "chkBPOptimalT3Decryptor"
-        Me.chkBPOptimalT3Decryptor.Size = New System.Drawing.Size(61, 45)
+        Me.chkBPOptimalT3Decryptor.Size = New System.Drawing.Size(61, 22)
         Me.chkBPOptimalT3Decryptor.TabIndex = 55
         Me.chkBPOptimalT3Decryptor.Text = "Optimal"
         Me.chkBPOptimalT3Decryptor.ThreeState = True
@@ -8655,7 +8601,7 @@ Partial Class frmMain
         '
         Me.cmbBPT3Decryptor.FormattingEnabled = True
         Me.cmbBPT3Decryptor.ItemHeight = 13
-        Me.cmbBPT3Decryptor.Location = New System.Drawing.Point(71, 108)
+        Me.cmbBPT3Decryptor.Location = New System.Drawing.Point(71, 111)
         Me.cmbBPT3Decryptor.Name = "cmbBPT3Decryptor"
         Me.cmbBPT3Decryptor.Size = New System.Drawing.Size(206, 21)
         Me.cmbBPT3Decryptor.TabIndex = 54
@@ -8796,7 +8742,7 @@ Partial Class frmMain
         Me.tabInventionCalcs.Padding = New System.Windows.Forms.Padding(3)
         Me.tabInventionCalcs.Size = New System.Drawing.Size(261, 142)
         Me.tabInventionCalcs.TabIndex = 0
-        Me.tabInventionCalcs.Text = "Invention"
+        Me.tabInventionCalcs.Text = "Inv."
         Me.tabInventionCalcs.UseVisualStyleBackColor = True
         '
         'chkBPOptimalT2Decryptor
@@ -8974,24 +8920,14 @@ Partial Class frmMain
         Me.txtBPLines.Size = New System.Drawing.Size(32, 20)
         Me.txtBPLines.TabIndex = 8
         '
-        'pictBP
-        '
-        Me.pictBP.BackColor = System.Drawing.Color.White
-        Me.pictBP.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
-        Me.pictBP.Location = New System.Drawing.Point(6, 12)
-        Me.pictBP.Name = "pictBP"
-        Me.pictBP.Size = New System.Drawing.Size(68, 69)
-        Me.pictBP.TabIndex = 0
-        Me.pictBP.TabStop = False
-        '
         'gbBPManualSystemCostIndex
         '
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.btnBPUpdateCostIndex)
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.lblBPSystemCostIndexManual)
         Me.gbBPManualSystemCostIndex.Controls.Add(Me.txtBPUpdateCostIndex)
-        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(323, 7)
+        Me.gbBPManualSystemCostIndex.Location = New System.Drawing.Point(106, 7)
         Me.gbBPManualSystemCostIndex.Name = "gbBPManualSystemCostIndex"
-        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(127, 60)
+        Me.gbBPManualSystemCostIndex.Size = New System.Drawing.Size(149, 66)
         Me.gbBPManualSystemCostIndex.TabIndex = 23
         Me.gbBPManualSystemCostIndex.TabStop = False
         Me.gbBPManualSystemCostIndex.Text = "Update System Data:"
@@ -9001,7 +8937,7 @@ Partial Class frmMain
         Me.btnBPUpdateCostIndex.Enabled = False
         Me.btnBPUpdateCostIndex.Location = New System.Drawing.Point(76, 13)
         Me.btnBPUpdateCostIndex.Name = "btnBPUpdateCostIndex"
-        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(50, 45)
+        Me.btnBPUpdateCostIndex.Size = New System.Drawing.Size(67, 45)
         Me.btnBPUpdateCostIndex.TabIndex = 21
         Me.btnBPUpdateCostIndex.Text = "Update System"
         Me.btnBPUpdateCostIndex.UseVisualStyleBackColor = True
@@ -9147,9 +9083,9 @@ Partial Class frmMain
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreMinerals)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreT1Item)
         Me.gbBPIgnoreinCalcs.Controls.Add(Me.chkBPIgnoreInvention)
-        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(141, 7)
+        Me.gbBPIgnoreinCalcs.Location = New System.Drawing.Point(6, 5)
         Me.gbBPIgnoreinCalcs.Name = "gbBPIgnoreinCalcs"
-        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(94, 60)
+        Me.gbBPIgnoreinCalcs.Size = New System.Drawing.Size(94, 68)
         Me.gbBPIgnoreinCalcs.TabIndex = 20
         Me.gbBPIgnoreinCalcs.TabStop = False
         Me.gbBPIgnoreinCalcs.Text = "Ignore in Calcs:"
@@ -9157,7 +9093,7 @@ Partial Class frmMain
         'chkBPIgnoreMinerals
         '
         Me.chkBPIgnoreMinerals.AutoSize = True
-        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(5, 41)
+        Me.chkBPIgnoreMinerals.Location = New System.Drawing.Point(5, 45)
         Me.chkBPIgnoreMinerals.Name = "chkBPIgnoreMinerals"
         Me.chkBPIgnoreMinerals.Size = New System.Drawing.Size(65, 17)
         Me.chkBPIgnoreMinerals.TabIndex = 1
@@ -9167,7 +9103,7 @@ Partial Class frmMain
         'chkBPIgnoreT1Item
         '
         Me.chkBPIgnoreT1Item.AutoSize = True
-        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(5, 27)
+        Me.chkBPIgnoreT1Item.Location = New System.Drawing.Point(5, 30)
         Me.chkBPIgnoreT1Item.Name = "chkBPIgnoreT1Item"
         Me.chkBPIgnoreT1Item.Size = New System.Drawing.Size(62, 17)
         Me.chkBPIgnoreT1Item.TabIndex = 2
@@ -9177,7 +9113,7 @@ Partial Class frmMain
         'chkBPIgnoreInvention
         '
         Me.chkBPIgnoreInvention.AutoSize = True
-        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(5, 13)
+        Me.chkBPIgnoreInvention.Location = New System.Drawing.Point(5, 15)
         Me.chkBPIgnoreInvention.Name = "chkBPIgnoreInvention"
         Me.chkBPIgnoreInvention.Size = New System.Drawing.Size(70, 17)
         Me.chkBPIgnoreInvention.TabIndex = 0
@@ -9208,7 +9144,7 @@ Partial Class frmMain
         '
         Me.rbtnBPRawT2MatType.AutoSize = True
         Me.rbtnBPRawT2MatType.BackColor = System.Drawing.Color.Transparent
-        Me.rbtnBPRawT2MatType.Location = New System.Drawing.Point(668, 236)
+        Me.rbtnBPRawT2MatType.Location = New System.Drawing.Point(397, 166)
         Me.rbtnBPRawT2MatType.Name = "rbtnBPRawT2MatType"
         Me.rbtnBPRawT2MatType.Size = New System.Drawing.Size(47, 17)
         Me.rbtnBPRawT2MatType.TabIndex = 75
@@ -9220,7 +9156,7 @@ Partial Class frmMain
         '
         Me.rbtnBPProcT2MatType.AutoSize = True
         Me.rbtnBPProcT2MatType.BackColor = System.Drawing.Color.Transparent
-        Me.rbtnBPProcT2MatType.Location = New System.Drawing.Point(594, 236)
+        Me.rbtnBPProcT2MatType.Location = New System.Drawing.Point(323, 166)
         Me.rbtnBPProcT2MatType.Name = "rbtnBPProcT2MatType"
         Me.rbtnBPProcT2MatType.Size = New System.Drawing.Size(75, 17)
         Me.rbtnBPProcT2MatType.TabIndex = 74
@@ -9232,7 +9168,7 @@ Partial Class frmMain
         '
         Me.rbtnBPAdvT2MatType.AutoSize = True
         Me.rbtnBPAdvT2MatType.BackColor = System.Drawing.Color.Transparent
-        Me.rbtnBPAdvT2MatType.Location = New System.Drawing.Point(522, 236)
+        Me.rbtnBPAdvT2MatType.Location = New System.Drawing.Point(251, 166)
         Me.rbtnBPAdvT2MatType.Name = "rbtnBPAdvT2MatType"
         Me.rbtnBPAdvT2MatType.Size = New System.Drawing.Size(74, 17)
         Me.rbtnBPAdvT2MatType.TabIndex = 19
@@ -9243,7 +9179,7 @@ Partial Class frmMain
         'lblBPT2MatTypeSelector
         '
         Me.lblBPT2MatTypeSelector.BackColor = System.Drawing.Color.Transparent
-        Me.lblBPT2MatTypeSelector.Location = New System.Drawing.Point(414, 234)
+        Me.lblBPT2MatTypeSelector.Location = New System.Drawing.Point(143, 164)
         Me.lblBPT2MatTypeSelector.Name = "lblBPT2MatTypeSelector"
         Me.lblBPT2MatTypeSelector.Size = New System.Drawing.Size(308, 20)
         Me.lblBPT2MatTypeSelector.TabIndex = 76
@@ -9644,33 +9580,6 @@ Partial Class frmMain
         Me.btnBPListView.TabIndex = 5
         Me.btnBPListView.Text = "Blueprint Viewer"
         Me.btnBPListView.UseVisualStyleBackColor = True
-        '
-        'btnBPForward
-        '
-        Me.btnBPForward.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
-        Me.btnBPForward.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
-        Me.btnBPForward.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver
-        Me.btnBPForward.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnBPForward.Image = CType(resources.GetObject("btnBPForward.Image"), System.Drawing.Image)
-        Me.btnBPForward.Location = New System.Drawing.Point(1114, 236)
-        Me.btnBPForward.Name = "btnBPForward"
-        Me.btnBPForward.Size = New System.Drawing.Size(17, 19)
-        Me.btnBPForward.TabIndex = 37
-        Me.btnBPForward.UseVisualStyleBackColor = True
-        '
-        'btnBPBack
-        '
-        Me.btnBPBack.BackColor = System.Drawing.Color.Transparent
-        Me.btnBPBack.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
-        Me.btnBPBack.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
-        Me.btnBPBack.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver
-        Me.btnBPBack.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btnBPBack.Image = CType(resources.GetObject("btnBPBack.Image"), System.Drawing.Image)
-        Me.btnBPBack.Location = New System.Drawing.Point(1091, 236)
-        Me.btnBPBack.Name = "btnBPBack"
-        Me.btnBPBack.Size = New System.Drawing.Size(17, 19)
-        Me.btnBPBack.TabIndex = 36
-        Me.btnBPBack.UseVisualStyleBackColor = False
         '
         'lblBPSelectBlueprint
         '
@@ -10274,6 +10183,164 @@ Partial Class frmMain
         Me.tabMain.Size = New System.Drawing.Size(1145, 641)
         Me.tabMain.TabIndex = 1
         '
+        'tabOptions
+        '
+        Me.tabOptions.Controls.Add(Me.btnBPListMats)
+        Me.tabOptions.Controls.Add(Me.chkBPSellExcessItems)
+        Me.tabOptions.Controls.Add(Me.gbBPIgnoreinCalcs)
+        Me.tabOptions.Controls.Add(Me.gbBPManualSystemCostIndex)
+        Me.tabOptions.Location = New System.Drawing.Point(4, 4)
+        Me.tabOptions.Name = "tabOptions"
+        Me.tabOptions.Padding = New System.Windows.Forms.Padding(3)
+        Me.tabOptions.Size = New System.Drawing.Size(261, 142)
+        Me.tabOptions.TabIndex = 3
+        Me.tabOptions.Text = "Options"
+        Me.tabOptions.UseVisualStyleBackColor = True
+        '
+        'chkBPIncludeBPCCost
+        '
+        Me.chkBPIncludeBPCCost.AutoSize = True
+        Me.chkBPIncludeBPCCost.Location = New System.Drawing.Point(146, 194)
+        Me.chkBPIncludeBPCCost.Name = "chkBPIncludeBPCCost"
+        Me.chkBPIncludeBPCCost.Size = New System.Drawing.Size(74, 17)
+        Me.chkBPIncludeBPCCost.TabIndex = 25
+        Me.chkBPIncludeBPCCost.Text = "BPC Cost:"
+        Me.chkBPIncludeBPCCost.UseVisualStyleBackColor = True
+        '
+        'pbMarketBP
+        '
+        Me.pbMarketBP.BackColor = System.Drawing.Color.White
+        Me.pbMarketBP.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.market32
+        Me.pbMarketBP.Location = New System.Drawing.Point(341, 186)
+        Me.pbMarketBP.Name = "pbMarketBP"
+        Me.pbMarketBP.Size = New System.Drawing.Size(32, 32)
+        Me.pbMarketBP.TabIndex = 141
+        Me.pbMarketBP.TabStop = False
+        Me.pbMarketBP.Visible = False
+        '
+        'pbLPStoreBP
+        '
+        Me.pbLPStoreBP.BackColor = System.Drawing.Color.White
+        Me.pbLPStoreBP.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.lpstore32
+        Me.pbLPStoreBP.Location = New System.Drawing.Point(379, 186)
+        Me.pbLPStoreBP.Name = "pbLPStoreBP"
+        Me.pbLPStoreBP.Size = New System.Drawing.Size(32, 32)
+        Me.pbLPStoreBP.TabIndex = 140
+        Me.pbLPStoreBP.TabStop = False
+        Me.pbLPStoreBP.Visible = False
+        '
+        'pbReactions
+        '
+        Me.pbReactions.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources._16654_32
+        Me.pbReactions.Location = New System.Drawing.Point(417, 186)
+        Me.pbReactions.Name = "pbReactions"
+        Me.pbReactions.Size = New System.Drawing.Size(32, 32)
+        Me.pbReactions.TabIndex = 139
+        Me.pbReactions.TabStop = False
+        Me.pbReactions.Visible = False
+        '
+        'pictBP
+        '
+        Me.pictBP.BackColor = System.Drawing.Color.White
+        Me.pictBP.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.pictBP.Location = New System.Drawing.Point(6, 12)
+        Me.pictBP.Name = "pictBP"
+        Me.pictBP.Size = New System.Drawing.Size(68, 69)
+        Me.pictBP.TabIndex = 0
+        Me.pictBP.TabStop = False
+        '
+        'btnBPForward
+        '
+        Me.btnBPForward.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.btnBPForward.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.btnBPForward.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver
+        Me.btnBPForward.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnBPForward.Image = CType(resources.GetObject("btnBPForward.Image"), System.Drawing.Image)
+        Me.btnBPForward.Location = New System.Drawing.Point(1114, 236)
+        Me.btnBPForward.Name = "btnBPForward"
+        Me.btnBPForward.Size = New System.Drawing.Size(17, 19)
+        Me.btnBPForward.TabIndex = 37
+        Me.btnBPForward.UseVisualStyleBackColor = True
+        '
+        'btnBPBack
+        '
+        Me.btnBPBack.BackColor = System.Drawing.Color.Transparent
+        Me.btnBPBack.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.btnBPBack.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.btnBPBack.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver
+        Me.btnBPBack.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnBPBack.Image = CType(resources.GetObject("btnBPBack.Image"), System.Drawing.Image)
+        Me.btnBPBack.Location = New System.Drawing.Point(1091, 236)
+        Me.btnBPBack.Name = "btnBPBack"
+        Me.btnBPBack.Size = New System.Drawing.Size(17, 19)
+        Me.btnBPBack.TabIndex = 36
+        Me.btnBPBack.UseVisualStyleBackColor = False
+        '
+        'btnCalcShowAssets
+        '
+        Me.btnCalcShowAssets.Image = CType(resources.GetObject("btnCalcShowAssets.Image"), System.Drawing.Image)
+        Me.btnCalcShowAssets.Location = New System.Drawing.Point(219, 205)
+        Me.btnCalcShowAssets.Name = "btnCalcShowAssets"
+        Me.btnCalcShowAssets.Size = New System.Drawing.Size(48, 48)
+        Me.btnCalcShowAssets.TabIndex = 28
+        Me.btnCalcShowAssets.UseVisualStyleBackColor = True
+        '
+        'pictMineLaserOptmize
+        '
+        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(528, 64)
+        Me.pictMineLaserOptmize.Name = "pictMineLaserOptmize"
+        Me.pictMineLaserOptmize.Size = New System.Drawing.Size(32, 32)
+        Me.pictMineLaserOptmize.TabIndex = 139
+        Me.pictMineLaserOptmize.TabStop = False
+        '
+        'pictMineRangeLink
+        '
+        Me.pictMineRangeLink.Location = New System.Drawing.Point(528, 24)
+        Me.pictMineRangeLink.Name = "pictMineRangeLink"
+        Me.pictMineRangeLink.Size = New System.Drawing.Size(32, 32)
+        Me.pictMineRangeLink.TabIndex = 138
+        Me.pictMineRangeLink.TabStop = False
+        '
+        'pictMineFleetBoostShip
+        '
+        Me.pictMineFleetBoostShip.BackColor = System.Drawing.Color.White
+        Me.pictMineFleetBoostShip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.pictMineFleetBoostShip.Location = New System.Drawing.Point(170, 17)
+        Me.pictMineFleetBoostShip.Name = "pictMineFleetBoostShip"
+        Me.pictMineFleetBoostShip.Size = New System.Drawing.Size(68, 69)
+        Me.pictMineFleetBoostShip.TabIndex = 137
+        Me.pictMineFleetBoostShip.TabStop = False
+        '
+        'pictMineSelectedShip
+        '
+        Me.pictMineSelectedShip.BackColor = System.Drawing.Color.White
+        Me.pictMineSelectedShip.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D
+        Me.pictMineSelectedShip.Location = New System.Drawing.Point(21, 95)
+        Me.pictMineSelectedShip.Name = "pictMineSelectedShip"
+        Me.pictMineSelectedShip.Size = New System.Drawing.Size(68, 69)
+        Me.pictMineSelectedShip.TabIndex = 138
+        Me.pictMineSelectedShip.TabStop = False
+        '
+        'txtBPBPCCCost
+        '
+        Me.txtBPBPCCCost.Location = New System.Drawing.Point(221, 192)
+        Me.txtBPBPCCCost.MaxLength = 15
+        Me.txtBPBPCCCost.Name = "txtBPBPCCCost"
+        Me.txtBPBPCCCost.Size = New System.Drawing.Size(114, 20)
+        Me.txtBPBPCCCost.TabIndex = 142
+        Me.txtBPBPCCCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        '
+        'CheckBox1
+        '
+        Me.CheckBox1.AutoSize = True
+        Me.CheckBox1.Location = New System.Drawing.Point(4, 113)
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.Size = New System.Drawing.Size(71, 17)
+        Me.CheckBox1.TabIndex = 56
+        Me.CheckBox1.Text = "BPC Cost"
+        Me.CheckBox1.ThreeState = True
+        Me.CheckBox1.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -10324,9 +10391,6 @@ Partial Class frmMain
         Me.gbMineHauling.PerformLayout
         Me.gbMineBooster.ResumeLayout(False)
         Me.gbMineBooster.PerformLayout
-        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).EndInit
-        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).EndInit
-        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbMineRefining.ResumeLayout(False)
         Me.gbMineRefining.PerformLayout
         Me.gbMineOreStuctureRates.ResumeLayout(False)
@@ -10341,7 +10405,6 @@ Partial Class frmMain
         Me.gbMineShipSetup.ResumeLayout(False)
         Me.gbMineSelectShip.ResumeLayout(False)
         Me.gbMineSelectShip.PerformLayout
-        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbMineShipEquipment.ResumeLayout(False)
         Me.gbMineShipEquipment.PerformLayout
         Me.gbMiningRigs.ResumeLayout(False)
@@ -10468,17 +10531,14 @@ Partial Class frmMain
         Me.gbPricesTech.PerformLayout
         Me.tabBlueprints.ResumeLayout(False)
         Me.tabBlueprints.PerformLayout
-        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbBPMEPEImage.ResumeLayout(False)
         Me.gbBPMEPEImage.PerformLayout
-        Me.gbBPSellExcess.ResumeLayout(False)
         Me.tabBPInventionEquip.ResumeLayout(False)
         Me.tabFacility.ResumeLayout(False)
         Me.tabT3Calcs.ResumeLayout(False)
         Me.tabT3Calcs.PerformLayout
         Me.tabInventionCalcs.ResumeLayout(False)
         Me.tabInventionCalcs.PerformLayout
-        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).EndInit
         Me.gbBPManualSystemCostIndex.ResumeLayout(False)
         Me.gbBPManualSystemCostIndex.PerformLayout
         Me.gbBPIgnoreinCalcs.ResumeLayout(False)
@@ -10494,6 +10554,16 @@ Partial Class frmMain
         Me.gbBPShopandCopy.ResumeLayout(False)
         Me.gbBPShopandCopy.PerformLayout
         Me.tabMain.ResumeLayout(False)
+        Me.tabOptions.ResumeLayout(False)
+        Me.tabOptions.PerformLayout
+        CType(Me.pbMarketBP, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pbLPStoreBP, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pbReactions, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictBP, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineLaserOptmize, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineRangeLink, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineFleetBoostShip, System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.pictMineSelectedShip, System.ComponentModel.ISupportInitialize).EndInit
         Me.ResumeLayout(False)
         Me.PerformLayout
 
@@ -11189,7 +11259,6 @@ Partial Class frmMain
     Friend WithEvents lblBPBuyColor As Label
     Friend WithEvents lblBPBuildColor As Label
     Friend WithEvents gbBPMEPEImage As GroupBox
-    Friend WithEvents gbBPSellExcess As GroupBox
     Friend WithEvents btnBPListMats As Button
     Friend WithEvents chkBPSellExcessItems As CheckBox
     Friend WithEvents btnBPSaveBP As Button
@@ -11418,4 +11487,10 @@ Partial Class frmMain
     Friend WithEvents mnuYouTube As ToolStripMenuItem
     Friend WithEvents mnuDiscord As ToolStripMenuItem
     Friend WithEvents chkMineIncludeA0StarOres As CheckBox
+    Friend WithEvents tabOptions As TabPage
+    Friend WithEvents pbLPStoreBP As PictureBox
+    Friend WithEvents chkBPIncludeBPCCost As CheckBox
+    Friend WithEvents pbMarketBP As PictureBox
+    Friend WithEvents txtBPBPCCCost As TextBox
+    Friend WithEvents CheckBox1 As CheckBox
 End Class

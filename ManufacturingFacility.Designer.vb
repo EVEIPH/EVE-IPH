@@ -55,6 +55,7 @@ Partial Class ManufacturingFacility
         Me.btnConversiontoOreSettings = New System.Windows.Forms.Button()
         Me.lstFacilityRegion = New System.Windows.Forms.ListBox()
         Me.lstFacilitySystem = New System.Windows.Forms.ListBox()
+        Me.btnStructureDelete = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'lblInclude
@@ -114,7 +115,6 @@ Partial Class ManufacturingFacility
         Me.cmbFacility.Name = "cmbFacility"
         Me.cmbFacility.Size = New System.Drawing.Size(274, 21)
         Me.cmbFacility.TabIndex = 14
-        Me.cmbFacility.Text = "Select Facility"
         '
         'cmbFacilitySystem
         '
@@ -202,7 +202,7 @@ Partial Class ManufacturingFacility
         '
         'txtFacilityManualTE
         '
-        Me.txtFacilityManualTE.Location = New System.Drawing.Point(133, 85)
+        Me.txtFacilityManualTE.Location = New System.Drawing.Point(124, 85)
         Me.txtFacilityManualTE.MaxLength = 7
         Me.txtFacilityManualTE.Name = "txtFacilityManualTE"
         Me.txtFacilityManualTE.Size = New System.Drawing.Size(50, 20)
@@ -351,10 +351,20 @@ Partial Class ManufacturingFacility
         Me.lstFacilitySystem.TabIndex = 66
         Me.lstFacilitySystem.Visible = False
         '
+        'btnStructureDelete
+        '
+        Me.btnStructureDelete.Location = New System.Drawing.Point(221, 109)
+        Me.btnStructureDelete.Name = "btnStructureDelete"
+        Me.btnStructureDelete.Size = New System.Drawing.Size(31, 22)
+        Me.btnStructureDelete.TabIndex = 67
+        Me.btnStructureDelete.Text = "Del"
+        Me.btnStructureDelete.UseVisualStyleBackColor = True
+        '
         'ManufacturingFacility
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.btnStructureDelete)
         Me.Controls.Add(Me.lstFacilitySystem)
         Me.Controls.Add(Me.lstFacilityRegion)
         Me.Controls.Add(Me.btnFacilitySave)
@@ -424,4 +434,5 @@ Partial Class ManufacturingFacility
     Friend WithEvents btnConversiontoOreSettings As Button
     Friend WithEvents lstFacilityRegion As ListBox
     Friend WithEvents lstFacilitySystem As ListBox
+    Friend WithEvents btnStructureDelete As Button
 End Class

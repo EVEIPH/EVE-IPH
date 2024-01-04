@@ -144,7 +144,7 @@ Public Class ManufacturingFacility
 
         UpdatingManualBoxes = False
 
-        ' For checking facilities later - will remove if we can get locations from ESI
+        ' For checking facilities later
         FactionCitadelList.Add(47512) ' Moreau Fortizar
         FactionCitadelList.Add(47513) ' Draccous Fortizar
         FactionCitadelList.Add(47514) ' Horizion Fortizar
@@ -258,6 +258,11 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Left = btnFacilitySave.Left - (btnFacilityFitting.Width + 2)
                 btnFacilityFitting.Visible = False
                 btnFacilityFitting.Enabled = False
+
+                btnStructureDelete.Top = btnFacilityFitting.Top
+                btnStructureDelete.Left = btnFacilityFitting.Left - (btnStructureDelete.Width + 2)
+                btnStructureDelete.Visible = True
+                btnStructureDelete.Enabled = True
 
                 Call LoadManualBoxes(InitialProductionType, FormLocation)
 
@@ -777,27 +782,27 @@ Public Class ManufacturingFacility
         lblFacilityManualME.Top = btnFacilitySave.Top + 4
         lblFacilityManualME.Left = LeftLabelLocation
         txtFacilityManualME.Top = btnFacilitySave.Top + 1
-        txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width
+        txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width - 1
 
         lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 8
         lblFacilityManualCost.Left = LeftLabelLocation
         lblFacilityManualCost.Text = "Cost:"
         txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 2
-        txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width
+        txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width - 1
 
         ' Reset manual ME so it aligns with cost box
         txtFacilityManualME.Left = txtFacilityManualCost.Left
 
         lblFacilityManualTE.Top = lblFacilityManualME.Top
-        lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3
+        lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width
         txtFacilityManualTE.Top = txtFacilityManualME.Top
-        txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width
+        txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width - 2
 
         lblFacilityManualTax.Top = lblFacilityManualCost.Top
-        lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width + 3
+        lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width
         lblFacilityManualTax.Text = "Tax:"
         txtFacilityManualTax.Top = txtFacilityManualCost.Top
-        txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width
+        txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width - 2
         txtFacilityManualTE.Left = txtFacilityManualTax.Left
 
         ' FW Boxes - visible is set if the system is FW system - doesn't affect reprocessing so don't load for those
@@ -805,7 +810,7 @@ Public Class ManufacturingFacility
         cmbFacilityFWUpgrade.Left = (cmbFacility.Left + cmbFacility.Width) - cmbFacilityFWUpgrade.Width
         cmbFacilityFWUpgrade.Visible = False
 
-        lblFacilityFWUpgrade.Top = cmbFacilityFWUpgrade.Top + 2
+        lblFacilityFWUpgrade.Top = lblFacilityManualCost.Top
         lblFacilityFWUpgrade.Left = cmbFacilityFWUpgrade.Left - lblFacilityFWUpgrade.Width + 2
         lblFacilityFWUpgrade.Visible = False
         Call lblFacilityFWUpgrade.SendToBack()

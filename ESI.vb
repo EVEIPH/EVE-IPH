@@ -27,18 +27,25 @@ Public Class ESI
     Private AuthorizationToken As String ' Token returned by ESI on initial authorization - good for 5 minutes
     Private CodeVerifier As String ' For PKCE - generated code we send to ESI for access codes after sending the hashed version of this for authorization code
 
+    ' Character scopes
+    Public Const ESICharacterSkillsScope As String = "esi-skills.read_skill"
     Public Const ESICharacterAssetScope As String = "esi-assets.read_assets"
     Public Const ESICharacterResearchAgentsScope As String = "esi-characters.read_agents_research"
     Public Const ESICharacterBlueprintsScope As String = "esi-characters.read_blueprints"
     Public Const ESICharacterStandingsScope As String = "esi-characters.read_standings"
     Public Const ESICharacterIndustryJobsScope As String = "esi-industry.read_character_jobs"
-    Public Const ESICharacterSkillsScope As String = "esi-skills.read_skill"
+    Public Const ESICharacterMarketOrders As String = "esi-markets.read_character_orders"
+    Public Const ESICharacterWallet As String = "esi-wallet.read_character_wallet"
+    Public Const ESICharacterLoyaltyPoints As String = "esi-characters.read_loyalty.v1"
 
+    ' Corporation scopes
     Public Const ESICorporationAssetScope As String = "esi-assets.read_corporation_assets"
     Public Const ESICorporationBlueprintsScope As String = "esi-corporations.read_blueprints"
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
     Public Const ESICorporationDivisions As String = "esi-corporations.read_divisions"
+    Public Const ESICorporationMarketOrders As String = "esi-markets.read_corporation_orders"
+    Public Const ESICorporationWallet As String = "esi-wallet.read_corporation_wallet"
 
     Public Const ESIUniverseStructuresScope As String = "esi-universe.read_structures"
     Public Const ESIStructureMarketsScope As String = "esi-markets.structure_markets"
@@ -869,6 +876,21 @@ Public Class ESI
 
     End Function
 
+    Public Function GetCharacterLoyaltyPoints(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef AgentsCacheDate As Date) As List(Of ESILoyaltyPoints)
+        Dim ReturnData As String
+
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/loyalty/points/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of List(Of ESILoyaltyPoints))(ReturnData)
+        Else
+            Return Nothing
+        End If
+
+    End Function
+
+
     Public Function GetBlueprints(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal ScanType As ScanType, ByRef BPCacheDate As Date) As List(Of EVEBlueprint)
         Dim ReturnedBPs As New List(Of EVEBlueprint)
         Dim TempBlueprint As EVEBlueprint
@@ -990,7 +1012,6 @@ Public Class ESI
 
         Dim WC As New WebClient
         Dim Address As String = ""
-        Dim PostParameters As New NameValueCollection
         Dim IDList As String = ""
 
         Try
@@ -1133,7 +1154,7 @@ Public Class ESI
                         SQL &= BuildInsertFieldString(.description) & ","
                         SQL &= BuildInsertFieldString(.date_founded) & ","
                         SQL &= BuildInsertFieldString(.url) & ","
-                        SQL &= "NULL,NULL,NULL,NULL,NULL,NULL)"
+                        SQL &= "NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
                     End With
 
                 End If
@@ -2878,6 +2899,11 @@ Public Class ESIResearchAgent
     <JsonProperty("started_at")> Public started_at As String
     <JsonProperty("points_per_day")> Public points_per_day As Double
     <JsonProperty("remainder_points")> Public remainder_points As Double
+End Class
+
+Public Class ESILoyaltyPoints
+    <JsonProperty("corporation_id")> Public corporation_id As Long
+    <JsonProperty("loyalty_points")> Public loyalty_points As Long
 End Class
 
 Public Class ESICorporationRoles

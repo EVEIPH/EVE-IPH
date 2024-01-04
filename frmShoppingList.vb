@@ -215,7 +215,6 @@ Public Class frmShoppingList
 
         btnCopy.Enabled = False
         btnSaveListToFile.Enabled = False
-        btnEVEPraisal.Enabled = False
 
         ItemListColumnClicked = 0
         ItemListColumnSortOrder = SortOrder.None
@@ -279,13 +278,11 @@ Public Class frmShoppingList
         If lstItems.Items.Count > 0 Then
             btnCopy.Enabled = True
             btnSaveListToFile.Enabled = True
-            btnEVEPraisal.Enabled = True
             btnClear.Enabled = True
             gbUpdateList.Enabled = True
         Else
             btnCopy.Enabled = False
             btnSaveListToFile.Enabled = False
-            btnEVEPraisal.Enabled = False
             btnClear.Enabled = False
             gbUpdateList.Enabled = False
             ' No more items so clear lists
@@ -323,7 +320,6 @@ Public Class frmShoppingList
 
         btnCopy.Enabled = False
         btnSaveListToFile.Enabled = False
-        btnEVEPraisal.Enabled = False
 
         Me.Refresh()
 
@@ -1966,45 +1962,6 @@ Public Class frmShoppingList
         If Not FirstLoad Then
             Call LoadFormStats()
         End If
-    End Sub
-
-    Private Sub btnEVEPraisal_Click(sender As Object, e As EventArgs) Handles btnEVEPraisal.Click
-
-        ' Only allow link creation when there is a buy list change 
-        If BuyListDataChange And TotalShoppingList.GetFullBuyList.GetMaterialList.Count > 0 Then
-            Try
-                Dim BuyList As Materials = TotalShoppingList.GetFullBuyList
-                Dim ItemList As String = ""
-                Dim WC As New WebClient
-                Dim Response As Byte()
-                Dim Data As String = ""
-                Dim PostParameters As New NameValueCollection
-
-                Application.UseWaitCursor = True
-
-                ' Loop through the buy list and build an evepraisal link
-                For Each item In BuyList.GetMaterialList
-                    ItemList &= item.GetMaterialName & " " & CStr(item.GetQuantity) & vbCrLf
-                Next
-
-                Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=" & ItemList, "POST", PostParameters)
-                Data = Encoding.UTF8.GetString(Response)
-
-                ' Need to parse data and pull id for permanent link then add to clipboard - example: https://evepraisal.com/a/coyaw
-                Dim token As Linq.JToken = Linq.JObject.Parse(Data)
-                Call CopyTextToClipboard("https://evepraisal.com/a/" & token.SelectToken("appraisal.id").ToString)
-                BuyListDataChange = False ' Flag to not allow poeple to click again on this unless the data was changed on the clipboard elsewhere
-
-                Application.UseWaitCursor = False
-                Application.DoEvents()
-
-            Catch ex As WebException
-                Call MsgBox(ex.Message, vbCritical, Application.ProductName)
-            Catch ex As Exception
-                Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
-            End Try
-        End If
-
     End Sub
 
     Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click

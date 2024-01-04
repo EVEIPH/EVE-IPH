@@ -82,7 +82,6 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
-        Me.btnEVEPraisal = New System.Windows.Forms.Button()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -612,6 +611,7 @@ Partial Class frmShoppingList
         Me.lstBuy.ContextMenuStrip = Me.DeleteMaterialStrip
         Me.lstBuy.FullRowSelect = True
         Me.lstBuy.GridLines = True
+        Me.lstBuy.HideSelection = False
         Me.lstBuy.Location = New System.Drawing.Point(7, 20)
         Me.lstBuy.Name = "lstBuy"
         Me.lstBuy.Size = New System.Drawing.Size(1081, 300)
@@ -624,6 +624,7 @@ Partial Class frmShoppingList
         '
         Me.lstItems.ContextMenuStrip = Me.DeleteItemStrip
         Me.lstItems.FullRowSelect = True
+        Me.lstItems.HideSelection = False
         Me.lstItems.Location = New System.Drawing.Point(6, 339)
         Me.lstItems.Name = "lstItems"
         Me.lstItems.Size = New System.Drawing.Size(711, 198)
@@ -636,6 +637,7 @@ Partial Class frmShoppingList
         '
         Me.lstBuild.ContextMenuStrip = Me.DeleteBuildStrip
         Me.lstBuild.FullRowSelect = True
+        Me.lstBuild.HideSelection = False
         Me.lstBuild.Location = New System.Drawing.Point(720, 339)
         Me.lstBuild.Name = "lstBuild"
         Me.lstBuild.Size = New System.Drawing.Size(368, 198)
@@ -645,15 +647,6 @@ Partial Class frmShoppingList
         Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
         '
-        'btnEVEPraisal
-        '
-        Me.btnEVEPraisal.Location = New System.Drawing.Point(107, 577)
-        Me.btnEVEPraisal.Name = "btnEVEPraisal"
-        Me.btnEVEPraisal.Size = New System.Drawing.Size(94, 32)
-        Me.btnEVEPraisal.TabIndex = 78
-        Me.btnEVEPraisal.Text = "EVEpraisal Link"
-        Me.btnEVEPraisal.UseVisualStyleBackColor = True
-        '
         'frmShoppingList
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -661,7 +654,6 @@ Partial Class frmShoppingList
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
         Me.Controls.Add(Me.chkRebuildItemsfromList)
-        Me.Controls.Add(Me.btnEVEPraisal)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
         Me.Controls.Add(Me.lblTIC)
@@ -766,7 +758,6 @@ End Sub
     Friend WithEvents lblTotalItemsInList As System.Windows.Forms.Label
     Friend WithEvents chkRebuildItemsfromList As CheckBox
     Friend WithEvents rbtnExportMulitBuy As RadioButton
-    Friend WithEvents btnEVEPraisal As Button
     Friend WithEvents txtBrokerFeeRate As TextBox
     Friend WithEvents lblFeeRate As Label
 End Class

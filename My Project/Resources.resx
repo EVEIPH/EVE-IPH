@@ -121,8 +121,8 @@
   <data name="Digital-Patreon-Wordmark_FieryCoral" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Digital-Patreon-Wordmark_FieryCoral.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PayPalButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PayPalButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="lpstore32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\lpstore32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="_46_64_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\46_64_1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -130,10 +130,19 @@
   <data name="_46_64_2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\46_64_2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="patreon_sm" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\patreon_sm.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PayPalButton" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PayPalButton.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="lpstore" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\lpstore.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="16654_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\16654_32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="patreon_sm" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\patreon_sm.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="market32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\market32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

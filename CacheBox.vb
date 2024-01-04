@@ -86,21 +86,21 @@ Public Class CacheBox
                     .FieldName = "STANDINGS_CACHE_DATE"
                 Case CacheDateType.ResearchAgents
                     .FieldName = "RESEARCH_AGENTS_CACHE_DATE"
-                Case CacheDateType.PersonalBlueprints
+                Case CacheDateType.PersonalPlanets
+                    .FieldName = "PLANETS_CACHE_DATE"
+                Case CacheDateType.PersonalLoyaltyPoints
+                    .FieldName = "LOYALTY_POINTS_CACHE_DATE"
+                Case CacheDateType.PersonalMarketOrders, CacheDateType.CorporateMarketOrders
+                    .FieldName = "MARKET_ORDERS_CACHE_DATE"
+                Case CacheDateType.PersonalWallet, CacheDateType.CorporateWallets
+                    .FieldName = "WALLET_DATA_CACHE_DATE"
+                Case CacheDateType.PersonalBlueprints, CacheDateType.CorporateBlueprints
                     .FieldName = "BLUEPRINTS_CACHE_DATE"
-                Case CacheDateType.PersonalAssets
+                Case CacheDateType.PersonalAssets, CacheDateType.CorporateAssets
                     .FieldName = "ASSETS_CACHE_DATE"
-                Case CacheDateType.PersonalIndyJobs
+                Case CacheDateType.PersonalIndyJobs, CacheDateType.CorporateIndyJobs
                     .FieldName = "INDUSTRY_JOBS_CACHE_DATE"
-                Case CacheDateType.CorporateBlueprints
-                    .FieldName = "BLUEPRINTS_CACHE_DATE"
-                Case CacheDateType.CorporateAssets
-                    .FieldName = "ASSETS_CACHE_DATE"
-                Case CacheDateType.CorporateIndyJobs
-                    .FieldName = "INDUSTRY_JOBS_CACHE_DATE"
-                Case CacheDateType.PublicCharacterData
-                    .FieldName = "PUBLIC_DATA_CACHE_DATE"
-                Case CacheDateType.PublicCorporationData
+                Case CacheDateType.PublicCharacterData, CacheDateType.PublicCorporationData
                     .FieldName = "PUBLIC_DATA_CACHE_DATE"
                 Case CacheDateType.IndustrySystems
                     .FieldName = "INDUSTRY_SYSTEMS_CACHED_UNTIL"
@@ -110,12 +110,12 @@ Public Class CacheBox
                     .FieldName = "PUBLIC_STRUCTURES_CACHED_UNTIL"
                 Case CacheDateType.CorporateRoles
                     .FieldName = "CORP_ROLES_CACHE_DATE"
+                Case CacheDateType.CorporateDivisions
+                    .FieldName = "CORP_DIVISIONS_CACHE_DATE"
                 Case CacheDateType.ESIStatus
                     .FieldName = "PUBLIC_ESI_STATUS_CACHED_UNTIL"
                 Case CacheDateType.PublicContracts
                     .FieldName = "PUBLIC_CONTRACTS_CACHED_UNTIL"
-                Case CacheDateType.CorporateDivisions
-                    .FieldName = "CORP_DIVISIONS_CACHE_DATE"
                 Case Else
                     .FieldName = ""
             End Select
@@ -163,5 +163,13 @@ Public Enum CacheDateType
     PublicStructures = 15
     ESIStatus = 16
     PublicContracts = 17
+
+    PersonalLoyaltyPoints = 19
+    PersonalMarketOrders = 20
+    PersonalWallet = 21
+    CorporateMarketOrders = 22
+    CorporateWallets = 23
+
+    PersonalPlanets = 24
 
 End Enum

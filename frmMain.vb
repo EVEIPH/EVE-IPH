@@ -4847,7 +4847,6 @@ Public Class frmMain
         txtBPBrokerFeeRate.Enabled = False
         gbBPManualSystemCostIndex.Enabled = False
         gbBPIgnoreinCalcs.Enabled = False
-        gbBPSellExcess.Enabled = False
 
         ' Copy Labels
         rbtnBPComponentCopy.Enabled = False
@@ -5305,7 +5304,6 @@ Public Class frmMain
 
         gbBPManualSystemCostIndex.Enabled = True
         gbBPIgnoreinCalcs.Enabled = True
-        gbBPSellExcess.Enabled = True
         btnBPUpdateCostIndex.Enabled = False
 
         cmbBPBlueprintSelection.Focus()
@@ -9382,8 +9380,8 @@ LocalCancelUpdatePrices:
         Application.DoEvents()
 
         ' Add the marketGroupID to the list for checks later
-        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE FROM ITEM_PRICES, INVENTORY_TYPES "
-        SQL &= "WHERE ITEM_PRICES.ITEM_ID = INVENTORY_TYPES.typeID AND ("
+        SQL = "SELECT ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE "
+        SQL &= "FROM ITEM_PRICES, INVENTORY_TYPES WHERE ITEM_PRICES.ITEM_ID = INVENTORY_TYPES.typeID AND ("
 
         ' Materials & Research Equipment Grid
         ' Materials First
@@ -9681,7 +9679,7 @@ LocalCancelUpdatePrices:
 
             ' Fill list
             While readerMats.Read
-                'ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE
+                'ITEM_ID, ITEM_NAME, ITEM_GROUP, PRICE, MANUFACTURE, marketGroupID, PRICE_TYPE
                 lstViewRow = New ListViewItem(CStr(readerMats.GetValue(0))) ' ID
                 'The remaining columns are subitems  
                 lstViewRow.SubItems.Add(CStr(readerMats.GetString(2))) ' Group
@@ -9693,8 +9691,14 @@ LocalCancelUpdatePrices:
                 Else
                     lstViewRow.SubItems.Add(CStr(readerMats.GetInt64(5)))
                 End If
-                ' Price Type - look it up
-                lstViewRow.SubItems.Add(CStr(readerMats.GetString(6)))
+                ' Price Type
+                If CStr(readerMats.GetString(6)) = "User" Then
+                    ' Make it blue
+                    lstViewRow.ForeColor = Color.Blue
+                    lstViewRow.SubItems.Add(CStr(readerMats.GetString(6)))
+                Else
+                    lstViewRow.SubItems.Add(CStr(readerMats.GetString(6)))
+                End If
 
                 Call lstPricesView.Items.Add(lstViewRow)
             End While

@@ -34,6 +34,15 @@ Public Class Character
     ' Blueprints
     Public BlueprintsAccess As Boolean
     Public Blueprints As EVEBlueprints
+    ' Loyalty points
+    Public LoyaltyPointAccess As Boolean
+    Public LoyaltyPoints As EVELoyaltyPoints
+    ' Wallet
+    'Public WalletAccess As Boolean
+    'Public Wallet As EVEWallet
+    '' Market Orders
+    'Public MarketOrdersAccess As Boolean
+    'Public MarketOrders As EVEMarketOrder
     ' Structures
     Public PublicStructuresAccess As Boolean
     Public StructureMarketsAccess As Boolean
@@ -70,6 +79,7 @@ Public Class Character
         Jobs = New EVEIndustryJobs
         DatacoreAgents = New EVEResearchAgents
         Assets = New EVEAssets
+        LoyaltyPoints = New EVELoyaltyPoints
 
         ' Corporation Data for this character
         CharacterCorporation = New Corporation
@@ -122,8 +132,11 @@ Public Class Character
 
                 If Not rsCheck.HasRows Then
                     With CharacterTokenData
-                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
-                        SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
+                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}','{22}','{23}','{24}','{25}',{26})"
+                        SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton,
+                                            .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0,
+                                            NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate,
+                                            NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
                     End With
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
@@ -162,8 +175,6 @@ Public Class Character
                 Call LoadDefaultCharacter(False, False, True)
             End If
         End If
-
-
 
         Return TriState.UseDefault
 
@@ -315,6 +326,12 @@ Public Class Character
                 If LoadAssets Then
                     Call Assets.LoadAssets(ID, CharacterTokenData, LoadAssets)
                 End If
+            End If
+
+            ' Load the character's loyalty points for corporations
+            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPoints) Then
+                LoyaltyPointAccess = True
+                Call LoyaltyPoints.LoadLoyaltyPoints(ID, CharacterTokenData)
             End If
 
             ' Set the two structure tags

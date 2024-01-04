@@ -28,26 +28,28 @@ Partial Class frmAddCharacter
         Me.lblKeyType = New System.Windows.Forms.Label()
         Me.chkReadStructures = New System.Windows.Forms.CheckBox()
         Me.chkReadStructureMarkets = New System.Windows.Forms.CheckBox()
-        Me.chkReadStandings = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterStandings = New System.Windows.Forms.CheckBox()
         Me.chkReadCharacterJobs = New System.Windows.Forms.CheckBox()
-        Me.chkReadAgentsResearch = New System.Windows.Forms.CheckBox()
-        Me.chkReadAssets = New System.Windows.Forms.CheckBox()
-        Me.chkReadBlueprints = New System.Windows.Forms.CheckBox()
-        Me.chkManagePlanets = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterAgentsResearch = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterAssets = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterBlueprints = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterPlanetary = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationMembership = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationJobs = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationAssets = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationBlueprints = New System.Windows.Forms.CheckBox()
         Me.gbCorp = New System.Windows.Forms.GroupBox()
-        Me.gbCharacter = New System.Windows.Forms.GroupBox()
-        Me.gbStructures = New System.Windows.Forms.GroupBox()
-        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox4 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
-        Me.CheckBox2 = New System.Windows.Forms.CheckBox()
-        Me.ttAPI = New System.Windows.Forms.ToolTip(Me.components)
+        Me.chkReadCorporationWallet = New System.Windows.Forms.CheckBox()
+        Me.chkReadCorporationOrders = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationDivisions = New System.Windows.Forms.CheckBox()
+        Me.gbCharacter = New System.Windows.Forms.GroupBox()
+        Me.chkReadCharacterLoyalty = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterWallet = New System.Windows.Forms.CheckBox()
+        Me.chkReadCharacterOrders = New System.Windows.Forms.CheckBox()
+        Me.gbStructures = New System.Windows.Forms.GroupBox()
+        Me.ttAPI = New System.Windows.Forms.ToolTip(Me.components)
+        Me.btnSelectAll = New System.Windows.Forms.Button()
+        Me.btnDeselectAll = New System.Windows.Forms.Button()
         Me.gbCorp.SuspendLayout()
         Me.gbCharacter.SuspendLayout()
         Me.gbStructures.SuspendLayout()
@@ -57,10 +59,10 @@ Partial Class frmAddCharacter
         '
         Me.btnEVESSOLogin.BackgroundImage = CType(resources.GetObject("btnEVESSOLogin.BackgroundImage"), System.Drawing.Image)
         Me.btnEVESSOLogin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center
-        Me.btnEVESSOLogin.Location = New System.Drawing.Point(141, 256)
+        Me.btnEVESSOLogin.Location = New System.Drawing.Point(134, 241)
         Me.btnEVESSOLogin.Name = "btnEVESSOLogin"
         Me.btnEVESSOLogin.Size = New System.Drawing.Size(270, 46)
-        Me.btnEVESSOLogin.TabIndex = 2
+        Me.btnEVESSOLogin.TabIndex = 4
         Me.btnEVESSOLogin.UseVisualStyleBackColor = True
         '
         'lblKeyType
@@ -68,108 +70,118 @@ Partial Class frmAddCharacter
         Me.lblKeyType.Location = New System.Drawing.Point(12, 9)
         Me.lblKeyType.Name = "lblKeyType"
         Me.lblKeyType.Size = New System.Drawing.Size(527, 32)
-        Me.lblKeyType.TabIndex = 13
+        Me.lblKeyType.TabIndex = 0
         Me.lblKeyType.Text = "Select the scopes you wish to authorize for this Character and log into EVE to au" &
-    "thorize your character for IPH. (Note: esi-skills.read_skills.v1 is required)"
+    "thorize your character for IPH. (Note: Access to Characdter Skills is required)"
         '
         'chkReadStructures
         '
         Me.chkReadStructures.AutoSize = True
         Me.chkReadStructures.Location = New System.Drawing.Point(11, 19)
         Me.chkReadStructures.Name = "chkReadStructures"
-        Me.chkReadStructures.Size = New System.Drawing.Size(173, 17)
-        Me.chkReadStructures.TabIndex = 14
-        Me.chkReadStructures.Text = "esi-universe.read_structures.v1"
+        Me.chkReadStructures.Size = New System.Drawing.Size(124, 17)
+        Me.chkReadStructures.TabIndex = 0
+        Me.chkReadStructures.Tag = "esi-universe.read_structures.v1"
+        Me.chkReadStructures.Text = "Structure Information"
         Me.chkReadStructures.UseVisualStyleBackColor = True
         '
         'chkReadStructureMarkets
         '
         Me.chkReadStructureMarkets.AutoSize = True
-        Me.chkReadStructureMarkets.Location = New System.Drawing.Point(11, 42)
+        Me.chkReadStructureMarkets.Location = New System.Drawing.Point(139, 19)
         Me.chkReadStructureMarkets.Name = "chkReadStructureMarkets"
-        Me.chkReadStructureMarkets.Size = New System.Drawing.Size(181, 17)
-        Me.chkReadStructureMarkets.TabIndex = 15
-        Me.chkReadStructureMarkets.Text = "esi-markets.structure_markets.v1"
+        Me.chkReadStructureMarkets.Size = New System.Drawing.Size(110, 17)
+        Me.chkReadStructureMarkets.TabIndex = 1
+        Me.chkReadStructureMarkets.Tag = "esi-markets.structure_markets.v1"
+        Me.chkReadStructureMarkets.Text = "Structure Markets"
         Me.chkReadStructureMarkets.UseVisualStyleBackColor = True
         '
-        'chkReadStandings
+        'chkReadCharacterStandings
         '
-        Me.chkReadStandings.AutoSize = True
-        Me.chkReadStandings.Location = New System.Drawing.Point(11, 20)
-        Me.chkReadStandings.Name = "chkReadStandings"
-        Me.chkReadStandings.Size = New System.Drawing.Size(182, 17)
-        Me.chkReadStandings.TabIndex = 16
-        Me.chkReadStandings.Text = "esi-characters.read_standings.v1"
-        Me.chkReadStandings.UseVisualStyleBackColor = True
+        Me.chkReadCharacterStandings.AutoSize = True
+        Me.chkReadCharacterStandings.Location = New System.Drawing.Point(11, 20)
+        Me.chkReadCharacterStandings.Name = "chkReadCharacterStandings"
+        Me.chkReadCharacterStandings.Size = New System.Drawing.Size(73, 17)
+        Me.chkReadCharacterStandings.TabIndex = 0
+        Me.chkReadCharacterStandings.Tag = "esi-characters.read_standings.v1"
+        Me.chkReadCharacterStandings.Text = "Standings"
+        Me.chkReadCharacterStandings.UseVisualStyleBackColor = True
         '
         'chkReadCharacterJobs
         '
         Me.chkReadCharacterJobs.AutoSize = True
-        Me.chkReadCharacterJobs.Location = New System.Drawing.Point(11, 66)
+        Me.chkReadCharacterJobs.Location = New System.Drawing.Point(139, 43)
         Me.chkReadCharacterJobs.Name = "chkReadCharacterJobs"
-        Me.chkReadCharacterJobs.Size = New System.Drawing.Size(193, 17)
-        Me.chkReadCharacterJobs.TabIndex = 17
-        Me.chkReadCharacterJobs.Text = "esi-industry.read_character_jobs.v1"
+        Me.chkReadCharacterJobs.Size = New System.Drawing.Size(88, 17)
+        Me.chkReadCharacterJobs.TabIndex = 3
+        Me.chkReadCharacterJobs.Tag = "esi-industry.read_character_jobs.v1"
+        Me.chkReadCharacterJobs.Text = "Industry Jobs"
         Me.chkReadCharacterJobs.UseVisualStyleBackColor = True
         '
-        'chkReadAgentsResearch
+        'chkReadCharacterAgentsResearch
         '
-        Me.chkReadAgentsResearch.AutoSize = True
-        Me.chkReadAgentsResearch.Location = New System.Drawing.Point(11, 43)
-        Me.chkReadAgentsResearch.Name = "chkReadAgentsResearch"
-        Me.chkReadAgentsResearch.Size = New System.Drawing.Size(216, 17)
-        Me.chkReadAgentsResearch.TabIndex = 18
-        Me.chkReadAgentsResearch.Text = "esi-characters.read_agents_research.v1"
-        Me.chkReadAgentsResearch.UseVisualStyleBackColor = True
+        Me.chkReadCharacterAgentsResearch.AutoSize = True
+        Me.chkReadCharacterAgentsResearch.Location = New System.Drawing.Point(11, 66)
+        Me.chkReadCharacterAgentsResearch.Name = "chkReadCharacterAgentsResearch"
+        Me.chkReadCharacterAgentsResearch.Size = New System.Drawing.Size(108, 17)
+        Me.chkReadCharacterAgentsResearch.TabIndex = 4
+        Me.chkReadCharacterAgentsResearch.Tag = "esi-characters.read_agents_research.v1"
+        Me.chkReadCharacterAgentsResearch.Text = "Research Agents"
+        Me.chkReadCharacterAgentsResearch.UseVisualStyleBackColor = True
         '
-        'chkReadAssets
+        'chkReadCharacterAssets
         '
-        Me.chkReadAssets.AutoSize = True
-        Me.chkReadAssets.Location = New System.Drawing.Point(11, 89)
-        Me.chkReadAssets.Name = "chkReadAssets"
-        Me.chkReadAssets.Size = New System.Drawing.Size(147, 17)
-        Me.chkReadAssets.TabIndex = 19
-        Me.chkReadAssets.Text = "esi-assets.read_assets.v1"
-        Me.chkReadAssets.UseVisualStyleBackColor = True
+        Me.chkReadCharacterAssets.AutoSize = True
+        Me.chkReadCharacterAssets.Location = New System.Drawing.Point(11, 89)
+        Me.chkReadCharacterAssets.Name = "chkReadCharacterAssets"
+        Me.chkReadCharacterAssets.Size = New System.Drawing.Size(57, 17)
+        Me.chkReadCharacterAssets.TabIndex = 6
+        Me.chkReadCharacterAssets.Tag = "esi-assets.read_assets.v1"
+        Me.chkReadCharacterAssets.Text = "Assets"
+        Me.chkReadCharacterAssets.UseVisualStyleBackColor = True
         '
-        'chkReadBlueprints
+        'chkReadCharacterBlueprints
         '
-        Me.chkReadBlueprints.AutoSize = True
-        Me.chkReadBlueprints.Location = New System.Drawing.Point(11, 112)
-        Me.chkReadBlueprints.Name = "chkReadBlueprints"
-        Me.chkReadBlueprints.Size = New System.Drawing.Size(182, 17)
-        Me.chkReadBlueprints.TabIndex = 20
-        Me.chkReadBlueprints.Text = "esi-characters.read_blueprints.v1"
-        Me.chkReadBlueprints.UseVisualStyleBackColor = True
+        Me.chkReadCharacterBlueprints.AutoSize = True
+        Me.chkReadCharacterBlueprints.Location = New System.Drawing.Point(139, 20)
+        Me.chkReadCharacterBlueprints.Name = "chkReadCharacterBlueprints"
+        Me.chkReadCharacterBlueprints.Size = New System.Drawing.Size(72, 17)
+        Me.chkReadCharacterBlueprints.TabIndex = 1
+        Me.chkReadCharacterBlueprints.Tag = "esi-characters.read_blueprints.v1"
+        Me.chkReadCharacterBlueprints.Text = "Blueprints"
+        Me.chkReadCharacterBlueprints.UseVisualStyleBackColor = True
         '
-        'chkManagePlanets
+        'chkReadCharacterPlanetary
         '
-        Me.chkManagePlanets.AutoSize = True
-        Me.chkManagePlanets.Location = New System.Drawing.Point(11, 135)
-        Me.chkManagePlanets.Name = "chkManagePlanets"
-        Me.chkManagePlanets.Size = New System.Drawing.Size(172, 17)
-        Me.chkManagePlanets.TabIndex = 21
-        Me.chkManagePlanets.Text = "esi-planets.manage_planets.v1"
-        Me.chkManagePlanets.UseVisualStyleBackColor = True
+        Me.chkReadCharacterPlanetary.AutoSize = True
+        Me.chkReadCharacterPlanetary.Location = New System.Drawing.Point(11, 112)
+        Me.chkReadCharacterPlanetary.Name = "chkReadCharacterPlanetary"
+        Me.chkReadCharacterPlanetary.Size = New System.Drawing.Size(123, 17)
+        Me.chkReadCharacterPlanetary.TabIndex = 8
+        Me.chkReadCharacterPlanetary.Tag = "esi-planets.manage_planets.v1"
+        Me.chkReadCharacterPlanetary.Text = "Planetary Interaction"
+        Me.chkReadCharacterPlanetary.UseVisualStyleBackColor = True
         '
         'chkReadCorporationMembership
         '
         Me.chkReadCorporationMembership.AutoSize = True
         Me.chkReadCorporationMembership.Location = New System.Drawing.Point(11, 20)
         Me.chkReadCorporationMembership.Name = "chkReadCorporationMembership"
-        Me.chkReadCorporationMembership.Size = New System.Drawing.Size(260, 17)
-        Me.chkReadCorporationMembership.TabIndex = 22
-        Me.chkReadCorporationMembership.Text = "esi-corporations.read_corporation_membership.v1"
+        Me.chkReadCorporationMembership.Size = New System.Drawing.Size(122, 17)
+        Me.chkReadCorporationMembership.TabIndex = 0
+        Me.chkReadCorporationMembership.Tag = "esi-corporations.read_corporation_membership.v1"
+        Me.chkReadCorporationMembership.Text = "Membership && Roles"
         Me.chkReadCorporationMembership.UseVisualStyleBackColor = True
         '
         'chkReadCorporationJobs
         '
         Me.chkReadCorporationJobs.AutoSize = True
-        Me.chkReadCorporationJobs.Location = New System.Drawing.Point(11, 43)
+        Me.chkReadCorporationJobs.Location = New System.Drawing.Point(139, 43)
         Me.chkReadCorporationJobs.Name = "chkReadCorporationJobs"
-        Me.chkReadCorporationJobs.Size = New System.Drawing.Size(201, 17)
-        Me.chkReadCorporationJobs.TabIndex = 23
-        Me.chkReadCorporationJobs.Text = "esi-industry.read_corporation_jobs.v1"
+        Me.chkReadCorporationJobs.Size = New System.Drawing.Size(88, 17)
+        Me.chkReadCorporationJobs.TabIndex = 3
+        Me.chkReadCorporationJobs.Tag = "esi-industry.read_corporation_jobs.v1"
+        Me.chkReadCorporationJobs.Text = "Industry Jobs"
         Me.chkReadCorporationJobs.UseVisualStyleBackColor = True
         '
         'chkReadCorporationAssets
@@ -177,131 +189,161 @@ Partial Class frmAddCharacter
         Me.chkReadCorporationAssets.AutoSize = True
         Me.chkReadCorporationAssets.Location = New System.Drawing.Point(11, 66)
         Me.chkReadCorporationAssets.Name = "chkReadCorporationAssets"
-        Me.chkReadCorporationAssets.Size = New System.Drawing.Size(206, 17)
-        Me.chkReadCorporationAssets.TabIndex = 24
-        Me.chkReadCorporationAssets.Text = "esi-assets.read_corporation_assets.v1"
+        Me.chkReadCorporationAssets.Size = New System.Drawing.Size(57, 17)
+        Me.chkReadCorporationAssets.TabIndex = 4
+        Me.chkReadCorporationAssets.Tag = "esi-assets.read_corporation_assets.v1"
+        Me.chkReadCorporationAssets.Text = "Assets"
         Me.chkReadCorporationAssets.UseVisualStyleBackColor = True
         '
         'chkReadCorporationBlueprints
         '
         Me.chkReadCorporationBlueprints.AutoSize = True
-        Me.chkReadCorporationBlueprints.Location = New System.Drawing.Point(11, 89)
+        Me.chkReadCorporationBlueprints.Location = New System.Drawing.Point(139, 20)
         Me.chkReadCorporationBlueprints.Name = "chkReadCorporationBlueprints"
-        Me.chkReadCorporationBlueprints.Size = New System.Drawing.Size(190, 17)
-        Me.chkReadCorporationBlueprints.TabIndex = 25
-        Me.chkReadCorporationBlueprints.Text = "esi-corporations.read_blueprints.v1"
+        Me.chkReadCorporationBlueprints.Size = New System.Drawing.Size(72, 17)
+        Me.chkReadCorporationBlueprints.TabIndex = 1
+        Me.chkReadCorporationBlueprints.Tag = "esi-corporations.read_blueprints.v1"
+        Me.chkReadCorporationBlueprints.Text = "Blueprints"
         Me.chkReadCorporationBlueprints.UseVisualStyleBackColor = True
         '
         'gbCorp
         '
+        Me.gbCorp.Controls.Add(Me.chkReadCorporationWallet)
+        Me.gbCorp.Controls.Add(Me.chkReadCorporationOrders)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationDivisions)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationMembership)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationJobs)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationAssets)
         Me.gbCorp.Controls.Add(Me.chkReadCorporationBlueprints)
-        Me.gbCorp.Location = New System.Drawing.Point(258, 44)
+        Me.gbCorp.Location = New System.Drawing.Point(271, 44)
         Me.gbCorp.Name = "gbCorp"
-        Me.gbCorp.Size = New System.Drawing.Size(281, 135)
-        Me.gbCorp.TabIndex = 26
+        Me.gbCorp.Size = New System.Drawing.Size(250, 140)
+        Me.gbCorp.TabIndex = 2
         Me.gbCorp.TabStop = False
         Me.gbCorp.Text = "Corporation"
         '
-        'gbCharacter
+        'chkReadCorporationWallet
         '
-        Me.gbCharacter.Controls.Add(Me.chkReadCharacterJobs)
-        Me.gbCharacter.Controls.Add(Me.chkReadStandings)
-        Me.gbCharacter.Controls.Add(Me.chkReadAgentsResearch)
-        Me.gbCharacter.Controls.Add(Me.chkManagePlanets)
-        Me.gbCharacter.Controls.Add(Me.chkReadAssets)
-        Me.gbCharacter.Controls.Add(Me.chkReadBlueprints)
-        Me.gbCharacter.Location = New System.Drawing.Point(15, 44)
-        Me.gbCharacter.Name = "gbCharacter"
-        Me.gbCharacter.Size = New System.Drawing.Size(237, 206)
-        Me.gbCharacter.TabIndex = 27
-        Me.gbCharacter.TabStop = False
-        Me.gbCharacter.Text = "Character"
+        Me.chkReadCorporationWallet.AutoSize = True
+        Me.chkReadCorporationWallet.Location = New System.Drawing.Point(139, 89)
+        Me.chkReadCorporationWallet.Name = "chkReadCorporationWallet"
+        Me.chkReadCorporationWallet.Size = New System.Drawing.Size(56, 17)
+        Me.chkReadCorporationWallet.TabIndex = 6
+        Me.chkReadCorporationWallet.Tag = "esi-wallet.read_corporation_wallets.v1"
+        Me.chkReadCorporationWallet.Text = "Wallet"
+        Me.chkReadCorporationWallet.UseVisualStyleBackColor = True
         '
-        'gbStructures
+        'chkReadCorporationOrders
         '
-        Me.gbStructures.Controls.Add(Me.CheckBox5)
-        Me.gbStructures.Controls.Add(Me.CheckBox4)
-        Me.gbStructures.Controls.Add(Me.chkReadStructures)
-        Me.gbStructures.Controls.Add(Me.CheckBox3)
-        Me.gbStructures.Controls.Add(Me.chkReadStructureMarkets)
-        Me.gbStructures.Controls.Add(Me.CheckBox1)
-        Me.gbStructures.Controls.Add(Me.CheckBox2)
-        Me.gbStructures.Location = New System.Drawing.Point(258, 185)
-        Me.gbStructures.Name = "gbStructures"
-        Me.gbStructures.Size = New System.Drawing.Size(281, 65)
-        Me.gbStructures.TabIndex = 28
-        Me.gbStructures.TabStop = False
-        Me.gbStructures.Text = "Structures"
-        '
-        'CheckBox5
-        '
-        Me.CheckBox5.AutoSize = True
-        Me.CheckBox5.Location = New System.Drawing.Point(-232, -53)
-        Me.CheckBox5.Name = "CheckBox5"
-        Me.CheckBox5.Size = New System.Drawing.Size(193, 17)
-        Me.CheckBox5.TabIndex = 17
-        Me.CheckBox5.Text = "esi-industry.read_character_jobs.v1"
-        Me.CheckBox5.UseVisualStyleBackColor = True
-        '
-        'CheckBox4
-        '
-        Me.CheckBox4.AutoSize = True
-        Me.CheckBox4.Location = New System.Drawing.Point(-232, -99)
-        Me.CheckBox4.Name = "CheckBox4"
-        Me.CheckBox4.Size = New System.Drawing.Size(182, 17)
-        Me.CheckBox4.TabIndex = 16
-        Me.CheckBox4.Text = "esi-characters.read_standings.v1"
-        Me.CheckBox4.UseVisualStyleBackColor = True
-        '
-        'CheckBox3
-        '
-        Me.CheckBox3.AutoSize = True
-        Me.CheckBox3.Location = New System.Drawing.Point(-232, -76)
-        Me.CheckBox3.Name = "CheckBox3"
-        Me.CheckBox3.Size = New System.Drawing.Size(216, 17)
-        Me.CheckBox3.TabIndex = 18
-        Me.CheckBox3.Text = "esi-characters.read_agents_research.v1"
-        Me.CheckBox3.UseVisualStyleBackColor = True
-        '
-        'CheckBox1
-        '
-        Me.CheckBox1.AutoSize = True
-        Me.CheckBox1.Location = New System.Drawing.Point(-232, -7)
-        Me.CheckBox1.Name = "CheckBox1"
-        Me.CheckBox1.Size = New System.Drawing.Size(182, 17)
-        Me.CheckBox1.TabIndex = 20
-        Me.CheckBox1.Text = "esi-characters.read_blueprints.v1"
-        Me.CheckBox1.UseVisualStyleBackColor = True
-        '
-        'CheckBox2
-        '
-        Me.CheckBox2.AutoSize = True
-        Me.CheckBox2.Location = New System.Drawing.Point(-232, -30)
-        Me.CheckBox2.Name = "CheckBox2"
-        Me.CheckBox2.Size = New System.Drawing.Size(147, 17)
-        Me.CheckBox2.TabIndex = 19
-        Me.CheckBox2.Text = "esi-assets.read_assets.v1"
-        Me.CheckBox2.UseVisualStyleBackColor = True
+        Me.chkReadCorporationOrders.AutoSize = True
+        Me.chkReadCorporationOrders.Location = New System.Drawing.Point(139, 66)
+        Me.chkReadCorporationOrders.Name = "chkReadCorporationOrders"
+        Me.chkReadCorporationOrders.Size = New System.Drawing.Size(93, 17)
+        Me.chkReadCorporationOrders.TabIndex = 5
+        Me.chkReadCorporationOrders.Tag = "esi-markets.read_corporation_orders.v1"
+        Me.chkReadCorporationOrders.Text = "Market Orders"
+        Me.chkReadCorporationOrders.UseVisualStyleBackColor = True
         '
         'chkReadCorporationDivisions
         '
         Me.chkReadCorporationDivisions.AutoSize = True
-        Me.chkReadCorporationDivisions.Location = New System.Drawing.Point(11, 112)
+        Me.chkReadCorporationDivisions.Location = New System.Drawing.Point(11, 43)
         Me.chkReadCorporationDivisions.Name = "chkReadCorporationDivisions"
-        Me.chkReadCorporationDivisions.Size = New System.Drawing.Size(185, 17)
-        Me.chkReadCorporationDivisions.TabIndex = 26
-        Me.chkReadCorporationDivisions.Text = "esi-corporations.read_divisions.v1"
+        Me.chkReadCorporationDivisions.Size = New System.Drawing.Size(68, 17)
+        Me.chkReadCorporationDivisions.TabIndex = 2
+        Me.chkReadCorporationDivisions.Tag = "esi-corporations.read_divisions.v1"
+        Me.chkReadCorporationDivisions.Text = "Divisions"
         Me.chkReadCorporationDivisions.UseVisualStyleBackColor = True
+        '
+        'gbCharacter
+        '
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterLoyalty)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterWallet)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterOrders)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterJobs)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterStandings)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterAgentsResearch)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterPlanetary)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterAssets)
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterBlueprints)
+        Me.gbCharacter.Location = New System.Drawing.Point(15, 44)
+        Me.gbCharacter.Name = "gbCharacter"
+        Me.gbCharacter.Size = New System.Drawing.Size(250, 140)
+        Me.gbCharacter.TabIndex = 1
+        Me.gbCharacter.TabStop = False
+        Me.gbCharacter.Text = "Character"
+        '
+        'chkReadCharacterLoyalty
+        '
+        Me.chkReadCharacterLoyalty.AutoSize = True
+        Me.chkReadCharacterLoyalty.Location = New System.Drawing.Point(11, 43)
+        Me.chkReadCharacterLoyalty.Name = "chkReadCharacterLoyalty"
+        Me.chkReadCharacterLoyalty.Size = New System.Drawing.Size(91, 17)
+        Me.chkReadCharacterLoyalty.TabIndex = 2
+        Me.chkReadCharacterLoyalty.Tag = "esi-characters.read_loyalty.v1"
+        Me.chkReadCharacterLoyalty.Text = "Loyalty Points"
+        Me.chkReadCharacterLoyalty.UseVisualStyleBackColor = True
+        '
+        'chkReadCharacterWallet
+        '
+        Me.chkReadCharacterWallet.AutoSize = True
+        Me.chkReadCharacterWallet.Location = New System.Drawing.Point(139, 89)
+        Me.chkReadCharacterWallet.Name = "chkReadCharacterWallet"
+        Me.chkReadCharacterWallet.Size = New System.Drawing.Size(56, 17)
+        Me.chkReadCharacterWallet.TabIndex = 7
+        Me.chkReadCharacterWallet.Tag = "esi-wallet.read_character_wallet.v1"
+        Me.chkReadCharacterWallet.Text = "Wallet"
+        Me.chkReadCharacterWallet.UseVisualStyleBackColor = True
+        '
+        'chkReadCharacterOrders
+        '
+        Me.chkReadCharacterOrders.AutoSize = True
+        Me.chkReadCharacterOrders.Location = New System.Drawing.Point(139, 66)
+        Me.chkReadCharacterOrders.Name = "chkReadCharacterOrders"
+        Me.chkReadCharacterOrders.Size = New System.Drawing.Size(93, 17)
+        Me.chkReadCharacterOrders.TabIndex = 5
+        Me.chkReadCharacterOrders.Tag = "esi-markets.read_character_orders.v1"
+        Me.chkReadCharacterOrders.Text = "Market Orders"
+        Me.chkReadCharacterOrders.UseVisualStyleBackColor = True
+        '
+        'gbStructures
+        '
+        Me.gbStructures.Controls.Add(Me.chkReadStructures)
+        Me.gbStructures.Controls.Add(Me.chkReadStructureMarkets)
+        Me.gbStructures.Location = New System.Drawing.Point(15, 190)
+        Me.gbStructures.Name = "gbStructures"
+        Me.gbStructures.Size = New System.Drawing.Size(250, 45)
+        Me.gbStructures.TabIndex = 3
+        Me.gbStructures.TabStop = False
+        Me.gbStructures.Text = "Structures"
+        '
+        'btnSelectAll
+        '
+        Me.btnSelectAll.AutoSize = True
+        Me.btnSelectAll.Location = New System.Drawing.Point(286, 200)
+        Me.btnSelectAll.Name = "btnSelectAll"
+        Me.btnSelectAll.Size = New System.Drawing.Size(107, 28)
+        Me.btnSelectAll.TabIndex = 24
+        Me.btnSelectAll.Text = "Select All"
+        Me.btnSelectAll.UseVisualStyleBackColor = True
+        '
+        'btnDeselectAll
+        '
+        Me.btnDeselectAll.AutoSize = True
+        Me.btnDeselectAll.Location = New System.Drawing.Point(400, 200)
+        Me.btnDeselectAll.Name = "btnDeselectAll"
+        Me.btnDeselectAll.Size = New System.Drawing.Size(107, 28)
+        Me.btnDeselectAll.TabIndex = 25
+        Me.btnDeselectAll.Text = "De-select All"
+        Me.btnDeselectAll.UseVisualStyleBackColor = True
         '
         'frmAddCharacter
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(553, 310)
+        Me.ClientSize = New System.Drawing.Size(536, 296)
+        Me.Controls.Add(Me.btnDeselectAll)
+        Me.Controls.Add(Me.btnSelectAll)
         Me.Controls.Add(Me.gbStructures)
         Me.Controls.Add(Me.gbCharacter)
         Me.Controls.Add(Me.gbCorp)
@@ -321,6 +363,7 @@ Partial Class frmAddCharacter
         Me.gbStructures.ResumeLayout(False)
         Me.gbStructures.PerformLayout()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
 
@@ -328,12 +371,12 @@ Partial Class frmAddCharacter
     Friend WithEvents lblKeyType As Label
     Friend WithEvents chkReadStructures As CheckBox
     Friend WithEvents chkReadStructureMarkets As CheckBox
-    Friend WithEvents chkReadStandings As CheckBox
+    Friend WithEvents chkReadCharacterStandings As CheckBox
     Friend WithEvents chkReadCharacterJobs As CheckBox
-    Friend WithEvents chkReadAgentsResearch As CheckBox
-    Friend WithEvents chkReadAssets As CheckBox
-    Friend WithEvents chkReadBlueprints As CheckBox
-    Friend WithEvents chkManagePlanets As CheckBox
+    Friend WithEvents chkReadCharacterAgentsResearch As CheckBox
+    Friend WithEvents chkReadCharacterAssets As CheckBox
+    Friend WithEvents chkReadCharacterBlueprints As CheckBox
+    Friend WithEvents chkReadCharacterPlanetary As CheckBox
     Friend WithEvents chkReadCorporationMembership As CheckBox
     Friend WithEvents chkReadCorporationJobs As CheckBox
     Friend WithEvents chkReadCorporationAssets As CheckBox
@@ -341,11 +384,13 @@ Partial Class frmAddCharacter
     Friend WithEvents gbCorp As GroupBox
     Friend WithEvents gbCharacter As GroupBox
     Friend WithEvents gbStructures As GroupBox
-    Friend WithEvents CheckBox5 As CheckBox
-    Friend WithEvents CheckBox4 As CheckBox
-    Friend WithEvents CheckBox3 As CheckBox
-    Friend WithEvents CheckBox1 As CheckBox
-    Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents ttAPI As ToolTip
     Friend WithEvents chkReadCorporationDivisions As CheckBox
+    Friend WithEvents chkReadCorporationWallet As CheckBox
+    Friend WithEvents chkReadCorporationOrders As CheckBox
+    Friend WithEvents chkReadCharacterLoyalty As CheckBox
+    Friend WithEvents chkReadCharacterWallet As CheckBox
+    Friend WithEvents chkReadCharacterOrders As CheckBox
+    Friend WithEvents btnSelectAll As Button
+    Friend WithEvents btnDeselectAll As Button
 End Class

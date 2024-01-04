@@ -198,9 +198,6 @@ Public Module Public_Variables
 
     Public NoPOSCategoryIDs As List(Of Long) ' For facilities
 
-    Public Const DefaultStructureTaxRate = 0.0 ' 0% to start for structures
-    Public Const DefaultStationTaxRate = 0.0025 ' 0.25% for all stations
-
     ' Mining Ship Name constants
     Public Const Procurer As String = "Procurer"
     Public Const Retriever As String = "Retriever"
@@ -230,10 +227,13 @@ Public Module Public_Variables
     Public MaxStationID As Long = 67000000
     Public MinStationID As Long = 60000000
 
-    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8 and during holidays they may change to 50% or 4 to make it work
+    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8. During tax holidays CCP may change to 50% or 4 
     Public BaseBrokerFeeRate As Double = 3
     Public SCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
     Public SCCIndustryFeeSurcharge As Double = 0.015 ' Fixed rate of 1.5% on 9/12/2023
+
+    Public Const DefaultStructureTaxRate = 0.0 ' 0% to start for structures
+    Public Const DefaultStationTaxRate = 0.0025 ' 0.25% for all stations
 
     Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
 
