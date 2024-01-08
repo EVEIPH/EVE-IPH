@@ -4,7 +4,6 @@ Imports System.Globalization
 Imports System.Threading
 Imports System.IO
 Imports System.Net
-Imports GoogleAnalyticsClientDotNet
 
 Public Class frmMain
     Inherits System.Windows.Forms.Form
@@ -329,26 +328,7 @@ Public Class frmMain
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
-        ' See if they've disabled GA tracking
-        If Not UserApplicationSettings.DisableGATracking Then
-            '' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
-            'On Error Resume Next
-
-            'Dim GATracker As New AnalyticsService()
-            'Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
-
-            'Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
-            'Dim EventData As New ServiceModel.EventParameter
-
-            'EventData.Category = "Program Usage"
-            'EventData.Action = "Open IPH"
-            'EventData.Label = "Initialized"
-            'EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
-
-            'Call GATracker.TrackEvent(EventData)
-
-            'On Error GoTo 0
-        End If
+        ' Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = True
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)

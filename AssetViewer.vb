@@ -19,8 +19,8 @@ Public Class AssetViewer
     ' The saved location ids
     Private SavedLocationIDs As List(Of LocationInfo)
 
-    Private m_ControlsCollection As ControlsCollection
-    Private TechCheckBoxes(6) As CheckBox
+    Private ReadOnly m_ControlsCollection As ControlsCollection
+    Private ReadOnly TechCheckBoxes(6) As CheckBox
     Private UpdateAllTechChecks As Boolean = True ' Whether to update all Tech checks in items or not
     Private FirstPriceShipTypesComboLoad As Boolean
     Private FirstPriceChargeTypesComboLoad As Boolean
@@ -64,11 +64,12 @@ Public Class AssetViewer
     Private Declare Auto Function SendMessage Lib "User32.dll" (ByVal hwnd As IntPtr, ByVal msg As Integer, ByVal wParam As IntPtr, ByRef lParam As TVITEM) As Integer
 
     Private Sub HideRootCheckBox(ByVal node As TreeNode)
-        Dim tvi As New TVITEM
-        tvi.hItem = node.Handle
-        tvi.mask = TVIF_STATE
-        tvi.stateMask = TVIS_STATEIMAGEMASK
-        tvi.state = 0
+        Dim tvi As New TVITEM With {
+            .hItem = node.Handle,
+            .mask = TVIF_STATE,
+            .stateMask = TVIS_STATEIMAGEMASK,
+            .state = 0
+        }
         SendMessage(AssetTree.Handle, TVM_SETITEM, IntPtr.Zero, tvi)
     End Sub
 

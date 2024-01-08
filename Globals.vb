@@ -3,7 +3,6 @@ Imports System.Data.SQLite
 Imports System.Globalization
 Imports System.Net
 Imports System.IO
-Imports System.Management
 Imports System.Security.Cryptography
 
 ' Place to store all public variables and functions
@@ -2222,7 +2221,7 @@ SkipItem:
                 OutputString = "'" & FormatDBString(CStr(inValue)) & "'"
             End If
         Else
-                OutputString = "NULL"
+            OutputString = "NULL"
         End If
 
         Return OutputString
@@ -3063,24 +3062,5 @@ SkipItem:
         Dim SystemID As String ' could be empty string
         Dim RegionID As String
     End Structure
-
-    ' Gets the MAC address for a unique ID
-    Public Function GetMacAddress() As String
-        Dim cpuID As String = String.Empty
-        Dim CPUNumberID As String = ""
-        Dim mc As ManagementClass = New ManagementClass("Win32_NetworkAdapterConfiguration")
-        Dim moc As ManagementObjectCollection = mc.GetInstances()
-
-        For Each mo As ManagementObject In moc
-            If (cpuID = String.Empty And CBool(mo.Properties("IPEnabled").Value) = True) Then
-                cpuID = mo.Properties("MacAddress").Value.ToString()
-            End If
-        Next
-
-        CPUNumberID = CStr(Long.Parse(cpuID.Replace(":", ""), NumberStyles.HexNumber))
-
-        Return CPUNumberID
-
-    End Function
 
 End Module

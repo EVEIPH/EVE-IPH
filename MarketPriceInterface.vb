@@ -280,7 +280,7 @@ Public Class MarketPriceInterface
             ' Now with this list, run the structures update
             Dim SP As New StructureProcessor
             Dim TempRegionID As String = ""
-            Call SP.UpdateStructuresData(UpdateIDs, SelectedCharacter.CharacterTokenData, False, RefProgressBar)
+            Call SP.UpdateStructuresData(UpdateIDs, SelectedCharacter.CharacterTokenData, RefProgressBar)
 
             For Each ID In UpdateIDs
                 DBCommand = New SQLiteCommand("SELECT REGION_ID, SOLAR_SYSTEM_ID FROM STATIONS WHERE STATION_ID =" & CStr(ID), EVEDB.DBREf)

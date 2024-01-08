@@ -20,7 +20,7 @@ Public Class StructureProcessor
     End Structure
 
     ' Updates the stations table with upwell structure data for the list of IDs sent and returns a set of name/ID pairs using threading
-    Public Sub UpdateStructuresData(StructureIDs As List(Of Long), CharacterTokenData As SavedTokenData, ManualEntry As Boolean, refPG As ToolStripProgressBar)
+    Public Sub UpdateStructuresData(StructureIDs As List(Of Long), CharacterTokenData As SavedTokenData, refPG As ToolStripProgressBar)
 
         Try
             Dim Threads As New ThreadingArray
