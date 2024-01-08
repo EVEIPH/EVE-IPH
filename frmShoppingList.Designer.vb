@@ -82,6 +82,7 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
+        Me.txtListEdit = New System.Windows.Forms.TextBox()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -647,12 +648,23 @@ Partial Class frmShoppingList
         Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
         '
+        'txtListEdit
+        '
+        Me.txtListEdit.Location = New System.Drawing.Point(731, 573)
+        Me.txtListEdit.Name = "txtListEdit"
+        Me.txtListEdit.Size = New System.Drawing.Size(60, 20)
+        Me.txtListEdit.TabIndex = 80
+        Me.txtListEdit.TabStop = False
+        Me.txtListEdit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtListEdit.Visible = False
+        '
         'frmShoppingList
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
+        Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.chkRebuildItemsfromList)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
@@ -760,4 +772,5 @@ End Sub
     Friend WithEvents rbtnExportMulitBuy As RadioButton
     Friend WithEvents txtBrokerFeeRate As TextBox
     Friend WithEvents lblFeeRate As Label
+    Friend WithEvents txtListEdit As TextBox
 End Class
