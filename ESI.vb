@@ -293,22 +293,34 @@ Public Class ESI
             ' Parse the data to the ESI Token Data Class to get the JWT Access Code
             Output = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
 
-            ' Now strip off some key data to return from JWT
-            Dim JWToken As New JwtSecurityTokenHandler
-            Dim TokenData As JwtSecurityToken = JWToken.ReadJwtToken(Output.access_token)
-            Dim ScopeList As List(Of String) = JsonConvert.DeserializeObject(Of List(Of String))(TokenData.Payload("scp").ToString)
+            ' Split the authorization token into the header + payload + signature
+            Dim JWTAccessTokenParts As String() = Output.access_token.Split("."c)
+            Dim Header As String = FormatJWTStringLength(JWTAccessTokenParts(0))
+            Dim Payload As String = FormatJWTStringLength(JWTAccessTokenParts(1))
+            Dim Signature As String = JWTAccessTokenParts(2)
 
-            ' Get the character ID from the JWT
-            TokenCharacterID = CLng(TokenData.Subject.Substring(14))
-            ' Return the scopes as well
-            For Each entry In ScopeList
-                TokenScopes &= entry & " "
-            Next
-            TokenScopes = Trim(TokenScopes)
+            Dim TokenHeader As ESIJWTHeader
+            Dim TokenPayload As ESIJWTPayload
+            ' Convert each part to a byte array, then encode it to a string for JSON parsing
+            TokenHeader = JsonConvert.DeserializeObject(Of ESIJWTHeader)(Encoding.UTF8.GetString(Convert.FromBase64String(Header)))
+            TokenPayload = JsonConvert.DeserializeObject(Of ESIJWTPayload)(Encoding.UTF8.GetString(Convert.FromBase64String(Payload)))
 
-            Success = True
+            ' Now validate the EVE SSO JWT Token
+            If ValidateToken(Output) Then
+
+                ' Get the character ID from the JWT
+                Dim SubjectInfo As String() = TokenPayload.Subject.Split(":"c)
+                TokenCharacterID = CLng(SubjectInfo(2))
+
+                'Return the scopes as well
+                For Each entry In TokenPayload.Scopes
+                    TokenScopes &= entry & " "
+                Next
+                TokenScopes = Trim(TokenScopes)
+
+                Success = True
             Else
-            Success = False
+                Success = False
             End If
 
         Catch ex As WebException
@@ -335,6 +347,50 @@ Public Class ESI
         Else
             Return Nothing
         End If
+
+    End Function
+    Private Shared Function Base64UrlEncode(ByVal input As String) As String
+        ' Dim output = Convert.ToBase64String(input)
+        Dim output As String = input
+        output = output.Split("="c)(0)
+        output = output.Replace("+"c, "-"c)
+        output = output.Replace("/"c, "_"c)
+        Return output
+    End Function
+    Public Class ESIJWTHeader
+        <JsonProperty("alg")> Public Algorithm As String
+        <JsonProperty("kid")> Public KeyID As String
+        <JsonProperty("typ")> Public TokenType As String
+    End Class
+    Public Class ESIJWTPayload
+        <JsonProperty("scp")> Public Scopes As List(Of String)
+        <JsonProperty("jti")> Public JWTID As String
+        <JsonProperty("kid")> Public KeyID As String
+        <JsonProperty("sub")> Public Subject As String
+        <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
+        <JsonProperty("tenant")> Public Tenant As String
+        <JsonProperty("tier")> Public Tier As String
+        <JsonProperty("region")> Public DataRegion As String
+        <JsonProperty("aud")> Public Audience As List(Of String)
+        <JsonProperty("name")> Public Name As String
+        <JsonProperty("owner")> Public Owner As String
+        <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
+        <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
+        <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
+    End Class
+
+    ' Adds spacers (=) to the JWT string portion to be converted to Base 64
+    Private Function FormatJWTStringLength(JWTStringPortion As String) As String
+        Dim StrLen As Integer = Len(JWTStringPortion)
+        Dim CorrectedString As String = JWTStringPortion
+
+        ' Add spacers until mod 4 returns 0
+        Do While StrLen Mod 4 <> 0
+            CorrectedString &= "="
+            StrLen += 1
+        Loop
+
+        Return CorrectedString
 
     End Function
 
@@ -406,50 +462,6 @@ Public Class ESI
         End Try
 
         Return True
-
-    End Function
-    Private Shared Function Base64UrlEncode(ByVal input As String) As String
-        ' Dim output = Convert.ToBase64String(input)
-        Dim output As String = input
-        output = output.Split("="c)(0)
-        output = output.Replace("+"c, "-"c)
-        output = output.Replace("/"c, "_"c)
-        Return output
-    End Function
-    Public Class ESIJWTHeader
-        <JsonProperty("alg")> Public Algorithm As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("typ")> Public TokenType As String
-    End Class
-    Public Class ESIJWTPayload
-        <JsonProperty("scp")> Public Scopes As List(Of String)
-        <JsonProperty("jti")> Public JWTID As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("sub")> Public Subject As String
-        <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
-        <JsonProperty("tenant")> Public Tenant As String
-        <JsonProperty("tier")> Public Tier As String
-        <JsonProperty("region")> Public DataRegion As String
-        <JsonProperty("aud")> Public Audience As List(Of String)
-        <JsonProperty("name")> Public Name As String
-        <JsonProperty("owner")> Public Owner As String
-        <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
-        <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
-        <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
-    End Class
-
-    ' Adds spacers (=) to the JWT string portion to be converted to Base 64
-    Private Function FormatJWTStringLength(JWTStringPortion As String) As String
-        Dim StrLen As Integer = Len(JWTStringPortion)
-        Dim CorrectedString As String = JWTStringPortion
-
-        ' Add spacers until mod 4 returns 0
-        Do While StrLen Mod 4 <> 0
-            CorrectedString &= "="
-            StrLen += 1
-        Loop
-
-        Return CorrectedString
 
     End Function
 
@@ -1078,26 +1090,6 @@ Public Class ESI
 
             WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {TokenData.AccessToken}"
             Dim counter As Integer = 0
-
-            For Each item In ItemIDs
-                IDList &= CStr(item) & ","
-                counter += 1
-
-                ' Run every 1000
-                If counter = 1000 Then
-                    ' Post data and get response, and parse the data to the class
-                    TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
-                    Call Output.AddRange(TempOutput)
-                    IDList = ""
-                    counter = 0
-                End If
-            Next
-
-            ' Add the remainder of items
-            TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
-            Call Output.AddRange(TempOutput)
-
-            Success = True
 
         Catch ex As WebException
             Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")

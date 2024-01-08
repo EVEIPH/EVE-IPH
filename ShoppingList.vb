@@ -362,7 +362,7 @@ Public Class ShoppingList
                         Dim OldMatQuantity As Long = CLng(Math.Max(SentItem.BPRuns, Math.Ceiling(Math.Round(SentItem.BPRuns * rsMatCheck.GetInt64(0) * MEBonus, 2))))
 
                         ' Remove what was in the list prior (old mat quantity)
-                        UpdatedQuantity = ListMatQuantity - OldMatQuantity
+                        UpdatedQuantity = ListmatQuantity - OldMatQuantity
 
                         If UpdatedQuantity < 0 Then
                             UpdatedQuantity = 0
@@ -660,7 +660,7 @@ Public Class ShoppingList
 
                 Dim FoundBuiltItem As BuiltItem
                 FoundBuiltItem = TotalBuildList.GetBuiltItemList.Find(AddressOf TotalBuildList.FindBuiltItem)
-                If FoundbuiltItem IsNot Nothing Then
+                If FoundBuiltItem IsNot Nothing Then
                     ListMatQuantity = FoundBuiltItem.ItemQuantity
                 Else
                     ListMatQuantity = 0
@@ -905,7 +905,7 @@ Public Class ShoppingList
                             BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)
                             BFI.FixedRate = UserBPTabSettings.BrokerFeeRate
 
-                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, bfi, True,
+                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, BFI, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
 
                             Dim InsertBuildItem As New BuiltItem
