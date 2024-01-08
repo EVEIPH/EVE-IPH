@@ -2755,7 +2755,6 @@ SkipItem:
         Dim LikePhrase As String = " LIKE "
         Dim NOTLikePhrase As String = " NOT LIKE "
 
-        Dim SplitPhrase As Boolean = False ' If they have something like 'Oxygen NOT Isotopes'
         Dim SearchItems() As String = Nothing
         Dim NotSearchItems() As String = Nothing
         Dim SearchItemList As String = ""
@@ -2791,7 +2790,6 @@ SkipItem:
         Else
             ' Just search for the terms
             SearchItemList = FormatDBString(SearchText)
-            SplitPhrase = False
         End If
 
         ' Parse by comma then loop through items to build clauses

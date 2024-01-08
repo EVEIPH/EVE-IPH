@@ -21706,11 +21706,11 @@ ProcExit:
 
         ' Skill at the operation of industrial core modules.  
         ' 50-unit reduction in heavy water consumption amount for module activation per skill level.
-        HWUsage = HWUsage - (IndustrialReconfigSkill * 50)
+        HWUsage -= (IndustrialReconfigSkill * 50)
 
         ' Capital Industrial Ships skill bonuses:
         ' -5% reduction in fuel consumption for industrial cores per level
-        HWUsage = HWUsage - (HWUsage * 0.05 * ShipSkill)
+        HWUsage -= -(HWUsage * 0.05 * ShipSkill)
 
         ' Look up the cost for Heavy Water
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = 'Heavy Water'"
