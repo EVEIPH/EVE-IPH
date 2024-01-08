@@ -40,7 +40,7 @@ Public Class Corporation
     ' Loads the corporation data from token information sent
     Public Sub LoadCorporationData(ByVal CorpID As Long, ByVal CharacterTokenData As SavedTokenData,
                                    RefreshAssets As Boolean, RefreshBlueprints As Boolean, Optional ResetData As Boolean = True)
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsData As SQLiteDataReader
         Dim CorpRoles As New List(Of String)
 

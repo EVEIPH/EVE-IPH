@@ -4,7 +4,6 @@ Imports System.Globalization
 Imports System.Threading
 Imports System.IO
 Imports System.Net
-Imports GoogleAnalyticsClientDotNet
 
 Public Class frmMain
     Inherits Form
@@ -295,26 +294,7 @@ Public Class frmMain
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
-        ' See if they've disabled GA tracking
-        If Not UserApplicationSettings.DisableGATracking Then
-            '' Use google analytics to track number of users using IPH (no user information passed except MAC address for Client ID)
-            'On Error Resume Next
-
-            'Dim GATracker As New AnalyticsService()
-            'Call GATracker.Initialize("UA-125827521-1", "EVE IPH", "EVE Isk per Hour", My.Application.Info.Version.ToString)
-
-            'Dim MACAddress As String = GetMacAddress() ' Use this for the Client ID
-            'Dim EventData As New ServiceModel.EventParameter
-
-            'EventData.Category = "Program Usage"
-            'EventData.Action = "Open IPH"
-            'EventData.Label = "Initialized"
-            'EventData.ClientId = HashSHA(MACAddress) ' Hash the MAC address for security
-
-            'Call GATracker.TrackEvent(EventData)
-
-            'On Error GoTo 0
-        End If
+        ' Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = True
 
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
@@ -21288,11 +21268,11 @@ ProcExit:
 
         ' Skill at the operation of industrial core modules.  
         ' 50-unit reduction in heavy water consumption amount for module activation per skill level.
-        HWUsage = HWUsage - (IndustrialReconfigSkill * 50)
+        HWUsage -= (IndustrialReconfigSkill * 50)
 
         ' Capital Industrial Ships skill bonuses:
         ' -5% reduction in fuel consumption for industrial cores per level
-        HWUsage = HWUsage - (HWUsage * 0.05 * ShipSkill)
+        HWUsage -= -(HWUsage * 0.05 * ShipSkill)
 
         ' Look up the cost for Heavy Water
         SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME = 'Heavy Water'"

@@ -2151,6 +2151,299 @@ Public Class frmShoppingList
         Call PlayNotifySound()
         Call RefreshLists()
 
+        ' Just updated, so notify
+        Call PlayNotifySound()
+
+        ' Reset text they entered if tabbed
+        If SentKey = Keys.ShiftKey Or SentKey = Keys.Tab Then
+            txtListEdit.Text = ""
+        End If
+
+        ' Data updated, so reset
+        DataEntered = False
+
+        If SentKey = Keys.Enter Then
+            ' Just refresh and select the current row
+            CurrentRow.Selected = True
+            txtListEdit.Visible = False
+        End If
+
+        End If
+
+Tabs:
+        ' If they hit tab, then tab to the next cell
+        If SentKey = Keys.Tab Then
+            If CurrentRow.Index = -1 Then
+                ' Reset the current row based on the original click
+                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                ' Reset the next and previous cells
+                SetNextandPreviousCells(ListRef)
+            End If
+
+            CurrentCell = NextCell
+
+            ' Reset these each time
+            Call SetNextandPreviousCells(ListRef, "Next")
+            If CurrentRow.Index = 0 Then
+                ' Scroll to top
+                ListRef.Items.Item(0).Selected = True
+                ListRef.EnsureVisible(0)
+                ListRef.Update()
+            Else
+                ' Make sure the row is visible
+                ListRef.EnsureVisible(CurrentRow.Index)
+            End If
+
+            ' Show the text box
+            If CurrentRow.SubItems.IndexOf(CurrentCell) = 1 Then
+                Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
+            Else
+                Call ShowUpdateTextBox(ListRef)
+            End If
+
+        End If
+
+        ' If shift+tab, then go to the previous cell 
+        If SentKey = Keys.ShiftKey Then
+            If CurrentRow.Index = -1 Then
+                ' Reset the current row based on the original click
+                CurrentRow = ListRef.GetItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                CurrentCell = CurrentRow.GetSubItemAt(SavedListClickLoc.X, SavedListClickLoc.Y)
+                ' Reset the next and previous cells
+                SetNextandPreviousCells(ListRef)
+            End If
+
+            CurrentCell = PreviousCell
+            ' Reset these each time
+            Call SetNextandPreviousCells(ListRef, "Previous")
+            If CurrentRow.Index = ListRef.Items.Count - 1 Then
+                ' Scroll to bottom
+                ListRef.Items.Item(ListRef.Items.Count - 1).Selected = True
+                ListRef.EnsureVisible(ListRef.Items.Count - 1)
+                ListRef.Update()
+            Else
+                ' Make sure the row is visible
+                ListRef.EnsureVisible(CurrentRow.Index)
+            End If
+
+            ' Show the text box
+            If CurrentRow.SubItems.IndexOf(CurrentCell) = 1 Then
+                Call ShowUpdateTextBox(ListRef, HorizontalAlignment.Left)
+            Else
+                Call ShowUpdateTextBox(ListRef)
+            End If
+
+        End If
+
+    End Sub
+
+    ' Processes the tab function in the text box for the grid. This overrides the default tabbing between controls
+    Protected Overrides Function ProcessTabKey(ByVal TabForward As Boolean) As Boolean
+        Dim ac As Control = Me.ActiveControl
+
+        If TabForward Then
+            If ac Is txtListEdit Then
+                Call ProcessKeyDownUpdateEdit(Keys.Tab, SelectedGrid)
+                Return True
+            End If
+        Else
+            If ac Is txtListEdit Then
+                ' This is Shift + Tab but just send Shift for ease of processing
+                Call ProcessKeyDownUpdateEdit(Keys.ShiftKey, SelectedGrid)
+                Return True
+            End If
+        End If
+
+        Return MyBase.ProcessTabKey(TabForward)
+
+    End Function
+
+    Private Sub txtListEdit_GotFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.GotFocus
+        Call txtListEdit.SelectAll()
+    End Sub
+
+    Private Sub txtListEdit_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtListEdit.KeyDown
+        If Not DataEntered Then ' If data already entered, then they didn't do it through paste
+            DataEntered = ProcessCutCopyPasteSelect(txtListEdit, e)
+        End If
+
+        If e.KeyCode = Keys.Enter Then
+            IgnoreFocusChange = True
+            Call ProcessKeyDownUpdateEdit(Keys.Enter, SelectedGrid)
+            IgnoreFocusChange = False
+        End If
+    End Sub
+
+    Private Sub txtListEdit_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtListEdit.KeyPress
+        ' Only allow numbers or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If UpdateQuantity Then
+                If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
+                    ' Invalid Character
+                    e.Handled = True
+                Else
+                    DataEntered = True
+                End If
+            ElseIf UpdatePrice Then
+                If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
+                    ' Invalid Character
+                    e.Handled = True
+                Else
+                    DataEntered = True
+                End If
+            End If
+
+        End If
+
+    End Sub
+
+    Private Sub txtListEdit_LostFocus(sender As Object, e As System.EventArgs) Handles txtListEdit.LostFocus
+        If Not RefreshingGrid And DataEntered And Not IgnoreFocusChange Then
+            Call ProcessKeyDownUpdateEdit(Keys.Enter, SelectedGrid)
+        End If
+        txtListEdit.Visible = False
+    End Sub
+
+    ' Grid clicks
+    Private Sub lstBuild_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuild.MouseClick
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
+            Call ListClicked(lstBuild, sender, e)
+        End If
+    End Sub
+
+    Private Sub lstBuy_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstBuy.MouseClick
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
+            Call ListClicked(lstBuy, sender, e)
+        End If
+    End Sub
+
+    Private Sub lstItems_MouseClick(sender As Object, e As System.Windows.Forms.MouseEventArgs) Handles lstItems.MouseClick
+        If e.Button <> Windows.Forms.MouseButtons.Right And Not (My.Computer.Keyboard.ShiftKeyDown Or My.Computer.Keyboard.CtrlKeyDown) Then
+            Call ListClicked(lstItems, sender, e)
+        End If
+    End Sub
+
+    ' Detects Scroll event and hides boxes
+    Private Sub lstBuild_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBuild.ProcMsg
+        txtListEdit.Hide()
+    End Sub
+
+    ' Detects Scroll event and hides boxes
+    Private Sub lstBuy_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstBuy.ProcMsg
+        txtListEdit.Hide()
+    End Sub
+
+    ' Detects Scroll event and hides boxes
+    Private Sub lstItems_ProcMsg(ByVal m As System.Windows.Forms.Message) Handles lstItems.ProcMsg
+        txtListEdit.Hide()
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Dim AccessTokenOutput As New ESITokenData
+        Dim Success As Boolean = False
+        Dim WC As New WebClient
+        Dim Response As Byte()
+        Dim Data As String = ""
+        Dim PostParameters As New NameValueCollection
+        Dim Items As New NameValueCollection
+
+        Try
+            '' Look at creating this call using json data - Call works below but only returns prices, which I really don't need
+            'Dim test As New EAItem
+            'test.market_name = "jita"
+            'Dim item As New typeIDs
+            'item.type_id = 34
+            'Dim eaitems As New List(Of typeIDs)
+            'eaitems.Add(item)
+            'test.items = eaitems
+            'Dim JSONresult As String = JsonConvert.SerializeObject(test)
+            'Dim myURI As Uri = New Uri("https://evepraisal.com/appraisal/structured.json")
+
+            ''curl -XPOST "https://evepraisal.com/appraisal/structured.json?market=jita" --data '{"market_name": "jita", "items": [{"name": "Rifter"}, {"type_id": 34}]}'
+
+            'Data = SendRequest(myURI, Encoding.UTF8.GetBytes(JSONresult), "application/json", "POST")
+
+            '' Convert byte data to string
+            'Data = Encoding.UTF8.GetString(Response)
+
+            '' Parse the data to the class
+            'AccessTokenOutput = JsonConvert.DeserializeObject(Of ESITokenData)(Data)
+            'Success = True
+
+            ' This returns an ID for the raw text values - tested and works
+            Response = WC.UploadValues("https://evepraisal.com/appraisal.json?market=jita&raw_textarea=basilisk " & vbCrLf & "rifter" & vbCrLf & "hulk" & vbCrLf & "zydrine 44", "POST", PostParameters)
+            Data = Encoding.UTF8.GetString(Response)
+
+            ' Need to parse data and pull id for permanent link - https://evepraisal.com/a/yifsu
+
+        Catch ex As WebException
+
+            Call MsgBox(ex.Message)
+
+        Catch ex As Exception
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+        End Try
+
+
+    End Sub
+
+    Private Function SendRequest(uri As Uri, jsonDataBytes As Byte(), contentType As String, method As String) As String
+        Dim response As String
+        Dim request As WebRequest
+
+        request = WebRequest.Create(uri)
+        request.ContentLength = jsonDataBytes.Length
+        request.ContentType = contentType
+        request.Method = method
+
+        Using requestStream = request.GetRequestStream
+            requestStream.Write(jsonDataBytes, 0, jsonDataBytes.Length)
+            requestStream.Close()
+
+            Using responseStream = request.GetResponse.GetResponseStream
+                Using reader As New StreamReader(responseStream)
+                    response = reader.ReadToEnd()
+                End Using
+            End Using
+        End Using
+
+        Return response
+    End Function
+
+
+    Private Sub chkFees_Click(sender As Object, e As EventArgs) Handles chkFees.Click
+        If chkFees.Checked And chkFees.CheckState = CheckState.Indeterminate Then ' Show rate box
+            txtBrokerFeeRate.Visible = True
+            lblFeeRate.Visible = True
+        Else
+            txtBrokerFeeRate.Visible = False
+            lblFeeRate.Visible = False
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBrokerFeeRate.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtBrokerFeeRate.KeyPress
+        ' Only allow numbers, decimal, percent or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPercentChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtBrokerFeeRate_GotFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.GotFocus
+        Call txtBrokerFeeRate.SelectAll()
+    End Sub
+
+    Private Sub txtBrokerFeeRate_LostFocus(sender As Object, e As EventArgs) Handles txtBrokerFeeRate.LostFocus
+        txtBrokerFeeRate.Text = GetFormattedPercentEntry(txtBrokerFeeRate)
     End Sub
 
 #End Region
