@@ -2431,7 +2431,7 @@ Public Class frmShoppingList
             ElseIf ListRef.Name = lstBuy.Name And UpdatePrice Then ' Price update on the lstBuy screen
                 ' Update the price in the database
                 SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = " & CStr(CDbl(txtListEdit.Text)) & ", PRICE_TYPE = 'User' WHERE ITEM_ID = " & CurrentRow.SubItems(0).Text
-                Call evedb.ExecuteNonQuerySQL(SQL)
+                Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 ' Change the value in the price grid, but don't update the grid
                 CurrentRow.SubItems(2).Text = FormatNumber(txtListEdit.Text, 2)
