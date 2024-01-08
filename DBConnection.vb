@@ -1,7 +1,6 @@
 ﻿Imports System.Data.SQLite
 Imports System.IO
 
-<CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")>
 Public Class DBConnection
 
     Private DB As SQLiteConnection
@@ -30,8 +29,13 @@ Public Class DBConnection
     End Sub
 
     Private Sub OpenDB()
+        ' Before opening, delete any shm and wal files that might be in the folder
+        On Error Resume Next
+        File.Delete("EVEIPH DB.sqlite-shm")
+        File.Delete("EVEIPH DB.sqlite-wal")
         DB.Open()
         Call ExecuteNonQuerySQL("PRAGMA auto_vacuum = FULL; PRAGMA synchronous = NORMAL; PRAGMA locking_mode = NORMAL; PRAGMA cache_size = 10000; PRAGMA page_size = 4096; PRAGMA temp_store = DEFAULT; PRAGMA journal_mode = WAL; PRAGMA count_changes = OFF")
+        On Error GoTo 0
     End Sub
 
     Private Sub DisplayDBException(ThrownException As Exception)
