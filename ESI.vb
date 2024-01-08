@@ -306,7 +306,7 @@ Public Class ESI
             TokenPayload = JsonConvert.DeserializeObject(Of ESIJWTPayload)(Encoding.UTF8.GetString(Convert.FromBase64String(Payload)))
 
             ' Now validate the EVE SSO JWT Token
-            If ValidateToken(Output) Then
+            If ValidateToken(TokenHeader, TokenPayload, Signature) Then
 
                 ' Get the character ID from the JWT
                 Dim SubjectInfo As String() = TokenPayload.Subject.Split(":"c)
@@ -357,27 +357,6 @@ Public Class ESI
         output = output.Replace("/"c, "_"c)
         Return output
     End Function
-    Public Class ESIJWTHeader
-        <JsonProperty("alg")> Public Algorithm As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("typ")> Public TokenType As String
-    End Class
-    Public Class ESIJWTPayload
-        <JsonProperty("scp")> Public Scopes As List(Of String)
-        <JsonProperty("jti")> Public JWTID As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("sub")> Public Subject As String
-        <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
-        <JsonProperty("tenant")> Public Tenant As String
-        <JsonProperty("tier")> Public Tier As String
-        <JsonProperty("region")> Public DataRegion As String
-        <JsonProperty("aud")> Public Audience As List(Of String)
-        <JsonProperty("name")> Public Name As String
-        <JsonProperty("owner")> Public Owner As String
-        <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
-        <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
-        <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
-    End Class
 
     ' Adds spacers (=) to the JWT string portion to be converted to Base 64
     Private Function FormatJWTStringLength(JWTStringPortion As String) As String
@@ -399,7 +378,7 @@ Public Class ESI
     ''' We should validate the access token to make sure it has not been tampered with in transit from the SSO to the application.
     ''' </summary>
     ''' <returns></returns>
-    Private Function ValidateToken(ReturnedToken As JwtSecurityToken) As Boolean
+    Private Function ValidateToken(Header As ESIJWTHeader, Payload As ESIJWTPayload, Signature As String) As Boolean
         Const SSO_META_DATA_URL As String = "https://login.eveonline.com/.well-known/oauth-authorization-server" ' for getting the JWKS_URI
         Const JWK_AUDIENCE As String = "EVE Online"
 
@@ -409,14 +388,17 @@ Public Class ESI
         Dim KeyObject As New JWKSData
 
         Try
-            ' get the JWKS URI first from the SSO_META_DATA_URL - returns JSON
+            ' First, validate the signature
+            ' TODO
+
+            ' Get the JWKS URI from the SSO_META_DATA_URL - returns JSON
             METAData = JsonConvert.DeserializeObject(Of WellKnownData)(WC.DownloadString(SSO_META_DATA_URL))
             ' Get the JWKs from the endpoint uri
             JWKS_URI_Data = JsonConvert.DeserializeObject(Of JWKS)(WC.DownloadString(METAData.jwks_uri), New JWKSConverter)
 
             ' Get the object based on the algorithim used
             For Each item In JWKS_URI_Data.keys
-                If CType(item, JWKSData).alg = ReturnedToken.Header.Alg Then
+                If CType(item, JWKSData).alg = Header.Algorithm Then
                     KeyObject = item
                     Exit For
                 End If
@@ -428,10 +410,10 @@ Public Class ESI
             End If
 
             ' Do standard validation checks
-            With ReturnedToken
+            With Payload
                 Dim audienceFound As Boolean = False
-                For i = 0 To .Audiences.Count - 1
-                    If .Audiences(i) = JWK_AUDIENCE Then
+                For i = 0 To .Audience.Count - 1
+                    If .Audience(i) = JWK_AUDIENCE Then
                         audienceFound = True
                         Exit For
                     End If
@@ -440,7 +422,7 @@ Public Class ESI
                     Throw New Exception("Invalid Audience")
                 End If
 
-                If .Payload("kid").ToString <> KeyObject.kid.ToString Then
+                If .KeyID.ToString <> KeyObject.kid.ToString Then
                     Throw New Exception("Invalid Key ID")
                 End If
 
@@ -449,7 +431,7 @@ Public Class ESI
                 End If
 
                 ' Issue date should be before expiration date
-                If CLng(.Payload("iat").ToString) > CLng(.Payload("exp").ToString) Then
+                If .IssuedAt > .ExpirationTime Then
                     Throw New Exception("Invalid Token Expiration Date")
                 End If
 
@@ -2848,6 +2830,29 @@ Public Class JWKSData1
     <JsonProperty("y")> Public y As String
 End Class
 
+Public Class ESIJWTHeader
+    <JsonProperty("alg")> Public Algorithm As String
+    <JsonProperty("kid")> Public KeyID As String
+    <JsonProperty("typ")> Public TokenType As String
+End Class
+
+Public Class ESIJWTPayload
+    <JsonProperty("scp")> Public Scopes As List(Of String)
+    <JsonProperty("jti")> Public JWTID As String
+    <JsonProperty("kid")> Public KeyID As String
+    <JsonProperty("sub")> Public Subject As String
+    <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
+    <JsonProperty("tenant")> Public Tenant As String
+    <JsonProperty("tier")> Public Tier As String
+    <JsonProperty("region")> Public DataRegion As String
+    <JsonProperty("aud")> Public Audience As List(Of String)
+    <JsonProperty("name")> Public Name As String
+    <JsonProperty("owner")> Public Owner As String
+    <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
+    <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
+    <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
+End Class
+
 Public Class JWKSConverter
     Inherits JsonConverter
 
@@ -2879,8 +2884,8 @@ Public Class JWKSConverter
     Public Overrides Sub WriteJson(ByVal writer As JsonWriter, ByVal value As Object, ByVal serializer As JsonSerializer)
         Throw New NotImplementedException()
     End Sub
-End Class
 
+End Class
 
 Public Class ESICharacterVerificationData
     <JsonProperty("CharacterID")> Public CharacterID As String
