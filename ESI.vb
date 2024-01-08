@@ -1116,7 +1116,11 @@ Public Class ESI
         Dim CorpData As ESICorporation = Nothing
 
         ' Set up query string
-        ReturnData = GetPublicData(ESIURL & "corporations/" & CStr(ID) & TranquilityDataSource, DataCacheDate)
+        If ID <> 0 Then
+            ReturnData = GetPublicData(ESIURL & "corporations/" & CStr(ID) & TranquilityDataSource, DataCacheDate)
+        Else
+            ReturnData = Nothing
+        End If
 
         If Not IsNothing(ReturnData) Then
             CorpData = JsonConvert.DeserializeObject(Of ESICorporation)(ReturnData)
