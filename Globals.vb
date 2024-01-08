@@ -3039,7 +3039,7 @@ SkipItem:
                 End If
             End If
         Finally
-            If Not response Is Nothing Then response.Close()
+            If response IsNot Nothing Then response.Close()
         End Try
 
         Return Output
