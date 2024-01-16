@@ -1,0 +1,12 @@
+﻿Public Class frmMain
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+
+        ' Figure out what type of directory setup we have, copy over the new files, and then shell the updater
+
+    End Sub
+End Class

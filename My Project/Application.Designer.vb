@@ -32,12 +32,7 @@ Namespace My
         
         <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
         Protected Overrides Sub OnCreateMainForm()
-            Me.MainForm = Global.EVE_Isk_per_Hour.frmMain
-        End Sub
-        
-        <Global.System.Diagnostics.DebuggerStepThroughAttribute()>  _
-        Protected Overrides Sub OnCreateSplashScreen()
-            Me.SplashScreen = Global.EVE_Isk_per_Hour.SplashScreen
+            Me.MainForm = Global.EVEIPH_SQLite_DLL_Updater.frmSQLiteDLLMain
         End Sub
     End Class
 End Namespace
