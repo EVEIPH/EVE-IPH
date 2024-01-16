@@ -5,11 +5,7 @@ VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EVE Isk per Hour", "EVE Isk per Hour.vbproj", "{51FD6CD9-84DB-4892-800F-4E45B7E79D57}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EVEIPH SQLite DLL Updater", "..\EVEIPH SQLite DLL Updater\EVEIPH SQLite DLL Updater.vbproj", "{E2B6A9F5-8213-4295-93B9-FC869A5DA320}"
-EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EVEIPH Updater", "..\EVE-IPH-Update-Program\EVEIPH Updater.vbproj", "{B8C20620-05D1-4EC4-93AC-6080878CB931}"
-EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Project1", "..\Project1\Project1.vbproj", "{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,18 +29,6 @@ Global
 		{51FD6CD9-84DB-4892-800F-4E45B7E79D57}.Release|Itanium.Build.0 = Release|Itanium
 		{51FD6CD9-84DB-4892-800F-4E45B7E79D57}.Release|x86.ActiveCfg = Release|x86
 		{51FD6CD9-84DB-4892-800F-4E45B7E79D57}.Release|x86.Build.0 = Release|x86
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|Itanium.ActiveCfg = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|Itanium.Build.0 = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Debug|x86.Build.0 = Debug|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|Itanium.ActiveCfg = Release|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|Itanium.Build.0 = Release|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|x86.ActiveCfg = Release|Any CPU
-		{E2B6A9F5-8213-4295-93B9-FC869A5DA320}.Release|x86.Build.0 = Release|Any CPU
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Debug|Any CPU.Build.0 = Debug|x86
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Debug|Itanium.ActiveCfg = Debug|x86
@@ -57,18 +41,6 @@ Global
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Release|Itanium.Build.0 = Release|x86
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Release|x86.ActiveCfg = Release|x86
 		{B8C20620-05D1-4EC4-93AC-6080878CB931}.Release|x86.Build.0 = Release|x86
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|Itanium.ActiveCfg = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|Itanium.Build.0 = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Debug|x86.Build.0 = Debug|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|Itanium.ActiveCfg = Release|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|Itanium.Build.0 = Release|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|x86.ActiveCfg = Release|Any CPU
-		{C7D617F8-E4CA-4B9E-994E-38855E3F45F0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
