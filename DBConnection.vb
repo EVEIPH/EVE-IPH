@@ -1,7 +1,6 @@
 ﻿Imports System.Data.SQLite
 Imports System.IO
 
-<CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")>
 Public Class DBConnection
 
     Private DB As SQLiteConnection
