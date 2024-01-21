@@ -291,8 +291,10 @@ Public Class frmMain
         Dim ErrorData As ErrObject = Nothing
         Dim ESIData As New ESI
 
+        Dim AppFilePath As String = Path.GetDirectoryName(Application.ExecutablePath)
+
         ' Set developer flag
-        If File.Exists("Developer.txt") Then
+        If File.Exists(Path.Combine(AppFilePath, "Developer.txt")) Then
             Developer = True
         Else
             Developer = False
@@ -301,7 +303,7 @@ Public Class frmMain
         ' Covert to new ESI registration system to use my registration and PKCE
         ' If they registered before, show a pop-up and require registration. Then delete the registration file
         Dim AppRegistrationFileName As String = Path.ChangeExtension(Path.Combine(DynamicFilePath, "", "AppRegistrationInformation"), ".xml")
-        If File.Exists(AppRegistrationFileName) Then
+        If File.Exists(Path.Combine(AppFilePath, AppRegistrationFileName)) Then
             Dim f1 As New frmAppRegistrationNotice
             f1.ShowDialog()
 
@@ -311,7 +313,7 @@ Public Class frmMain
         End If
 
         ' Set test platform
-        If File.Exists("Test.txt") Then
+        If File.Exists(Path.Combine(AppFilePath, "Test.txt")) Then
             TestingVersion = True
         Else
             TestingVersion = False
@@ -328,8 +330,6 @@ Public Class frmMain
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
-        ' Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = True
-
         ' Always use US for now and don't take into account user overrided stuff like the system clock format
         LocalCulture = New CultureInfo("en-US", False)
         ' Sets the CurrentCulture 
@@ -338,7 +338,7 @@ Public Class frmMain
         ' Add any initialization after the InitializeComponent() call.
 
         ' Find out if we are running all in the current folder or with updates and the DB in the appdata folder
-        If File.Exists(SQLiteDBFileName) Then
+        If File.Exists(Path.Combine(AppFilePath, SQLiteDBFileName)) Then
             ' Single folder that we are in, so set the path variables to it for updates
             DynamicFilePath = Path.GetDirectoryName(Application.ExecutablePath)
             DBFilePath = Path.GetDirectoryName(Application.ExecutablePath)
