@@ -1183,10 +1183,7 @@ RevertToOldFileVersions:
                 SQL &= BuildInsertFieldString(readerUpdate.Item(12)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(13)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(14)) & ","
-                SQL &= BuildInsertFieldString(readerUpdate.Item(15)) & ","
-                SQL &= BuildInsertFieldString(readerUpdate.Item(16)) & ","
-                SQL &= BuildInsertFieldString(readerUpdate.Item(17)) & ","
-                SQL &= "NULL)" ' Corp roles cache date
+                SQL &= "NULL)" ' Roles cache date
             Else
                 SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("
                 SQL &= BuildInsertFieldString(readerUpdate.Item(0)) & ","
@@ -1207,7 +1204,8 @@ RevertToOldFileVersions:
                 SQL &= BuildInsertFieldString(readerUpdate.Item(15)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(16)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(17)) & ","
-                SQL &= BuildInsertFieldString(readerUpdate.Item(18)) & ")"
+                SQL &= BuildInsertFieldString(readerUpdate.Item(18)) & ","
+                SQL &= BuildInsertFieldString(readerUpdate.Item(19)) & ")"
             End If
 
             Call ExecuteNonQuerySQL(SQL, DBNEW)
