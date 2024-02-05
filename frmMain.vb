@@ -1976,11 +1976,14 @@ Public Class frmMain
             Call LoadFacilities()
 
             ' Reset all the cache dates
-            Call ResetESIDates()
+            Call ResetESIDates(True)
 
             ' Reset ESI data
-            Call ResetESIIndustrySystemIndicies()
-            Call ResetESIAdjustedMarketPrices()
+            Call ResetESIIndustrySystemIndicies(True)
+            Call ResetESIAdjustedMarketPrices(True)
+
+            ' Reload the menu
+            Call LoadCharacterNamesinMenu()
 
             FirstLoad = True ' Temporarily just to get screen to show correctly
 
@@ -1993,12 +1996,6 @@ Public Class frmMain
             FirstLoad = False
 
             MsgBox("All Data Reset", vbInformation, Application.ProductName)
-
-            ' Need to set a default, open that form
-            'Dim f2 = New frmSetCharacterDefault
-            'f2.ShowDialog()
-
-            'Call LoadCharacterNamesinMenu()
 
         End If
 
@@ -2041,34 +2038,37 @@ Public Class frmMain
         Call ResetESIDates()
     End Sub
 
-    Private Sub ResetESIDates()
+    Private Sub ResetESIDates(Optional SupressMessage As Boolean = False)
         Dim SQL As String
 
         ' Simple update, just set all the ESI cache dates to null
         SQL = "DELETE FROM ESI_PUBLIC_CACHE_DATES"
         EVEDB.ExecuteNonQuerySQL(SQL)
 
-        MsgBox("ESI cache dates reset", vbInformation, Application.ProductName)
-
+        If Not SupressMessage Then
+            MsgBox("ESI cache dates reset", vbInformation, Application.ProductName)
+        End If
     End Sub
 
-    Private Sub ResetESIIndustrySystemIndicies()
+    Private Sub ResetESIIndustrySystemIndicies(Optional SupressMessage As Boolean = False)
 
         ' Simple update, just set all the ESI cache dates to null
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
 
-        MsgBox("ESI Industry System Indicies reset", vbInformation, Application.ProductName)
-
+        If Not SupressMessage Then
+            MsgBox("ESI Industry System Indicies reset", vbInformation, Application.ProductName)
+        End If
     End Sub
 
-    Public Sub ResetESIAdjustedMarketPrices()
+    Public Sub ResetESIAdjustedMarketPrices(Optional SupressMessage As Boolean = False)
 
         ' Simple update, just set all the data back to zero
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
         Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET MARKET_PRICES_CACHED_UNTIL = NULL")
 
-        MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
-
+        If Not SupressMessage Then
+            MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
+        End If
     End Sub
 
     Private Sub mnuResetESIPublicStructures_Click(sender As Object, e As EventArgs) Handles mnuResetESIPublicStructures.Click
@@ -2570,6 +2570,7 @@ Public Class frmMain
     End Sub
 
     Public Sub ResetTabs(Optional ResetBPTab As Boolean = True)
+        Dim LoadedBPText As String = cmbBPBlueprintSelection.Text
         Me.Enabled = False
         Application.DoEvents()
         ' Init all forms
@@ -2582,6 +2583,12 @@ Public Class frmMain
 
         ' Update skill override
         Call UpdateSkillPanel()
+
+        ' Reload the BP if there was one prior
+        If LoadedBPText <> "" Then
+            cmbBPBlueprintSelection.Text = LoadedBPText
+            Call SelectBlueprint()
+        End If
 
         Me.Cursor = Cursors.Default
         Me.Enabled = True
@@ -2841,7 +2848,17 @@ Public Class frmMain
         txtBPLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
     End Sub
 
+<<<<<<< HEAD
     Private Sub txtBPLines_KeyDown(sender As Object, e As KeyEventArgs) Handles txtBPLines.KeyDown
+=======
+    Private Sub txtBPLines_LostFocus(sender As Object, e As EventArgs) Handles txtBPLines.LostFocus
+        If Trim(txtBPLines.Text) = "" Then
+            txtBPLines.Text = CStr(SelectedCharacter.MaximumProductionLines)
+        End If
+    End Sub
+
+    Private Sub txtBPLines_KeyDown(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPLines.KeyDown
+>>>>>>> master
         Call ProcessCutCopyPasteSelect(txtBPLines, e)
         Call EnterKeyRunBP(e)
     End Sub
@@ -2856,6 +2873,10 @@ Public Class frmMain
                 Call ResetRefresh()
             End If
         End If
+    End Sub
+
+    Private Sub txtBPLines_TextChanged(sender As Object, e As EventArgs) Handles txtBPLines.TextChanged
+        Call ConverttoOnlyNumbers(txtBPLines)
     End Sub
 
     Private Sub txtBPInventionLines_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPInventionLines.DoubleClick
@@ -3024,6 +3045,24 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub ConverttoOnlyNumbers(ByRef RefTextbox As TextBox, Optional AllowCommaDecimal As Boolean = False)
+        If Trim(RefTextbox.Text) <> "" Then
+            Dim TypedNumber As String = RefTextbox.Text
+            Dim NumberRegex As String
+
+            If AllowCommaDecimal Then
+                NumberRegex = "^\d+\.?\d*|\d{0,2}(,\d{3})*$"
+            Else
+                NumberRegex = "^\d*$"
+            End If
+
+            If Not System.Text.RegularExpressions.Regex.Match(TypedNumber, NumberRegex).Success Then
+                RefTextbox.Text = RefTextbox.Text.Remove(RefTextbox.Text.Length - 1, 1)
+                RefTextbox.SelectAll()
+            End If
+        End If
+    End Sub
+
     Private Sub btnReset_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnClearItemFilter.Click
         txtPriceItemFilter.Text = ""
         Call UpdatePriceList()
@@ -3060,7 +3099,15 @@ Public Class frmMain
         End If
     End Sub
 
+<<<<<<< HEAD
     Private Sub txtBPRuns_KeyUp(sender As Object, e As KeyEventArgs) Handles txtBPRuns.KeyUp
+=======
+    Private Sub txtBPRuns_TextChanged(sender As Object, e As EventArgs) Handles txtBPRuns.TextChanged
+        Call ConverttoOnlyNumbers(txtBPRuns)
+    End Sub
+
+    Private Sub txtBPRuns_KeyUp(sender As Object, e As System.Windows.Forms.KeyEventArgs) Handles txtBPRuns.KeyUp
+>>>>>>> master
         If Not EnterKeyPressed Then
             EnterKeyPressed = False
         End If
@@ -3070,6 +3117,9 @@ Public Class frmMain
         If Not IgnoreFocus Then
             Call UpdateBPLinesandBPs()
             IgnoreFocus = True
+        End If
+        If Trim(txtBPRuns.Text) = "" Then
+            txtBPRuns.Text = "1"
         End If
     End Sub
 
@@ -3091,12 +3141,20 @@ Public Class frmMain
     Private Sub txtBPAddlCosts_LostFocus(sender As Object, e As System.EventArgs) Handles txtBPAddlCosts.LostFocus
         If IsNumeric(txtBPAddlCosts.Text) Then
             txtBPAddlCosts.Text = FormatNumber(txtBPAddlCosts.Text, 2)
-        ElseIf Trim(txtBPAddlCosts.Text) = "" Then
+        ElseIf Trim(txtBPAddlCosts.Text) = "" Or Not IsNumeric(txtBPAddlCosts.Text) Then
             txtBPAddlCosts.Text = "0.00"
         End If
     End Sub
 
+<<<<<<< HEAD
     Private Sub txtBPME_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPME.KeyDown
+=======
+    Private Sub txtBPAddlCosts_TextChanged(sender As Object, e As EventArgs) Handles txtBPAddlCosts.TextChanged
+        ConverttoOnlyNumbers(txtBPAddlCosts, True)
+    End Sub
+
+    Private Sub txtBPME_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles txtBPME.KeyDown
+>>>>>>> master
         Call ProcessCutCopyPasteSelect(txtBPME, e)
         If e.KeyCode = Keys.Enter Then
             Call EnterKeyRunBP(e)
@@ -3114,6 +3172,7 @@ Public Class frmMain
     End Sub
 
     Private Sub txtBPME_TextChanged(sender As Object, e As System.EventArgs) Handles txtBPME.TextChanged
+        Call ConverttoOnlyNumbers(txtBPME)
         Call VerifyMETEEntry(txtBPME, "ME")
     End Sub
 
@@ -3141,6 +3200,7 @@ Public Class frmMain
     End Sub
 
     Private Sub txtBPTE_TextChanged(sender As Object, e As System.EventArgs) Handles txtBPTE.TextChanged
+        Call ConverttoOnlyNumbers(txtBPTE)
         Call VerifyMETEEntry(txtBPTE, "TE")
     End Sub
 
@@ -3220,10 +3280,7 @@ Public Class frmMain
     End Sub
 
     Private Sub txtBPNumBPs_DoubleClick(sender As Object, e As System.EventArgs) Handles txtBPNumBPs.DoubleClick
-        If Not IsNothing(SelectedBlueprint) Then
-            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text),
-                                                  CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
-        End If
+        Call LoadDefaultNumBPS()
     End Sub
 
     Private Sub txtBPNumBPs_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs) Handles txtBPNumBPs.KeyDown
@@ -3238,6 +3295,24 @@ Public Class frmMain
                 ' Invalid Character
                 e.Handled = True
             End If
+        End If
+    End Sub
+
+    Private Sub txtBPNumBPs_TextChanged(sender As Object, e As EventArgs) Handles txtBPNumBPs.TextChanged
+        Call ConverttoOnlyNumbers(txtBPNumBPs)
+    End Sub
+
+    Private Sub txtBPNumBPs_LostFocus(sender As Object, e As EventArgs) Handles txtBPNumBPs.LostFocus
+        If Trim(txtBPNumBPs.Text) = "" Then
+            txtBPNumBPs.Text = "1"
+            Call LoadDefaultNumBPS()
+        End If
+    End Sub
+
+    Private Sub LoadDefaultNumBPS()
+        If Not IsNothing(SelectedBlueprint) Then
+            txtBPNumBPs.Text = CStr(GetUsedNumBPs(SelectedBlueprint.GetTypeID, SelectedBlueprint.GetTechLevel, CInt(txtBPRuns.Text),
+                                          CInt(txtBPLines.Text), CInt(txtBPNumBPs.Text), SelectedDecryptor.RunMod))
         End If
     End Sub
 
@@ -6467,15 +6542,7 @@ ExitForm:
         lblBPCompIPH.Text = FormatNumber(TotalCompIPH, 2) ' Buy components
 
         ' Set the labels if the User Can make this item and/or all components
-        If SelectedBlueprint.UserCanBuildBlueprint Then
-            lblBPCanMakeBP.Text = "Can make this Item"
-            lblBPCanMakeBP.ForeColor = Color.Black
-        Else
-            lblBPCanMakeBP.Text = "Cannot make this Item"
-            lblBPCanMakeBP.ForeColor = Color.Red
-        End If
-
-        ' Only update the make all lable if we have something to make, else use the bp data
+        ' Only update the make all label if we have something to make, else use the bp data
         If SelectedBlueprint.HasComponents Then
             If SelectedBlueprint.UserCanBuildAllComponents Then
                 lblBPCanMakeBPAll.Text = "Can make All Components for this Item"
@@ -6490,7 +6557,20 @@ ExitForm:
                 lblBPCanMakeBPAll.Text = "Buying all Materials"
                 lblBPCanMakeBPAll.ForeColor = Color.Black
             End If
+
+            ' Set the label for the BP if it has components as well
+            If SelectedBlueprint.UserCanBuildBlueprint Then
+                lblBPCanMakeBP.Text = "Can make this Item"
+                lblBPCanMakeBP.ForeColor = Color.Black
+            Else
+                lblBPCanMakeBP.Text = "Cannot make this Item"
+                lblBPCanMakeBP.ForeColor = Color.Red
+            End If
+
         Else
+            ' Don't show the label if there are no components in the component list
+            lblBPCanMakeBP.Text = ""
+
             If SelectedBlueprint.UserCanBuildBlueprint Then
                 lblBPCanMakeBPAll.Text = "Can make this Item"
                 lblBPCanMakeBPAll.ForeColor = Color.Black
@@ -17365,6 +17445,13 @@ Leave:
 
             ' Clear the grid
             lstMineGrid.Items.Clear()
+
+            ' Refresh this value unless the value saved is not the default
+            Dim S As New ProgramSettings
+            If UserMiningTabSettings.Haulerm3 = S.DefaultMiningHaulerm3 Then
+                Call GetHaulerM3(cmbMineShipName.Text)
+            End If
+
         End If
     End Sub
 
@@ -17583,9 +17670,6 @@ Leave:
             lblMineHaulerM3.Enabled = True
             txtMineHaulerM3.Enabled = True
         End If
-
-        ' Refresh this value regardless
-        Call RefreshHaulerM3()
 
     End Sub
 
@@ -17967,7 +18051,11 @@ Leave:
     Private Const IceHarvestingDroneSpecializationSkillTypeID As Integer = 43703
 
     Private MiningDronem3Hr As Double
+    Private IceHarvestDroneCycleTime As Double
+    Private DroneBlocksNoHauler As Integer = 0
     Private BoosterMiningDronem3Hr As Double
+    Private BoosterIceHarvestDroneCycleTime As Double
+    Private BoosterDroneBlocksNoHauler As Integer = 0
     Private DroneNamesLoaded As Boolean
     Private SavedOreShipName As String ' Whatever ship was saved in settings, which may change locally for funcationality
     Private SavedIceShipName As String
@@ -18298,7 +18386,7 @@ Leave:
         Dim IceCylesPerHour As Integer
         Dim IceBlocksPerHour As Integer
         ' Ice Hauling
-        Dim IceBlocksPerLoad As Integer
+        Dim NumIceBlocksFullCargo As Integer
 
         Dim ReprocessingYield As Double ' For reference out of refining
         Dim ReprocessingTax As Double
@@ -18319,6 +18407,10 @@ Leave:
 
         ' Determine multiplier - assume all additional mining ships have the same yield and other costs
         Dim MinerMultiplier As Integer = CInt(txtMineNumberMiners.Text)
+
+        DroneBlocksNoHauler = 0
+        BoosterDroneBlocksNoHauler = 0
+        IceBlocksPerHour = 0
 
         ' Error checks
         If Not CheckMiningEntryData() Then
@@ -18717,24 +18809,70 @@ Leave:
 
                     Else ' Ice
                         ' How much can fit in cargo?
-                        IceBlocksPerLoad = CInt(Math.Floor(CDbl(txtMineHaulerM3.Text) / TempOre.OreVolume))
-
-                        ShipMiningYield += TotalDroneIceBlocksPerHour
+                        NumIceBlocksFullCargo = CInt(Math.Floor(CDbl(txtMineHaulerM3.Text) / TempOre.OreVolume))
 
                         If ShipMiningYield <> 0 Then
-                            ' How many full cycles to fill the cargo?
-                            FillCycles = CInt(Math.Ceiling(IceBlocksPerLoad / ShipMiningYield))
+                            ' Are we using mining drones?
+                            If MiningDronem3Hr <> 0 Then
+                                ' Figure out how many cycle times does it take to get blocks from drones using a basic harvester cycle?
+                                Dim NumHarvCyclesforDroneBlocks As Integer = CInt((IceHarvestDroneCycleTime / 1000) / BaseCycleTime)
+                                ' For the time we mine with drones returning, how many blocks will we get? Count harvesters and drones
+                                Dim BlocksperDroneCycle As Integer = CInt(ShipMiningYield * NumHarvCyclesforDroneBlocks + CInt(cmbMineNumMiningDrones.Text))
 
-                            ' Add on the round trip time and recalculate cycle time
-                            CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
+                                ' Set the fill cycles based on drone yields - how many to fill this
+                                FillCycles = CInt(Math.Ceiling(NumIceBlocksFullCargo / BlocksperDroneCycle))
 
-                            ' Recalculate with new cycle time
-                            IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+                                ' Now calc the time to do those cycles
+                                ' Add on the round trip time and recalculate cycle time
+                                CycleTime = ((FillCycles * (NumHarvCyclesforDroneBlocks * BaseCycleTime)) + RTTimetoStationSeconds) / FillCycles
 
-                            ' Total ice blocks per hour
-                            IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+                                ' Recalculate with new cycle time
+                                IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+
+                                ' Total ice blocks per hour
+                                IceBlocksPerHour = CInt(IceCylesPerHour * BlocksperDroneCycle)
+
+                                ' Now, reset the drone yield on the drone box and 
+                                DroneBlocksNoHauler = CInt(cmbMineNumMiningDrones.Text) * IceCylesPerHour
+
+                            Else ' No drones
+                                ' How many full harvester cycles to fill the cargo?
+                                FillCycles = CInt(Math.Ceiling(NumIceBlocksFullCargo / ShipMiningYield))
+
+                                ' Add on the round trip time and normalize cycle time with return to station
+                                CycleTime = ((FillCycles * BaseCycleTime) + RTTimetoStationSeconds) / FillCycles
+
+                                ' Recalculate with new cycle time
+                                IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+
+                                ' Total ice blocks per hour
+                                IceBlocksPerHour = CInt(IceCylesPerHour * ShipMiningYield)
+
+                            End If
+
+                            ' Are we using a booster mining drones?
+                            If BoosterMiningDronem3Hr <> 0 And chkMineUseFleetBooster.Checked Then
+                                Dim BoosterDroneYield As Integer = CInt(cmbMineBoosterNumMiningDrones.Text)
+                                ' Booster only mines with drones, so how many drones are we using (1 block each drone) and how many drone runs to fill cargo?
+                                FillCycles = CInt(Math.Ceiling((GetHaulerM3(cmbMineBoosterShipName.Text) / TempOre.OreVolume) / BoosterDroneYield))
+
+                                ' Now calc the time to do those cycles
+                                ' Add on the round trip time and recalculate cycle time
+                                CycleTime = ((FillCycles * (BoosterIceHarvestDroneCycleTime / 1000)) + RTTimetoStationSeconds) / FillCycles
+
+                                ' Recalculate with new cycle time
+                                IceCylesPerHour = CInt(Math.Floor(3600 / CycleTime))
+
+                                ' Total ice blocks per hour
+                                IceBlocksPerHour += CInt(IceCylesPerHour * BoosterDroneYield)
+
+                                ' Now, reset the drone yield on the drone box and 
+                                BoosterDroneBlocksNoHauler = BoosterDroneYield * IceCylesPerHour
+
+                            End If
+
                         Else
-                            IceBlocksPerLoad = 0
+                            NumIceBlocksFullCargo = 0
                         End If
                     End If
                 End If
@@ -18945,7 +19083,6 @@ Leave:
         Application.DoEvents()
 
     End Sub
-
     Private Function GetDroneYield(IceMining As Boolean, GasMining As Boolean, NumMiners As Integer) As Double
         Dim Yield As Double = 0
 
@@ -18956,8 +19093,12 @@ Leave:
                 Yield += BoosterMiningDronem3Hr
             End If
             If IceMining Then
-                ' Convert to blocks
-                Yield = CInt(Math.Floor(Yield) / 1000)
+                If chkMineUseHauler.Checked Then
+                    ' Convert to blocks
+                    Yield = CInt(Math.Floor(Yield / 1000))
+                Else
+                    Yield = DroneBlocksNoHauler + BoosterDroneBlocksNoHauler
+                End If
             End If
         End If
 
@@ -19587,7 +19728,7 @@ Leave:
         If Not FirstLoad Then
             Call UpdateMiningDroneStats(MiningDronem3Hr, cmbMineShipName.Text, cmbMineBaseShipSkill.Text, cmbMineDroneName.Text, cmbMineNumMiningDrones.Text,
                             cmbMineDroneOpSkill.Text, cmbMineDroneSpecSkill.Text, cmbMineDroneInterfacingSkill.Text, lblMineDroneIdealRange,
-                            lblMineMiningDroneYield, cmbMineOreType.Text, GetDroneRigType(cmbMineMiningRig1), GetDroneRigType(cmbMineMiningRig2), GetDroneRigType(cmbMineMiningRig3))
+                            lblMineMiningDroneYield, lblMineMiningDroneM3, IceHarvestDroneCycleTime, cmbMineOreType.Text, GetDroneRigType(cmbMineMiningRig1), GetDroneRigType(cmbMineMiningRig2), GetDroneRigType(cmbMineMiningRig3))
         End If
     End Sub
 
@@ -19595,19 +19736,20 @@ Leave:
         If Not FirstLoad Then
             Call UpdateMiningDroneStats(BoosterMiningDronem3Hr, cmbMineBoosterShipName.Text, cmbMineBoosterShipSkill.Text, cmbMineBoosterDroneName.Text, cmbMineBoosterNumMiningDrones.Text,
                         cmbMineBoosterDroneOpSkill.Text, cmbMineBoosterDroneSpecSkill.Text, cmbMineBoosterDroneInterfacingSkill.Text, lblMineBoosterDroneIdealRange,
-                        lblMineBoosterMiningDroneYield, cmbMineOreType.Text, GetDroneRigType(chkMineBoosterDroneRig1), GetDroneRigType(chkMineBoosterDroneRig2), GetDroneRigType(chkMineBoosterDroneRig3), True)
+                        lblMineBoosterMiningDroneYield, lblMineBoosterMiningDroneM3, BoosterIceHarvestDroneCycleTime, cmbMineOreType.Text, GetDroneRigType(chkMineBoosterDroneRig1), GetDroneRigType(chkMineBoosterDroneRig2), GetDroneRigType(chkMineBoosterDroneRig3), True)
         End If
     End Sub
 
     ' Updates the stats on the drones group
     Private Sub UpdateMiningDroneStats(ByRef MiningAmtVariable As Double, ShipName As String, BaseShipSkill As String,
                                        DroneName As String, NumDrones As String, DroneSkill As String, DroneSpecSkill As String, DroneInterfaceSkill As String,
-                                       ByRef RangeLabel As Label, ByRef YieldLabel As Label, OreType As String,
+                                       ByRef RangeLabel As Label, ByRef YieldLabel As Label, ByRef TextLabel As Label, ByRef DroneCycleTime As Double, OreType As String,
                                        ByRef Rig1 As DroneRigType, ByRef Rig2 As DroneRigType, ByRef Rig3 As DroneRigType, Optional BoosterDrones As Boolean = False)
         ' Initialize
         RangeLabel.Text = "Ideal Range: N/A"
         YieldLabel.Text = "-"
         MiningAmtVariable = 0
+        DroneCycleTime = 0
 
         ' Calculate the m3 and range based on ship selected
         If DroneName <> None And DroneName <> "" And DroneSkill <> "0" And OreType <> "Gas" Then
@@ -19650,39 +19792,44 @@ Leave:
                 End If
 
                 ' Amount of cycles we can do in an hour times the amount per cycle
+<<<<<<< HEAD
                 MiningAmtVariable = (CInt(NumDrones) * 3600 / (AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000)) * DroneMiningAmountpCycle
+=======
+                DroneCycleTime = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration) / 1000
+                MiningAmtVariable = CInt(NumDrones) * 3600 / DroneCycleTime * DroneMiningAmountpCycle
+>>>>>>> master
 
                 ' Set the amount of m3 per hour for all the drones we have
-                lblMineMiningDroneM3.Text = "Yield (m3/Hr):"
+                TextLabel.Text = "Yield (m3/Hr):"
                 YieldLabel.Text = FormatNumber(MiningAmtVariable, 1)
             Else
-                Dim IceHarvestDroneCycleTime As Double = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
-                IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneOperationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpLevel) / 100)
-                IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneSpecializationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpSpecLevel) / 100)
+                DroneCycleTime = AttribLookup.GetAttribute(DroneName, ItemAttributes.duration)
+                DroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneOperationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpLevel) / 100)
+                DroneCycleTime *= (1 + (AttribLookup.GetAttribute(IceHarvestingDroneSpecializationSkillTypeID, ItemAttributes.rofBonus) * MiningDroneOpSpecLevel) / 100)
                 ' Ship role bonus
-                IceHarvestDroneCycleTime *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.roleBonusDroneIceHarvestingSpeed) / 100))
-                IceHarvestDroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig1, OreType, ShipName)) ' Rigs
-                IceHarvestDroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig2, OreType, ShipName)) ' Rigs
-                IceHarvestDroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig3, OreType, ShipName)) ' Rigs
+                DroneCycleTime *= (1 + (AttribLookup.GetAttribute(ShipName, ItemAttributes.roleBonusDroneIceHarvestingSpeed) / 100))
+                DroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig1, OreType, ShipName)) ' Rigs
+                DroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig2, OreType, ShipName)) ' Rigs
+                DroneCycleTime *= (1 + GetMiningDroneRigBonus(Rig3, OreType, ShipName)) ' Rigs
 
                 ' Only the mining industrials have bonuses to mining drones based on main ship skill
                 Select Case ShipName
                     Case Porpoise, Orca
-                        IceHarvestDroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneIceHarvestingCycleTime) / 100) * CInt(BaseShipSkill)))
+                        DroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.industrialCommandBonusDroneIceHarvestingCycleTime) / 100) * CInt(BaseShipSkill)))
                     Case Rorqual
-                        IceHarvestDroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneIceCycleTime) / 100) * CInt(BaseShipSkill)))
+                        DroneCycleTime *= (1 + ((AttribLookup.GetAttribute(ShipName, ItemAttributes.capitalIndustrialShipBonusDroneIceCycleTime) / 100) * CInt(BaseShipSkill)))
                 End Select
 
                 ' Adjust with the core bonus if boosted
                 If BoosterDrones Then
-                    IceHarvestDroneCycleTime *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.IceDroneHarvestingSpeed))
+                    DroneCycleTime *= (1 + GetIndustrialCorebonus(ShipName, CoreBonus.IceDroneHarvestingSpeed))
                 End If
 
-                MiningAmtVariable = CInt(NumDrones) * (3600 / (IceHarvestDroneCycleTime / 1000) * DroneMiningAmountpCycle)
+                MiningAmtVariable = CInt(NumDrones) * (3600 / (DroneCycleTime / 1000) * DroneMiningAmountpCycle)
 
                 ' Convert to blocks
-                lblMineMiningDroneM3.Text = "Yield (blks/Hr):"
-                YieldLabel.Text = FormatNumber(CInt(Math.Floor(MiningAmtVariable) / 1000), 0)
+                TextLabel.Text = "Yield (blks/Hr):"
+                YieldLabel.Text = FormatNumber(Math.Floor(MiningAmtVariable / 1000), 0)
 
             End If
         End If
@@ -20434,7 +20581,7 @@ Leave:
             End If
         End If
 
-        Call RefreshHaulerM3()
+        Call GetHaulerM3(cmbMineShipName.Text)
 
         lblMineCycleTime.Text = ""
         lblMineRange.Text = ""
@@ -20771,25 +20918,27 @@ ProcExit:
     End Function
 
     ' Loads the cargo m3 for hauler if selected
-    Private Sub RefreshHaulerM3()
-        ' If the hauler is not checked and they don't have a m3 set, load the M3 of the ship selected
-        If chkMineUseHauler.Checked Then
-            Dim AttribLookup As New EVEAttributes
-            ' Load the ore hold of the ship selected
-            Select Case cmbMineShipName.Text
-                Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity), 2)
-                Case Mackinaw, Retriever
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) _
-                                                        * (1 + (CInt(cmbMineBaseShipSkill.Text) * (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGeneralMiningHoldCapacity) / 100))), 2)
-                Case Orca, Rorqual, Porpoise
-                    ' Use special ore hold, fleet hanger - like to use cargo too but that's not in attributes?
-                    txtMineHaulerM3.Text = FormatNumber(AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) + AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.fleetHangarCapacity), 2)
-                Case Else
-                    txtMineHaulerM3.Text = "0.00"
-            End Select
-        End If
-    End Sub
+    Private Function GetHaulerM3(ByVal ShipName As String) As Double
+        Dim HaulerM3 As Double = 0
+        Dim AttribLookup As New EVEAttributes
+
+        ' Load the ore hold of the ship selected
+        Select Case ShipName
+            Case Hulk, Skiff, Covetor, Procurer, Venture, Prospect, Endurance
+                HaulerM3 = AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity)
+            Case Mackinaw, Retriever
+                HaulerM3 = AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) _
+                                                    * (1 + (CInt(cmbMineBaseShipSkill.Text) * (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGeneralMiningHoldCapacity) / 100)))
+            Case Orca, Rorqual, Porpoise
+                ' Use special ore hold, fleet hanger - like to use cargo too but that's not in attributes?
+                HaulerM3 = AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.generalMiningHoldCapacity) + AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.fleetHangarCapacity)
+        End Select
+
+        txtMineHaulerM3.Text = FormatNumber(HaulerM3, 2)
+
+        Return HaulerM3
+
+    End Function
 
     ' Calculates the total mining amount per cycle for the ship set up (not including crystals)
     Private Function CalculateMiningAmount() As Double
