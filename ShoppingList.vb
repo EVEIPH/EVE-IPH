@@ -1,4 +1,3 @@
-﻿
 Imports System.Data.SQLite
 
 Public Class ShoppingList

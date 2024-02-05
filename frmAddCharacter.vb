@@ -1,4 +1,4 @@
-﻿Imports System.Data.SQLite
+Imports System.Data.SQLite
 
 Public Class frmAddCharacter
 
