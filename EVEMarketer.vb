@@ -2,7 +2,6 @@
 Imports Newtonsoft.Json
 
 ' Class for querying data from EVE Markterer prices
-
 Public Class EVEMarketer
 
     Implements ICloneable
@@ -44,6 +43,7 @@ Public Class EVEMarketer
         Dim SystemHeader As String = "&usesystem="
         Dim RegionSystemUsed As String = ""
         Dim PriceLocationHeaderUsed As String = ""
+        Dim PriceUpdateDown As Boolean = False
 
         ' Set up for each region/system and item combos to be queried
         For Each Item In TypeIDList
