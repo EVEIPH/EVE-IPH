@@ -1512,122 +1512,122 @@ Partial Class frmMain
         'tsCharacter1
         '
         Me.tsCharacter1.Name = "tsCharacter1"
-        Me.tsCharacter1.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter1.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter1.Text = "tsCharacter1"
         '
         'tsCharacter2
         '
         Me.tsCharacter2.Name = "tsCharacter2"
-        Me.tsCharacter2.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter2.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter2.Text = "tsCharacter2"
         '
         'tsCharacter3
         '
         Me.tsCharacter3.Name = "tsCharacter3"
-        Me.tsCharacter3.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter3.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter3.Text = "tsCharacter3"
         '
         'tsCharacter4
         '
         Me.tsCharacter4.Name = "tsCharacter4"
-        Me.tsCharacter4.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter4.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter4.Text = "tsCharacter4"
         '
         'tsCharacter5
         '
         Me.tsCharacter5.ImageTransparentColor = System.Drawing.Color.White
         Me.tsCharacter5.Name = "tsCharacter5"
-        Me.tsCharacter5.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter5.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter5.Text = "tsCharacter5"
         '
         'tsCharacter6
         '
         Me.tsCharacter6.Name = "tsCharacter6"
-        Me.tsCharacter6.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter6.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter6.Text = "tsCharacter6"
         '
         'tsCharacter7
         '
         Me.tsCharacter7.Name = "tsCharacter7"
-        Me.tsCharacter7.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter7.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter7.Text = "tsCharacter7"
         '
         'tsCharacter8
         '
         Me.tsCharacter8.Name = "tsCharacter8"
-        Me.tsCharacter8.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter8.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter8.Text = "tsCharacter8"
         '
         'tsCharacter9
         '
         Me.tsCharacter9.Name = "tsCharacter9"
-        Me.tsCharacter9.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter9.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter9.Text = "tsCharacter9"
         '
         'tsCharacter10
         '
         Me.tsCharacter10.Name = "tsCharacter10"
-        Me.tsCharacter10.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter10.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter10.Text = "tsCharacter10"
         '
         'tsCharacter11
         '
         Me.tsCharacter11.Name = "tsCharacter11"
-        Me.tsCharacter11.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter11.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter11.Text = "tsCharacter11"
         '
         'tsCharacter12
         '
         Me.tsCharacter12.Name = "tsCharacter12"
-        Me.tsCharacter12.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter12.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter12.Text = "tsCharacter12"
         '
         'tsCharacter13
         '
         Me.tsCharacter13.Name = "tsCharacter13"
-        Me.tsCharacter13.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter13.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter13.Text = "tsCharacter13"
         '
         'tsCharacter14
         '
         Me.tsCharacter14.Name = "tsCharacter14"
-        Me.tsCharacter14.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter14.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter14.Text = "tsCharacter14"
         '
         'tsCharacter15
         '
         Me.tsCharacter15.Name = "tsCharacter15"
-        Me.tsCharacter15.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter15.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter15.Text = "tsCharacter15"
         '
         'tsCharacter16
         '
         Me.tsCharacter16.Name = "tsCharacter16"
-        Me.tsCharacter16.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter16.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter16.Text = "tsCharacter16"
         '
         'tsCharacter17
         '
         Me.tsCharacter17.Name = "tsCharacter17"
-        Me.tsCharacter17.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter17.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter17.Text = "tsCharacter17"
         '
         'tsCharacter18
         '
         Me.tsCharacter18.Name = "tsCharacter18"
-        Me.tsCharacter18.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter18.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter18.Text = "tsCharacter18"
         '
         'tsCharacter19
         '
         Me.tsCharacter19.Name = "tsCharacter19"
-        Me.tsCharacter19.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter19.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter19.Text = "tsCharacter19"
         '
         'tsCharacter20
         '
         Me.tsCharacter20.Name = "tsCharacter20"
-        Me.tsCharacter20.Size = New System.Drawing.Size(146, 22)
+        Me.tsCharacter20.Size = New System.Drawing.Size(180, 22)
         Me.tsCharacter20.Text = "tsCharacter20"
         '
         'pnlSkills

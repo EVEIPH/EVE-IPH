@@ -281,7 +281,7 @@ Public Class ShoppingList
                             UpdateMaterial = CType(.GetMaterialList(i).Clone, Material)
 
                             ' Get the new quantity for each material to build this item - which will be in the buy list
-                            UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, UpdateMaterial, False, RefMatQuantity)
+                            UpdatedQuantity = GetUpdatedQuantity("Buy", ShoppingItem, UpdateItemQuantity, UpdateMaterial, False, 1, RefMatQuantity)
 
                             ' Need to update to the quantity sent in the Buy List
                             Call UpdateShoppingBuyQuantity(.GetMaterialList(i).GetMaterialName, UpdatedQuantity)
@@ -499,7 +499,7 @@ Public Class ShoppingList
     ' ShoppingItem = flag if it's a built item (uses quantity) or a main shopping item from the list (uses runs for quantity)
     Private Function GetUpdatedQuantity(ByVal ProcessingType As String, ByVal CurrentItem As ShoppingListItem,
                                         ByVal NewMaterialQuantity As Long, ByVal UpdateMaterial As Material,
-                                        ByVal ShoppingItem As Boolean,
+                                        ByVal ShoppingItem As Boolean, Optional ByVal UpdateMaterialPortionSize As Long = 1,
                                         Optional ByRef RefMatQuantity As Long = 0) As Long
         Dim UpdatedQuantity As Long = 0
         Dim OnHandMats As Long

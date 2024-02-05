@@ -70,7 +70,7 @@ Public Class frmAddCharacter
             End If
 
             ' If they loaded a character for the first time, set it from Dummy to this character as the default
-            If CharacterData.CharacterID = DummyCharacterID Then
+            If SelectedCharacter.ID = DummyCharacterID Then
                 ' See if only one other character exists in db (the one we just added)
                 Dim rsCheck As SQLiteDataReader
                 DBCommand = New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & DummyCharacterID, EVEDB.DBREf)
