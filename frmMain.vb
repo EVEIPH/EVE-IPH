@@ -21687,15 +21687,12 @@ ProcExit:
 
             Case "Gas"
                 ' Frigate bonuses
-                Select Case cmbMineShipName.Text
-                    Case Venture, Prospect, Endurance
-                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningFrigateBonusGasCloudHarvestingDuration) / 100 * AdvShipLevel) + 1)
-                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
-                    Case Prospect, Retriever, Covetor
-                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGasHarvestingDuration) / 100 * BaseShipLevel) + 1)
-                    Case Skiff, Mackinaw, Hulk
-                        TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
-                End Select
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningFrigateBonusGasCloudHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.expeditionFrigateBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
+
+                ' Mining Barge and Exhumer bonuses
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningBargeBonusGasHarvestingDuration) / 100 * BaseShipLevel) + 1)
+                TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusGasHarvestingDuration) / 100 * AdvShipLevel) + 1)
 
                 ' Role bonus
                 TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusGasHarvesterDuration) / 100 + 1)
