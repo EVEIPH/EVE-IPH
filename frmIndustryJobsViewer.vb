@@ -573,7 +573,11 @@ ExitSub:
         myJobList = DirectCast(sentJobList, ListView)
 
         If myJobList.InvokeRequired Then
-            myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
+            Try
+                myJobList.Invoke(New ListDelegate(AddressOf UpdateTimes), myJobList)
+            Catch
+
+            End Try
             Exit Sub
         End If
 

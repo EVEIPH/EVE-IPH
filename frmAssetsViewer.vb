@@ -467,18 +467,8 @@ Public Class frmAssetsViewer
             ' Create a character, then update the assets, then run asset tree node on that set of assets
             pnlStatus.Text = "Refreshing Assets for " & entry.Name
             TokenData.CharacterID = entry.ID
-            Application.DoEvents()
 
-
-            'If BPScanType = ScanType.Personal Then
-            '    SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
-            'Else
-            '    SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-            '                                                            SelectedCharacter.CharacterTokenData, True)
-            'End If
-
-
-            ' Update Assets only if only
+            ' Update Assets only if different character than selected
             If entry.ID <> SelectedCharacter.ID Then
                 TempCharacter = New Character
                 TempCharacter.LoadCharacterData(TokenData, False, True, False)
@@ -501,7 +491,6 @@ Public Class frmAssetsViewer
                 ' Need to add it to the tree but as a clone
                 AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
             End If
-
         Next
 
         Dim LoadedCorpIDs As New List(Of Long) ' only load the corp once
@@ -959,11 +948,20 @@ Public Class frmAssetsViewer
         For Each SubNode In SentNode.Nodes
             If Not IsNothing(SubNode.Tag) Then
                 Dim TempPair As New LocationInfo
-                TempPair = CType(SubNode.Tag, LocationInfo)
+                'TempPair = CType(SubNode.Tag, LocationInfo)
 
-                If SubNode.Checked And CLng(TempPair.LocationID) <> -1 Then
+                If SubNode.Checked Then
                     ' SubNode tag is a location pair
-                    Call LocationIDList.Add(CType(SubNode.Tag, LocationInfo))
+                    If CLng(SubNode.Tag) = -1 Then
+                        TempPair.LocationID = CLng(SubNode.Name) ' This is a base node, or station so it's added to the account parent node
+                        TempPair.AccountID = CLng(SentNode.Name)
+                        TempPair.FlagID = -1
+                    Else
+                        TempPair.LocationID = CLng(SubNode.Tag)
+                        TempPair.AccountID = CLng(SubNode.Name)
+                        TempPair.FlagID = -1
+                    End If
+                    Call LocationIDList.Add(TempPair)
                 End If
 
                 If SubNode.Nodes.Count > 0 Then
@@ -1035,8 +1033,12 @@ Public Class frmAssetsViewer
 
     Private Sub btnResetItemFilter_Click(sender As System.Object, e As System.EventArgs) Handles btnResetItemFilter.Click
         txtItemFilter.Text = ""
+        UpdatingChecks = True
         chkManufacturedItems.Checked = True
         chkMaterialResearchEqPrices.Checked = True
+        Call CheckAllManufacturedItems()
+        Call CheckAllRawItems()
+        UpdatingChecks = False
         For i = 1 To TechCheckBoxes.Length - 1
             TechCheckBoxes(i).Checked = True
         Next i

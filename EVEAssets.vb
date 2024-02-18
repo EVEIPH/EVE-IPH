@@ -476,8 +476,9 @@ Public Class EVEAssets
 
         ' Add the base node to the return variable
         ReturnNode = Tree.Nodes.Add(NodeName)
-        TempLocationInfo = SetLocationInfo(AccountID, -1, 0)
-        ReturnNode.Tag = TempLocationInfo ' Base node
+        'TempLocationInfo = SetLocationInfo(AccountID, -1, 0)
+        ReturnNode.Name = CStr(AccountID)
+        ReturnNode.Tag = -1 ' Base node
 
         Tree.CheckBoxes = True
 
