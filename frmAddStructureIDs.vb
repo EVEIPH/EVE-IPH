@@ -136,6 +136,10 @@
 
         If Not UpdatingStructureIDText And textID.Text <> InvalidName Then
             Try
+                If IsNumeric(Trim(textID.Text)) And Trim(textID.Text).Length < 13 Then
+                    ' They are typing in something and less than the length of a structure ID, then leave it
+                    Exit Sub
+                End If
                 If textID.Text.Contains("//") Then
                     ' Find the ID after it - [0054:36] Zifrian > <url=showinfo:35835//1027907881953>Tamo</url>
                     Dim IDStart As Integer = textID.Text.IndexOf("//") + 2
