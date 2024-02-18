@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{51FD6CD9-84DB-4892-800F-4E45B7E79D57}|EVE Isk per Hour.vbproj|c:\\users\\brian\\onedrive\\eve stuff\\eve iph projects\\eve-iph\\globals.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
+      "RelativeMoniker": "D:0:0:{51FD6CD9-84DB-4892-800F-4E45B7E79D57}|EVE Isk per Hour.vbproj|solutionrelative:globals.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{51FD6CD9-84DB-4892-800F-4E45B7E79D57}|EVE Isk per Hour.vbproj|C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmmain.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}",
       "RelativeMoniker": "D:0:0:{51FD6CD9-84DB-4892-800F-4E45B7E79D57}|EVE Isk per Hour.vbproj|solutionrelative:frmmain.vb||{2C015C70-C72C-11D0-88C3-00A0C9110049}"
     },
@@ -30,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -42,7 +46,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
+              "Title": "Globals.vb",
+              "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\Globals.vb",
+              "RelativeDocumentMoniker": "Globals.vb",
+              "ToolTip": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\Globals.vb",
+              "RelativeToolTip": "Globals.vb",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAA0AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
+              "WhenOpened": "2024-02-18T23:57:11.47Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "EVEAssets.vb",
               "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\EVEAssets.vb",
               "RelativeDocumentMoniker": "EVEAssets.vb",
@@ -50,11 +67,12 @@
               "RelativeToolTip": "EVEAssets.vb",
               "ViewState": "AQIAAMYBAAAAAAAAAAD4v9wBAAAyAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
-              "WhenOpened": "2024-02-18T18:40:24.794Z"
+              "WhenOpened": "2024-02-18T18:40:24.794Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "frmAssetsViewer.vb",
               "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmAssetsViewer.vb",
               "RelativeDocumentMoniker": "frmAssetsViewer.vb",
@@ -67,7 +85,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "frmAssetsViewer.vb [Design]",
               "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmAssetsViewer.vb",
               "RelativeDocumentMoniker": "frmAssetsViewer.vb",
@@ -78,7 +96,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "frmMain.vb [Design]",
               "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmMain.vb",
               "RelativeDocumentMoniker": "frmMain.vb",
@@ -90,13 +108,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "frmMain.vb",
               "DocumentMoniker": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmMain.vb",
               "RelativeDocumentMoniker": "frmMain.vb",
               "ToolTip": "C:\\Users\\brian\\OneDrive\\EVE Stuff\\EVE IPH Projects\\EVE-IPH\\frmMain.vb",
               "RelativeToolTip": "frmMain.vb",
-              "ViewState": "AQIAAKdUAAAAAAAAAAAAAMtUAAAtAAAA",
+              "ViewState": "AQIAAO8AAAAAAAAAAIAwwAYBAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003361|",
               "WhenOpened": "2024-02-18T00:04:58.813Z",
               "EditorCaption": ""
