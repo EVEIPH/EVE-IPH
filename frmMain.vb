@@ -1991,6 +1991,12 @@ Public Class frmMain
             SQL = "DELETE FROM ITEM_PRICES_CACHE"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
+            SQL = "DELETE FROM MARKET_ORDERS"
+            EVEDB.ExecuteNonQuerySQL(SQL)
+
+            SQL = "DELETE FROM MARKET_ORDERS_UPDATE_CACHE"
+            EVEDB.ExecuteNonQuerySQL(SQL)
+
             SQL = "DELETE FROM MARKET_HISTORY"
             EVEDB.ExecuteNonQuerySQL(SQL)
 
