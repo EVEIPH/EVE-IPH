@@ -486,7 +486,7 @@ Public Class frmAssetsViewer
 
             ' Get the base node of the full tree (may want to save these options globally so we don't need to load them every time)
             If rbtnPersonalAssets.Checked Or rbtnAllAssets.Checked Then
-                BaseNode = TempCharacter.GetAssets.GetAssetTreeReturnNode(SortOption, SearchItemList, entry.Name & " - Personal Assets", entry.ID, SavedLocationIDs, OnlyBPCs)
+                BaseNode = TempCharacter.GetAssets.GetAssetTreeReturnNode(SortOption, SearchItemList, entry.Name & " - Personal Assets", entry.ID, SavedLocationIDs, OnlyBPCs, TempCharacter.CharacterTokenData)
 
                 ' Need to add it to the tree but as a clone
                 AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))

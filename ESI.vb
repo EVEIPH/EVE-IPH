@@ -7,6 +7,8 @@ Imports System.Collections.Specialized
 Imports System.Threading
 Imports System.Security.Cryptography
 Imports Newtonsoft.Json
+Imports System.Security.Policy
+Imports Newtonsoft.Json.Linq
 
 Public Module ESIGlobals
     Public ESICharacterSkillsScope As String = "esi-skills.read_skills" ' only required scope to use IPH
@@ -1046,9 +1048,17 @@ Public Class ESI
 
         Dim WC As New WebClient
         Dim Address As String = ""
+        Dim PostParameters As New NameValueCollection
         Dim IDList As String = ""
 
         Try
+
+            ' See if we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
+
             ' Update the token data first
             TokenData = FormatSavedtokenData(UpdateTokenData(FormatESITokenData(TokenData), TokenData.TokenExpiration, ID))
 
@@ -1073,17 +1083,28 @@ Public Class ESI
             WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {TokenData.AccessToken}"
             Dim counter As Integer = 0
 
+            For Each item In ItemIDs
+                IDList &= CStr(item) & ","
+                counter += 1
+
+                ' Run every 1000
+                If counter = 1000 Then
+                    ' Post data and get response, and parse the data to the class
+                    TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+                    Call Output.AddRange(TempOutput)
+                    IDList = ""
+                    counter = 0
+                End If
+            Next
+
+            ' Add the remainder of items
+            TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+            Call Output.AddRange(TempOutput)
+
+            Success = True
+
         Catch ex As WebException
             Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
-
-            ' Retry call
-            If ESIErrorHandler.ErrorCode >= 500 And Not ESIErrorHandler.RetriedCall Then
-                ESIErrorHandler.RetriedCall = True
-                ' Try this call again after waiting a second
-                Thread.Sleep(1000)
-                Return GetAssetNames(ItemIDs, ID, TokenData, JobType, AssetNamesCacheDate)
-            End If
-
         Catch ex As Exception
             Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
         End Try

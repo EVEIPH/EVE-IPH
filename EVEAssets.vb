@@ -446,7 +446,7 @@ Public Class EVEAssets
 
     ' Gets the Tree base node for all assets - the list of checked nodes passed *** NEW
     Public Function GetAssetTreeReturnNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
-                                           SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
+                                           SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean, Optional ByVal TokenData As SavedTokenData = Nothing) As TreeNode
         Dim Tree As New TreeView
         Dim ReturnNode As TreeNode
         ' For building asset list tree views
@@ -462,6 +462,10 @@ Public Class EVEAssets
         Dim UnknownStructureAdded As Boolean
         Dim Asset As EVEAsset
         Dim BaseAssets As New List(Of EVEAsset)
+
+        Dim ESIData As New ESI
+        Dim AssetItemNames As New List(Of ESICharacterAssetName)
+        Dim NumLookup As List(Of Double)
 
         Tree.SuspendLayout()
         Tree.Update()
@@ -517,7 +521,15 @@ Public Class EVEAssets
 
                 ' For ship with just fittings or any flags that we don't have a base node location id for - add unknown structure, and set a common flag 
                 ' to set the treenode pair lookup - then use below for adding any flags and item
-                If Asset.LocationName = "Unknown Structure" Then
+                If Asset.LocationName = "Unknown Structure" And Not IsNothing(TokenData) Then
+                    ' Lookup the name of the structure at a minimum
+                    AssetItemNames = New List(Of ESICharacterAssetName)
+                    NumLookup = New List(Of Double)
+                    NumLookup.Add(Asset.LocationID)
+                    AssetItemNames = ESIData.GetAssetNames(NumLookup, AccountID, TokenData, AssetType, CacheDate)
+                    If Not IsNothing(AssetItemNames) Then
+                        Asset.LocationName = AssetItemNames(0).name
+                    End If
                     UnknownStructureAdded = True
                     TempNode.Name = CStr(Asset.LocationID) ' Make a dummy node with this as main ID to look up later
                 End If
