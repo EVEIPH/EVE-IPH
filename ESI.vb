@@ -1104,7 +1104,7 @@ Public Class ESI
             Success = True
 
         Catch ex As WebException
-            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, True, "")
         Catch ex As Exception
             Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
         End Try
@@ -3025,6 +3025,7 @@ Public Class ESIAsset
     <JsonProperty("item_id")> Public item_id As Double
     <JsonProperty("location_type")> Public location_type As String
     <JsonProperty("quantity")> Public quantity As Integer
+    <JsonProperty("is_blueprint_copy")> Public blueprintcopy As Boolean
 End Class
 
 Public Class ESICorporation

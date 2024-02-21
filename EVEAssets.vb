@@ -154,6 +154,7 @@ Public Class EVEAssets
                             ByVal AssetType As ScanType, ByVal UpdateAssets As Boolean)
         Dim Assets As New List(Of ESIAsset)
         Dim AssetIDs As New List(Of Double) ' For getting names
+        Dim UnknownAssetIDs As New List(Of Double) ' For single lookups of names without connecting locations
         Dim SQL As String = ""
 
         Dim ESIData As New ESI
@@ -206,8 +207,8 @@ Public Class EVEAssets
 
                         ' Insert it
                         If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
-                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
-                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ","
+                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, LocationType, TypeID, Quantity, Flag, IsSingleton) VALUES "
+                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ",'" & CStr(Assets(i).location_type) & "',"
                             SQL &= CStr(Assets(i).type_id) & "," & CStr(Assets(i).quantity) & "," & CStr(FlagID) & ","
                             SQL &= CInt(Assets(i).is_singleton) & ")"
 
@@ -224,14 +225,21 @@ Public Class EVEAssets
                     SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE Flag END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    ' For personal assets, look up any Base Asset for the location ID where it's an ItemID and search if it's in space or not
+                    ' For personal assets, look up any Base Asset for the location ID where it's an ItemID and search if it's in space or not, then add a base node record for it
                     If AssetType = ScanType.Personal Then
-
-
-
+                        SQL = "SELECT DISTINCT LOCATIONID FROM ASSETS WHERE ID = {0} AND LOCATIONID NOT IN (SELECT ITEMID FROM ASSETS) AND LOCATIONID NOT IN (SELECT STATION_ID FROM STATIONS) "
+                        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ID)), EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        While rsLookup.Read
+                            ' Insert the dummy record so it can be grouped properly with type solarsystem, which assumes it's in space. This will include undocked ships
+                            Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ASSETS VALUES (" & CStr(ID) & "," & rsLookup.GetDouble(0) & ",0,'solarsystem',0,1,-505,-1,NULL)")
+                            ' Save the ID for looking up the names later
+                            Call UnknownAssetIDs.Add(rsLookup.GetDouble(0))
+                        End While
+                        rsLookup.Close()
                     End If
 
-                    ' Special processing for corporation data
+                    ' Special processing for corporation data to get division names
                     If AssetType = ScanType.Corporation Then
 
                         ' Get the corp division names first
@@ -266,7 +274,7 @@ Public Class EVEAssets
                         rsLookup.Close()
                     End If
 
-                    ' Finally, get all the names and update the Assets table - use the same cache date for assets
+                    ' Get all the names and update the Assets table - use the same cache date for assets
                     Dim AssetItemNames As New List(Of ESICharacterAssetName)
                     AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
 
@@ -278,6 +286,21 @@ Public Class EVEAssets
                             End If
                         Next
                     End If
+
+                    ' Finally, load up all the names for items that might be in space or without a valid lookup individually
+                    Dim TempList As New List(Of Double)
+                    AssetItemNames = New List(Of ESICharacterAssetName)
+
+                    For Each itemID In UnknownAssetIDs
+                        TempList = New List(Of Double)
+                        TempList.Add(itemID)
+                        AssetItemNames = ESIData.GetAssetNames(TempList, ID, CharacterTokenData, AssetType, CacheDate)
+                        If Not IsNothing(AssetItemNames) Then
+                            If AssetItemNames(0).name <> None Then
+                                Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(AssetItemNames(0).name) & "' WHERE ItemID=" & CStr(AssetItemNames(0).item_id))
+                            End If
+                        End If
+                    Next
 
                     'Update cache date since it's all set now
                     Call CB.UpdateCacheDate(CDType, CacheDate, ID)

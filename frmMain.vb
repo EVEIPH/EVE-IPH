@@ -795,6 +795,7 @@ Public Class frmMain
         Try
             Dim FilePath As String = Path.Combine(DynamicFilePath, "FirstProgramLoad")
 
+            ' If this file is here, then load up the prices and delete the file
             If File.Exists(FilePath) Then
                 File.Delete(FilePath)
                 Return True
