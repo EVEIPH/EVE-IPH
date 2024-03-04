@@ -4291,6 +4291,7 @@ ExitBlock:
                     TempSQL &= "INCLUDE_ACTIVITY_TIME = {6}, "
                     TempSQL &= "INCLUDE_ACTIVITY_USAGE = {7}, "
                     TempSQL &= "CONVERT_TO_ORE = {8},"
+                    TempSQL &= "FACILITY_TYPE_ID = {11},"
 
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
@@ -4332,7 +4333,8 @@ ExitBlock:
                     TempSQL &= "AND FACILITY_VIEW = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType), CharacterID)
+                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType),
+                    CharacterID, CStr(FacilityType))
 
                 Else
                     Dim MEValue As String = "NULL"
@@ -4364,8 +4366,8 @@ ExitBlock:
                     End If
 
                     ' Insert
-                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},NULL,{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
-                                        CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
+                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16});",
+                                        CharacterID, CInt(FacilityProductionType), LID, FacilityID, CStr(FacilityType), CStr(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                                         CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxValue, MEValue, TEValue, CostValue, ConvertToOre)
 
                 End If

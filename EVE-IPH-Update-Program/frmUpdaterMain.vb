@@ -379,6 +379,7 @@ Public Class FrmUpdaterMain
                 If File.Exists(Path.Combine(AppDataRoamingFolder, UpdateFileListRecord.Name)) Then
                     Me.Invoke(UpdateStatusDelegate, False, "Updating Database...")
 
+                    On Error Resume Next
                     ' Delete these files before opening
                     File.Delete(Path.Combine(AppDataRoamingFolder, UpdateFileListRecord.Name) & "-shm")
                     File.Delete(Path.Combine(AppDataRoamingFolder, UpdateFileListRecord.Name) & "-wal")
@@ -394,6 +395,7 @@ Public Class FrmUpdaterMain
                     ' Open both DBs here and update through ref
                     Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL", DBOLD)
                     Call ExecuteNonQuerySQL("PRAGMA synchronous = NORMAL; PRAGMA auto_vacuum = FULL;", DBNEW)
+                    On Error GoTo 0
 
                     Call UpdateAllBlueprintsTable()
 
@@ -2072,9 +2074,8 @@ RevertToOldFileVersions:
         ' PRICE_PROFILES
         On Error Resume Next
         ProgramErrorLocation = "Cannot copy Price Profiles"
-        ' Only get the non-default entries and don't duplicate
-        SQL = "SELECT * FROM PRICE_PROFILES WHERE ID <> 0 "
-        SQL = "GROUP BY ID, GROUP_NAME, PRICE_TYPE, REGION_NAME, SOLAR_SYSTEM_NAME, PRICE_MODIFIER, RAW_MATERIAL"
+        ' Get all settings so it gets all
+        SQL = "SELECT * FROM PRICE_PROFILES GROUP BY ID, GROUP_NAME, PRICE_TYPE, REGION_NAME, SOLAR_SYSTEM_NAME, PRICE_MODIFIER, RAW_MATERIAL"
 
         DBCommand = New SQLiteCommand(SQL, DBOLD)
         readerUpdate = DBCommand.ExecuteReader
@@ -2084,6 +2085,9 @@ RevertToOldFileVersions:
         If Not IsNothing(readerUpdate) Then
 
             Call BeginSQLiteTransaction(DBNEW)
+
+            ' Since they have the table, load what they have and delete what is there in the new db
+            Call ExecuteNonQuerySQL("DELETE FROM PRICE_PROFILES", DBNEW)
 
             While readerUpdate.Read
                 SQL = "INSERT INTO PRICE_PROFILES VALUES ("

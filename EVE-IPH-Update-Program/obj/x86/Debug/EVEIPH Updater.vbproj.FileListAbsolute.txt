@@ -17,7 +17,6 @@ C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\Root Directory\EVEIPH
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\Root Directory\EVEIPH Updater.exe
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\Root Directory\EVEIPH Updater.pdb
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\Root Directory\EVEIPH Updater.xml
-C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH Updater.vbproj.AssemblyReference.cache
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH_Updater.frmErrorDB.resources
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH_Updater.FrmNotify.resources
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH_Updater.FrmUpdaterMain.resources
@@ -28,3 +27,7 @@ C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Progra
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH Updater.exe
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH Updater.xml
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVE-IPH-Update-Program\obj\x86\Debug\EVEIPH Updater.pdb
+C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\Root Directory\EVEIPH Updater.exe.config
+C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\Root Directory\EVEIPH Updater.exe
+C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\Root Directory\EVEIPH Updater.pdb
+C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\Root Directory\EVEIPH Updater.xml
