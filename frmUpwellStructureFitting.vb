@@ -1853,10 +1853,8 @@ Public Class frmUpwellStructureFitting
             If Not IsNothing(RigSlot1.Image) Or Not IsNothing(RigSlot2.Image) Or Not IsNothing(RigSlot3.Image) Then
                 ' Don't change tax value
                 SQL = "UPDATE SAVED_FACILITIES SET MATERIAL_MULTIPLIER = NULL, TIME_MULTIPLIER = NULL, COST_MULTIPLIER = NULL "
-                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} AND FACILITY_TYPE_ID = {4}"
-                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation), CStr(FacilityTypes.UpwellStructure)))
-                ' Reset the manual flags in the facility
-                ResetManualEntries = True
+                SQL &= "WHERE CHARACTER_ID = {0} AND PRODUCTION_TYPE = {1} AND SOLAR_SYSTEM_ID = {2} AND FACILITY_VIEW = {3} "
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, CharID, CStr(SelectedFacilityProductionType), SelectedSolarSystemID, CStr(SelectedStructureLocation)))
             End If
 
             EVEDB.CommitSQLiteTransaction()

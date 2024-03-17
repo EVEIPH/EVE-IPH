@@ -7513,14 +7513,11 @@ ExitForm:
             Exit Sub
         End If
 
-        EVEDB.BeginSQLiteTransaction()
+        Dim SQL As String = ""
 
-        ' Delete anything loaded for this character first, since all the defaults will be updated
-        EVEDB.ExecuteNonQuerySQL("DELETE FROM PRICE_PROFILES WHERE ID = " & CStr(SelectedCharacter.ID))
-
-        Dim SQL As String = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(cmbPPDefaultsPriceType.Text) & "', REGION_NAME = '" & FormatDBString(cmbPPDefaultsRegion.Text) & "', "
+        SQL = "UPDATE PRICE_PROFILES SET PRICE_TYPE = '" & Trim(cmbPPDefaultsPriceType.Text) & "', REGION_NAME = '" & FormatDBString(cmbPPDefaultsRegion.Text) & "', "
         SQL &= "SOLAR_SYSTEM_NAME = '" & FormatDBString(cmbPPDefaultsSystem.Text) & "', PRICE_MODIFIER = " & CStr(CDbl(txtPPDefaultsPriceMod.Text.Replace("%", "")) / 100) & " "
-        SQL &= "WHERE ID = 0 AND RAW_MATERIAL = "
+        SQL &= "WHERE ID IN (" & SelectedCharacter.ID & ",0) AND RAW_MATERIAL = "
 
         If tabPriceProfile.SelectedTab.TabIndex = 0 Then
             SQL &= "1"
@@ -7529,8 +7526,6 @@ ExitForm:
         End If
 
         EVEDB.ExecuteNonQuerySQL(SQL)
-
-        EVEDB.CommitSQLiteTransaction()
 
         ' Refresh the grids
         Call LoadPriceProfileGrids()
