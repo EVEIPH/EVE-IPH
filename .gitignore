@@ -7,3 +7,12 @@ EVE Isk per Hour.vbproj
 *.vsidx
 *.json
 *.json
+EVE-IPH-Update-Program/obj/x86/Debug/EVEIPH Updater.exe
+EVE-IPH-Update-Program/obj/x86/Debug/EVEIPH Updater.pdb
+EVE-IPH-Update-Program/obj/x86/Debug/EVEIPH Updater.vbproj.AssemblyReference.cache
+EVE-IPH-Update-Program/obj/x86/Debug/EVEIPH Updater.vbproj.FileListAbsolute.txt
+EVEIPH SQLite DLL Updater/obj/Debug/EVEIPH SQLite DLL Updater.exe
+EVEIPH SQLite DLL Updater/obj/Debug/EVEIPH SQLite DLL Updater.pdb
+EVEIPH SQLite DLL Updater/obj/Debug/EVEIPH SQLite DLL Updater.vbproj.AssemblyReference.cache
+Root Directory/EVEIPH SQLite DLL Updater.exe
+Root Directory/EVEIPH SQLite DLL Updater.pdb
