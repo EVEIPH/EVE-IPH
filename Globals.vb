@@ -8,8 +8,8 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "December 14, 2023 Release"
-    Public Const VersionNumber As String = "6.0.*"
+    Public Const SDEVersion As String = "February 27, 2024 Release"
+    Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -92,11 +92,12 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE " _
                                             & "ELSE CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NOT NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS FAVORITE, " _
-                                            & "IT.volume, IT.marketGroupID, " _
-                                            & "CASE WHEN OBP.ADDITIONAL_COSTS Is Not NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
-                                            & "CASE WHEN OBP.LOCATION_ID Is Not NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
-                                            & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
-                                            & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
+                                            & "IT.VOLUME, IT.MARKETGROUPID, " _
+                                            & "CASE WHEN OBP.ADDITIONAL_COSTS IS NOT NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
+                                            & "CASE WHEN OBP.LOCATION_ID IS NOT NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
+                                            & "CASE WHEN OBP.QUANTITY IS NOT NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
+                                            & "CASE WHEN OBP.FLAG_ID IS NOT NULL THEN OBP.FLAG_ID ELSE 0 END AS FLAG_ID, " _
+                                            & "CASE WHEN OBP.RUNS IS NOT NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
                                             & "IGNORE, ALL_BLUEPRINTS.TECH_LEVEL, SIZE_GROUP, " _
                                             & "CASE WHEN IT2.MARKETGROUPID IS NULL THEN 0 ELSE 1 END AS NPC_BPO " _
                                             & "FROM ALL_BLUEPRINTS LEFT OUTER JOIN " _
@@ -121,7 +122,6 @@ Public Module Public_Variables
     Public frmRefineryAssets As frmAssetsViewer
     Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
     Public frmRepoPlant As frmReprocessingPlant
-    Public frmInventMats As frmInventionMats
 
     ' The only allowed characters for text entry
     Public Const allowedPriceChars As String = "0123456789.,"
@@ -244,10 +244,7 @@ Public Module Public_Variables
     Public MarketHistoryCallsPerMinute As Integer = 0
     Public LastMarketHistoryUpdate As Date = NoDate
 
-    Public BuyListDataChange As Boolean = True
-
-    ' This limits all regions queries to regions players use
-    Public Const RegionFilterString As String = "regionName NOT LIKE 'VR%' AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%'"
+    Public PriceUpdateDown As Boolean = False
 
     ' For scanning assets
     Public Enum ScanType
@@ -262,14 +259,6 @@ Public Module Public_Variables
         Original = -1
         Copy = -2
         InventedBPC = -3
-    End Enum
-
-    ' Types of Asset windows
-    Public Enum AssetWindow
-        DefaultView = 0
-        ManufacturingTab = 1
-        ShoppingList = 2
-        ReprocessingPlant = 3
     End Enum
 
     ' For scanning assets
@@ -457,7 +446,6 @@ Public Module Public_Variables
         ConstructionComponentsGroupID = 334 ' Use this for all non-capital components
         ComponentCategoryID = 17
         CapitalComponentGroupID = 873
-        CapitalComponentCategoryID = 17
         AdvCapitalComponentGroupID = 913
         ProtectiveComponentGroupID = -3 ' My manual group ID until they fix it in the SDE
 
@@ -853,28 +841,6 @@ InvalidDate:
 
 #End Region
 
-    ' Sets tri-check value for sent check and value
-    Public Sub SetTriCheck(ByRef SentCheckbox As CheckBox, ByVal Value As Integer)
-        Select Case Value
-            Case 0
-                SentCheckbox.CheckState = CheckState.Unchecked
-            Case 1
-                SentCheckbox.CheckState = CheckState.Checked
-            Case 2
-                SentCheckbox.CheckState = CheckState.Indeterminate
-        End Select
-    End Sub
-
-    Public Function GetTriCheckValue(ByVal SentCheckBox As CheckBox) As Integer
-        If SentCheckBox.CheckState = CheckState.Indeterminate Then
-            Return 2
-        ElseIf SentCheckBox.Checked Then
-            Return 1
-        Else
-            Return 0
-        End If
-    End Function
-
     ' Checks entry of percentage chars in keypress
     Public Function CheckPercentCharEntry(ke As KeyPressEventArgs, box As TextBox) As Boolean
         Dim Istr As String = box.Text
@@ -1216,44 +1182,6 @@ SkipItem:
 
     End Function
 
-    ' Gets the ID's for personal and corp assets for querying in asset windows
-    Public Function GetAssetIDString(AssetSettings As AssetWindowSettings) As String
-        Dim IDs() As String
-        Dim IDString As String = ""
-        Dim CorpID As Long = 0
-        Dim readerIDs As SQLiteDataReader
-
-        ' Read the character IDs selected and get locations for each
-        IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
-
-        ' Get the characterIDs
-        For Each ID In IDs
-            ' Get the Corporation ID
-            DBCommand = New SQLiteCommand("SELECT CORPORATION_ID FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & ID, EVEDB.DBREf)
-            readerIDs = DBCommand.ExecuteReader
-            If readerIDs.Read() Then
-                CorpID = readerIDs.GetInt64(0)
-            End If
-
-            If IDString <> "" Then
-                IDString &= ","
-            End If
-
-            ' Add the ID's to the list depending on options
-            If AssetSettings.AssetType = "Both" Then
-                IDString &= CStr(ID) & "," & CStr(CorpID)
-            ElseIf AssetSettings.AssetType = "Personal" Then
-                IDString &= CStr(ID)
-            ElseIf AssetSettings.AssetType = "Corporation" Then
-                IDString &= CStr(CorpID)
-            End If
-            readerIDs.Close()
-        Next
-
-        Return IDString
-
-    End Function
-
     ' Strips off the Runs if it is on the name
     Public Function RemoveItemNameRuns(ByVal ItemName As String) As String
         If ItemName.Contains("(Runs:") Then
@@ -1428,7 +1356,7 @@ SkipItem:
     End Sub
 
     ' Enables Cut, Copy, Paste, and Select all from shortcut key entry for the sent text box
-    Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As KeyEventArgs) As Boolean
+    Public Function ProcessCutCopyPasteSelect(SentBox As TextBox, e As System.Windows.Forms.KeyEventArgs) As Boolean
 
         If e.KeyCode = Keys.A AndAlso e.Control = True Then ' Select All
             SentBox.SelectAll()
@@ -1514,12 +1442,6 @@ SkipItem:
         ' Reload the prices on the reprocessing plant if open
         If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
             frmRepoPlant.RefreshMaterialList()
-            frmRepoPlant.Reprocess()
-        End If
-
-        ' Reload the prices on the reprocessing plant if open
-        If Application.OpenForms().OfType(Of frmInventionMats).Any Then
-            frmInventMats.RefreshInventionMatsGrid()
         End If
 
         ' Refill the search grid on manual updates
@@ -1855,43 +1777,43 @@ SkipItem:
                 Return ""
             End If
 
-            ' Format TechSQL 
+            ' Format TechSQL - Add on Meta codes - 21,22,23,24 are T3
             If TechSQL <> "" Then
-                TechSQL = " AND (" & TechSQL.Substring(0, TechSQL.Length - 3) & ")" '& "OR ITEM_TYPE IN (21,22,23,24)) "- Add on Meta codes - 21,22,23,24 are T3 
+                TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) "
             End If
 
             ' Build Tech 1,2,3 Manufactured Items
             If Charges.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Charge' " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
                 If ChargeTypes.Text <> "All Charge Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ChargeTypes.Text & "'"
                 End If
                 SQL &= ") OR "
             End If
             If Drones.Checked Then
-                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
             End If
             If Modules.Checked Then ' Not rigs but Modules
-                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
             End If
             If Ships.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Ship' " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
                 If ShipTypes.Text <> "All Ship Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ShipTypes.Text & "'"
                 End If
                 SQL &= ") OR "
             End If
             If Subsystems.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Subsystem' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
             End If
             If StructureRigs.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' AND " & TechSQL & ") OR "
             End If
             If Rigs.Checked Then ' Rigs
-                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
+                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
             End If
             If Structures.Checked Then
-                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
+                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
             End If
         End If
 
@@ -2027,8 +1949,8 @@ SkipItem:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT regionName FROM REGIONS WHERE (regionName Not Like '%-R%' OR regionName = 'G-R00031') AND " & RegionFilterString & " GROUP BY regionName "
-
+        SQL = "SELECT regionName FROM REGIONS WHERE (regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' ) AND regionName NOT LIKE 'VR-%' "
+        SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' GROUP BY regionName "
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
         RegionCombo.BeginUpdate()
@@ -2036,9 +1958,10 @@ SkipItem:
         While rsData.Read
             RegionCombo.Items.Add(rsData.GetString(0))
         End While
-        rsData.Close()
         RegionCombo.EndUpdate()
         RegionCombo.Text = DefaultRegionName
+
+        rsData.Close()
 
     End Sub
 
@@ -2076,7 +1999,6 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
-        Application.DoEvents()
     End Sub
 
     ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
@@ -2086,7 +2008,6 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
-        Application.DoEvents()
     End Sub
 
     ' Check for Fulcrum bonus - if it's an angel or gurista's subcap and they are using Fulcrum station, return true
@@ -2696,9 +2617,9 @@ SkipItem:
 
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
-                SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, "
+                SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, FLAG_ID, "
                 SQL &= "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
-                SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,"
+                SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,0,"
                 SQL &= CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
@@ -3049,7 +2970,6 @@ SkipItem:
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse = Nothing
         Dim reader As StreamReader
-        Dim PriceUpdateDown As Boolean
 
         Dim Output As String = ""
 
