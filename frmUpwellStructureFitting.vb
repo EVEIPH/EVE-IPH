@@ -8,8 +8,8 @@ Public Class frmUpwellStructureFitting
     Const WM_NCLBUTTONDOWN As Integer = &HA1
     Const HTCAPTION As Integer = 2
 
-    Private SlotPictureBoxList As New List(Of PictureBox)
-    Private FirstLoad As Boolean
+    Private ReadOnly SlotPictureBoxList As New List(Of PictureBox)
+    Private ReadOnly FirstLoad As Boolean
     Private FirstModuleLoad As Boolean
     Private UpdateChecks As Boolean
 
@@ -17,28 +17,28 @@ Public Class frmUpwellStructureFitting
     Public UpwellStructureName As String = ""
     Public SavedFacility As Boolean
     Public ResetManualEntries As Boolean
-    Private SelectedStructureLocation As ProgramLocation ' To help determine where we save citadels, etc. 
-    Private SelectedCharacterID As Long
-    Private SelectedFacilityProductionType As ProductionType
-    Private SelectedSolarSystemID As Long
-    Private SelectedFacilityID As Long
+    Private ReadOnly SelectedStructureLocation As ProgramLocation ' To help determine where we save citadels, etc. 
+    Private ReadOnly SelectedCharacterID As Long
+    Private ReadOnly SelectedFacilityProductionType As ProductionType
+    Private ReadOnly SelectedSolarSystemID As Long
+    Private ReadOnly SelectedFacilityID As Long
     ' Save the selected Upwell Structure so we don't need to look it up
     Private SelectedUpwellStructure As UpwellStructureDBData
 
-    Private Attributes As New EVEAttributes
+    Private ReadOnly Attributes As New EVEAttributes
     ' Stores all the stats for the selected citadel
     Private UpwellStructureStats As New StructureAttributes
 
     Private Const UsesMissilesEffectID As Integer = 101
 
-    Private StructureDBDataList As New List(Of UpwellStructureDBData) ' For storing all the types of citadel structures
+    Private ReadOnly StructureDBDataList As New List(Of UpwellStructureDBData) ' For storing all the types of citadel structures
 
-    Private HighSlotBaseX As Integer
-    Private HighSlotBaseWidth As Integer
-    Private HighSlotSpacing As Integer
-    Private ServiceSlotBaseX As Integer
-    Private ServiceSlotBaseWidth As Integer
-    Private ServiceSlotSpacing As Integer
+    Private ReadOnly HighSlotBaseX As Integer
+    Private ReadOnly HighSlotBaseWidth As Integer
+    Private ReadOnly HighSlotSpacing As Integer
+    Private ReadOnly ServiceSlotBaseX As Integer
+    Private ReadOnly ServiceSlotBaseWidth As Integer
+    Private ReadOnly ServiceSlotSpacing As Integer
 
     Private NitrogenFuelBlockBPUpdated As Boolean
     Private HeliumFuelBlockBPUpdated As Boolean
@@ -55,7 +55,7 @@ Public Class frmUpwellStructureFitting
     Private OriginalHydrogenFuelBlockBPTE As Integer
     Private OriginalOxygenFuelBlockBPTE As Integer
 
-    Private SecurityCheckBoxes As List(Of CheckBox)
+    Private ReadOnly SecurityCheckBoxes As List(Of CheckBox)
 
     Private frmPopout As frmBonusPopout
 
@@ -313,7 +313,7 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Sub LoadStructureDBData()
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -491,7 +491,7 @@ Public Class frmUpwellStructureFitting
         Dim CurrentRigs As List(Of Integer) = GetCurrentRigList()
         Dim rsLoader As SQLiteDataReader
         Dim MaxModules As Integer = 0
-        Dim GroupID As Integer = 0
+        Dim GroupID As Integer
         If CurrentRigs.Count > 0 Then
             For Each Rig In CurrentRigs
                 ' Get the group ID of the installed RIG
@@ -810,7 +810,7 @@ Public Class frmUpwellStructureFitting
 
     ' Gets and returns the upwell structure data
     Private Function GetCitadelData(ByVal LookupName As String) As UpwellStructureDBData
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -838,7 +838,7 @@ Public Class frmUpwellStructureFitting
 
     ' Clear and Set the slots to match the upwell structure we are using
     Private Sub UpdateCitadelSlots()
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
         Dim AID As Integer
@@ -873,7 +873,7 @@ Public Class frmUpwellStructureFitting
 
     ' Updates the stats after a module is chosen
     Private Sub LoadUpwellStuctureStats(Optional IgnoreLabelUpdate As Boolean = False)
-        Dim Stats As New List(Of AttributeRecord)
+        Dim Stats As List(Of AttributeRecord)
         Dim AttributesLookup As New EVEAttributes
 
         ' Get all the stats for the upwell structure 
@@ -958,10 +958,10 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Sub UpdateUpwellStructureStats()
-        Dim InstalledSlots As New List(Of StructureModule)
-        Dim Attributes As New List(Of AttributeRecord)
+        Dim InstalledSlots As List(Of StructureModule)
+        Dim Attributes As List(Of AttributeRecord)
         Dim AttribLookup As New EVEAttributes
-        Dim FuelBlocks As Integer = 0
+        Dim FuelBlocks As Integer
 
         InstalledSlots = GetInstalledSlots()
 
@@ -988,9 +988,9 @@ Public Class frmUpwellStructureFitting
                     Case ItemAttributes.upgradeCost ' Calibration
                         UpwellStructureStats.Calibration -= Attribute.Value
                     Case ItemAttributes.cpuMultiplier
-                        UpwellStructureStats.MaxCPU = UpwellStructureStats.MaxCPU * Attribute.Value
+                        UpwellStructureStats.MaxCPU *= Attribute.Value
                     Case ItemAttributes.powerOutputMultiplier
-                        UpwellStructureStats.MaxPG = UpwellStructureStats.MaxPG * Attribute.Value
+                        UpwellStructureStats.MaxPG *= Attribute.Value
                     Case ItemAttributes.serviceModuleFuelAmount
                         ' Apply fuel bonus for this type of structure
                         FuelBlocks = CInt(Attribute.Value)
@@ -1014,7 +1014,7 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Function FuelBonusApplies(StructureModuleID As Integer) As Boolean
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
         Dim GroupID As Integer
@@ -1298,7 +1298,7 @@ Public Class frmUpwellStructureFitting
 
     ' Loads the images for fittings in the image lists
     Private Sub LoadFittingImages()
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -1354,13 +1354,12 @@ Public Class frmUpwellStructureFitting
 
         If ModuleTypeSelected() Then
 
-            Dim SQL As String = ""
-            Dim RigString As String = ""
+            Dim SQL As String
             Dim SlotString As String = ""
             Dim SQLList As New List(Of String)
             Dim rsReader As SQLiteDataReader
             Dim DBCommand As SQLiteCommand
-            Dim DVI As New ListViewItem
+            Dim DVI As ListViewItem
 
             ' query for all types of modules, rigs, and services to fit
             SQL = "SELECT INVENTORY_TYPES.typeID, INVENTORY_GROUPS.groupID, typeName, "
@@ -1521,7 +1520,7 @@ Public Class frmUpwellStructureFitting
 
     ' Reads the attributes to see if the itemID sent can be fit to the upwell structureID sent
     Private Function StructureCanFitItem(ByVal StructureTypeID As Integer, ByVal StructureGroupID As Integer, ByVal ItemTypeID As Integer) As Boolean
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsReader As SQLiteDataReader
         Dim DBCommand As SQLiteCommand
 
@@ -2064,7 +2063,7 @@ Public Class frmUpwellStructureFitting
     End Sub
 
     Private Sub btnSavePrices_Click(sender As Object, e As EventArgs) Handles btnSavePrices.Click
-        Dim SQL As String = ""
+        Dim SQL As String
 
         Try
 
@@ -2183,8 +2182,8 @@ Public Class frmUpwellStructureFitting
         Dim HasHydrogen As Boolean = False
         Dim HasNitrogen As Boolean = False
         Dim HasOxygen As Boolean = False
-        Dim FoundME As String = ""
-        Dim FoundTE As Integer = 0
+        Dim FoundME As String
+        Dim FoundTE As Integer
 
         SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, ME, TE FROM OWNED_BLUEPRINTS, ALL_BLUEPRINTS "
         SQL &= "WHERE ALL_BLUEPRINTS.BLUEPRINT_ID = OWNED_BLUEPRINTS.BLUEPRINT_ID "
@@ -2492,7 +2491,6 @@ Public Class frmUpwellStructureFitting
         txtHeliumIsotopes.Focus()
 
         reader.Close()
-        reader = Nothing
         DBCommand = Nothing
 
     End Sub
