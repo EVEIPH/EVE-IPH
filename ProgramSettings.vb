@@ -123,6 +123,7 @@ Public Class ProgramSettings
     Public DefaultDisableGATracking As Boolean = False
     Public DefaultShareSavedFacilities As Boolean = True
     Public DefaultSuggestBuildBPNotOwned As Boolean = True ' If the bp is not owned, default to suggesting they build the item anyway
+    Public DefaultManualPriceOverride As Boolean = False
     Public DefaultBuildWhenNotEnoughItemsonMarket As Boolean = True ' If not enough items on market, then build all items regardless of cost
 
     Public DefaultAlphaAccount As Boolean = False
@@ -409,6 +410,9 @@ Public Class ProgramSettings
     Public DefaultMiningWarfareLinkSpecSkill As Integer = 0
     Public DefaultMiningCheckMineForemanLaserOpBoost As Integer = 0
     Public DefaultMiningCheckMiningForemanMindLink As Boolean = False
+    Public DefaultMiningOverrideCheck As Boolean = False
+    Public DefaultMiningOverrideCycleTime As Double = 1
+    Public DefaultMiningOverrideLaserRange As Double = 1
     Public DefaultMiningRefineCorpTax As Double = 0.05
     Public DefaultMiningRorqDeployed As Integer = 0
     Public DefaultMiningDroneM3perHour As Double = 0.0
@@ -1267,6 +1271,7 @@ Public Class ProgramSettings
                     .ShopListIncludeCopyMats = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShopListIncludeCopyMats", DefaultShopListIncludeCopyMats))
                     .SuggestBuildBPNotOwned = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SuggestBuildBPNotOwned", DefaultSuggestBuildBPNotOwned))
                     .BuildWhenNotEnoughItemsonMarket = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultBuildWhenNotEnoughItemsonMarket))
+                    .ManualPriceOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ManualPriceOverride", DefaultManualPriceOverride))
                     .UpdatePricesRefreshInterval = CInt(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeInteger, AppSettingsFileName, "UpdatePricesRefreshInterval", DefaultUpdatePricesRefreshInterval))
                     .DisableSound = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "DisableSound", DefaultDisableSound))
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
@@ -1341,6 +1346,7 @@ Public Class ProgramSettings
             .DisableSVR = DefaultDisableSVR
             .DisableGATracking = DefaultDisableGATracking
             .ShareSavedFacilities = DefaultShareSavedFacilities
+            .ManualPriceOverride = DefaultManualPriceOverride
             .SuggestBuildBPNotOwned = DefaultSuggestBuildBPNotOwned
             .BuildWhenNotEnoughItemsonMarket = DefaultBuildWhenNotEnoughItemsonMarket
             .SaveBPRelicsDecryptors = DefaultSaveBPRelicsDecryptors
@@ -1375,7 +1381,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(41) As Setting
+        Dim ApplicationSettingsList(42) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1420,6 +1426,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(39) = New Setting("AlwaysBuyFuelBlocks", CStr(SentSettings.AlwaysBuyFuelBlocks))
             ApplicationSettingsList(40) = New Setting("AlwaysBuyRAMs", CStr(SentSettings.AlwaysBuyRAMs))
             ApplicationSettingsList(41) = New Setting("BuildWhenNotEnoughItemsonMarket", CStr(SentSettings.BuildWhenNotEnoughItemsonMarket))
+            ApplicationSettingsList(42) = New Setting("ManualPriceOverride", CStr(SentSettings.ManualPriceOverride))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -2624,6 +2631,9 @@ Public Class ProgramSettings
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
                     .CheckRorqDeployed = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
+                    .OverrideCheck = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "OverrideCheck", DefaultMiningOverrideCheck))
+                    .OverrideCycleTime = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "OverrideCycleTime", DefaultMiningOverrideCycleTime))
+                    .OverrideLaserRange = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "OverrideLaserRange", DefaultMiningOverrideLaserRange))
                     .RefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
                     .UnrefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
@@ -2768,6 +2778,10 @@ Public Class ProgramSettings
             .ColumnSort = DefaultMiningColumnSort
             .ColumnSortType = DefaultMiningColumnSortType
 
+            .OverrideCheck = DefaultMiningOverrideCheck
+            .OverrideCycleTime = DefaultMiningOverrideCycleTime
+            .OverrideLaserRange = DefaultMiningOverrideLaserRange
+
             .MiningDrone = DefaultMiningDrone
             .NumMiningDrones = DefaultNumMiningDrone
             .IceMiningDrone = DefaultIceMiningDrone
@@ -2814,7 +2828,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(99) As Setting
+        Dim MiningSettingsList(102) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2927,6 +2941,10 @@ Public Class ProgramSettings
 
             MiningSettingsList(98) = New Setting("CheckEDENCOM", CStr(SentSettings.CheckEDENCOM))
             MiningSettingsList(99) = New Setting("CheckA0Ores", CStr(SentSettings.CheckA0Ores))
+
+            MiningSettingsList(100) = New Setting("OverrideCheck", CStr(SentSettings.OverrideCheck))
+            MiningSettingsList(101) = New Setting("OverrideCycleTime", CStr(SentSettings.OverrideCycleTime))
+            MiningSettingsList(102) = New Setting("OverrideLaserRange", CStr(SentSettings.OverrideLaserRange))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 
@@ -5416,6 +5434,7 @@ Public Structure ApplicationSettings
     Dim SuggestBuildBPNotOwned As Boolean ' For Build/Buy suggestions
     Dim BuildWhenNotEnoughItemsonMarket As Boolean ' If not enough items on market, then build when checked
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
+    Dim ManualPriceOverride As Boolean ' to track manual price updates
     Dim AlwaysBuyFuelBlocks As Boolean ' Forces build/buy to always buy fuel blocks instead of making a decision
     Dim AlwaysBuyRAMs As Boolean ' Forces build/buy to always buy RAMs instead of making a decision
 
@@ -5887,6 +5906,10 @@ Public Structure MiningTabSettings
     Dim BoosterIceDroneRig1 As Integer
     Dim BoosterIceDroneRig2 As Integer
     Dim BoosterIceDroneRig3 As Integer
+
+    Dim OverrideCheck As Boolean
+    Dim OverrideCycleTime As Double
+    Dim OverrideLaserRange As Double
 
     Dim CheckRorqDeployed As Integer  '0,1,2
     Dim IndustrialReconfig As Integer

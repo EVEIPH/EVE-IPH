@@ -995,6 +995,10 @@ Public Class frmMain
                     Call DisplayESIStatusMessage(rsStatus.GetString(1), rsStatus.GetString(0), rsStatus.GetString(2))
                 End If
 
+                If .Contains(ESI.ESICharacterShipScope) And rsStatus.GetString(0) = ESI.ESICharacterShipScope And rsStatus.GetString(1) <> "green" Then
+                    Call DisplayESIStatusMessage(rsStatus.GetString(1), rsStatus.GetString(0), rsStatus.GetString(2))
+                End If
+
                 ' Corporation scopes
                 If .Contains(ESI.ESICorporationMembership) And rsStatus.GetString(0) = ESI.ESICorporationMembership And rsStatus.GetString(1) <> "green" Then
                     Call DisplayESIStatusMessage(rsStatus.GetString(1), rsStatus.GetString(0), rsStatus.GetString(2))
@@ -1920,14 +1924,14 @@ Public Class frmMain
         f1.Show()
     End Sub
 
-    Private Sub mnuAnomalyOreBeltsUpgradeBelts_Click(sender As System.Object, e As System.EventArgs) Handles mnuAnomalyOreBelts.Click
+    Private Sub mnuAnomalyOreBeltsUpgradeBelts_Click(sender As System.Object, e As System.EventArgs)
         Dim f1 As New frmIndustryBeltFlip
 
         f1.Show()
         OreBeltFlipOpen = True
     End Sub
 
-    Private Sub mnuIceBelts_Click(sender As Object, e As EventArgs) Handles mnuIceBelts.Click
+    Private Sub mnuIceBelts_Click(sender As Object, e As EventArgs)
         Dim f1 As New frmIceBeltFlip
 
         f1.Show()
@@ -2242,7 +2246,8 @@ Public Class frmMain
 
             ' Reload the asset variables for the character, which will load nothing but clear the assets out
             Call SelectedCharacter.GetAssets().LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+                                                                               SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -2360,12 +2365,6 @@ Public Class frmMain
             SelectedCharacter.LoadDefaultCharacter(False, False, True)
             Call LoadCharacterNamesinMenu()
         End If
-    End Sub
-
-    Private Sub mnuItemUpdatePrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuItemUpdatePrices.Click
-        Dim f1 = New frmManualPriceUpdate
-        f1.ShowDialog()
-        Call ResetRefresh()
     End Sub
 
     Private Sub mnuCheckforUpdates_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuCheckforUpdates.Click
@@ -8686,8 +8685,8 @@ ExitSub:
                 SQL = "UPDATE ITEM_PRICES_FACT Set PRICE = " & CStr(SelectedPrice) & ", PRICE_TYPE = '" & PriceType & "' "
                 SQL &= ", RegionORSystem = " & DownloadedLocation & ", PRICE_SOURCE = " & UpdatePricesDataSource
                 SQL &= " WHERE ITEM_ID = " & CStr(SentItems(i).TypeID)
-                ' Only overwrite a user price if it's downloaded, if zero - keep it there
-                If DownloadedPrice = 0 Then
+                ' Only overwrite a user price if the user doesn't set the override
+                If UserApplicationSettings.ManualPriceOverride Then
                     SQL &= " AND PRICE_TYPE <> 'User'"
                 End If
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
@@ -14542,7 +14541,7 @@ ExitCalc:
                     ' exit if we get to the end of the list
                     Exit For
                 End If
-                TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " Or "
+                TempAssetWhereList = TempAssetWhereList & AssetLocationFlagList(z) & " OR "
             Next
 
             ' Strip final OR
@@ -17511,15 +17510,41 @@ Leave:
         Call ListViewColumnSorter(e.Column, lstMineGrid, MiningColumnClicked, MiningColumnSortType)
     End Sub
 
+    Private Sub chkMineOverrideBoosts_CheckedChanged(sender As Object, e As EventArgs) Handles chkMineOverrideBoosts.CheckedChanged
+        If Not FirstLoad Then
+            If chkMineOverrideBoosts.Checked Then
+                Call UpdateBoosterSkills(True)
+                ' Show text boxes instead of labels
+                txtMineOverrideCycleTime.Visible = True
+                txtMineOverrideLaserRange.Visible = True
+                lblMineCycleTime.Visible = False
+                lblMineLaserRange.Visible = False
+            Else
+                Call UpdateBoosterSkills()
+                txtMineOverrideCycleTime.Visible = False
+                txtMineOverrideLaserRange.Visible = False
+                lblMineCycleTime.Visible = True
+                lblMineLaserRange.Visible = True
+            End If
+        End If
+    End Sub
+
     Private Sub chkMineUseFleetBooster_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMineUseFleetBooster.CheckedChanged
         If Not FirstLoad Then
             Call LoadFleetBoosterImage()
-            Call UpdateBoosterSkills()
+            Call UpdateBoosterSkills(chkMineOverrideBoosts.Checked)
             If chkMineUseFleetBooster.Checked And chkMineBoosterUseDrones.Checked Then
                 tabBoosterDrones.Enabled = True
             Else
                 tabBoosterDrones.Enabled = False
             End If
+
+            If chkMineUseFleetBooster.Checked Then
+                chkMineOverrideBoosts.Enabled = True
+            Else
+                chkMineOverrideBoosts.Enabled = False
+            End If
+
         End If
     End Sub
 
@@ -18066,6 +18091,9 @@ Leave:
             chkMineForemanMindlink.Checked = .CheckMiningForemanMindLink
             cmbMineIndustReconfig.Text = CStr(.IndustrialReconfig)
             chkMineBoosterUseDrones.Checked = .BoosterUseDrones
+            chkMineOverrideBoosts.Checked = .OverrideCheck
+            txtMineOverrideCycleTime.Text = FormatNumber(.OverrideCycleTime, 1) & " s"
+            txtMineOverrideLaserRange.Text = FormatNumber(.OverrideLaserRange, 2) & " km"
 
             ' Booster rigs
             If .OreType = "Ore" Then
@@ -18326,6 +18354,7 @@ Leave:
         Dim HeavyWaterCost As Double = 0 ' Total it costs to run the Rorq in deployed mode
 
         Dim MoonType As String = ""
+        Dim OverrideBoosts As Boolean = False
 
         Dim CycletimeNoCrystal As Double = 0 ' If this is zero, then use the calculated rate, else use the base time because it takes crystal time into account
 
@@ -18340,7 +18369,7 @@ Leave:
         lstMineGrid.Items.Clear()
         lstMineGrid.BeginUpdate()
         lblMineCycleTime.Text = ""
-        lblMineRange.Text = ""
+        lblMineLaserRange.Text = ""
         Me.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
@@ -18560,8 +18589,12 @@ Leave:
         Dim GangBurstBonusCycle As Double = 0
         Dim GangBurstBonusRange As Double = 0
         If chkMineUseFleetBooster.Checked Then
-            GangBurstBonusCycle = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
-            GangBurstBonusRange = CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost)
+            If Not chkMineOverrideBoosts.Checked Then
+                GangBurstBonusCycle = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
+                GangBurstBonusRange = CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost)
+            Else
+                OverrideBoosts = True
+            End If
         End If
 
         ' Loop through all the ores and determine ore amount, refine, 
@@ -18634,6 +18667,10 @@ Leave:
                     Else
                         CycleTimeLabel = FormatNumber(CycletimeNoCrystal, 1) & " s*"
                         ttMining.SetToolTip(lblMineCycleTime, "* Base Cycle time without Crystal Bonus")
+                    End If
+
+                    If OverrideBoosts Then
+                        BaseCycleTime = CDbl(txtMineOverrideCycleTime.Text.Replace(" s", ""))
                     End If
                 Else
                     ShipMiningYield = 0
@@ -18947,7 +18984,9 @@ Leave:
         lstMineGrid.EndUpdate()
 
         ' Update the mining range of the mining lasers selected
-        lblMineRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text, GangBurstBonusRange) / 1000, 2) & " km"
+        If Not OverrideBoosts Then
+            lblMineLaserRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text, GangBurstBonusRange) / 1000, 2) & " km"
+        End If
         lblMineCycleTime.Text = CycleTimeLabel
 
         i = 0
@@ -19240,6 +19279,10 @@ Leave:
             .CheckMiningForemanMindLink = chkMineForemanMindlink.Checked
             .IndustrialReconfig = CInt(cmbMineIndustReconfig.Text)
             .BoosterUseDrones = chkMineBoosterUseDrones.Checked
+            .OverrideCheck = chkMineOverrideBoosts.Checked
+            .OverrideCycleTime = CDbl(txtMineOverrideCycleTime.Text.Replace(" s", ""))
+            .OverrideLaserRange = CDbl(txtMineOverrideLaserRange.Text.Replace(" km", ""))
+
             If chkMineIndyCoreDeployedMode.CheckState = CheckState.Indeterminate Then
                 .CheckRorqDeployed = 2
             ElseIf chkMineIndyCoreDeployedMode.Checked = True Then
@@ -20449,7 +20492,7 @@ Leave:
         Call RefreshHaulerM3()
 
         lblMineCycleTime.Text = ""
-        lblMineRange.Text = ""
+        lblMineLaserRange.Text = ""
 
         If cmbMineMiningRig1.Text = "" Then
             cmbMineMiningRig1.Text = None
@@ -20608,10 +20651,11 @@ ProcExit:
         End If
 
         MineProcessingCheckBoxes(Index).Enabled = EnableObject
+
     End Sub
 
     ' Updates the skills and boxes associated with the booster
-    Private Sub UpdateBoosterSkills()
+    Private Sub UpdateBoosterSkills(Optional Override As Boolean = False)
         Dim CurrentShip As String
 
         ' Industrial command ships = Orca/Porpoise. Need Mining director 1
@@ -20621,11 +20665,13 @@ ProcExit:
         ' Mindlink (implant) needs mining director 5 
         ' Mining Foreman Link 1 needs mining foreman 5
         ' Mining Foreman Link 2 needs mining director 1
-        If chkMineUseFleetBooster.Checked Then
+        If chkMineUseFleetBooster.Checked And Not Override Then
             cmbMineBoosterShipName.Enabled = True
             cmbMineMiningForeman.Enabled = True
             lblMineBoosterShipSkill.Enabled = True
             cmbMineBoosterShipSkill.Enabled = True
+            lblMineMiningForeman.Enabled = True
+            lblMineMiningDirector.Enabled = True
 
             If cmbMineMiningForeman.Text = "5" Then
                 cmbMineMiningDirector.Enabled = True
@@ -20694,7 +20740,7 @@ ProcExit:
                     lblMineIndustrialReconfig.Enabled = False
             End Select
 
-        Else
+        ElseIf chkMineUseFleetBooster.Checked = False Or Override Then
             cmbMineBoosterShipName.Enabled = False
             cmbMineMiningDirector.Enabled = False
             cmbMineMiningForeman.Enabled = False
@@ -20705,6 +20751,8 @@ ProcExit:
             cmbMineBoosterShipSkill.Enabled = False
             chkMineIndyCoreDeployedMode.Enabled = False
             cmbMineIndustReconfig.Enabled = False
+            lblMineMiningForeman.Enabled = False
+            lblMineMiningDirector.Enabled = False
             lblMineIndustrialReconfig.Enabled = False
         End If
 
@@ -21363,6 +21411,84 @@ ProcExit:
             gbMineRefining.Enabled = False
         End If
         Call UpdateProcessingSkills()
+    End Sub
+
+    Private Function FormatManualBoosts(inText As TextBox, DefaultValue As Double, NumAfterDecimal As Integer) As String
+        Dim EntryText As String = inText.Text.Trim
+        Dim ReturnText As String = inText.Text.Trim
+
+        If EntryText.Contains("s") Then
+            ReturnText = EntryText.Replace("s", "")
+        ElseIf EntryText.Contains("km") Then
+            ReturnText = EntryText.Replace("km", "")
+        End If
+
+        If ReturnText.Split(CChar(".")).Length - 1 > 1 Then  ' Format for extra decimals
+            ' Limit to the first decimal
+            Dim FirstDecmial As Integer = InStr(ReturnText, ".")
+            If FirstDecmial = 0 Then
+                ReturnText = ""
+            Else
+                ReturnText = ReturnText.Substring(0, FirstDecmial - 1)
+            End If
+        End If
+
+        If ReturnText = "" Then
+            ReturnText = FormatNumber(DefaultValue, NumAfterDecimal)
+        End If
+
+        Return FormatNumber(ReturnText, NumAfterDecimal)
+
+    End Function
+
+    Private Sub txtMineOverrideCycleTime_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineOverrideCycleTime.KeyPress
+        ' Only allow numbers, decimal or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtMineOverrideCycleTime_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineOverrideCycleTime.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineOverrideCycleTime.Text = FormatManualBoosts(txtMineOverrideCycleTime, UserMiningTabSettings.OverrideLaserRange, 1)
+            Call LoadMiningGrid()
+        End If
+    End Sub
+
+    Private Sub txtMineOverrideCycleTime_LostFocus(sender As Object, e As EventArgs) Handles txtMineOverrideCycleTime.LostFocus
+        txtMineOverrideCycleTime.Text = FormatManualBoosts(txtMineOverrideCycleTime, UserMiningTabSettings.OverrideLaserRange, 1) & " s"
+    End Sub
+
+    Private Sub txtMineOverrideCycleTime_GotFocus(sender As Object, e As EventArgs) Handles txtMineOverrideCycleTime.GotFocus
+        txtMineOverrideCycleTime.SelectAll()
+    End Sub
+
+    Private Sub txtMineOverrideLaserRange_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtMineOverrideLaserRange.KeyPress
+        ' Only allow numbers, decimal or backspace
+        If e.KeyChar <> ControlChars.Back Then
+            If allowedPriceChars.IndexOf(e.KeyChar) = -1 Then
+                ' Invalid Character
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
+    Private Sub txtMineOverrideLaserRange_KeyDown(sender As Object, e As KeyEventArgs) Handles txtMineOverrideLaserRange.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            txtMineOverrideLaserRange.Text = FormatManualBoosts(txtMineOverrideLaserRange, UserMiningTabSettings.OverrideLaserRange, 2)
+            Call LoadMiningGrid()
+        End If
+    End Sub
+
+    Private Sub txtMineOverrideLaserRange_LostFocus(sender As Object, e As EventArgs) Handles txtMineOverrideLaserRange.LostFocus
+        txtMineOverrideLaserRange.Text = FormatManualBoosts(txtMineOverrideLaserRange, UserMiningTabSettings.OverrideLaserRange, 2) & " km"
+    End Sub
+
+    Private Sub txtMineOverrideLaserRange_GotFocus(sender As Object, e As EventArgs) Handles txtMineOverrideLaserRange.GotFocus
+        txtMineOverrideLaserRange.SelectAll()
     End Sub
 
 #End Region

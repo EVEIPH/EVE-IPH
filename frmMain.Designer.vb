@@ -32,8 +32,6 @@ Partial Class frmMain
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuSelectionExit = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuEdit = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuItemUpdatePrices = New System.Windows.Forms.ToolStripMenuItem()
-        Me.SetPOSDataToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuManageBlueprintsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuClearBPHistory = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUpdateData = New System.Windows.Forms.ToolStripMenuItem()
@@ -71,9 +69,6 @@ Partial Class frmMain
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuMETECalculator = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuReprocessingPlant = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuOreFlips = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuAnomalyOreBelts = New System.Windows.Forms.ToolStripMenuItem()
-        Me.mnuIceBelts = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSettings = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuUserSettings = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuSelectDefaultChar = New System.Windows.Forms.ToolStripMenuItem()
@@ -198,10 +193,12 @@ Partial Class frmMain
         Me.chkMineIncludeBrokerFees = New System.Windows.Forms.CheckBox()
         Me.chkMineIncludeTaxes = New System.Windows.Forms.CheckBox()
         Me.gbMineStripStats = New System.Windows.Forms.GroupBox()
-        Me.lblMineRange = New System.Windows.Forms.Label()
+        Me.lblMineCycleTime = New System.Windows.Forms.Label()
+        Me.lblMineLaserRange = New System.Windows.Forms.Label()
         Me.lblMineCycleTime1 = New System.Windows.Forms.Label()
         Me.lblMineRange1 = New System.Windows.Forms.Label()
-        Me.lblMineCycleTime = New System.Windows.Forms.Label()
+        Me.txtMineOverrideLaserRange = New System.Windows.Forms.TextBox()
+        Me.txtMineOverrideCycleTime = New System.Windows.Forms.TextBox()
         Me.chkMineUseFleetBooster = New System.Windows.Forms.CheckBox()
         Me.btnMineReset = New System.Windows.Forms.Button()
         Me.gbMineHauling = New System.Windows.Forms.GroupBox()
@@ -215,6 +212,7 @@ Partial Class frmMain
         Me.lblMineRoundTripTime = New System.Windows.Forms.Label()
         Me.btnMineRefresh = New System.Windows.Forms.Button()
         Me.gbMineBooster = New System.Windows.Forms.GroupBox()
+        Me.chkMineOverrideBoosts = New System.Windows.Forms.CheckBox()
         Me.chkMineBoosterDroneRig3 = New System.Windows.Forms.CheckBox()
         Me.pictMineLaserOptmize = New System.Windows.Forms.PictureBox()
         Me.pictMineRangeLink = New System.Windows.Forms.PictureBox()
@@ -1120,24 +1118,10 @@ Partial Class frmMain
         '
         'mnuEdit
         '
-        Me.mnuEdit.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuItemUpdatePrices, Me.SetPOSDataToolStripMenuItem, Me.mnuManageBlueprintsToolStripMenuItem, Me.mnuClearBPHistory})
+        Me.mnuEdit.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuManageBlueprintsToolStripMenuItem, Me.mnuClearBPHistory})
         Me.mnuEdit.Name = "mnuEdit"
         Me.mnuEdit.Size = New System.Drawing.Size(47, 24)
         Me.mnuEdit.Text = "Edit"
-        '
-        'mnuItemUpdatePrices
-        '
-        Me.mnuItemUpdatePrices.Name = "mnuItemUpdatePrices"
-        Me.mnuItemUpdatePrices.Size = New System.Drawing.Size(202, 24)
-        Me.mnuItemUpdatePrices.Text = "Prices"
-        Me.mnuItemUpdatePrices.Visible = False
-        '
-        'SetPOSDataToolStripMenuItem
-        '
-        Me.SetPOSDataToolStripMenuItem.Name = "SetPOSDataToolStripMenuItem"
-        Me.SetPOSDataToolStripMenuItem.Size = New System.Drawing.Size(202, 24)
-        Me.SetPOSDataToolStripMenuItem.Text = "POS Data"
-        Me.SetPOSDataToolStripMenuItem.Visible = False
         '
         'mnuManageBlueprintsToolStripMenuItem
         '
@@ -1344,7 +1328,7 @@ Partial Class frmMain
         '
         'mnuTools
         '
-        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuMETECalculator, Me.mnuReprocessingPlant, Me.mnuOreFlips})
+        Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuMETECalculator, Me.mnuReprocessingPlant})
         Me.mnuTools.Name = "mnuTools"
         Me.mnuTools.Size = New System.Drawing.Size(56, 24)
         Me.mnuTools.Text = "Tools"
@@ -1352,35 +1336,15 @@ Partial Class frmMain
         'mnuMETECalculator
         '
         Me.mnuMETECalculator.Name = "mnuMETECalculator"
-        Me.mnuMETECalculator.Size = New System.Drawing.Size(259, 24)
+        Me.mnuMETECalculator.Size = New System.Drawing.Size(203, 24)
         Me.mnuMETECalculator.Text = "ME/TE Calculator"
         Me.mnuMETECalculator.Visible = False
         '
         'mnuReprocessingPlant
         '
         Me.mnuReprocessingPlant.Name = "mnuReprocessingPlant"
-        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(259, 24)
+        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(203, 24)
         Me.mnuReprocessingPlant.Text = "Reprocessing Plant"
-        '
-        'mnuOreFlips
-        '
-        Me.mnuOreFlips.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuAnomalyOreBelts, Me.mnuIceBelts})
-        Me.mnuOreFlips.Name = "mnuOreFlips"
-        Me.mnuOreFlips.Size = New System.Drawing.Size(259, 24)
-        Me.mnuOreFlips.Text = "Mining Belt Flip Calculators"
-        Me.mnuOreFlips.Visible = False
-        '
-        'mnuAnomalyOreBelts
-        '
-        Me.mnuAnomalyOreBelts.Name = "mnuAnomalyOreBelts"
-        Me.mnuAnomalyOreBelts.Size = New System.Drawing.Size(212, 24)
-        Me.mnuAnomalyOreBelts.Text = "Ore Soverignty Belts"
-        '
-        'mnuIceBelts
-        '
-        Me.mnuIceBelts.Name = "mnuIceBelts"
-        Me.mnuIceBelts.Size = New System.Drawing.Size(212, 24)
-        Me.mnuIceBelts.Text = "Ice Belts"
         '
         'mnuSettings
         '
@@ -2423,10 +2387,12 @@ Partial Class frmMain
         '
         'gbMineStripStats
         '
-        Me.gbMineStripStats.Controls.Add(Me.lblMineRange)
+        Me.gbMineStripStats.Controls.Add(Me.lblMineCycleTime)
+        Me.gbMineStripStats.Controls.Add(Me.lblMineLaserRange)
         Me.gbMineStripStats.Controls.Add(Me.lblMineCycleTime1)
         Me.gbMineStripStats.Controls.Add(Me.lblMineRange1)
-        Me.gbMineStripStats.Controls.Add(Me.lblMineCycleTime)
+        Me.gbMineStripStats.Controls.Add(Me.txtMineOverrideLaserRange)
+        Me.gbMineStripStats.Controls.Add(Me.txtMineOverrideCycleTime)
         Me.gbMineStripStats.Location = New System.Drawing.Point(711, 241)
         Me.gbMineStripStats.Name = "gbMineStripStats"
         Me.gbMineStripStats.Size = New System.Drawing.Size(140, 69)
@@ -2434,15 +2400,25 @@ Partial Class frmMain
         Me.gbMineStripStats.TabStop = False
         Me.gbMineStripStats.Text = "Miner Stats:"
         '
-        'lblMineRange
+        'lblMineCycleTime
         '
-        Me.lblMineRange.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblMineRange.Location = New System.Drawing.Point(79, 42)
-        Me.lblMineRange.Name = "lblMineRange"
-        Me.lblMineRange.Size = New System.Drawing.Size(53, 18)
-        Me.lblMineRange.TabIndex = 135
-        Me.lblMineRange.Text = "99.99 km"
-        Me.lblMineRange.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.lblMineCycleTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblMineCycleTime.Location = New System.Drawing.Point(79, 18)
+        Me.lblMineCycleTime.Name = "lblMineCycleTime"
+        Me.lblMineCycleTime.Size = New System.Drawing.Size(53, 18)
+        Me.lblMineCycleTime.TabIndex = 133
+        Me.lblMineCycleTime.Text = "999.99 s"
+        Me.lblMineCycleTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lblMineLaserRange
+        '
+        Me.lblMineLaserRange.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblMineLaserRange.Location = New System.Drawing.Point(79, 42)
+        Me.lblMineLaserRange.Name = "lblMineLaserRange"
+        Me.lblMineLaserRange.Size = New System.Drawing.Size(53, 18)
+        Me.lblMineLaserRange.TabIndex = 135
+        Me.lblMineLaserRange.Text = "99.99 km"
+        Me.lblMineLaserRange.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'lblMineCycleTime1
         '
@@ -2462,15 +2438,23 @@ Partial Class frmMain
         Me.lblMineRange1.TabIndex = 134
         Me.lblMineRange1.Text = "Laser Range:"
         '
-        'lblMineCycleTime
+        'txtMineOverrideLaserRange
         '
-        Me.lblMineCycleTime.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.lblMineCycleTime.Location = New System.Drawing.Point(79, 18)
-        Me.lblMineCycleTime.Name = "lblMineCycleTime"
-        Me.lblMineCycleTime.Size = New System.Drawing.Size(53, 18)
-        Me.lblMineCycleTime.TabIndex = 133
-        Me.lblMineCycleTime.Text = "999.99 s"
-        Me.lblMineCycleTime.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.txtMineOverrideLaserRange.Location = New System.Drawing.Point(79, 41)
+        Me.txtMineOverrideLaserRange.Name = "txtMineOverrideLaserRange"
+        Me.txtMineOverrideLaserRange.Size = New System.Drawing.Size(53, 20)
+        Me.txtMineOverrideLaserRange.TabIndex = 136
+        Me.txtMineOverrideLaserRange.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtMineOverrideLaserRange.Visible = False
+        '
+        'txtMineOverrideCycleTime
+        '
+        Me.txtMineOverrideCycleTime.Location = New System.Drawing.Point(79, 17)
+        Me.txtMineOverrideCycleTime.Name = "txtMineOverrideCycleTime"
+        Me.txtMineOverrideCycleTime.Size = New System.Drawing.Size(53, 20)
+        Me.txtMineOverrideCycleTime.TabIndex = 9
+        Me.txtMineOverrideCycleTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center
+        Me.txtMineOverrideCycleTime.Visible = False
         '
         'chkMineUseFleetBooster
         '
@@ -2591,6 +2575,7 @@ Partial Class frmMain
         '
         'gbMineBooster
         '
+        Me.gbMineBooster.Controls.Add(Me.chkMineOverrideBoosts)
         Me.gbMineBooster.Controls.Add(Me.chkMineBoosterDroneRig3)
         Me.gbMineBooster.Controls.Add(Me.pictMineLaserOptmize)
         Me.gbMineBooster.Controls.Add(Me.pictMineRangeLink)
@@ -2617,6 +2602,16 @@ Partial Class frmMain
         Me.gbMineBooster.Size = New System.Drawing.Size(568, 117)
         Me.gbMineBooster.TabIndex = 3
         Me.gbMineBooster.TabStop = False
+        '
+        'chkMineOverrideBoosts
+        '
+        Me.chkMineOverrideBoosts.AutoSize = True
+        Me.chkMineOverrideBoosts.Location = New System.Drawing.Point(422, 95)
+        Me.chkMineOverrideBoosts.Name = "chkMineOverrideBoosts"
+        Me.chkMineOverrideBoosts.Size = New System.Drawing.Size(101, 17)
+        Me.chkMineOverrideBoosts.TabIndex = 147
+        Me.chkMineOverrideBoosts.Text = "Override Boosts"
+        Me.chkMineOverrideBoosts.UseVisualStyleBackColor = True
         '
         'chkMineBoosterDroneRig3
         '
@@ -10579,7 +10574,6 @@ Partial Class frmMain
     Friend WithEvents pnlStatus As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents pnlShoppingList As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents mnuSelectDefaultChar As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents mnuItemUpdatePrices As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuSelectionAddChar As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents mnuManageBlueprintsToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
@@ -10595,7 +10589,6 @@ Partial Class frmMain
     Friend WithEvents pnlSkills As System.Windows.Forms.ToolStripStatusLabel
     Friend WithEvents ToolStripSeparator2 As System.Windows.Forms.ToolStripSeparator
     Friend WithEvents mnuSelectionManageCharacters As System.Windows.Forms.ToolStripMenuItem
-    Friend WithEvents SetPOSDataToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultTabSettings As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultBP As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuRestoreDefaultUpdatePrices As System.Windows.Forms.ToolStripMenuItem
@@ -10692,7 +10685,7 @@ Partial Class frmMain
     Friend WithEvents chkMineIncludeTaxes As CheckBox
     Friend WithEvents chkMineIncludeBrokerFees As CheckBox
     Friend WithEvents gbMineStripStats As GroupBox
-    Friend WithEvents lblMineRange As Label
+    Friend WithEvents lblMineLaserRange As Label
     Friend WithEvents lblMineCycleTime1 As Label
     Friend WithEvents lblMineRange1 As Label
     Friend WithEvents lblMineCycleTime As Label
@@ -11424,9 +11417,6 @@ Partial Class frmMain
     Friend WithEvents lblMineFacilityMoonOreRate1 As Label
     Friend WithEvents lblMineFacilityOreRate1 As Label
     Friend WithEvents gbMineOreStuctureRates As GroupBox
-    Friend WithEvents mnuOreFlips As ToolStripMenuItem
-    Friend WithEvents mnuAnomalyOreBelts As ToolStripMenuItem
-    Friend WithEvents mnuIceBelts As ToolStripMenuItem
     Friend WithEvents mnuResetSavedFacilities As ToolStripMenuItem
     Friend WithEvents gbReprocessables As GroupBox
     Friend WithEvents chkNoBuildItems As CheckBox
@@ -11493,4 +11483,7 @@ Partial Class frmMain
     Friend WithEvents pbMarketBP As PictureBox
     Friend WithEvents txtBPBPCCCost As TextBox
     Friend WithEvents CheckBox1 As CheckBox
+    Friend WithEvents chkMineOverrideBoosts As CheckBox
+    Friend WithEvents txtMineOverrideCycleTime As TextBox
+    Friend WithEvents txtMineOverrideLaserRange As TextBox
 End Class

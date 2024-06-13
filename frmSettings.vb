@@ -367,6 +367,8 @@ Public Class frmSettings
 
                 .SetToolTip(chkSuggestBuildwhenBPnotOwned, "When selected, IPH will always Build the item if the BP is not owned")
                 .SetToolTip(chkBuildWhenNotEnoughItemsonMarket, "When selected, IPH will build items if suggesting buy components without enough components on market to buy")
+                .SetToolTip(chkManualPriceOverride, "When selected, IPH will not update prices that have had a price set manually")
+
             End With
         End If
 
@@ -478,6 +480,7 @@ Public Class frmSettings
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
             chkBuildWhenNotEnoughItemsonMarket.Checked = .BuildWhenNotEnoughItemsonMarket
+            chkManualPriceOverride.Checked = .ManualPriceOverride
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
             chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
             chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
@@ -611,8 +614,8 @@ Public Class frmSettings
 
                     ' Same with blueprints
                     If UserApplicationSettings.LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
-                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
+                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
                     End If
                 End If
 
@@ -651,7 +654,7 @@ Public Class frmSettings
                                 .TokenExpiration = CDate(rsChar.GetString(3))
                                 .RefreshToken = rsChar.GetString(4)
                                 .Scopes = rsChar.GetString(5)
-                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, ScanType.Personal, True)
+                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, True)
                             End With
                         End While
                         rsChar.Close()
@@ -680,6 +683,7 @@ Public Class frmSettings
 
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
                 .BuildWhenNotEnoughItemsonMarket = chkBuildWhenNotEnoughItemsonMarket.Checked
+                .ManualPriceOverride = chkManualPriceOverride.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
                 .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked

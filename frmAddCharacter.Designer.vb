@@ -43,6 +43,7 @@ Partial Class frmAddCharacter
         Me.chkReadCorporationOrders = New System.Windows.Forms.CheckBox()
         Me.chkReadCorporationDivisions = New System.Windows.Forms.CheckBox()
         Me.gbCharacter = New System.Windows.Forms.GroupBox()
+        Me.chkReadCharacterShipLocation = New System.Windows.Forms.CheckBox()
         Me.chkReadCharacterLoyalty = New System.Windows.Forms.CheckBox()
         Me.chkReadCharacterWallet = New System.Windows.Forms.CheckBox()
         Me.chkReadCharacterOrders = New System.Windows.Forms.CheckBox()
@@ -257,6 +258,7 @@ Partial Class frmAddCharacter
         '
         'gbCharacter
         '
+        Me.gbCharacter.Controls.Add(Me.chkReadCharacterShipLocation)
         Me.gbCharacter.Controls.Add(Me.chkReadCharacterLoyalty)
         Me.gbCharacter.Controls.Add(Me.chkReadCharacterWallet)
         Me.gbCharacter.Controls.Add(Me.chkReadCharacterOrders)
@@ -272,6 +274,17 @@ Partial Class frmAddCharacter
         Me.gbCharacter.TabIndex = 1
         Me.gbCharacter.TabStop = False
         Me.gbCharacter.Text = "Character"
+        '
+        'chkReadCharacterShipLocation
+        '
+        Me.chkReadCharacterShipLocation.AutoSize = True
+        Me.chkReadCharacterShipLocation.Location = New System.Drawing.Point(139, 112)
+        Me.chkReadCharacterShipLocation.Name = "chkReadCharacterShipLocation"
+        Me.chkReadCharacterShipLocation.Size = New System.Drawing.Size(100, 17)
+        Me.chkReadCharacterShipLocation.TabIndex = 9
+        Me.chkReadCharacterShipLocation.Tag = "esi-location.read_ship_type.v1 esi-location.read_location.v1"
+        Me.chkReadCharacterShipLocation.Text = "Ship && Location"
+        Me.chkReadCharacterShipLocation.UseVisualStyleBackColor = True
         '
         'chkReadCharacterLoyalty
         '
@@ -393,4 +406,5 @@ Partial Class frmAddCharacter
     Friend WithEvents chkReadCharacterOrders As CheckBox
     Friend WithEvents btnSelectAll As Button
     Friend WithEvents btnDeselectAll As Button
+    Friend WithEvents chkReadCharacterShipLocation As CheckBox
 End Class

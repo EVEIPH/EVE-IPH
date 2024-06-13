@@ -1505,12 +1505,6 @@ SkipItem:
             Call frmMain.LoadMiningGrid()
         End If
 
-        ' Refresh the prices in manual update for minerals
-        Call frmManualPriceUpdate.LoadMineralPrices()
-
-        ' Manual update of moon materials
-        Call frmManualPriceUpdate.LoadMoonPrices()
-
         ' Reload the prices on the reprocessing plant if open
         If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
             frmRepoPlant.RefreshMaterialList()
@@ -1520,11 +1514,6 @@ SkipItem:
         ' Reload the prices on the reprocessing plant if open
         If Application.OpenForms().OfType(Of frmInventionMats).Any Then
             frmInventMats.RefreshInventionMatsGrid()
-        End If
-
-        ' Refill the search grid on manual updates
-        If Trim(frmManualPriceUpdate.lblLSelectedItem.Text) <> "" Then
-            Call frmManualPriceUpdate.FillSearchGrid(frmManualPriceUpdate.lblSelectedItem.Text)
         End If
 
     End Sub

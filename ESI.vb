@@ -35,9 +35,10 @@ Public Class ESI
     Public Const ESICharacterBlueprintsScope As String = "esi-characters.read_blueprints"
     Public Const ESICharacterStandingsScope As String = "esi-characters.read_standings"
     Public Const ESICharacterIndustryJobsScope As String = "esi-industry.read_character_jobs"
-    Public Const ESICharacterMarketOrders As String = "esi-markets.read_character_orders"
-    Public Const ESICharacterWallet As String = "esi-wallet.read_character_wallet"
-    Public Const ESICharacterLoyaltyPoints As String = "esi-characters.read_loyalty.v1"
+    Public Const ESICharacterMarketOrdersScope As String = "esi-markets.read_character_orders"
+    Public Const ESICharacterWalletScope As String = "esi-wallet.read_character_wallet"
+    Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty.v1"
+    Public Const ESICharacterShipScope As String = "esi-location.read_ship_type"
 
     ' Corporation scopes
     Public Const ESICorporationAssetScope As String = "esi-assets.read_corporation_assets"
@@ -46,7 +47,7 @@ Public Class ESI
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
     Public Const ESICorporationDivisions As String = "esi-corporations.read_divisions"
     Public Const ESICorporationMarketOrders As String = "esi-markets.read_corporation_orders"
-    Public Const ESICorporationWallet As String = "esi-wallet.read_corporation_wallet"
+    Public Const ESICorporationWalletScope As String = "esi-wallet.read_corporation_wallet"
 
     Public Const ESIUniverseStructuresScope As String = "esi-universe.read_structures"
     Public Const ESIStructureMarketsScope As String = "esi-markets.structure_markets"
@@ -926,6 +927,36 @@ Public Class ESI
 
     End Function
 
+    Public Structure ShipLocation
+        Dim ShipData As ESICurrentShip
+        Dim ShipLocation As ESICurrentShipLocation
+    End Structure
+
+    Public Function GetCharacterShipLocation(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef AgentsCacheDate As Date) As ShipLocation
+        Dim ReturnString As String
+        Dim ReturnData As ShipLocation
+
+        ReturnString = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/ship/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnString) Then
+            ReturnData.ShipData = JsonConvert.DeserializeObject(Of ESICurrentShip)(ReturnString)
+        Else
+            ReturnData.ShipData = Nothing
+        End If
+
+        ReturnString = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/location/" & TranquilityDataSource,
+                                      FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnString) Then
+            ReturnData.ShipLocation = JsonConvert.DeserializeObject(Of ESICurrentShipLocation)(ReturnString)
+        Else
+            ReturnData.ShipLocation = Nothing
+        End If
+
+        Return ReturnData
+
+    End Function
 
     Public Function GetBlueprints(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal ScanType As ScanType, ByRef BPCacheDate As Date) As List(Of EVEBlueprint)
         Dim ReturnedBPs As New List(Of EVEBlueprint)
@@ -2961,6 +2992,18 @@ Public Class ESIResearchAgent
     <JsonProperty("started_at")> Public started_at As String
     <JsonProperty("points_per_day")> Public points_per_day As Double
     <JsonProperty("remainder_points")> Public remainder_points As Double
+End Class
+
+Public Class ESICurrentShipLocation
+    <JsonProperty("solar_system_id")> Public solar_system_id As Long
+    <JsonProperty("station_id")> Public station_id As Long
+    <JsonProperty("structure_id")> Public structure_id As Long
+End Class
+
+Public Class ESICurrentShip
+    <JsonProperty("ship_item_id")> Public ship_item_id As Double
+    <JsonProperty("ship_name")> Public ship_name As String
+    <JsonProperty("ship_type_id")> Public ship_type_id As Long
 End Class
 
 Public Class ESILoyaltyPoints

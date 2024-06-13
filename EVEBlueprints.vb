@@ -4,22 +4,23 @@ Imports System.Data.SQLite
 Public Class EVEBlueprints
     Private BlueprintList As List(Of EVEBlueprint)
     Private KeyData As SavedTokenData
+    Private BlueprintType As ScanType
 
-    Public Sub New()
+    Public Sub New(Optional ByVal InitalBPType As ScanType = ScanType.Personal)
 
         BlueprintList = New List(Of EVEBlueprint)
-
+        BlueprintType = InitalBPType
     End Sub
 
     ' Loads all blueprints for the character from the DB
-    Public Sub LoadBlueprints(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData, ByVal BlueprintType As ScanType, ByVal UpdateBPs As Boolean)
+    Public Sub LoadBlueprints(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData, ByVal UpdateBPs As Boolean)
         Dim SQL As String
         Dim readerBlueprints As SQLiteDataReader
         Dim TempBlueprint As EVEBlueprint
         Dim Blueprints As New List(Of EVEBlueprint)
 
         ' Update Industry Blueprints first
-        Call UpdateBlueprints(ID, CharacterTokenData, BlueprintType, UpdateBPs)
+        Call UpdateBlueprints(ID, CharacterTokenData, UpdateBPs)
 
         ' See what ID we use for character bps
         Dim CharID As Long = 0
@@ -69,7 +70,7 @@ Public Class EVEBlueprints
 
     ' Updates Blueprints from ESI for the character/corp and inserts them into the Database for later queries
     Private Sub UpdateBlueprints(ByVal ID As Long, ByVal CharacterTokenData As SavedTokenData,
-                                 ByVal BlueprintType As ScanType, ByVal UpdateBPs As Boolean)
+                                 ByVal UpdateBPs As Boolean)
         Dim readerBlueprints As SQLiteDataReader
         Dim readerCheck As SQLiteDataReader
         Dim SQL As String

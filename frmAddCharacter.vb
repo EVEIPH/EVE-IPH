@@ -23,6 +23,7 @@ Public Class frmAddCharacter
             .SetToolTip(chkReadCharacterOrders, "Reads a list of all open market orders on the market for a character and allows a list of cancelled and expired market orders placed by the character up to 90 days in the past.")
             .SetToolTip(chkReadCharacterWallet, "Reads the wallet balance, transactions, and journal of a character going 30 days back.")
             .SetToolTip(chkReadCharacterPlanetary, "Reads a list of all planetary colonies and layouts owned by a character.")
+            .SetToolTip(chkReadCharacterShipLocation, "Reads the current ship type and name of the character.")
 
             .SetToolTip(chkReadCorporationAssets, "Reads a list of the corporation assets.")
             .SetToolTip(chkReadCorporationBlueprints, "Reads a list of blueprints the corporation owns. Must have Director or Factory Manager role to see Corporation Blueprints.")
@@ -30,7 +31,7 @@ Public Class frmAddCharacter
             .SetToolTip(chkReadCorporationMembership, "List of the current members a corporation and titles (for corp roles).")
             .SetToolTip(chkReadCorporationDivisions, "Lists the names of corporation hanger and wallet division names if not default.")
             .SetToolTip(chkReadCorporationOrders, "Reads a list of all open market orders on the market for a corporation and allows a list of cancelled and expired market orders placed by the corporation up to 90 days in the past. Must have the Director, Accountant, or Trader role to see Corporation orders.")
-            .SetToolTip(chkReadCharacterWallet, "Reads the wallet balance, transactions, and journal of a corporation going 30 days back. Must have Director, Accountant, or Junior Accountant role to see Corporation Wallet.")
+            .SetToolTip(chkReadCorporationWallet, "Reads the wallet balance, transactions, and journal of a corporation going 30 days back. Must have Director, Accountant, or Junior Accountant role to see Corporation Wallet.")
 
             .SetToolTip(chkReadStructures, "Returns information on requested structure if you are on the Access Control List.")
             .SetToolTip(chkReadStructureMarkets, "Reads market orders from a specific structure with a market installed.")
@@ -170,6 +171,12 @@ Public Class frmAddCharacter
         End With
     End Sub
 
+    Private Sub chkReadCharactership_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterShipLocation.CheckedChanged
+        With chkReadCharacterShipLocation
+            Call UpdateScopesString(CStr(.Tag), .Checked)
+        End With
+    End Sub
+
     Private Sub chkReadCharacterLoyalty_CheckedChanged(sender As Object, e As EventArgs) Handles chkReadCharacterLoyalty.CheckedChanged
         With chkReadCharacterLoyalty
             Call UpdateScopesString(CStr(.Tag), .Checked)
@@ -245,6 +252,7 @@ Public Class frmAddCharacter
         chkReadCharacterJobs.Enabled = Setting
         chkReadCharacterOrders.Enabled = Setting
         chkReadCharacterWallet.Enabled = Setting
+        chkReadCharacterShipLocation.Enabled = Setting
         chkReadCharacterLoyalty.Enabled = Setting
         chkReadCharacterPlanetary.Enabled = Setting
 
@@ -269,6 +277,7 @@ Public Class frmAddCharacter
         chkReadCharacterJobs.Checked = Setting
         chkReadCharacterOrders.Checked = Setting
         chkReadCharacterWallet.Checked = Setting
+        chkReadCharacterShipLocation.Checked = Setting
         chkReadCharacterLoyalty.Checked = Setting
         chkReadCharacterPlanetary.Checked = Setting
 

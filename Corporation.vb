@@ -31,9 +31,9 @@ Public Class Corporation
         BlueprintsAccess = False
         JobsAccess = False
 
-        Assets = New EVEAssets
-        Blueprints = New EVEBlueprints
-        Jobs = New EVEIndustryJobs
+        Assets = New EVEAssets(ScanType.Corporation)
+        Blueprints = New EVEBlueprints(ScanType.Corporation)
+        Jobs = New EVEIndustryJobs(ScanType.Corporation)
 
     End Sub
 
@@ -94,8 +94,7 @@ Public Class Corporation
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationIndustryJobsScope) And FactoryManager Then
             JobsAccess = True
             If ResetData Then
-                Jobs = New EVEIndustryJobs()
-                Call Jobs.LoadIndustryJobs(CorporationID, CharacterTokenData, ScanType.Corporation) ' use character ID because only characters can install jobs
+                Call Jobs.LoadIndustryJobs(CorporationID, CharacterTokenData) ' use character ID because only characters can install jobs
             End If
         End If
 
@@ -103,8 +102,7 @@ Public Class Corporation
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationBlueprintsScope) And Director Then
             BlueprintsAccess = True
             If ResetData Then
-                Blueprints = New EVEBlueprints()
-                Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, ScanType.Corporation, RefreshBlueprints)
+                Call Blueprints.LoadBlueprints(CorporationID, CharacterTokenData, RefreshBlueprints)
             End If
         End If
 
@@ -112,7 +110,6 @@ Public Class Corporation
         If CharacterTokenData.Scopes.Contains(ESI.ESICorporationAssetScope) And Director Then
             AssetAccess = True
             If ResetData Then
-                Assets = New EVEAssets(ScanType.Corporation)
                 Call Assets.LoadAssets(CorporationID, CharacterTokenData, RefreshAssets)
             End If
         End If

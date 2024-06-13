@@ -76,9 +76,10 @@ Public Class Character
 
         Skills = New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
         Standings = New EVENPCStandings
-        Jobs = New EVEIndustryJobs
+        Jobs = New EVEIndustryJobs(ScanType.Personal)
+        Blueprints = New EVEBlueprints(ScanType.Personal)
         DatacoreAgents = New EVEResearchAgents
-        Assets = New EVEAssets
+        Assets = New EVEAssets(ScanType.Personal)
         LoyaltyPoints = New EVELoyaltyPoints
 
         ' Corporation Data for this character
@@ -224,10 +225,10 @@ Public Class Character
 
         If readerCharacter.Read Then
             ' Initialize the different character data classes
-            Jobs = New EVEIndustryJobs()
+            Jobs = New EVEIndustryJobs(ScanType.Personal)
             Standings = New EVENPCStandings()
             DatacoreAgents = New EVEResearchAgents()
-            Blueprints = New EVEBlueprints()
+            Blueprints = New EVEBlueprints(ScanType.Personal)
             Assets = New EVEAssets(ScanType.Personal)
 
             ' Query the character data and store
@@ -316,7 +317,7 @@ Public Class Character
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterBlueprintsScope) Then
                 BlueprintsAccess = True
                 If LoadBPs Then
-                    Call Blueprints.LoadBlueprints(ID, CharacterTokenData, ScanType.Personal, LoadBPs)
+                    Call Blueprints.LoadBlueprints(ID, CharacterTokenData, LoadBPs)
                 End If
             End If
 
@@ -329,7 +330,7 @@ Public Class Character
             End If
 
             ' Load the character's loyalty points for corporations
-            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPoints) Then
+            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPointsScope) Then
                 LoyaltyPointAccess = True
                 Call LoyaltyPoints.LoadLoyaltyPoints(ID, CharacterTokenData)
             End If

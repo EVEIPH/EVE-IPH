@@ -416,12 +416,6 @@
     <Compile Include="frmManageAccounts.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmManualPriceUpdate.Designer.vb">
-      <DependentUpon>frmManualPriceUpdate.vb</DependentUpon>
-    </Compile>
-    <Compile Include="frmManualPriceUpdate.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmPatchNotes.Designer.vb">
       <DependentUpon>frmPatchNotes.vb</DependentUpon>
     </Compile>
@@ -637,10 +631,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmManageAccounts.resx">
       <DependentUpon>frmManageAccounts.vb</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmManualPriceUpdate.resx">
-      <DependentUpon>frmManualPriceUpdate.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="frmPatchNotes.en-US.resx">

@@ -495,6 +495,10 @@ Public Class MyListView
 
                     ' Change the value in the price grid, but don't update the grid
                     CurrentRow.SubItems(GetPriceColumnIndex).Text = FormatNumber(txtListEditBox.Text, 2)
+                    If Me.Name = UpdatePrices Then
+                        ' Color the cell blue
+                        CurrentRow.ForeColor = Color.Blue
+                    End If
                     PriceUpdated = True
 
                 Case ManufacturedPriceProfile, RawPriceProfile

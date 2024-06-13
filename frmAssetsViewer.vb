@@ -30,7 +30,6 @@ Public Class frmAssetsViewer
     ' Where the form was loaded from
     Private WindowForm As AssetWindow
 
-    'Private AssetTreeTest As TriStateTreeView
     ' For drawing checkboxes
     Private Const TVIF_STATE As Integer = &H8
     Private Const TVIS_STATEIMAGEMASK As Integer = &HF000
@@ -378,15 +377,14 @@ Public Class frmAssetsViewer
         Dim AnchorNode As New TreeNode
 
         pnlStatus.Text = ""
-        Application.UseWaitCursor = True
+        ActiveForm.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
         ' Make sure they have an item selected
         If Not ItemsChecked() And Not rbtnAllItems.Checked Then
             MsgBox("You must select an item category to display.", vbExclamation, Application.ProductName)
             tabMain.SelectedTab = tabSearchSettings
-            Me.Cursor = Cursors.Default
-            Application.UseWaitCursor = False
+            ActiveForm.Cursor = Cursors.Default
             Exit Sub
         End If
 
@@ -419,7 +417,7 @@ Public Class frmAssetsViewer
             AssetTree.EndUpdate()
             AssetTree.Refresh()
 
-            Application.UseWaitCursor = False
+            ActiveForm.Cursor = Cursors.Default
             Application.DoEvents()
             MsgBox("No items found.", vbInformation, Application.ProductName)
             Me.Refresh()
@@ -449,8 +447,8 @@ Public Class frmAssetsViewer
             Else ' nothing selected
                 For Each item In lstCharacters.SelectedItems
                     MsgBox("You must select a character for assets", vbExclamation, Application.ProductName)
-                    Me.Cursor = Cursors.Default
-                    Application.UseWaitCursor = False
+                    ActiveForm.Cursor = Cursors.Default
+                    Application.DoEvents()
                     Exit Sub
                 Next
             End If
@@ -472,13 +470,13 @@ Public Class frmAssetsViewer
             If entry.ID <> SelectedCharacter.ID Then
                 TempCharacter = New Character
                 TempCharacter.LoadCharacterData(TokenData, False, True, False)
-                ' Get the asset locations saved for the character
-                Call SavedLocationIDs.AddRange(TempCharacter.Assets.GetAssetLocationIDs(WindowForm, TempCharacter.ID, TempCharacter.CharacterCorporation))
-                Call AssetCharacterList.Add(TempCharacter)
             Else
-                AssetCharacterList.Add(SelectedCharacter)
                 TempCharacter = SelectedCharacter
             End If
+
+            ' Get the asset locations saved for the character
+            Call SavedLocationIDs.AddRange(TempCharacter.Assets.GetAssetLocationIDs(WindowForm, TempCharacter.ID, TempCharacter.CharacterCorporation))
+            Call AssetCharacterList.Add(TempCharacter)
 
             ' Now run the tree build
             pnlStatus.Text = "Loading Assets for " & entry.Name
@@ -494,16 +492,29 @@ Public Class frmAssetsViewer
         Next
 
         Dim LoadedCorpIDs As New List(Of Long) ' only load the corp once
-
         ' Now load the corporation data at the end
         For Each entry In AssetCharacterList
             If (rbtnCorpAssets.Checked Or rbtnAllAssets.Checked) And Not LoadedCorpIDs.Contains(entry.CharacterCorporation.CorporationID) Then
                 pnlStatus.Text = "Loading Assets for " & entry.CharacterCorporation.Name
                 Application.DoEvents()
                 BaseNode = entry.CharacterCorporation.GetAssets.GetAssetTreeReturnNode(SortOption, SearchItemList, entry.CharacterCorporation.Name & " - Corporation Assets", entry.CharacterCorporation.CorporationID, SavedLocationIDs, OnlyBPCs)
+
+                If Not BaseNode.Text.Contains("No Assets Loaded") Then
+                    ' Save this corp as assets already loaded
+                    Call LoadedCorpIDs.Add(entry.CharacterCorporation.CorporationID)
+                    Dim node As TreeNode
+                    ' Remove any nodes that are the same corp and no assets loaded
+                    For Each node In AnchorNode.Nodes
+                        If node.Text.Contains("No Assets Loaded") And node.Name = CStr(entry.CharacterCorporation.CorporationID) Then
+                            AnchorNode.Nodes.Remove(node)
+                            Exit For
+                        End If
+                    Next
+                End If
+
                 ' Need to add it to the tree but as a clone
                 AnchorNode.Nodes.Add(CType(BaseNode.Clone, TreeNode))
-                Call LoadedCorpIDs.Add(entry.CharacterCorporation.CorporationID)
+
             End If
         Next
 
@@ -528,7 +539,8 @@ Public Class frmAssetsViewer
         ' Scroll to top
         AssetTree.TopNode = AssetTree.Nodes(0)
 
-        Application.UseWaitCursor = False
+        On Error Resume Next
+        ActiveForm.Cursor = Cursors.Default
         Application.DoEvents()
         Me.Refresh()
 
@@ -565,7 +577,7 @@ Public Class frmAssetsViewer
         Dim ItemChecked As Boolean = False
 
         ' Working
-        Me.Cursor = Cursors.WaitCursor
+        ActiveForm.Cursor = Cursors.WaitCursor
         Application.DoEvents()
 
         ' If we want all items, look in inventory types with links to groups/categories
@@ -651,7 +663,7 @@ Public Class frmAssetsViewer
 
         End If
 
-        Me.Cursor = Cursors.Default
+        ActiveForm.Cursor = Cursors.Default
         Application.DoEvents()
 
         ' If we have no items to return, then return nothing not a blank list
@@ -683,7 +695,7 @@ Public Class frmAssetsViewer
     Private Sub btnScanPersonalBPs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnScanPersonalAssets.Click
 
         RefreshAssetButton = True
-        Me.Cursor = Cursors.WaitCursor
+        ActiveForm.Cursor = Cursors.WaitCursor
         If rbtnAllAssets.Checked = False Then
             rbtnPersonalAssets.Checked = True
         End If
@@ -696,7 +708,7 @@ Public Class frmAssetsViewer
             MsgBox("You have not enabled access to Assets with this key.", vbExclamation, Application.ProductName)
         End If
 
-        Me.Cursor = Cursors.Default
+        ActiveForm.Cursor = Cursors.Default
         Application.DoEvents()
 
         RefreshAssetButton = False
@@ -707,7 +719,7 @@ Public Class frmAssetsViewer
     Private Sub btnScanCorpBPs_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnScanCorpAssets.Click
 
         RefreshAssetButton = True
-        Me.Cursor = Cursors.WaitCursor
+        ActiveForm.Cursor = Cursors.WaitCursor
         If rbtnAllAssets.Checked = False Then
             rbtnCorpAssets.Checked = True
         End If
@@ -720,7 +732,7 @@ Public Class frmAssetsViewer
             MsgBox("You do not have a corporation key installed with access to Assets.", vbExclamation, Application.ProductName)
         End If
 
-        Me.Cursor = Cursors.Default
+        ActiveForm.Cursor = Cursors.Default
         Application.DoEvents()
 
         RefreshAssetButton = False
@@ -787,13 +799,17 @@ Public Class frmAssetsViewer
     Private Function GetCharIDs() As String
         Dim CharIDs As String = ""
 
-        For i = 0 To lstCharacters.CheckedItems.Count - 1
-            CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(3).Text) & ","
-        Next
+        If rbtnSelectedAccount.Checked Then
+            CharIDs = CStr(SelectedCharacter.ID)
+        Else
+            For i = 0 To lstCharacters.CheckedItems.Count - 1
+                CharIDs = CharIDs & CStr(lstCharacters.CheckedItems(i).SubItems(3).Text) & ","
+            Next
 
-        ' Strip the last comma
-        If CharIDs <> "" Then
-            CharIDs = CharIDs.Substring(0, Len(CharIDs) - 1)
+            ' Strip the last comma
+            If CharIDs <> "" Then
+                CharIDs = CharIDs.Substring(0, Len(CharIDs) - 1)
+            End If
         End If
 
         Return CharIDs
@@ -887,15 +903,23 @@ Public Class frmAssetsViewer
             .Faction = chkItemsT5.Checked
             .Pirate = chkItemsT6.Checked
 
-            ' Finally get all the locations from the checked data move from saved
-            SavedLocationIDs = GetCheckedLocations(AssetTree.Nodes(0))
+            ' Finally get all the locations from the checked data for each main account/corp node and save
+            Dim TempTree As TreeNode = AssetTree.Nodes(0)
+            Dim AccountNode As TreeNode
+            Dim AccountsString As String = ""
+            SavedLocationIDs = New List(Of LocationInfo)
+            For Each AccountNode In TempTree.Nodes
+                SavedLocationIDs.AddRange(GetCheckedLocations(AccountNode, CLng(AccountNode.Name)))
+                AccountsString &= CLng(AccountNode.Name) & ","
+            Next
+
+            AccountsString = AccountsString.Substring(0, Len(AccountsString) - 1)
 
             ' Since a lot of locations will bog down the settings loading, store in a table for this character and corporation
             Call EVEDB.BeginSQLiteTransaction()
 
             ' First clear out any records in there for both the account and corp assets on the account
-            SQL = "DELETE FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(WindowForm)
-            SQL &= " AND ID IN (" & CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID) & ")"
+            SQL = "DELETE FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(WindowForm) & " AND ID IN (" & AccountsString & ")"
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             For i = 0 To SavedLocationIDs.Count - 1
@@ -935,12 +959,11 @@ Public Class frmAssetsViewer
 
         MsgBox("Asset Window Settings Saved", vbInformation, Application.ProductName)
         btnSaveSettings.Focus()
-        Application.UseWaitCursor = False
 
     End Sub
 
     ' Gets all the checked locations in the tree
-    Private Function GetCheckedLocations(SentNode As TreeNode) As List(Of LocationInfo)
+    Private Function GetCheckedLocations(SentNode As TreeNode, AccountID As Long) As List(Of LocationInfo)
         Dim LocationIDList As New List(Of LocationInfo)
         Dim RList As New List(Of LocationInfo)
         Dim SubNode As TreeNode = Nothing
@@ -948,24 +971,18 @@ Public Class frmAssetsViewer
         For Each SubNode In SentNode.Nodes
             If Not IsNothing(SubNode.Tag) Then
                 Dim TempPair As New LocationInfo
-                'TempPair = CType(SubNode.Tag, LocationInfo)
+                Dim FlagValue As Integer = CType(SubNode.Tag, EVEAssets.TagInfo).FlagValue
 
                 If SubNode.Checked Then
-                    ' SubNode tag is a location pair
-                    If CLng(SubNode.Tag) = -1 Then
-                        TempPair.LocationID = CLng(SubNode.Name) ' This is a base node, or station so it's added to the account parent node
-                        TempPair.AccountID = CLng(SentNode.Name)
-                        TempPair.FlagID = -1
-                    Else
-                        TempPair.LocationID = CLng(SubNode.Tag)
-                        TempPair.AccountID = CLng(SubNode.Name)
-                        TempPair.FlagID = -1
-                    End If
+                    TempPair.FlagID = FlagValue
+                    TempPair.LocationID = CLng(SubNode.Name)
+                    TempPair.AccountID = AccountID
+
                     Call LocationIDList.Add(TempPair)
                 End If
 
                 If SubNode.Nodes.Count > 0 Then
-                    RList = GetCheckedLocations(SubNode)
+                    RList = GetCheckedLocations(SubNode, AccountID)
                 End If
 
                 If RList.Count <> 0 Then
@@ -1516,14 +1533,14 @@ Public Class frmAssetsViewer
     End Sub
 
     Private Sub ToggleNodeChecks(SentNode As TreeNode, Check As Boolean)
-        Me.UseWaitCursor = True
+        ActiveForm.Cursor = Cursors.WaitCursor
         For Each child As TreeNode In SentNode.Nodes
             Application.DoEvents()
             child.Checked = Check
             If child.Nodes.Count > 0 Then ToggleNodeChecks(child, Check)
         Next
+        ActiveForm.Cursor = Cursors.Default
         Application.DoEvents()
-        Me.UseWaitCursor = False
     End Sub
 
     Private Sub mnuCheckAll_Click(sender As Object, e As EventArgs) Handles mnuCheckAll.Click

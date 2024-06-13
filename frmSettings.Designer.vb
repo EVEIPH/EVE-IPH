@@ -96,6 +96,8 @@ Partial Class frmSettings
         Me.chkLoadMaxAlphaSkills = New System.Windows.Forms.CheckBox()
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
+        Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
+        Me.chkManualPriceOverride = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -108,6 +110,7 @@ Partial Class frmSettings
         Me.gbCalcAvgPrice.SuspendLayout()
         Me.gbProxySettings.SuspendLayout()
         Me.gbCharacterOptions.SuspendLayout()
+        Me.gbPriceOptions.SuspendLayout()
         Me.SuspendLayout()
         '
         'chkCheckUpdatesStartup
@@ -122,7 +125,7 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(348, 413)
+        Me.btnSave.Location = New System.Drawing.Point(184, 473)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
@@ -131,7 +134,7 @@ Partial Class frmSettings
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(558, 413)
+        Me.btnCancel.Location = New System.Drawing.Point(394, 473)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
@@ -148,7 +151,7 @@ Partial Class frmSettings
         Me.gbGeneral.Controls.Add(Me.chkDisableSound)
         Me.gbGeneral.Controls.Add(Me.chkDisableSVR)
         Me.gbGeneral.Controls.Add(Me.chkShowToolTips)
-        Me.gbGeneral.Location = New System.Drawing.Point(5, 12)
+        Me.gbGeneral.Location = New System.Drawing.Point(12, 12)
         Me.gbGeneral.Name = "gbGeneral"
         Me.gbGeneral.Size = New System.Drawing.Size(235, 186)
         Me.gbGeneral.TabIndex = 4
@@ -300,7 +303,7 @@ Partial Class frmSettings
         Me.gbStationStandings.Controls.Add(Me.chkBrokerCorpStanding)
         Me.gbStationStandings.Controls.Add(Me.txtBrokerFactionStanding)
         Me.gbStationStandings.Controls.Add(Me.chkBrokerFactionStanding)
-        Me.gbStationStandings.Location = New System.Drawing.Point(246, 200)
+        Me.gbStationStandings.Location = New System.Drawing.Point(253, 151)
         Me.gbStationStandings.Name = "gbStationStandings"
         Me.gbStationStandings.Size = New System.Drawing.Size(160, 63)
         Me.gbStationStandings.TabIndex = 7
@@ -345,7 +348,7 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(453, 413)
+        Me.btnReset.Location = New System.Drawing.Point(289, 473)
         Me.btnReset.Name = "btnReset"
         Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
@@ -360,9 +363,9 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPRelicsDecryptors)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildBuyDefault)
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
-        Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
+        Me.gbBuildBuySettings.Location = New System.Drawing.Point(417, 175)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 174)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 145)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
@@ -454,7 +457,7 @@ Partial Class frmSettings
         Me.gbDefaultMEPE.Controls.Add(Me.chkDefaultTE)
         Me.gbDefaultMEPE.Controls.Add(Me.txtDefaultME)
         Me.gbDefaultMEPE.Controls.Add(Me.chkDefaultME)
-        Me.gbDefaultMEPE.Location = New System.Drawing.Point(246, 12)
+        Me.gbDefaultMEPE.Location = New System.Drawing.Point(253, 12)
         Me.gbDefaultMEPE.Name = "gbDefaultMEPE"
         Me.gbDefaultMEPE.Size = New System.Drawing.Size(160, 63)
         Me.gbDefaultMEPE.TabIndex = 34
@@ -499,7 +502,7 @@ Partial Class frmSettings
         '
         Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListInventMats)
         Me.gbShoppingList.Controls.Add(Me.chkIncludeShopListCopyMats)
-        Me.gbShoppingList.Location = New System.Drawing.Point(246, 77)
+        Me.gbShoppingList.Location = New System.Drawing.Point(253, 81)
         Me.gbShoppingList.Name = "gbShoppingList"
         Me.gbShoppingList.Size = New System.Drawing.Size(160, 63)
         Me.gbShoppingList.TabIndex = 37
@@ -530,16 +533,16 @@ Partial Class frmSettings
         '
         Me.gb3rdpartyMarketRefresh.Controls.Add(Me.txtFuzzworksMarketInterval)
         Me.gb3rdpartyMarketRefresh.Controls.Add(Me.chkFuzzworksMarketInterval)
-        Me.gb3rdpartyMarketRefresh.Location = New System.Drawing.Point(246, 142)
+        Me.gb3rdpartyMarketRefresh.Location = New System.Drawing.Point(417, 326)
         Me.gb3rdpartyMarketRefresh.Name = "gb3rdpartyMarketRefresh"
-        Me.gb3rdpartyMarketRefresh.Size = New System.Drawing.Size(160, 56)
+        Me.gb3rdpartyMarketRefresh.Size = New System.Drawing.Size(250, 44)
         Me.gb3rdpartyMarketRefresh.TabIndex = 38
         Me.gb3rdpartyMarketRefresh.TabStop = False
         Me.gb3rdpartyMarketRefresh.Text = "Fuzzworks Price Updates:"
         '
         'txtFuzzworksMarketInterval
         '
-        Me.txtFuzzworksMarketInterval.Location = New System.Drawing.Point(110, 25)
+        Me.txtFuzzworksMarketInterval.Location = New System.Drawing.Point(165, 16)
         Me.txtFuzzworksMarketInterval.Name = "txtFuzzworksMarketInterval"
         Me.txtFuzzworksMarketInterval.Size = New System.Drawing.Size(41, 20)
         Me.txtFuzzworksMarketInterval.TabIndex = 24
@@ -547,9 +550,10 @@ Partial Class frmSettings
         '
         'chkFuzzworksMarketInterval
         '
-        Me.chkFuzzworksMarketInterval.Location = New System.Drawing.Point(9, 18)
+        Me.chkFuzzworksMarketInterval.AutoSize = True
+        Me.chkFuzzworksMarketInterval.Location = New System.Drawing.Point(9, 19)
         Me.chkFuzzworksMarketInterval.Name = "chkFuzzworksMarketInterval"
-        Me.chkFuzzworksMarketInterval.Size = New System.Drawing.Size(105, 34)
+        Me.chkFuzzworksMarketInterval.Size = New System.Drawing.Size(150, 17)
         Me.chkFuzzworksMarketInterval.TabIndex = 23
         Me.chkFuzzworksMarketInterval.Text = "Refresh Interval (Minutes):"
         Me.chkFuzzworksMarketInterval.UseVisualStyleBackColor = True
@@ -562,7 +566,7 @@ Partial Class frmSettings
         Me.gbImplants.Controls.Add(Me.chkBeanCounterRefining)
         Me.gbImplants.Controls.Add(Me.cmbBeanCounterCopy)
         Me.gbImplants.Controls.Add(Me.cmbBeanCounterRefining)
-        Me.gbImplants.Location = New System.Drawing.Point(410, 12)
+        Me.gbImplants.Location = New System.Drawing.Point(417, 12)
         Me.gbImplants.Name = "gbImplants"
         Me.gbImplants.Size = New System.Drawing.Size(250, 157)
         Me.gbImplants.TabIndex = 36
@@ -578,7 +582,7 @@ Partial Class frmSettings
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshBPsonStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkCheckUpdatesStartup)
         Me.gbStartupOptions.Controls.Add(Me.chkRefreshAssetsonStartup)
-        Me.gbStartupOptions.Location = New System.Drawing.Point(5, 200)
+        Me.gbStartupOptions.Location = New System.Drawing.Point(12, 204)
         Me.gbStartupOptions.Name = "gbStartupOptions"
         Me.gbStartupOptions.Size = New System.Drawing.Size(235, 162)
         Me.gbStartupOptions.TabIndex = 39
@@ -630,9 +634,9 @@ Partial Class frmSettings
         Me.gbExportOptions.Controls.Add(Me.rbtnExportSSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportCSV)
         Me.gbExportOptions.Controls.Add(Me.rbtnExportDefault)
-        Me.gbExportOptions.Location = New System.Drawing.Point(246, 347)
+        Me.gbExportOptions.Location = New System.Drawing.Point(252, 306)
         Me.gbExportOptions.Name = "gbExportOptions"
-        Me.gbExportOptions.Size = New System.Drawing.Size(95, 102)
+        Me.gbExportOptions.Size = New System.Drawing.Size(161, 64)
         Me.gbExportOptions.TabIndex = 38
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
@@ -640,7 +644,7 @@ Partial Class frmSettings
         'rbtnExportSSV
         '
         Me.rbtnExportSSV.AutoSize = True
-        Me.rbtnExportSSV.Location = New System.Drawing.Point(9, 71)
+        Me.rbtnExportSSV.Location = New System.Drawing.Point(113, 25)
         Me.rbtnExportSSV.Name = "rbtnExportSSV"
         Me.rbtnExportSSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportSSV.TabIndex = 2
@@ -651,7 +655,7 @@ Partial Class frmSettings
         'rbtnExportCSV
         '
         Me.rbtnExportCSV.AutoSize = True
-        Me.rbtnExportCSV.Location = New System.Drawing.Point(9, 48)
+        Me.rbtnExportCSV.Location = New System.Drawing.Point(66, 25)
         Me.rbtnExportCSV.Name = "rbtnExportCSV"
         Me.rbtnExportCSV.Size = New System.Drawing.Size(46, 17)
         Me.rbtnExportCSV.TabIndex = 1
@@ -679,7 +683,7 @@ Partial Class frmSettings
         Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRRegion)
         Me.gbCalcAvgPrice.Controls.Add(Me.txtSVRThreshold)
         Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRThreshold)
-        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(5, 362)
+        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(12, 372)
         Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
         Me.gbCalcAvgPrice.Size = New System.Drawing.Size(235, 87)
         Me.gbCalcAvgPrice.TabIndex = 40
@@ -756,25 +760,25 @@ Partial Class frmSettings
         Me.gbProxySettings.Controls.Add(Me.lblProxyAddress)
         Me.gbProxySettings.Controls.Add(Me.txtProxyPort)
         Me.gbProxySettings.Controls.Add(Me.lblProxyPort)
-        Me.gbProxySettings.Location = New System.Drawing.Point(347, 347)
+        Me.gbProxySettings.Location = New System.Drawing.Point(417, 376)
         Me.gbProxySettings.Name = "gbProxySettings"
-        Me.gbProxySettings.Size = New System.Drawing.Size(311, 60)
+        Me.gbProxySettings.Size = New System.Drawing.Size(250, 83)
         Me.gbProxySettings.TabIndex = 41
         Me.gbProxySettings.TabStop = False
         Me.gbProxySettings.Text = "Proxy Settings:"
         '
         'txtProxyAddress
         '
-        Me.txtProxyAddress.Location = New System.Drawing.Point(9, 29)
+        Me.txtProxyAddress.Location = New System.Drawing.Point(54, 18)
         Me.txtProxyAddress.MaxLength = 0
         Me.txtProxyAddress.Name = "txtProxyAddress"
-        Me.txtProxyAddress.Size = New System.Drawing.Size(245, 20)
+        Me.txtProxyAddress.Size = New System.Drawing.Size(190, 20)
         Me.txtProxyAddress.TabIndex = 5
         '
         'lblProxyAddress
         '
         Me.lblProxyAddress.AutoSize = True
-        Me.lblProxyAddress.Location = New System.Drawing.Point(6, 15)
+        Me.lblProxyAddress.Location = New System.Drawing.Point(6, 21)
         Me.lblProxyAddress.Name = "lblProxyAddress"
         Me.lblProxyAddress.Size = New System.Drawing.Size(48, 13)
         Me.lblProxyAddress.TabIndex = 4
@@ -782,7 +786,7 @@ Partial Class frmSettings
         '
         'txtProxyPort
         '
-        Me.txtProxyPort.Location = New System.Drawing.Point(260, 29)
+        Me.txtProxyPort.Location = New System.Drawing.Point(54, 44)
         Me.txtProxyPort.MaxLength = 0
         Me.txtProxyPort.Name = "txtProxyPort"
         Me.txtProxyPort.Size = New System.Drawing.Size(45, 20)
@@ -791,7 +795,7 @@ Partial Class frmSettings
         'lblProxyPort
         '
         Me.lblProxyPort.AutoSize = True
-        Me.lblProxyPort.Location = New System.Drawing.Point(257, 15)
+        Me.lblProxyPort.Location = New System.Drawing.Point(25, 47)
         Me.lblProxyPort.Name = "lblProxyPort"
         Me.lblProxyPort.Size = New System.Drawing.Size(29, 13)
         Me.lblProxyPort.TabIndex = 2
@@ -802,7 +806,7 @@ Partial Class frmSettings
         Me.gbCharacterOptions.Controls.Add(Me.chkLoadMaxAlphaSkills)
         Me.gbCharacterOptions.Controls.Add(Me.chkUseActiveSkills)
         Me.gbCharacterOptions.Controls.Add(Me.chkAlphaAccount)
-        Me.gbCharacterOptions.Location = New System.Drawing.Point(246, 265)
+        Me.gbCharacterOptions.Location = New System.Drawing.Point(253, 220)
         Me.gbCharacterOptions.Name = "gbCharacterOptions"
         Me.gbCharacterOptions.Size = New System.Drawing.Size(160, 80)
         Me.gbCharacterOptions.TabIndex = 39
@@ -839,12 +843,32 @@ Partial Class frmSettings
         Me.chkAlphaAccount.Text = "Alpha Account (.25% tax)"
         Me.chkAlphaAccount.UseVisualStyleBackColor = True
         '
+        'gbPriceOptions
+        '
+        Me.gbPriceOptions.Controls.Add(Me.chkManualPriceOverride)
+        Me.gbPriceOptions.Location = New System.Drawing.Point(252, 376)
+        Me.gbPriceOptions.Name = "gbPriceOptions"
+        Me.gbPriceOptions.Size = New System.Drawing.Size(161, 83)
+        Me.gbPriceOptions.TabIndex = 39
+        Me.gbPriceOptions.TabStop = False
+        Me.gbPriceOptions.Text = "Price Options:"
+        '
+        'chkManualPriceOverride
+        '
+        Me.chkManualPriceOverride.Location = New System.Drawing.Point(10, 21)
+        Me.chkManualPriceOverride.Name = "chkManualPriceOverride"
+        Me.chkManualPriceOverride.Size = New System.Drawing.Size(145, 30)
+        Me.chkManualPriceOverride.TabIndex = 33
+        Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
+        Me.chkManualPriceOverride.UseVisualStyleBackColor = True
+        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(665, 452)
+        Me.ClientSize = New System.Drawing.Size(678, 516)
+        Me.Controls.Add(Me.gbPriceOptions)
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
@@ -891,6 +915,7 @@ Partial Class frmSettings
         Me.gbProxySettings.PerformLayout()
         Me.gbCharacterOptions.ResumeLayout(False)
         Me.gbCharacterOptions.PerformLayout()
+        Me.gbPriceOptions.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -966,4 +991,6 @@ Partial Class frmSettings
     Friend WithEvents chkAlwaysBuyRAMs As CheckBox
     Friend WithEvents chkAlwaysBuyFuelBlocks As CheckBox
     Friend WithEvents chkBuildWhenNotEnoughItemsonMarket As CheckBox
+    Friend WithEvents gbPriceOptions As GroupBox
+    Friend WithEvents chkManualPriceOverride As CheckBox
 End Class

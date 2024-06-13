@@ -353,7 +353,7 @@ Partial Class ManufacturingFacility
         '
         'btnStructureDelete
         '
-        Me.btnStructureDelete.Location = New System.Drawing.Point(221, 109)
+        Me.btnStructureDelete.Location = New System.Drawing.Point(231, 111)
         Me.btnStructureDelete.Name = "btnStructureDelete"
         Me.btnStructureDelete.Size = New System.Drawing.Size(31, 22)
         Me.btnStructureDelete.TabIndex = 67
@@ -397,7 +397,7 @@ Partial Class ManufacturingFacility
         Me.Controls.Add(Me.lblFacilityFWUpgrade)
         Me.Controls.Add(Me.btnFacilityFitting)
         Me.Name = "ManufacturingFacility"
-        Me.Size = New System.Drawing.Size(311, 311)
+        Me.Size = New System.Drawing.Size(333, 311)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
