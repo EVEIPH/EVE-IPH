@@ -2183,7 +2183,7 @@ Public Class ManufacturingFacility
             rsLoader.Read()
         End If
 
-        If Not IsNothing(rsLoader) Then
+        If rsLoader.HasRows Then
             FacilityID = rsLoader.GetInt64(0)
             rsLoader.Close()
         Else
