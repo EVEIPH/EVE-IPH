@@ -103,7 +103,7 @@ Public Class frmConversiontoOreSettings
         Dim OreList As New List(Of OreType)
 
         ' Check to make sure they have the right stuff checked
-        If Not CheckMiningEntryData() Then
+        If Not CheckMiningEntryData() Or FirstLoad Then
             Exit Sub
         End If
 
