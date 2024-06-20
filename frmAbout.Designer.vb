@@ -194,6 +194,7 @@ Partial Class frmAbout
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.pbPatreon.BackColor = System.Drawing.Color.Transparent
+        Me.pbPatreon.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.patreon_sm
         Me.pbPatreon.Location = New System.Drawing.Point(3, 295)
         Me.pbPatreon.Name = "pbPatreon"
         Me.pbPatreon.Size = New System.Drawing.Size(124, 32)
@@ -204,6 +205,7 @@ Partial Class frmAbout
         'pbPaypal
         '
         Me.pbPaypal.BackColor = System.Drawing.Color.Transparent
+        Me.pbPaypal.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources.PayPalButton
         Me.pbPaypal.Location = New System.Drawing.Point(3, 257)
         Me.pbPaypal.Name = "pbPaypal"
         Me.pbPaypal.Size = New System.Drawing.Size(124, 32)

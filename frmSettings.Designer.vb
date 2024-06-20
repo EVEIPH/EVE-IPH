@@ -90,6 +90,7 @@ Partial Class frmSettings
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
         Me.chkManualPriceOverride = New System.Windows.Forms.CheckBox()
+        Me.chkAutoUpdateSVRBPTab = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -756,10 +757,11 @@ Partial Class frmSettings
         '
         'gbPriceOptions
         '
+        Me.gbPriceOptions.Controls.Add(Me.chkAutoUpdateSVRBPTab)
         Me.gbPriceOptions.Controls.Add(Me.chkManualPriceOverride)
         Me.gbPriceOptions.Location = New System.Drawing.Point(12, 366)
         Me.gbPriceOptions.Name = "gbPriceOptions"
-        Me.gbPriceOptions.Size = New System.Drawing.Size(235, 48)
+        Me.gbPriceOptions.Size = New System.Drawing.Size(235, 70)
         Me.gbPriceOptions.TabIndex = 39
         Me.gbPriceOptions.TabStop = False
         Me.gbPriceOptions.Text = "Price Options:"
@@ -773,6 +775,16 @@ Partial Class frmSettings
         Me.chkManualPriceOverride.TabIndex = 33
         Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
         Me.chkManualPriceOverride.UseVisualStyleBackColor = True
+        '
+        'chkAutoUpdateSVRBPTab
+        '
+        Me.chkAutoUpdateSVRBPTab.AutoSize = True
+        Me.chkAutoUpdateSVRBPTab.Location = New System.Drawing.Point(17, 42)
+        Me.chkAutoUpdateSVRBPTab.Name = "chkAutoUpdateSVRBPTab"
+        Me.chkAutoUpdateSVRBPTab.Size = New System.Drawing.Size(203, 17)
+        Me.chkAutoUpdateSVRBPTab.TabIndex = 34
+        Me.chkAutoUpdateSVRBPTab.Text = "Automatically update SVR on BP Tab"
+        Me.chkAutoUpdateSVRBPTab.UseVisualStyleBackColor = True
         '
         'frmSettings
         '
@@ -895,4 +907,5 @@ Partial Class frmSettings
     Friend WithEvents chkBuildWhenNotEnoughItemsonMarket As CheckBox
     Friend WithEvents gbPriceOptions As GroupBox
     Friend WithEvents chkManualPriceOverride As CheckBox
+    Friend WithEvents chkAutoUpdateSVRBPTab As CheckBox
 End Class

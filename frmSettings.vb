@@ -219,51 +219,6 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnBuildT2ProcessedMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnBuildT2T3RawMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            Else
-                btnSave.Text = "Save"
-            End If
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) 
-        If Not SVRComboLoaded Then
-            Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
-            SVRComboLoaded = True
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
-        e.Handled = True
-    End Sub
-
     Private Sub txtDefaultME_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultME.KeyPress
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
@@ -338,11 +293,9 @@ Public Class frmSettings
                 .SetToolTip(chkRefreshPublicStructureDataonStartup, "When checked, IPH will refresh data on public structures (if cache date has past) for use in price updates")
                 .SetToolTip(chkSupressESImsgs, "When checked, supresses messages if there are ESI Status errors.")
 
-                ' SVR Settings
-                .SetToolTip(lblSVRThreshold, "When set, this will be the default threshold for Sales to Volume Ratio on the BP and Manufacturing tabs")
-                .SetToolTip(lblSVRAvgPrice, "When set, this will be the default days the Sales to Volume Ratio will be averaged over for the BP and Manufacturing tabs")
-                .SetToolTip(lblSVRRegion, "When set, this will be the default region for Sales to Volume Ratio calcuations on the BP and Manufacturing tabs")
-                .SetToolTip(chkAutoUpdateSVRBPTab, "When set, the Sales to Volume Ratio will be updated on the BP tab when a Blueprint is selected")
+                ' Price Settings
+                .SetToolTip(chkManualPriceOverride, "When set, any prices the user inputs manually into IPH will not be overriden when doing an update to prices.")
+                .SetToolTip(chkAutoUpdateSVRBPTab, "When set, the Sales to Volume Ratio will be updated on the BP tab when a Blueprint is selected.")
 
                 ' Export Data
                 .SetToolTip(rbtnExportSSV, "Exports data in SemiColon Separated Values with commas for decimals")
@@ -529,9 +482,6 @@ Public Class frmSettings
                 txtFuzzworksMarketInterval.Text = CStr(Defaults.DefaultUpdatePricesRefreshInterval)
             End If
 
-            cmbSVRRegion.Text = .SVRAveragePriceRegion
-            cmbSVRAvgPriceDuration.Text = .SVRAveragePriceDuration
-            txtSVRThreshold.Text = CStr(.IgnoreSVRThresholdValue)
             chkAutoUpdateSVRBPTab.Checked = .AutoUpdateSVRonBPTab
 
             txtProxyAddress.Text = .ProxyAddress
@@ -701,9 +651,6 @@ Public Class frmSettings
                 .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 
                 ' SVR
-                .IgnoreSVRThresholdValue = CDbl(txtSVRThreshold.Text)
-                .SVRAveragePriceRegion = cmbSVRRegion.Text
-                .SVRAveragePriceDuration = cmbSVRAvgPriceDuration.Text
                 .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
 
                 If txtProxyAddress.Text <> "" Then
