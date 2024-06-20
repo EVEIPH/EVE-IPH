@@ -3285,6 +3285,22 @@ Public Class frmMain
         End If
     End Sub
 
+    Private Sub btnBPMarketHistory_Click(sender As Object, e As EventArgs) Handles btnBPMarketHistory.Click
+        If Not IsNothing(SelectedBlueprint) Then
+            Dim RegionID As Long
+
+            ' Get the region ID
+            RegionID = GetRegionID(UserApplicationSettings.SVRAveragePriceRegion)
+            If RegionID = 0 Then
+                RegionID = TheForgeTypeID
+            End If
+
+            Dim f1 As New frmMarketHistoryViewer(SelectedBlueprint.GetItemID, SelectedBlueprint.GetItemName, RegionID, UserApplicationSettings.SVRAveragePriceRegion,
+                                                 CInt(UserApplicationSettings.SVRAveragePriceDuration))
+            f1.Show()
+        End If
+
+    End Sub
 
     Private Sub cmbBPInventionDecryptor_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmbBPInventionDecryptor.SelectedIndexChanged
 

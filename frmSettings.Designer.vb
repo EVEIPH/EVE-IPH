@@ -79,14 +79,6 @@ Partial Class frmSettings
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
-        Me.gbCalcAvgPrice = New System.Windows.Forms.GroupBox()
-        Me.cmbSVRAvgPriceDuration = New System.Windows.Forms.ComboBox()
-        Me.chkAutoUpdateSVRBPTab = New System.Windows.Forms.CheckBox()
-        Me.lblSVRRegion = New System.Windows.Forms.Label()
-        Me.lblSVRAvgPrice = New System.Windows.Forms.Label()
-        Me.cmbSVRRegion = New System.Windows.Forms.ComboBox()
-        Me.txtSVRThreshold = New System.Windows.Forms.TextBox()
-        Me.lblSVRThreshold = New System.Windows.Forms.Label()
         Me.gbProxySettings = New System.Windows.Forms.GroupBox()
         Me.txtProxyAddress = New System.Windows.Forms.TextBox()
         Me.lblProxyAddress = New System.Windows.Forms.Label()
@@ -107,7 +99,6 @@ Partial Class frmSettings
         Me.gbImplants.SuspendLayout()
         Me.gbStartupOptions.SuspendLayout()
         Me.gbExportOptions.SuspendLayout()
-        Me.gbCalcAvgPrice.SuspendLayout()
         Me.gbProxySettings.SuspendLayout()
         Me.gbCharacterOptions.SuspendLayout()
         Me.gbPriceOptions.SuspendLayout()
@@ -674,86 +665,6 @@ Partial Class frmSettings
         Me.rbtnExportDefault.Text = "Default"
         Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
-        'gbCalcAvgPrice
-        '
-        Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRAvgPriceDuration)
-        Me.gbCalcAvgPrice.Controls.Add(Me.chkAutoUpdateSVRBPTab)
-        Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRRegion)
-        Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRAvgPrice)
-        Me.gbCalcAvgPrice.Controls.Add(Me.cmbSVRRegion)
-        Me.gbCalcAvgPrice.Controls.Add(Me.txtSVRThreshold)
-        Me.gbCalcAvgPrice.Controls.Add(Me.lblSVRThreshold)
-        Me.gbCalcAvgPrice.Location = New System.Drawing.Point(12, 372)
-        Me.gbCalcAvgPrice.Name = "gbCalcAvgPrice"
-        Me.gbCalcAvgPrice.Size = New System.Drawing.Size(235, 87)
-        Me.gbCalcAvgPrice.TabIndex = 40
-        Me.gbCalcAvgPrice.TabStop = False
-        Me.gbCalcAvgPrice.Text = "SVR Settings:"
-        '
-        'cmbSVRAvgPriceDuration
-        '
-        Me.cmbSVRAvgPriceDuration.FormattingEnabled = True
-        Me.cmbSVRAvgPriceDuration.Items.AddRange(New Object() {"7", "15", "30", "60", "90", "180", "365"})
-        Me.cmbSVRAvgPriceDuration.Location = New System.Drawing.Point(188, 14)
-        Me.cmbSVRAvgPriceDuration.MaxLength = 3
-        Me.cmbSVRAvgPriceDuration.Name = "cmbSVRAvgPriceDuration"
-        Me.cmbSVRAvgPriceDuration.Size = New System.Drawing.Size(41, 21)
-        Me.cmbSVRAvgPriceDuration.TabIndex = 3
-        '
-        'chkAutoUpdateSVRBPTab
-        '
-        Me.chkAutoUpdateSVRBPTab.AutoSize = True
-        Me.chkAutoUpdateSVRBPTab.Location = New System.Drawing.Point(17, 64)
-        Me.chkAutoUpdateSVRBPTab.Name = "chkAutoUpdateSVRBPTab"
-        Me.chkAutoUpdateSVRBPTab.Size = New System.Drawing.Size(203, 17)
-        Me.chkAutoUpdateSVRBPTab.TabIndex = 39
-        Me.chkAutoUpdateSVRBPTab.Text = "Automatically update SVR on BP Tab"
-        Me.chkAutoUpdateSVRBPTab.UseVisualStyleBackColor = True
-        '
-        'lblSVRRegion
-        '
-        Me.lblSVRRegion.AutoSize = True
-        Me.lblSVRRegion.Location = New System.Drawing.Point(17, 42)
-        Me.lblSVRRegion.Name = "lblSVRRegion"
-        Me.lblSVRRegion.Size = New System.Drawing.Size(44, 13)
-        Me.lblSVRRegion.TabIndex = 4
-        Me.lblSVRRegion.Text = "Region:"
-        '
-        'lblSVRAvgPrice
-        '
-        Me.lblSVRAvgPrice.Location = New System.Drawing.Point(111, 10)
-        Me.lblSVRAvgPrice.Name = "lblSVRAvgPrice"
-        Me.lblSVRAvgPrice.Size = New System.Drawing.Size(78, 28)
-        Me.lblSVRAvgPrice.TabIndex = 2
-        Me.lblSVRAvgPrice.Text = "Average Days:"
-        Me.lblSVRAvgPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'cmbSVRRegion
-        '
-        Me.cmbSVRRegion.FormattingEnabled = True
-        Me.cmbSVRRegion.Location = New System.Drawing.Point(61, 39)
-        Me.cmbSVRRegion.Name = "cmbSVRRegion"
-        Me.cmbSVRRegion.Size = New System.Drawing.Size(168, 21)
-        Me.cmbSVRRegion.TabIndex = 5
-        '
-        'txtSVRThreshold
-        '
-        Me.txtSVRThreshold.Location = New System.Drawing.Point(61, 15)
-        Me.txtSVRThreshold.MaxLength = 10
-        Me.txtSVRThreshold.Name = "txtSVRThreshold"
-        Me.txtSVRThreshold.Size = New System.Drawing.Size(45, 20)
-        Me.txtSVRThreshold.TabIndex = 1
-        Me.txtSVRThreshold.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
-        'lblSVRThreshold
-        '
-        Me.lblSVRThreshold.AutoSize = True
-        Me.lblSVRThreshold.Location = New System.Drawing.Point(4, 18)
-        Me.lblSVRThreshold.Name = "lblSVRThreshold"
-        Me.lblSVRThreshold.Size = New System.Drawing.Size(57, 13)
-        Me.lblSVRThreshold.TabIndex = 0
-        Me.lblSVRThreshold.Text = "Threshold:"
-        '
         'gbProxySettings
         '
         Me.gbProxySettings.Controls.Add(Me.txtProxyAddress)
@@ -846,18 +757,19 @@ Partial Class frmSettings
         'gbPriceOptions
         '
         Me.gbPriceOptions.Controls.Add(Me.chkManualPriceOverride)
-        Me.gbPriceOptions.Location = New System.Drawing.Point(252, 376)
+        Me.gbPriceOptions.Location = New System.Drawing.Point(12, 366)
         Me.gbPriceOptions.Name = "gbPriceOptions"
-        Me.gbPriceOptions.Size = New System.Drawing.Size(161, 83)
+        Me.gbPriceOptions.Size = New System.Drawing.Size(235, 48)
         Me.gbPriceOptions.TabIndex = 39
         Me.gbPriceOptions.TabStop = False
         Me.gbPriceOptions.Text = "Price Options:"
         '
         'chkManualPriceOverride
         '
-        Me.chkManualPriceOverride.Location = New System.Drawing.Point(10, 21)
+        Me.chkManualPriceOverride.AutoSize = True
+        Me.chkManualPriceOverride.Location = New System.Drawing.Point(17, 19)
         Me.chkManualPriceOverride.Name = "chkManualPriceOverride"
-        Me.chkManualPriceOverride.Size = New System.Drawing.Size(145, 30)
+        Me.chkManualPriceOverride.Size = New System.Drawing.Size(211, 17)
         Me.chkManualPriceOverride.TabIndex = 33
         Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
         Me.chkManualPriceOverride.UseVisualStyleBackColor = True
@@ -872,7 +784,6 @@ Partial Class frmSettings
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
-        Me.Controls.Add(Me.gbCalcAvgPrice)
         Me.Controls.Add(Me.gbExportOptions)
         Me.Controls.Add(Me.gbStartupOptions)
         Me.Controls.Add(Me.gbImplants)
@@ -909,13 +820,12 @@ Partial Class frmSettings
         Me.gbStartupOptions.PerformLayout()
         Me.gbExportOptions.ResumeLayout(False)
         Me.gbExportOptions.PerformLayout()
-        Me.gbCalcAvgPrice.ResumeLayout(False)
-        Me.gbCalcAvgPrice.PerformLayout()
         Me.gbProxySettings.ResumeLayout(False)
         Me.gbProxySettings.PerformLayout()
         Me.gbCharacterOptions.ResumeLayout(False)
         Me.gbCharacterOptions.PerformLayout()
         Me.gbPriceOptions.ResumeLayout(False)
+        Me.gbPriceOptions.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -965,14 +875,6 @@ Partial Class frmSettings
     Friend WithEvents rbtnExportCSV As System.Windows.Forms.RadioButton
     Friend WithEvents chkSaveBPRelicsDecryptors As System.Windows.Forms.CheckBox
     Friend WithEvents chkLinksInCopyText As System.Windows.Forms.CheckBox
-    Friend WithEvents gbCalcAvgPrice As System.Windows.Forms.GroupBox
-    Friend WithEvents lblSVRRegion As System.Windows.Forms.Label
-    Friend WithEvents lblSVRAvgPrice As System.Windows.Forms.Label
-    Friend WithEvents cmbSVRRegion As System.Windows.Forms.ComboBox
-    Friend WithEvents txtSVRThreshold As System.Windows.Forms.TextBox
-    Friend WithEvents lblSVRThreshold As System.Windows.Forms.Label
-    Friend WithEvents cmbSVRAvgPriceDuration As System.Windows.Forms.ComboBox
-    Friend WithEvents chkAutoUpdateSVRBPTab As System.Windows.Forms.CheckBox
     Friend WithEvents gbProxySettings As System.Windows.Forms.GroupBox
     Friend WithEvents txtProxyAddress As System.Windows.Forms.TextBox
     Friend WithEvents lblProxyAddress As System.Windows.Forms.Label

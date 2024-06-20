@@ -231,7 +231,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
+    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
@@ -241,7 +241,7 @@ Public Class frmSettings
         End If
     End Sub
 
-    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtSVRThreshold.KeyPress
+    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
         ' Only allow numbers or backspace
         If e.KeyChar <> ControlChars.Back Then
             If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
@@ -253,14 +253,14 @@ Public Class frmSettings
         End If
     End Sub
 
-    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
+    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) 
         If Not SVRComboLoaded Then
             Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
             SVRComboLoaded = True
         End If
     End Sub
 
-    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
+    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) 
         e.Handled = True
     End Sub
 
