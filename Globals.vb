@@ -182,6 +182,7 @@ Public Module Public_Variables
 
     Public PriceQueryCount As Integer ' This will track the number of times the user queries EVE Central - used to warn them for over pinging
     Public CalcHistoryRegionLoaded As Boolean
+    Public CalcBPHistoryRegionLoaded As Boolean
     Public ShownPriceUpdateError As Boolean ' Only want to show them the error once
 
     Public Const BPO As String = "BPO"

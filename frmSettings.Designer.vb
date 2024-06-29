@@ -89,8 +89,8 @@ Partial Class frmSettings
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
-        Me.chkManualPriceOverride = New System.Windows.Forms.CheckBox()
         Me.chkAutoUpdateSVRBPTab = New System.Windows.Forms.CheckBox()
+        Me.chkManualPriceOverride = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -766,16 +766,6 @@ Partial Class frmSettings
         Me.gbPriceOptions.TabStop = False
         Me.gbPriceOptions.Text = "Price Options:"
         '
-        'chkManualPriceOverride
-        '
-        Me.chkManualPriceOverride.AutoSize = True
-        Me.chkManualPriceOverride.Location = New System.Drawing.Point(17, 19)
-        Me.chkManualPriceOverride.Name = "chkManualPriceOverride"
-        Me.chkManualPriceOverride.Size = New System.Drawing.Size(211, 17)
-        Me.chkManualPriceOverride.TabIndex = 33
-        Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
-        Me.chkManualPriceOverride.UseVisualStyleBackColor = True
-        '
         'chkAutoUpdateSVRBPTab
         '
         Me.chkAutoUpdateSVRBPTab.AutoSize = True
@@ -785,6 +775,16 @@ Partial Class frmSettings
         Me.chkAutoUpdateSVRBPTab.TabIndex = 34
         Me.chkAutoUpdateSVRBPTab.Text = "Automatically update SVR on BP Tab"
         Me.chkAutoUpdateSVRBPTab.UseVisualStyleBackColor = True
+        '
+        'chkManualPriceOverride
+        '
+        Me.chkManualPriceOverride.AutoSize = True
+        Me.chkManualPriceOverride.Location = New System.Drawing.Point(17, 19)
+        Me.chkManualPriceOverride.Name = "chkManualPriceOverride"
+        Me.chkManualPriceOverride.Size = New System.Drawing.Size(211, 17)
+        Me.chkManualPriceOverride.TabIndex = 33
+        Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
+        Me.chkManualPriceOverride.UseVisualStyleBackColor = True
         '
         'frmSettings
         '

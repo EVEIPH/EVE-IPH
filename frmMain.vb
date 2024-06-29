@@ -3292,13 +3292,13 @@ Public Class frmMain
             Dim RegionID As Long
 
             ' Get the region ID
-            RegionID = GetRegionID(UserApplicationSettings.SVRAveragePriceRegion)
+            RegionID = GetRegionID(cmbBPHistoryRegion.Text)
             If RegionID = 0 Then
                 RegionID = TheForgeTypeID
             End If
 
-            Dim f1 As New frmMarketHistoryViewer(SelectedBlueprint.GetItemID, SelectedBlueprint.GetItemName, RegionID, UserApplicationSettings.SVRAveragePriceRegion,
-                                                 CInt(UserApplicationSettings.SVRAveragePriceDuration))
+            Dim f1 As New frmMarketHistoryViewer(SelectedBlueprint.GetItemID, SelectedBlueprint.GetItemName, RegionID, cmbBPHistoryRegion.Text,
+                                                 CInt(cmbBPHistoryAvgDays.Text))
             f1.Show()
         End If
 
@@ -4131,6 +4131,25 @@ Public Class frmMain
 
     End Sub
 
+    Private Sub chkBPIncludeBPCCost_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPIncludeBPCCost.CheckedChanged
+
+    End Sub
+
+    Private Sub cmbBPHistoryRegion_DropDown(sender As Object, e As EventArgs) Handles cmbBPHistoryRegion.DropDown
+        If Not CalcBPHistoryRegionLoaded Then
+            Call LoadRegionCombo(cmbBPHistoryRegion, cmbBPHistoryRegion.Text)
+            CalcBPHistoryRegionLoaded = True
+        End If
+    End Sub
+
+    Private Sub cmbBPHistoryRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPHistoryRegion.KeyPress
+        e.Handled = True
+    End Sub
+
+    Private Sub cmbBPHistoryAvgDays_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbBPHistoryAvgDays.KeyPress
+        e.Handled = True
+    End Sub
+
 #End Region
 
 #Region "BP Combo / List Processing "
@@ -4803,6 +4822,10 @@ Public Class frmMain
             rbtnBPProcT2MatType.Enabled = False
             rbtnBPRawT2MatType.Enabled = False
 
+            ' Market History
+            cmbBPHistoryRegion.Text = .HistoryRegion
+            cmbBPHistoryAvgDays.Text = .HistoryAvgDays
+
             Select Case .BuildT2T3Materials
                 Case BuildMatType.AdvMaterials
                     rbtnBPAdvT2MatType.Checked = True
@@ -4851,6 +4874,9 @@ Public Class frmMain
         txtBPBrokerFeeRate.Enabled = False
         gbBPManualSystemCostIndex.Enabled = False
         gbBPIgnoreinCalcs.Enabled = False
+        chkBPIncludeBPCCost.Enabled = False
+        txtBPBPCCCost.Enabled = False
+        btnBPMarketHistory.Enabled = False
 
         ' Copy Labels
         rbtnBPComponentCopy.Enabled = False
@@ -5034,6 +5060,10 @@ Public Class frmMain
             .IgnoreInvention = chkBPIgnoreInvention.Checked
             .IgnoreMinerals = chkBPIgnoreMinerals.Checked
             .IgnoreT1Item = chkBPIgnoreT1Item.Checked
+
+            ' History
+            .HistoryAvgDays = cmbBPHistoryAvgDays.Text
+            .HistoryRegion = cmbBPHistoryRegion.Text
 
             BPTabFacility.GetFacility(ProductionType.SubsystemManufacturing).IncludeActivityCost = chkBPIncludeT3Costs.Checked
             BPTabFacility.GetFacility(ProductionType.SubsystemManufacturing).IncludeActivityTime = chkBPIncludeT3Time.Checked
@@ -5327,6 +5357,9 @@ Public Class frmMain
             chkBPTaxes.Enabled = True
             chkBPBrokerFees.Enabled = True
             chkBPPricePerUnit.Enabled = True
+            chkBPIncludeBPCCost.Enabled = True
+            txtBPBPCCCost.Enabled = True
+            btnBPMarketHistory.Enabled = True
 
             btnBPBack.Enabled = True
             btnBPForward.Enabled = True
@@ -5539,7 +5572,6 @@ Public Class frmMain
         readerBP.Close()
 
     End Sub
-
 
     ' Updates the lists with the correct materials for the selected item
     Public Sub UpdateBPGrids(ByVal BPID As Integer, ByVal BPTech As Integer, ByVal NewBPSelection As Boolean,

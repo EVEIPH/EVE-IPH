@@ -1583,6 +1583,8 @@ Public Class ProgramSettings
                     .NPCBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "NPCBPOs", DefaultBPNPCBPOs))
                     .SellExcessBuildItems = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SellExcessBuildItems", DefaultBPSellExcessItems))
                     .BuildT2T3Materials = CType(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType), BuildMatType)
+                    .HistoryRegion = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "HistoryRegion", DefaultSVRAveragePriceRegion))
+                    .HistoryAvgDays = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "HistoryAvgDays", DefaultSVRAveragePriceDuration))
                 End With
 
             Else
@@ -1605,7 +1607,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(45) As Setting
+        Dim BPSettingsList(47) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1663,6 +1665,9 @@ Public Class ProgramSettings
 
             BPSettingsList(44) = New Setting("OptimalT2Decryptor", CStr(SentSettings.OptimalT2Decryptor))
             BPSettingsList(45) = New Setting("OptimalT3Decryptor", CStr(SentSettings.OptimalT3Decryptor))
+
+            BPSettingsList(46) = New Setting("HistoryRegion", CStr(SentSettings.HistoryRegion))
+            BPSettingsList(47) = New Setting("HistoryAvgDays", CStr(SentSettings.HistoryAvgDays))
 
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -1732,6 +1737,9 @@ Public Class ProgramSettings
             .CompressedOre = DefaultBPCompressedOre
             .SellExcessBuildItems = DefaultBPSellExcessItems
             .BuildT2T3Materials = CType(DefaultBuiltMatsType, BuildMatType)
+
+            .HistoryAvgDays = DefaultSVRAveragePriceDuration
+            .HistoryRegion = DefaultSVRAveragePriceRegion
         End With
 
         ' Save locally
@@ -5537,6 +5545,9 @@ Public Structure BPTabSettings
     Dim SellExcessBuildItems As Boolean
 
     Dim BuildT2T3Materials As BuildMatType ' How they want to build T2/T3 items (BuildMatType) - BP Tab
+
+    Dim HistoryRegion As String
+    Dim HistoryAvgDays As String
 
 End Structure
 
