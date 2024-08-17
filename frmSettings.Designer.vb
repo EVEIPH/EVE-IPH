@@ -95,6 +95,9 @@ Partial Class frmSettings
         Me.chkLoadMaxAlphaSkills = New System.Windows.Forms.CheckBox()
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
+        Me.gbTaxRates = New System.Windows.Forms.GroupBox()
+        Me.btnOpenRates = New System.Windows.Forms.Button()
+        Me.lblAdjustDefaultFees = New System.Windows.Forms.Label()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -107,6 +110,7 @@ Partial Class frmSettings
         Me.gbCalcAvgPrice.SuspendLayout()
         Me.gbProxySettings.SuspendLayout()
         Me.gbCharacterOptions.SuspendLayout()
+        Me.gbTaxRates.SuspendLayout()
         Me.SuspendLayout()
         '
         'chkCheckUpdatesStartup
@@ -360,7 +364,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(410, 171)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 174)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 125)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
@@ -827,12 +831,41 @@ Partial Class frmSettings
         Me.chkAlphaAccount.Text = "Alpha Account (.25% tax)"
         Me.chkAlphaAccount.UseVisualStyleBackColor = True
         '
+        'gbTaxRates
+        '
+        Me.gbTaxRates.Controls.Add(Me.lblAdjustDefaultFees)
+        Me.gbTaxRates.Controls.Add(Me.btnOpenRates)
+        Me.gbTaxRates.Location = New System.Drawing.Point(410, 299)
+        Me.gbTaxRates.Name = "gbTaxRates"
+        Me.gbTaxRates.Size = New System.Drawing.Size(250, 46)
+        Me.gbTaxRates.TabIndex = 39
+        Me.gbTaxRates.TabStop = False
+        '
+        'btnOpenRates
+        '
+        Me.btnOpenRates.Location = New System.Drawing.Point(142, 10)
+        Me.btnOpenRates.Name = "btnOpenRates"
+        Me.btnOpenRates.Size = New System.Drawing.Size(101, 30)
+        Me.btnOpenRates.TabIndex = 42
+        Me.btnOpenRates.Text = "Open Rates"
+        Me.btnOpenRates.UseVisualStyleBackColor = True
+        '
+        'lblAdjustDefaultFees
+        '
+        Me.lblAdjustDefaultFees.AutoSize = True
+        Me.lblAdjustDefaultFees.Location = New System.Drawing.Point(8, 20)
+        Me.lblAdjustDefaultFees.Name = "lblAdjustDefaultFees"
+        Me.lblAdjustDefaultFees.Size = New System.Drawing.Size(128, 13)
+        Me.lblAdjustDefaultFees.TabIndex = 43
+        Me.lblAdjustDefaultFees.Text = "Adjust Default Tax Rates:"
+        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(665, 452)
+        Me.Controls.Add(Me.gbTaxRates)
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
         Me.Controls.Add(Me.gbProxySettings)
@@ -879,6 +912,8 @@ Partial Class frmSettings
         Me.gbProxySettings.PerformLayout()
         Me.gbCharacterOptions.ResumeLayout(False)
         Me.gbCharacterOptions.PerformLayout()
+        Me.gbTaxRates.ResumeLayout(False)
+        Me.gbTaxRates.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -953,4 +988,7 @@ Partial Class frmSettings
     Friend WithEvents chkShareFacilities As CheckBox
     Friend WithEvents chkAlwaysBuyRAMs As CheckBox
     Friend WithEvents chkAlwaysBuyFuelBlocks As CheckBox
+    Friend WithEvents gbTaxRates As GroupBox
+    Friend WithEvents lblAdjustDefaultFees As Label
+    Friend WithEvents btnOpenRates As Button
 End Class

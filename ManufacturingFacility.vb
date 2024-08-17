@@ -3731,11 +3731,16 @@ Public Class ManufacturingFacility
     End Sub
 
     Private Sub btnConversiontoOreSettings_Click(sender As Object, e As EventArgs) Handles btnConversiontoOreSettings.Click
-        ' Make sure it's not disposed
+        If IsNothing(frmConversionOptions) Then
+            ' Make new form
+            frmConversionOptions = New frmConversiontoOreSettings()
+        End If
+
         If frmConversionOptions.IsDisposed Then
             ' Make new form
             frmConversionOptions = New frmConversiontoOreSettings()
         End If
+
         ' Save where this form is from
         frmConversionOptions.SelectedLocation = SelectedLocation
 

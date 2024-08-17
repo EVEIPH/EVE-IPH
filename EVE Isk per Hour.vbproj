@@ -217,10 +217,10 @@
     <Compile Include="frmChangeDummyCharacter.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmConversionSettings.Designer.vb">
-      <DependentUpon>frmConversionSettings.vb</DependentUpon>
+    <Compile Include="frmConversiontoOreSettings.Designer.vb">
+      <DependentUpon>frmConversiontoOreSettings.vb</DependentUpon>
     </Compile>
-    <Compile Include="frmConversionSettings.vb">
+    <Compile Include="frmConversiontoOreSettings.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmErrorLog.designer.vb">
@@ -547,8 +547,8 @@
     <EmbeddedResource Include="frmChangeDummyCharacter.resx">
       <DependentUpon>frmChangeDummyCharacter.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="frmConversionSettings.resx">
-      <DependentUpon>frmConversionSettings.vb</DependentUpon>
+    <EmbeddedResource Include="frmConversiontoOreSettings.resx">
+      <DependentUpon>frmConversiontoOreSettings.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmErrorLog.resx">
       <DependentUpon>frmErrorLog.vb</DependentUpon>

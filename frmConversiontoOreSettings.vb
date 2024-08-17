@@ -103,7 +103,10 @@ Public Class frmConversiontoOreSettings
         Dim OreList As New List(Of OreType)
 
         ' Check to make sure they have the right stuff checked
-        If Not CheckMiningEntryData() Or FirstLoad Then
+        If FirstLoad Then
+            Exit Sub
+        End If
+        If Not CheckMiningEntryData() Then
             Exit Sub
         End If
 
@@ -304,7 +307,7 @@ Public Class frmConversiontoOreSettings
                         End If
                         ' Save ore info
                         FoundItem.OreName = OreLabels(i + 1).Text
-                        If i + 1 >= 20 Then
+                        If i + 1 >= 25 Then
                             FoundItem.OreGroup = "Ice"
                         Else
                             FoundItem.OreGroup = "Ore"
@@ -431,10 +434,10 @@ Public Class frmConversiontoOreSettings
 
     Private Sub btnReset_Click(sender As Object, e As EventArgs) Handles btnReset.Click
         ' Clear the ignore and overrides, then reload the form
-        ReDim UserConversiontoOreSettings.OverrideChecks(28)
+        ReDim UserConversiontoOreSettings.OverrideChecks(35)
         ReDim UserConversiontoOreSettings.IgnoreRefinedItems(14)
 
-        For i = 0 To 28
+        For i = 0 To 35
             UserConversiontoOreSettings.OverrideChecks(i) = 1
         Next
 
@@ -447,7 +450,8 @@ Public Class frmConversiontoOreSettings
             IgnoreChecks(i).Checked = False
         Next
         Reset = False
-        Call RefreshOreList()
+
+        Call UpdateSettingsRefresh()
 
     End Sub
 
@@ -477,14 +481,14 @@ Public Class frmConversiontoOreSettings
 
     End Sub
 
-    Private Sub OreLabels_Click(sender As Object, e As EventArgs) Handles lblOre1.Click, lblOre2.Click, lblOre3.Click, lblOre4.Click,
-                                                                                lblOre5.Click, lblOre6.Click, lblOre7.Click, lblOre8.Click,
-                                                                                lblOre9.Click, lblOre10.Click, lblOre11.Click, lblOre12.Click,
-                                                                                lblOre13.Click, lblOre14.Click, lblOre15.Click, lblOre16.Click,
-                                                                                lblOre17.Click, lblOre18.Click, lblOre19.Click, lblOre20.Click,
-                                                                                lblOre21.Click, lblOre22.Click, lblOre23.Click, lblOre24.Click,
-                                                                                lblOre25.Click, lblOre26.Click, lblOre27.Click, lblOre28.Click,
-                                                                                lblOre29.Click
+    Private Sub OreLabels_Click(sender As Object, e As EventArgs) Handles lblOre1.Click, lblOre2.Click, lblOre3.Click, lblOre4.Click, lblOre5.Click, lblOre6.Click, lblOre7.Click,
+                                                                            lblOre8.Click, lblOre9.Click, lblOre10.Click, lblOre11.Click, lblOre12.Click, lblOre13.Click,
+                                                                            lblOre14.Click, lblOre15.Click, lblOre16.Click, lblOre17.Click, lblOre18.Click, lblOre19.Click,
+                                                                            lblOre20.Click, lblOre21.Click, lblOre22.Click, lblOre23.Click, lblOre24.Click, lblOre25.Click,
+                                                                            lblOre26.Click, lblOre27.Click, lblOre28.Click, lblOre29.Click, lblOre30.Click, lblOre31.Click,
+                                                                            lblOre32.Click, lblOre33.Click, lblOre34.Click, lblOre35.Click, lblOre36.Click
+
+
 
         ' Find the index and toggle the check
         If Not FirstFormLoad Then
@@ -494,14 +498,15 @@ Public Class frmConversiontoOreSettings
         End If
     End Sub
 
-    Private Sub OreIce_CheckedChanged(sender As Object, e As EventArgs) Handles chkOre1.CheckedChanged, chkOre2.CheckedChanged, chkOre3.CheckedChanged, chkOre4.CheckedChanged,
-                                                                                chkOre5.CheckedChanged, chkOre6.CheckedChanged, chkOre7.CheckedChanged, chkOre8.CheckedChanged,
-                                                                                chkOre9.CheckedChanged, chkOre10.CheckedChanged, chkOre11.CheckedChanged, chkOre12.CheckedChanged,
-                                                                                chkOre13.CheckedChanged, chkOre14.CheckedChanged, chkOre15.CheckedChanged, chkOre16.CheckedChanged,
-                                                                                chkOre17.CheckedChanged, chkOre18.CheckedChanged, chkOre19.CheckedChanged, chkOre20.CheckedChanged,
-                                                                                chkOre21.CheckedChanged, chkOre22.CheckedChanged, chkOre23.CheckedChanged, chkOre24.CheckedChanged,
-                                                                                chkOre25.CheckedChanged, chkOre26.CheckedChanged, chkOre27.CheckedChanged, chkOre28.CheckedChanged,
-                                                                                chkOre29.CheckedChanged
+    Private Sub OreIce_CheckedChanged(sender As Object, e As EventArgs) Handles chkOre1.CheckedChanged, chkOre2.CheckedChanged, chkOre3.CheckedChanged, chkOre4.CheckedChanged, chkOre5.CheckedChanged,
+                                                                                chkOre6.CheckedChanged, chkOre7.CheckedChanged, chkOre8.CheckedChanged, chkOre9.CheckedChanged, chkOre10.CheckedChanged,
+                                                                                chkOre11.CheckedChanged, chkOre12.CheckedChanged, chkOre13.CheckedChanged, chkOre14.CheckedChanged, chkOre15.CheckedChanged,
+                                                                                chkOre16.CheckedChanged, chkOre17.CheckedChanged, chkOre18.CheckedChanged, chkOre19.CheckedChanged, chkOre20.CheckedChanged,
+                                                                                chkOre21.CheckedChanged, chkOre22.CheckedChanged, chkOre23.CheckedChanged, chkOre24.CheckedChanged, chkOre25.CheckedChanged,
+                                                                                chkOre26.CheckedChanged, chkOre27.CheckedChanged, chkOre28.CheckedChanged, chkOre29.CheckedChanged, chkOre30.CheckedChanged,
+                                                                                chkOre31.CheckedChanged, chkOre32.CheckedChanged, chkOre33.CheckedChanged, chkOre34.CheckedChanged, chkOre35.CheckedChanged,
+                                                                                chkOre36.CheckedChanged
+
         If Not FirstFormLoad Then
             ' Get the check number then update the override list
             Dim SelectedCheckbox As CheckBox = CType(sender, CheckBox)

@@ -1096,7 +1096,7 @@ Public Class ProgramSettings
         BPViewSettings = Nothing
         ConversionToOreSetting = Nothing
 
-        ReDim ConversionToOreSetting.OverrideChecks(28)
+        ReDim ConversionToOreSetting.OverrideChecks(35)
 
     End Sub
 
@@ -4513,7 +4513,7 @@ Public Class ProgramSettings
                     .C6 = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "C6", DefaultC6))
 
                     Dim OverrideString As String = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "OverrideChecks", ""))
-                    ReDim .OverrideChecks(28)
+                    ReDim .OverrideChecks(35)
 
                     If OverrideString = "" Then
                         .OverrideChecks = GetDefaultOverrideChecks()
@@ -4521,7 +4521,7 @@ Public Class ProgramSettings
                         ' Parse it out and Save values
                         Dim Items As String() = OverrideString.Split(New Char() {","c})
 
-                        For i = 0 To 28
+                        For i = 0 To 35
                             .OverrideChecks(i) = CInt(Items(i))
                         Next
                     End If
@@ -4656,8 +4656,8 @@ Public Class ProgramSettings
     End Function
 
     Private Function GetDefaultOverrideChecks() As Integer()
-        Dim ReturnList(28) As Integer
-        For i = 0 To 28
+        Dim ReturnList(35) As Integer
+        For i = 0 To 35
             ReturnList(i) = DefaultOverrideValue
         Next
 
@@ -6301,7 +6301,7 @@ Public Structure ConversionToOreSettings
     Dim C4 As Boolean
     Dim C5 As Boolean
     Dim C6 As Boolean
-    ' List of 29 check boxes cooresponds to the checks on settings for override savings
+    ' List of 35 check boxes cooresponds to the checks on settings for override savings
     Dim OverrideChecks() As Integer
     Dim SelectedOres As List(Of OreType)
     ' Names of all the item checks that they want to ignore in minerals/ice products to ores (meaning don't consider them in the conversion)

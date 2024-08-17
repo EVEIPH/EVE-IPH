@@ -405,7 +405,7 @@ Public Class frmMain
         ' These will be used for all areas in the program - I may make specific to each reprocessing facility if requested, then will move to the manufacturing facility object
         UserConversiontoOreSettings = AllSettings.LoadConversiontoOreSettings()
 
-        frmConversionOptions = New frmConversiontoOreSettings()
+        ' frmConversionOptions = New frmConversiontoOreSettings()
 
         ' Display to the user any issues with ESI endpoints
         Call SetProgress("Checking Status of ESI...")
@@ -6441,13 +6441,13 @@ Tabs:
                 ' Load the decryptor options
                 Call LoadBPInventionDecryptors()
                 ' T2 has copy costs/time
-                CopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
-                CopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
+                'CopyFacility.IncludeActivityCost = chkBPIncludeCopyCosts.Checked
+                'CopyFacility.IncludeActivityTime = chkBPIncludeCopyTime.Checked
             End If
 
             ' All invention facilities need to have these set
-            InventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
-            InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
+            'InventionFacility.IncludeActivityCost = chkBPIncludeInventionCosts.Checked
+            'InventionFacility.IncludeActivityTime = chkBPIncludeInventionTime.Checked
         End If
 
         ' Now load the materials into the lists

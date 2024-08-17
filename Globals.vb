@@ -8,7 +8,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "June 28, 2024 Release"
+    Public Const SDEVersion As String = "July 30, 2024 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
@@ -16,8 +16,8 @@ Public Module Public_Variables
 
     Public LocalCulture As CultureInfo
 
-    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8 and during holidays they may change to 50% or 4 to make it work
-    Public BaseBrokerFeeRate As Double = 3
+    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8% and during holidays they may change to 50% or 4% to make it work
+    Public BaseBrokerFeeRate As Double = 3 ' 3%
     Public SCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
     Public SCCIndustryFeeSurcharge As Double = 0.04 ' Fixed rate of 4% on 2/1/2024
     Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
