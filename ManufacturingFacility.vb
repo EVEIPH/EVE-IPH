@@ -1917,7 +1917,7 @@ Public Class ManufacturingFacility
                             ' Get Refine rate and tax for station
                             SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, SelectedFacility.BaseME)
                         Else
-                            SelectedFacility.BaseTax = DefaultStationTaxRate
+                            SelectedFacility.BaseTax = UserApplicationSettings.StationTaxRate
                             SelectedFacility.BaseCost = 1
 
                             ' Special case to update for Fulcrum if the BP is a sub-cap Angel or Gurista ship
@@ -1960,7 +1960,7 @@ Public Class ManufacturingFacility
                         SelectedFacility.BaseME = rsStats.GetDouble(0)
                         SelectedFacility.BaseTE = rsStats.GetDouble(1)
                         SelectedFacility.BaseCost = rsStats.GetDouble(2)
-                        SelectedFacility.BaseTax = DefaultStructureTaxRate
+                        SelectedFacility.BaseTax = UserApplicationSettings.StructureTaxRate
 
                         rsStats.Close()
 
@@ -2101,7 +2101,7 @@ Public Class ManufacturingFacility
             End If
 
             CostText = FormatPercent(1 - SelectedFacility.CostMultiplier, 2)
-            TaxText = FormatPercent(SelectedFacility.TaxRate, 1)
+            TaxText = FormatPercent(SelectedFacility.TaxRate, 2)
         End With
 
         If FacilityType = FacilityTypes.UpwellStructure Then
@@ -4133,11 +4133,11 @@ Public Class IndustryFacility
                     If InitialProductionType = ProductionType.Reprocessing Then
                         SQL = "SELECT STATION_NAME, REPROCESSING_TAX_RATE, REPROCESSING_EFFICIENCY, 0, 0 "
                     Else
-                        SQL = "SELECT STATION_NAME," & CStr(DefaultStationTaxRate) & ", 1, 1, 1 "
+                        SQL = "SELECT STATION_NAME," & CStr(UserApplicationSettings.StationTaxRate) & ", 1, 1, 1 "
                     End If
                     SQL &= "FROM STATIONS WHERE STATION_ID = " & CStr(FacilityID) & " "
                 ElseIf FacilityType = FacilityTypes.UpwellStructure Then
-                    SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, " & CStr(DefaultStructureTaxRate) & " AS FACILITY_TAX, "
+                    SQL = "SELECT DISTINCT UPWELL_STRUCTURE_NAME, " & CStr(UserApplicationSettings.StructureTaxRate) & " AS FACILITY_TAX, "
                     SQL &= "CASE WHEN ACTIVITY_ID = -2 THEN " & CStr(BaseRefineRate) & " * (1 + MATERIAL_MULTIPLIER) ELSE MATERIAL_MULTIPLIER END, TIME_MULTIPLIER, COST_MULTIPLIER "
                     SQL &= "FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_TYPE_ID = " & CStr(FacilityID) & " "
                     SQL &= "AND ACTIVITY_ID = " & CStr(ActivityID) & " "

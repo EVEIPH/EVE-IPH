@@ -99,6 +99,14 @@ Public Class ProgramSettings
     Public DefaultBrokerCorpStanding As Double = 5.0 ' Corp standing of where this blueprint will be sold
     Public DefaultBrokerFactionStanding As Double = 5.0 ' Faction standing of where this blueprint will be sold (for Broker calc)
 
+    Public DefaultBaseSalesTaxRate As Double = 4.5 ' Sales tax base is 4.5% and during holidays they may change it
+    Public DefaultBaseBrokerFeeRate As Double = 3 ' 3%
+    Public DefaultSCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
+    Public DefaultSCCIndustryFeeSurcharge As Double = 0.04 ' Fixed rate of 4% on 2/1/2024
+    Public DefaultAlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
+    Public DefaultStructureTaxRate As Double = 0.0 ' 0% to start for structures
+    Public DefaultStationTaxRate As Double = 0.0025 ' 0.25% for all stations
+
     Public DefaultIncludeCopyTimes As Boolean = False ' If we include copy times in IPH calcs for invention
     Public DefaultIncludeInventionTimes As Boolean = False ' If we include invention times in IPH calcs for invention
     Public DefaultIncludeRETimes As Boolean = False ' If we include RE times in IPH calcs for RE
@@ -1280,6 +1288,13 @@ Public Class ProgramSettings
                     .LoadMaxAlphaSkills = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "LoadMaxAlphaSkills", DefaultLoadMaxAlphaSkills))
                     .ShareSavedFacilities = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "ShareSavedFacilities", DefaultDisableGATracking))
                     .RefineDrillDown = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "RefineDrillDown", DefaultRefineDrillDown))
+                    .BaseSalesTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "BaseSalesTaxRate", DefaultBaseSalesTaxRate))
+                    .BaseBrokerFeeRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "BaseBrokerFeeRate", DefaultBaseBrokerFeeRate))
+                    .SCCBrokerFeeSurcharge = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "SCCBrokerFeeSurcharge", DefaultSCCBrokerFeeSurcharge))
+                    .SCCIndustryFeeSurcharge = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "SCCIndustryFeeSurcharge", DefaultSCCIndustryFeeSurcharge))
+                    .AlphaAccountTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "AlphaAccountTaxRate", DefaultAlphaAccountTaxRate))
+                    .StructureTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StructureTaxRate", DefaultStructureTaxRate))
+                    .StationTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StationTaxRate", DefaultStationTaxRate))
                 End With
 
             Else
@@ -1359,6 +1374,14 @@ Public Class ProgramSettings
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
 
             .RefineDrillDown = DefaultRefineDrillDown
+
+            .BaseSalesTaxRate = DefaultBaseSalesTaxRate
+            .BaseBrokerFeeRate = DefaultBaseBrokerFeeRate
+            .SCCBrokerFeeSurcharge = DefaultSCCBrokerFeeSurcharge
+            .SCCIndustryFeeSurcharge = DefaultSCCIndustryFeeSurcharge
+            .AlphaAccountTaxRate = DefaultAlphaAccountTaxRate
+            .StructureTaxRate = DefaultStructureTaxRate
+            .StationTaxRate = DefaultStationTaxRate
         End With
 
         ' Save locally
@@ -1369,7 +1392,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(40) As Setting
+        Dim ApplicationSettingsList(47) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1413,6 +1436,13 @@ Public Class ProgramSettings
             ApplicationSettingsList(38) = New Setting("RefineDrillDown", CStr(SentSettings.RefineDrillDown))
             ApplicationSettingsList(39) = New Setting("AlwaysBuyFuelBlocks", CStr(SentSettings.AlwaysBuyFuelBlocks))
             ApplicationSettingsList(40) = New Setting("AlwaysBuyRAMs", CStr(SentSettings.AlwaysBuyRAMs))
+            ApplicationSettingsList(41) = New Setting("BaseSalesTaxRate", CStr(SentSettings.BaseSalesTaxRate))
+            ApplicationSettingsList(42) = New Setting("BaseBrokerFeeRate", CStr(SentSettings.BaseBrokerFeeRate))
+            ApplicationSettingsList(43) = New Setting("SCCBrokerFeeSurcharge", CStr(SentSettings.SCCBrokerFeeSurcharge))
+            ApplicationSettingsList(44) = New Setting("SCCIndustryFeeSurcharge", CStr(SentSettings.SCCIndustryFeeSurcharge))
+            ApplicationSettingsList(45) = New Setting("AlphaAccountTaxRate", CStr(SentSettings.AlphaAccountTaxRate))
+            ApplicationSettingsList(46) = New Setting("StationTaxRate", CStr(SentSettings.StationTaxRate))
+            ApplicationSettingsList(47) = New Setting("StructureTaxRate", CStr(SentSettings.StructureTaxRate))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -5383,6 +5413,15 @@ Public Structure ApplicationSettings
     ' Station Standings for building and selling
     Dim BrokerCorpStanding As Double
     Dim BrokerFactionStanding As Double
+
+    ' For setting default rates
+    Dim BaseSalesTaxRate As Double
+    Dim BaseBrokerFeeRate As Double
+    Dim SCCBrokerFeeSurcharge As Double
+    Dim SCCIndustryFeeSurcharge As Double
+    Dim AlphaAccountTaxRate As Double
+    Dim StructureTaxRate As Double
+    Dim StationTaxRate As Double
 
     ' ME/TE for BP's we don't own or haven't entered info for
     Dim DefaultBPME As Integer

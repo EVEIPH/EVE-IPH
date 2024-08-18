@@ -96,8 +96,8 @@ Partial Class frmSettings
         Me.chkUseActiveSkills = New System.Windows.Forms.CheckBox()
         Me.chkAlphaAccount = New System.Windows.Forms.CheckBox()
         Me.gbTaxRates = New System.Windows.Forms.GroupBox()
-        Me.btnOpenRates = New System.Windows.Forms.Button()
         Me.lblAdjustDefaultFees = New System.Windows.Forms.Label()
+        Me.btnOpenRates = New System.Windows.Forms.Button()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -841,15 +841,6 @@ Partial Class frmSettings
         Me.gbTaxRates.TabIndex = 39
         Me.gbTaxRates.TabStop = False
         '
-        'btnOpenRates
-        '
-        Me.btnOpenRates.Location = New System.Drawing.Point(142, 10)
-        Me.btnOpenRates.Name = "btnOpenRates"
-        Me.btnOpenRates.Size = New System.Drawing.Size(101, 30)
-        Me.btnOpenRates.TabIndex = 42
-        Me.btnOpenRates.Text = "Open Rates"
-        Me.btnOpenRates.UseVisualStyleBackColor = True
-        '
         'lblAdjustDefaultFees
         '
         Me.lblAdjustDefaultFees.AutoSize = True
@@ -858,6 +849,15 @@ Partial Class frmSettings
         Me.lblAdjustDefaultFees.Size = New System.Drawing.Size(128, 13)
         Me.lblAdjustDefaultFees.TabIndex = 43
         Me.lblAdjustDefaultFees.Text = "Adjust Default Tax Rates:"
+        '
+        'btnOpenRates
+        '
+        Me.btnOpenRates.Location = New System.Drawing.Point(142, 11)
+        Me.btnOpenRates.Name = "btnOpenRates"
+        Me.btnOpenRates.Size = New System.Drawing.Size(101, 30)
+        Me.btnOpenRates.TabIndex = 42
+        Me.btnOpenRates.Text = "Edit Rates"
+        Me.btnOpenRates.UseVisualStyleBackColor = True
         '
         'frmSettings
         '

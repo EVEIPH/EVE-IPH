@@ -179,6 +179,12 @@
     <Compile Include="Character.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
+    <Compile Include="frmEditDefaultRates.Designer.vb">
+      <DependentUpon>frmEditDefaultRates.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmEditDefaultRates.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmUploadPriceHistoryData.Designer.vb">
       <DependentUpon>frmUploadPriceHistoryData.vb</DependentUpon>
     </Compile>
@@ -549,6 +555,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmConversiontoOreSettings.resx">
       <DependentUpon>frmConversiontoOreSettings.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmEditDefaultRates.resx">
+      <DependentUpon>frmEditDefaultRates.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmErrorLog.resx">
       <DependentUpon>frmErrorLog.vb</DependentUpon>
