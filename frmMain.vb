@@ -4485,7 +4485,7 @@ Tabs:
 
     Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStructureRigsBlueprints.CheckedChanged
         If rbtnBPStructureRigsBlueprints.Checked Then
-            Call ResetBlueprintCombo(True, False, False, False, False, False)
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
         End If
     End Sub
 

@@ -1069,7 +1069,7 @@ Partial Class frmMain
         Me.mnuStripMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuFile, Me.mnuEdit, Me.mnuUpdateData, Me.ViewToolStripMenuItem, Me.mnuTools, Me.mnuSettings, Me.mnuAbout})
         Me.mnuStripMain.Location = New System.Drawing.Point(0, 0)
         Me.mnuStripMain.Name = "mnuStripMain"
-        Me.mnuStripMain.Size = New System.Drawing.Size(1149, 24)
+        Me.mnuStripMain.Size = New System.Drawing.Size(1149, 28)
         Me.mnuStripMain.TabIndex = 0
         Me.mnuStripMain.Text = "MainMenu"
         '
@@ -1077,410 +1077,410 @@ Partial Class frmMain
         '
         Me.mnuFile.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuSelectionAddChar, Me.mnuSelectionManageCharacters, Me.mnuViewErrorLog, Me.ToolStripSeparator1, Me.mnuSelectionExit})
         Me.mnuFile.Name = "mnuFile"
-        Me.mnuFile.Size = New System.Drawing.Size(37, 20)
+        Me.mnuFile.Size = New System.Drawing.Size(44, 24)
         Me.mnuFile.Text = "File"
         '
         'mnuSelectionAddChar
         '
         Me.mnuSelectionAddChar.Name = "mnuSelectionAddChar"
-        Me.mnuSelectionAddChar.Size = New System.Drawing.Size(170, 22)
+        Me.mnuSelectionAddChar.Size = New System.Drawing.Size(196, 24)
         Me.mnuSelectionAddChar.Text = "Add Character"
         '
         'mnuSelectionManageCharacters
         '
         Me.mnuSelectionManageCharacters.Name = "mnuSelectionManageCharacters"
-        Me.mnuSelectionManageCharacters.Size = New System.Drawing.Size(170, 22)
+        Me.mnuSelectionManageCharacters.Size = New System.Drawing.Size(196, 24)
         Me.mnuSelectionManageCharacters.Text = "Manage Accounts"
         '
         'mnuViewErrorLog
         '
         Me.mnuViewErrorLog.Name = "mnuViewErrorLog"
-        Me.mnuViewErrorLog.Size = New System.Drawing.Size(170, 22)
+        Me.mnuViewErrorLog.Size = New System.Drawing.Size(196, 24)
         Me.mnuViewErrorLog.Text = "View Error Log"
         '
         'ToolStripSeparator1
         '
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(167, 6)
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(193, 6)
         '
         'mnuSelectionExit
         '
         Me.mnuSelectionExit.Name = "mnuSelectionExit"
-        Me.mnuSelectionExit.Size = New System.Drawing.Size(170, 22)
+        Me.mnuSelectionExit.Size = New System.Drawing.Size(196, 24)
         Me.mnuSelectionExit.Text = "Exit"
         '
         'mnuEdit
         '
         Me.mnuEdit.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuItemUpdatePrices, Me.SetPOSDataToolStripMenuItem, Me.mnuManageBlueprintsToolStripMenuItem, Me.mnuClearBPHistory})
         Me.mnuEdit.Name = "mnuEdit"
-        Me.mnuEdit.Size = New System.Drawing.Size(39, 20)
+        Me.mnuEdit.Size = New System.Drawing.Size(47, 24)
         Me.mnuEdit.Text = "Edit"
         '
         'mnuItemUpdatePrices
         '
         Me.mnuItemUpdatePrices.Name = "mnuItemUpdatePrices"
-        Me.mnuItemUpdatePrices.Size = New System.Drawing.Size(173, 22)
+        Me.mnuItemUpdatePrices.Size = New System.Drawing.Size(202, 24)
         Me.mnuItemUpdatePrices.Text = "Prices"
         '
         'SetPOSDataToolStripMenuItem
         '
         Me.SetPOSDataToolStripMenuItem.Name = "SetPOSDataToolStripMenuItem"
-        Me.SetPOSDataToolStripMenuItem.Size = New System.Drawing.Size(173, 22)
+        Me.SetPOSDataToolStripMenuItem.Size = New System.Drawing.Size(202, 24)
         Me.SetPOSDataToolStripMenuItem.Text = "POS Data"
         Me.SetPOSDataToolStripMenuItem.Visible = False
         '
         'mnuManageBlueprintsToolStripMenuItem
         '
         Me.mnuManageBlueprintsToolStripMenuItem.Name = "mnuManageBlueprintsToolStripMenuItem"
-        Me.mnuManageBlueprintsToolStripMenuItem.Size = New System.Drawing.Size(173, 22)
+        Me.mnuManageBlueprintsToolStripMenuItem.Size = New System.Drawing.Size(202, 24)
         Me.mnuManageBlueprintsToolStripMenuItem.Text = "Manage Blueprints"
         '
         'mnuClearBPHistory
         '
         Me.mnuClearBPHistory.Name = "mnuClearBPHistory"
-        Me.mnuClearBPHistory.Size = New System.Drawing.Size(173, 22)
+        Me.mnuClearBPHistory.Size = New System.Drawing.Size(202, 24)
         Me.mnuClearBPHistory.Text = "Clear BP History"
         '
         'mnuUpdateData
         '
         Me.mnuUpdateData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUpdateIndustryFacilities, Me.mnuUpdateESIMarketPrices, Me.mnuUpdateESIPublicStructures, Me.mnuChangeDummyCharacterName, Me.ToolStripSeparator6, Me.mnuResetData})
         Me.mnuUpdateData.Name = "mnuUpdateData"
-        Me.mnuUpdateData.Size = New System.Drawing.Size(43, 20)
+        Me.mnuUpdateData.Size = New System.Drawing.Size(53, 24)
         Me.mnuUpdateData.Text = "Data"
         '
         'mnuUpdateIndustryFacilities
         '
         Me.mnuUpdateIndustryFacilities.Name = "mnuUpdateIndustryFacilities"
-        Me.mnuUpdateIndustryFacilities.Size = New System.Drawing.Size(250, 22)
+        Me.mnuUpdateIndustryFacilities.Size = New System.Drawing.Size(295, 24)
         Me.mnuUpdateIndustryFacilities.Text = "Update Industry Facilities"
         '
         'mnuUpdateESIMarketPrices
         '
         Me.mnuUpdateESIMarketPrices.Name = "mnuUpdateESIMarketPrices"
-        Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(250, 22)
+        Me.mnuUpdateESIMarketPrices.Size = New System.Drawing.Size(295, 24)
         Me.mnuUpdateESIMarketPrices.Text = "Update Adjusted Market Prices"
         '
         'mnuUpdateESIPublicStructures
         '
         Me.mnuUpdateESIPublicStructures.Name = "mnuUpdateESIPublicStructures"
-        Me.mnuUpdateESIPublicStructures.Size = New System.Drawing.Size(250, 22)
+        Me.mnuUpdateESIPublicStructures.Size = New System.Drawing.Size(295, 24)
         Me.mnuUpdateESIPublicStructures.Text = "Update Public Structures"
         '
         'mnuChangeDummyCharacterName
         '
         Me.mnuChangeDummyCharacterName.Name = "mnuChangeDummyCharacterName"
-        Me.mnuChangeDummyCharacterName.Size = New System.Drawing.Size(250, 22)
+        Me.mnuChangeDummyCharacterName.Size = New System.Drawing.Size(295, 24)
         Me.mnuChangeDummyCharacterName.Text = "Change Dummy Character Name"
         '
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
-        Me.ToolStripSeparator6.Size = New System.Drawing.Size(247, 6)
+        Me.ToolStripSeparator6.Size = New System.Drawing.Size(292, 6)
         '
         'mnuResetData
         '
         Me.mnuResetData.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuResetBlueprintData, Me.mnuResetIgnoredBPs, Me.mnuResetPriceData, Me.mnuResetAgents, Me.mnuResetIndustryJobs, Me.mnuResetAssets, Me.mnuResetMarketHistory, Me.mnuResetMarketOrders, Me.mnuResetESIPublicStructures, Me.mnuResetSavedFacilities, Me.mnuResetESIIndustryFacilities, Me.mnuResetESIMarketPrices, Me.mnuResetESIDates, Me.ToolStripSeparator4, Me.mnuResetAllData})
         Me.mnuResetData.Name = "mnuResetData"
-        Me.mnuResetData.Size = New System.Drawing.Size(250, 22)
+        Me.mnuResetData.Size = New System.Drawing.Size(295, 24)
         Me.mnuResetData.Text = "Reset Data"
         '
         'mnuResetBlueprintData
         '
         Me.mnuResetBlueprintData.Name = "mnuResetBlueprintData"
-        Me.mnuResetBlueprintData.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetBlueprintData.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetBlueprintData.Text = "Reset Blueprint Data"
         '
         'mnuResetIgnoredBPs
         '
         Me.mnuResetIgnoredBPs.Name = "mnuResetIgnoredBPs"
-        Me.mnuResetIgnoredBPs.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetIgnoredBPs.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetIgnoredBPs.Text = "Reset All Ignored BPs"
         '
         'mnuResetPriceData
         '
         Me.mnuResetPriceData.Name = "mnuResetPriceData"
-        Me.mnuResetPriceData.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetPriceData.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetPriceData.Text = "Reset Price Data"
         '
         'mnuResetAgents
         '
         Me.mnuResetAgents.Name = "mnuResetAgents"
-        Me.mnuResetAgents.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetAgents.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetAgents.Text = "Reset Research Agents"
         '
         'mnuResetIndustryJobs
         '
         Me.mnuResetIndustryJobs.Name = "mnuResetIndustryJobs"
-        Me.mnuResetIndustryJobs.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetIndustryJobs.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetIndustryJobs.Text = "Reset Industry Jobs"
         '
         'mnuResetAssets
         '
         Me.mnuResetAssets.Name = "mnuResetAssets"
-        Me.mnuResetAssets.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetAssets.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetAssets.Text = "Reset Assets"
         '
         'mnuResetMarketHistory
         '
         Me.mnuResetMarketHistory.Name = "mnuResetMarketHistory"
-        Me.mnuResetMarketHistory.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetMarketHistory.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetMarketHistory.Text = "Reset Market History"
         '
         'mnuResetMarketOrders
         '
         Me.mnuResetMarketOrders.Name = "mnuResetMarketOrders"
-        Me.mnuResetMarketOrders.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetMarketOrders.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetMarketOrders.Text = "Reset Market Orders"
         '
         'mnuResetESIPublicStructures
         '
         Me.mnuResetESIPublicStructures.Name = "mnuResetESIPublicStructures"
-        Me.mnuResetESIPublicStructures.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetESIPublicStructures.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetESIPublicStructures.Text = "Reset Public Structures"
         '
         'mnuResetSavedFacilities
         '
         Me.mnuResetSavedFacilities.Name = "mnuResetSavedFacilities"
-        Me.mnuResetSavedFacilities.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetSavedFacilities.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetSavedFacilities.Text = "Reset Saved Facilities"
         '
         'mnuResetESIIndustryFacilities
         '
         Me.mnuResetESIIndustryFacilities.Name = "mnuResetESIIndustryFacilities"
-        Me.mnuResetESIIndustryFacilities.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetESIIndustryFacilities.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetESIIndustryFacilities.Text = "Reset Industry System Indicies (ESI)"
         '
         'mnuResetESIMarketPrices
         '
         Me.mnuResetESIMarketPrices.Name = "mnuResetESIMarketPrices"
-        Me.mnuResetESIMarketPrices.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetESIMarketPrices.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetESIMarketPrices.Text = "Reset Adjusted Market Prices (ESI)"
         '
         'mnuResetESIDates
         '
         Me.mnuResetESIDates.Name = "mnuResetESIDates"
-        Me.mnuResetESIDates.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetESIDates.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetESIDates.Text = "Reset All ESI Cache Dates"
         '
         'ToolStripSeparator4
         '
         Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
-        Me.ToolStripSeparator4.Size = New System.Drawing.Size(255, 6)
+        Me.ToolStripSeparator4.Size = New System.Drawing.Size(306, 6)
         '
         'mnuResetAllData
         '
         Me.mnuResetAllData.Name = "mnuResetAllData"
-        Me.mnuResetAllData.Size = New System.Drawing.Size(258, 22)
+        Me.mnuResetAllData.Size = New System.Drawing.Size(309, 24)
         Me.mnuResetAllData.Text = "Reset All Data"
         '
         'ViewToolStripMenuItem
         '
         Me.ViewToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuViewAssets, Me.mnuSelectionShoppingList, Me.mnuCharacterSkills, Me.mnuCharacterStandings, Me.ToolStripSeparator5, Me.mnuCurrentResearchAgents, Me.mnuCurrentIndustryJobs, Me.ToolStripSeparator3, Me.mnuViewESIStatus})
         Me.ViewToolStripMenuItem.Name = "ViewToolStripMenuItem"
-        Me.ViewToolStripMenuItem.Size = New System.Drawing.Size(44, 20)
+        Me.ViewToolStripMenuItem.Size = New System.Drawing.Size(53, 24)
         Me.ViewToolStripMenuItem.Text = "View"
         '
         'mnuViewAssets
         '
         Me.mnuViewAssets.Name = "mnuViewAssets"
-        Me.mnuViewAssets.Size = New System.Drawing.Size(204, 22)
+        Me.mnuViewAssets.Size = New System.Drawing.Size(239, 24)
         Me.mnuViewAssets.Text = "Assets"
         '
         'mnuSelectionShoppingList
         '
         Me.mnuSelectionShoppingList.Name = "mnuSelectionShoppingList"
-        Me.mnuSelectionShoppingList.Size = New System.Drawing.Size(204, 22)
+        Me.mnuSelectionShoppingList.Size = New System.Drawing.Size(239, 24)
         Me.mnuSelectionShoppingList.Text = "Shopping List"
         '
         'mnuCharacterSkills
         '
         Me.mnuCharacterSkills.Name = "mnuCharacterSkills"
-        Me.mnuCharacterSkills.Size = New System.Drawing.Size(204, 22)
+        Me.mnuCharacterSkills.Size = New System.Drawing.Size(239, 24)
         Me.mnuCharacterSkills.Text = "Character Skills"
         '
         'mnuCharacterStandings
         '
         Me.mnuCharacterStandings.Name = "mnuCharacterStandings"
-        Me.mnuCharacterStandings.Size = New System.Drawing.Size(204, 22)
+        Me.mnuCharacterStandings.Size = New System.Drawing.Size(239, 24)
         Me.mnuCharacterStandings.Text = "Character Standings"
         '
         'ToolStripSeparator5
         '
         Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
-        Me.ToolStripSeparator5.Size = New System.Drawing.Size(201, 6)
+        Me.ToolStripSeparator5.Size = New System.Drawing.Size(236, 6)
         '
         'mnuCurrentResearchAgents
         '
         Me.mnuCurrentResearchAgents.Name = "mnuCurrentResearchAgents"
-        Me.mnuCurrentResearchAgents.Size = New System.Drawing.Size(204, 22)
+        Me.mnuCurrentResearchAgents.Size = New System.Drawing.Size(239, 24)
         Me.mnuCurrentResearchAgents.Text = "Current Research Agents"
         '
         'mnuCurrentIndustryJobs
         '
         Me.mnuCurrentIndustryJobs.Name = "mnuCurrentIndustryJobs"
-        Me.mnuCurrentIndustryJobs.Size = New System.Drawing.Size(204, 22)
+        Me.mnuCurrentIndustryJobs.Size = New System.Drawing.Size(239, 24)
         Me.mnuCurrentIndustryJobs.Text = "Current Industry Jobs"
         '
         'ToolStripSeparator3
         '
         Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
-        Me.ToolStripSeparator3.Size = New System.Drawing.Size(201, 6)
+        Me.ToolStripSeparator3.Size = New System.Drawing.Size(236, 6)
         '
         'mnuViewESIStatus
         '
         Me.mnuViewESIStatus.Name = "mnuViewESIStatus"
-        Me.mnuViewESIStatus.Size = New System.Drawing.Size(204, 22)
+        Me.mnuViewESIStatus.Size = New System.Drawing.Size(239, 24)
         Me.mnuViewESIStatus.Text = "View ESI Status"
         '
         'mnuTools
         '
         Me.mnuTools.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuMETECalculator, Me.mnuReprocessingPlant, Me.mnuOreFlips})
         Me.mnuTools.Name = "mnuTools"
-        Me.mnuTools.Size = New System.Drawing.Size(46, 20)
+        Me.mnuTools.Size = New System.Drawing.Size(56, 24)
         Me.mnuTools.Text = "Tools"
         '
         'mnuMETECalculator
         '
         Me.mnuMETECalculator.Name = "mnuMETECalculator"
-        Me.mnuMETECalculator.Size = New System.Drawing.Size(219, 22)
+        Me.mnuMETECalculator.Size = New System.Drawing.Size(259, 24)
         Me.mnuMETECalculator.Text = "ME/TE Calculator"
         Me.mnuMETECalculator.Visible = False
         '
         'mnuReprocessingPlant
         '
         Me.mnuReprocessingPlant.Name = "mnuReprocessingPlant"
-        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(219, 22)
+        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(259, 24)
         Me.mnuReprocessingPlant.Text = "Reprocessing Plant"
         '
         'mnuOreFlips
         '
         Me.mnuOreFlips.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuAnomalyOreBelts, Me.mnuIceBelts})
         Me.mnuOreFlips.Name = "mnuOreFlips"
-        Me.mnuOreFlips.Size = New System.Drawing.Size(219, 22)
+        Me.mnuOreFlips.Size = New System.Drawing.Size(259, 24)
         Me.mnuOreFlips.Text = "Mining Belt Flip Calculators"
         Me.mnuOreFlips.Visible = False
         '
         'mnuAnomalyOreBelts
         '
         Me.mnuAnomalyOreBelts.Name = "mnuAnomalyOreBelts"
-        Me.mnuAnomalyOreBelts.Size = New System.Drawing.Size(180, 22)
+        Me.mnuAnomalyOreBelts.Size = New System.Drawing.Size(212, 24)
         Me.mnuAnomalyOreBelts.Text = "Ore Soverignty Belts"
         '
         'mnuIceBelts
         '
         Me.mnuIceBelts.Name = "mnuIceBelts"
-        Me.mnuIceBelts.Size = New System.Drawing.Size(180, 22)
+        Me.mnuIceBelts.Size = New System.Drawing.Size(212, 24)
         Me.mnuIceBelts.Text = "Ice Belts"
         '
         'mnuSettings
         '
         Me.mnuSettings.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuUserSettings, Me.mnuSelectDefaultChar, Me.mnuRestoreDefaultTabSettings, Me.mnuResetBuildBuyManualSelections})
         Me.mnuSettings.Name = "mnuSettings"
-        Me.mnuSettings.Size = New System.Drawing.Size(61, 20)
+        Me.mnuSettings.Size = New System.Drawing.Size(74, 24)
         Me.mnuSettings.Text = "Settings"
         '
         'mnuUserSettings
         '
         Me.mnuUserSettings.Name = "mnuUserSettings"
-        Me.mnuUserSettings.Size = New System.Drawing.Size(256, 22)
+        Me.mnuUserSettings.Size = New System.Drawing.Size(306, 24)
         Me.mnuUserSettings.Text = "Select Application Settings"
         '
         'mnuSelectDefaultChar
         '
         Me.mnuSelectDefaultChar.Name = "mnuSelectDefaultChar"
-        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(256, 22)
+        Me.mnuSelectDefaultChar.Size = New System.Drawing.Size(306, 24)
         Me.mnuSelectDefaultChar.Text = "Select Default Character"
         '
         'mnuRestoreDefaultTabSettings
         '
         Me.mnuRestoreDefaultTabSettings.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuRestoreDefaultBP, Me.mnuRestoreDefaultUpdatePrices, Me.mnuRestoreDefaultManufacturing, Me.mnuRestoreDefaultDatacores, Me.mnuRestoreDefaultMining})
         Me.mnuRestoreDefaultTabSettings.Name = "mnuRestoreDefaultTabSettings"
-        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(256, 22)
+        Me.mnuRestoreDefaultTabSettings.Size = New System.Drawing.Size(306, 24)
         Me.mnuRestoreDefaultTabSettings.Text = "Restore Default Tab Settings"
         '
         'mnuRestoreDefaultBP
         '
         Me.mnuRestoreDefaultBP.Name = "mnuRestoreDefaultBP"
-        Me.mnuRestoreDefaultBP.Size = New System.Drawing.Size(153, 22)
+        Me.mnuRestoreDefaultBP.Size = New System.Drawing.Size(174, 24)
         Me.mnuRestoreDefaultBP.Text = "Blueprints"
         '
         'mnuRestoreDefaultUpdatePrices
         '
         Me.mnuRestoreDefaultUpdatePrices.Name = "mnuRestoreDefaultUpdatePrices"
-        Me.mnuRestoreDefaultUpdatePrices.Size = New System.Drawing.Size(153, 22)
+        Me.mnuRestoreDefaultUpdatePrices.Size = New System.Drawing.Size(174, 24)
         Me.mnuRestoreDefaultUpdatePrices.Text = "Update Prices"
         '
         'mnuRestoreDefaultManufacturing
         '
         Me.mnuRestoreDefaultManufacturing.Name = "mnuRestoreDefaultManufacturing"
-        Me.mnuRestoreDefaultManufacturing.Size = New System.Drawing.Size(153, 22)
+        Me.mnuRestoreDefaultManufacturing.Size = New System.Drawing.Size(174, 24)
         Me.mnuRestoreDefaultManufacturing.Text = "Manufacturing"
         '
         'mnuRestoreDefaultDatacores
         '
         Me.mnuRestoreDefaultDatacores.Name = "mnuRestoreDefaultDatacores"
-        Me.mnuRestoreDefaultDatacores.Size = New System.Drawing.Size(153, 22)
+        Me.mnuRestoreDefaultDatacores.Size = New System.Drawing.Size(174, 24)
         Me.mnuRestoreDefaultDatacores.Text = "Datacores"
         '
         'mnuRestoreDefaultMining
         '
         Me.mnuRestoreDefaultMining.Name = "mnuRestoreDefaultMining"
-        Me.mnuRestoreDefaultMining.Size = New System.Drawing.Size(153, 22)
+        Me.mnuRestoreDefaultMining.Size = New System.Drawing.Size(174, 24)
         Me.mnuRestoreDefaultMining.Text = "Mining"
         '
         'mnuResetBuildBuyManualSelections
         '
         Me.mnuResetBuildBuyManualSelections.Name = "mnuResetBuildBuyManualSelections"
-        Me.mnuResetBuildBuyManualSelections.Size = New System.Drawing.Size(256, 22)
+        Me.mnuResetBuildBuyManualSelections.Size = New System.Drawing.Size(306, 24)
         Me.mnuResetBuildBuyManualSelections.Text = "Reset Build/Buy Manual Selections"
         '
         'mnuAbout
         '
         Me.mnuAbout.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuHelp, Me.mnuPatchNotes, Me.mnuCheckforUpdates, Me.ToolStripSeparator2, Me.mnuSelectionAbout})
         Me.mnuAbout.Name = "mnuAbout"
-        Me.mnuAbout.Size = New System.Drawing.Size(52, 20)
+        Me.mnuAbout.Size = New System.Drawing.Size(62, 24)
         Me.mnuAbout.Text = "About"
         '
         'mnuHelp
         '
         Me.mnuHelp.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuYouTube, Me.mnuDiscord})
         Me.mnuHelp.Name = "mnuHelp"
-        Me.mnuHelp.Size = New System.Drawing.Size(171, 22)
+        Me.mnuHelp.Size = New System.Drawing.Size(199, 24)
         Me.mnuHelp.Text = "Help"
         '
         'mnuYouTube
         '
         Me.mnuYouTube.Name = "mnuYouTube"
-        Me.mnuYouTube.Size = New System.Drawing.Size(241, 22)
+        Me.mnuYouTube.Size = New System.Drawing.Size(284, 24)
         Me.mnuYouTube.Text = "Open the IPH YouTube Channel"
         '
         'mnuDiscord
         '
         Me.mnuDiscord.Name = "mnuDiscord"
-        Me.mnuDiscord.Size = New System.Drawing.Size(241, 22)
+        Me.mnuDiscord.Size = New System.Drawing.Size(284, 24)
         Me.mnuDiscord.Text = "Join the IPH Discord Server"
         '
         'mnuPatchNotes
         '
         Me.mnuPatchNotes.Name = "mnuPatchNotes"
-        Me.mnuPatchNotes.Size = New System.Drawing.Size(171, 22)
+        Me.mnuPatchNotes.Size = New System.Drawing.Size(199, 24)
         Me.mnuPatchNotes.Text = "View Patch Notes"
         '
         'mnuCheckforUpdates
         '
         Me.mnuCheckforUpdates.Name = "mnuCheckforUpdates"
-        Me.mnuCheckforUpdates.Size = New System.Drawing.Size(171, 22)
+        Me.mnuCheckforUpdates.Size = New System.Drawing.Size(199, 24)
         Me.mnuCheckforUpdates.Text = "Check for Updates"
         '
         'ToolStripSeparator2
         '
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(168, 6)
+        Me.ToolStripSeparator2.Size = New System.Drawing.Size(196, 6)
         '
         'mnuSelectionAbout
         '
         Me.mnuSelectionAbout.Name = "mnuSelectionAbout"
-        Me.mnuSelectionAbout.Size = New System.Drawing.Size(171, 22)
+        Me.mnuSelectionAbout.Size = New System.Drawing.Size(199, 24)
         Me.mnuSelectionAbout.Text = "About IPH"
         '
         'pnlMain
@@ -1512,122 +1512,122 @@ Partial Class frmMain
         'tsCharacter1
         '
         Me.tsCharacter1.Name = "tsCharacter1"
-        Me.tsCharacter1.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter1.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter1.Text = "tsCharacter1"
         '
         'tsCharacter2
         '
         Me.tsCharacter2.Name = "tsCharacter2"
-        Me.tsCharacter2.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter2.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter2.Text = "tsCharacter2"
         '
         'tsCharacter3
         '
         Me.tsCharacter3.Name = "tsCharacter3"
-        Me.tsCharacter3.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter3.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter3.Text = "tsCharacter3"
         '
         'tsCharacter4
         '
         Me.tsCharacter4.Name = "tsCharacter4"
-        Me.tsCharacter4.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter4.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter4.Text = "tsCharacter4"
         '
         'tsCharacter5
         '
         Me.tsCharacter5.ImageTransparentColor = System.Drawing.Color.White
         Me.tsCharacter5.Name = "tsCharacter5"
-        Me.tsCharacter5.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter5.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter5.Text = "tsCharacter5"
         '
         'tsCharacter6
         '
         Me.tsCharacter6.Name = "tsCharacter6"
-        Me.tsCharacter6.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter6.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter6.Text = "tsCharacter6"
         '
         'tsCharacter7
         '
         Me.tsCharacter7.Name = "tsCharacter7"
-        Me.tsCharacter7.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter7.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter7.Text = "tsCharacter7"
         '
         'tsCharacter8
         '
         Me.tsCharacter8.Name = "tsCharacter8"
-        Me.tsCharacter8.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter8.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter8.Text = "tsCharacter8"
         '
         'tsCharacter9
         '
         Me.tsCharacter9.Name = "tsCharacter9"
-        Me.tsCharacter9.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter9.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter9.Text = "tsCharacter9"
         '
         'tsCharacter10
         '
         Me.tsCharacter10.Name = "tsCharacter10"
-        Me.tsCharacter10.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter10.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter10.Text = "tsCharacter10"
         '
         'tsCharacter11
         '
         Me.tsCharacter11.Name = "tsCharacter11"
-        Me.tsCharacter11.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter11.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter11.Text = "tsCharacter11"
         '
         'tsCharacter12
         '
         Me.tsCharacter12.Name = "tsCharacter12"
-        Me.tsCharacter12.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter12.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter12.Text = "tsCharacter12"
         '
         'tsCharacter13
         '
         Me.tsCharacter13.Name = "tsCharacter13"
-        Me.tsCharacter13.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter13.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter13.Text = "tsCharacter13"
         '
         'tsCharacter14
         '
         Me.tsCharacter14.Name = "tsCharacter14"
-        Me.tsCharacter14.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter14.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter14.Text = "tsCharacter14"
         '
         'tsCharacter15
         '
         Me.tsCharacter15.Name = "tsCharacter15"
-        Me.tsCharacter15.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter15.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter15.Text = "tsCharacter15"
         '
         'tsCharacter16
         '
         Me.tsCharacter16.Name = "tsCharacter16"
-        Me.tsCharacter16.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter16.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter16.Text = "tsCharacter16"
         '
         'tsCharacter17
         '
         Me.tsCharacter17.Name = "tsCharacter17"
-        Me.tsCharacter17.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter17.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter17.Text = "tsCharacter17"
         '
         'tsCharacter18
         '
         Me.tsCharacter18.Name = "tsCharacter18"
-        Me.tsCharacter18.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter18.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter18.Text = "tsCharacter18"
         '
         'tsCharacter19
         '
         Me.tsCharacter19.Name = "tsCharacter19"
-        Me.tsCharacter19.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter19.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter19.Text = "tsCharacter19"
         '
         'tsCharacter20
         '
         Me.tsCharacter20.Name = "tsCharacter20"
-        Me.tsCharacter20.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter20.Size = New System.Drawing.Size(168, 24)
         Me.tsCharacter20.Text = "tsCharacter20"
         '
         'pnlSkills
@@ -1688,30 +1688,30 @@ Partial Class frmMain
         '
         Me.ListOptionsMenu.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ViewMarketHistoryToolStripMenuItem, Me.AddToShoppingListToolStripMenuItem, Me.IgnoreBlueprintToolStripMenuItem, Me.FavoriteBlueprintToolStripMenuItem})
         Me.ListOptionsMenu.Name = "ListOptionsMenu"
-        Me.ListOptionsMenu.Size = New System.Drawing.Size(186, 92)
+        Me.ListOptionsMenu.Size = New System.Drawing.Size(219, 100)
         '
         'ViewMarketHistoryToolStripMenuItem
         '
         Me.ViewMarketHistoryToolStripMenuItem.Name = "ViewMarketHistoryToolStripMenuItem"
-        Me.ViewMarketHistoryToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.ViewMarketHistoryToolStripMenuItem.Size = New System.Drawing.Size(218, 24)
         Me.ViewMarketHistoryToolStripMenuItem.Text = "View Market History"
         '
         'AddToShoppingListToolStripMenuItem
         '
         Me.AddToShoppingListToolStripMenuItem.Name = "AddToShoppingListToolStripMenuItem"
-        Me.AddToShoppingListToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.AddToShoppingListToolStripMenuItem.Size = New System.Drawing.Size(218, 24)
         Me.AddToShoppingListToolStripMenuItem.Text = "Add to Shopping List"
         '
         'IgnoreBlueprintToolStripMenuItem
         '
         Me.IgnoreBlueprintToolStripMenuItem.Name = "IgnoreBlueprintToolStripMenuItem"
-        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.IgnoreBlueprintToolStripMenuItem.Size = New System.Drawing.Size(218, 24)
         Me.IgnoreBlueprintToolStripMenuItem.Text = "Ignore Blueprint"
         '
         'FavoriteBlueprintToolStripMenuItem
         '
         Me.FavoriteBlueprintToolStripMenuItem.Name = "FavoriteBlueprintToolStripMenuItem"
-        Me.FavoriteBlueprintToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.FavoriteBlueprintToolStripMenuItem.Size = New System.Drawing.Size(218, 24)
         Me.FavoriteBlueprintToolStripMenuItem.Text = "Favorite Blueprint"
         '
         'rbtnPriceSourceFW

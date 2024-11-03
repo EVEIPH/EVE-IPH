@@ -8,7 +8,7 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "September 19, 2024 Release"
+    Public Const SDEVersion As String = "October 30, 2024 Release"
     Public Const VersionNumber As String = "5.0.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
