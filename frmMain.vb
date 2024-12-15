@@ -426,7 +426,7 @@ Public Class frmMain
             Dim Items As New List(Of PriceItem)
             Dim TempItem As PriceItem
             rbtnPriceSourceFW.Checked = True ' Default with fuzzworks before download
-            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
 
             Dim rsPriceItems As SQLiteDataReader
             DBCommand = New SQLiteCommand("SELECT ITEM_ID, ITEM_GROUP, MANUFACTURE FROM ITEM_PRICES", EVEDB.DBREf)
@@ -7675,11 +7675,11 @@ ExitForm:
             txtItemsPriceModifier.Text = FormatPercent(.ItemsPriceModifier, 1)
 
             Select Case .PriceDataSource
-                Case PricesDataSource.CCP
+                Case DataSource.CCP
                     rbtnPriceSourceCCPData.Checked = True
-                Case PricesDataSource.EVEMarketer ' Just check Fuzzworks if marketer setting, Marketer is offline
+                Case DataSource.EVEMarketer ' Just check Fuzzworks if marketer setting, Marketer is offline
                     rbtnPriceSourceFW.Checked = True
-                Case PricesDataSource.Fuzzworks
+                Case DataSource.Fuzzworks
                     rbtnPriceSourceFW.Checked = True
             End Select
 
@@ -7915,11 +7915,11 @@ ExitForm:
             .Pirate = chkPricesT6.Checked
 
             If rbtnPriceSourceCCPData.Checked Then
-                .PriceDataSource = PricesDataSource.CCP
+                .PriceDataSource = DataSource.CCP
             ElseIf rbtnPriceSourceEM.Checked Then
-                .PriceDataSource = PricesDataSource.Fuzzworks
+                .PriceDataSource = DataSource.Fuzzworks
             ElseIf rbtnPriceSourceFW.Checked Then
-                .PriceDataSource = PricesDataSource.Fuzzworks
+                .PriceDataSource = DataSource.Fuzzworks
             End If
 
             If rbtnPriceSettingPriceProfile.Checked Then
@@ -8226,11 +8226,11 @@ ExitForm:
 
         ' Set the source for the entire update
         If rbtnPriceSourceEM.Checked Then
-            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
         ElseIf rbtnPriceSourceFW.Checked Then
-            UpdatePricesDataSource = CStr(CInt(PricesDataSource.Fuzzworks))
+            UpdatePricesDataSource = CStr(CInt(DataSource.Fuzzworks))
         ElseIf rbtnPriceSourceCCPData.Checked Then
-            UpdatePricesDataSource = CStr(CInt(PricesDataSource.CCP))
+            UpdatePricesDataSource = CStr(CInt(DataSource.CCP))
         End If
 
         Me.Refresh()

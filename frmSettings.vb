@@ -833,9 +833,11 @@ InvalidData:
         ReloadSkills = True
     End Sub
 
-    Private Sub btnOpenRates_Click(sender As Object, e As EventArgs) Handles btnOpenRates.Click
-        Dim f1 As New frmEditDefaultRates
-        f1.ShowDialog()
+    Private Sub chkSuggestBuildwhenBPnotOwned_CheckedChanged(sender As Object, e As EventArgs) Handles chkSuggestBuildwhenBPnotOwned.CheckedChanged
+
     End Sub
 
+    Private Sub chkBuildWhenNotEnoughItemsonMarket_CheckedChanged(sender As Object, e As EventArgs) Handles chkBuildWhenNotEnoughItemsonMarket.CheckedChanged
+
+    End Sub
 End Class

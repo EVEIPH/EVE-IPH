@@ -83,6 +83,8 @@ Public Class ProgramSettings
     Public DefaultDNMarkInlineasOwned As Boolean = False
     Public DefaultSaveFacilitiesbyChar As Boolean = True
     Public DefaultLoadBPsbyChar As Boolean = True
+    Public DefaultBuildWhenNotEnoughItemsonMarket As Boolean = False
+    Public DefaultManualPriceOverride As Boolean = False
 
     Public DefaultBuildBaseInstall As Double = 1000
     Public DefaultBuildBaseHourly As Double = 333
@@ -181,6 +183,7 @@ Public Class ProgramSettings
     Public DefaultBPIncludeUsage As Boolean = True
     Public DefaultBPIgnoreChecks As Boolean = False
     Public DefaultBPPricePerUnit As Boolean = False
+    Public DefaultBPOptimalDecryptor As Integer = 0
     Public DefaultBPIncludeInventionTime As Boolean = False
     Public DefaultBPIncludeInventionCost As Boolean = True
     Public DefaultBPIncludeCopyTime As Boolean = False
@@ -199,6 +202,7 @@ Public Class ProgramSettings
     Public DefaultBPIgnoreMinerals As Boolean = False
     Public DefaultBPIgnoreT1Item As Boolean = False
     Public DefaultBPIncludeIgnoredBPs As Boolean = False
+    Public DefaultBPSellExcessItems As Boolean = False
     Public DefaultBPShoppingListExportType As String = "Components"
     Public DefaultBPCompColumnSort As Integer = 1
     Public DefaultBPCompColumnSortType As String = "Decending"
@@ -207,7 +211,6 @@ Public Class ProgramSettings
     Public DefaultBPRawProfitType As String = "Profit"
     Public DefaultBPCompProfitType As String = "Profit"
     Public DefaultBPCompressedOre As Boolean = False
-    Public DefaultBPSellExcessItems As Boolean = True
 
     ' Update Prices Default Settings
     Public DefaultPriceChecks As Boolean = True
@@ -407,6 +410,9 @@ Public Class ProgramSettings
     Public DefaultMiningRoundTripSec As Integer = 0
     Public DefaultMiningHaulerm3 As Integer = 0
     Public DefaultMiningCheckUseFleetBooster As Boolean = False
+    Public DefaultMiningOverrideCheck As Boolean = False
+    Public DefaultMiningOverrideCycleTime As Double = 1
+    Public DefaultMiningOverrideLaserRange As Double = 1
     Public DefaultMiningBoosterShip As String = "Other"
     Public DefaultMiningBoosterShipSkill As Integer = 0
     Public DefaultMiningMiningFormanSkill As Integer = 0
@@ -960,6 +966,9 @@ Public Class ProgramSettings
     ' Assets - Main window 
     Private DefaultAssetType As String = "Both"
     Private DefaultAssetSortbyName As Boolean = True
+    ' Account type
+    Private DefaultSelectedAccount As Boolean = True
+    Private DefaultCharacterList As String = ""
 
     ' Default LP Store
     Private DefaultLPRewardType As String = "All"
@@ -1029,7 +1038,7 @@ Public Class ProgramSettings
     ' Multiple versions of Asset windows
     Private AssetWindowSettingsManufacturingTab As AssetWindowSettings
     Private AssetWindowSettingsShoppingList As AssetWindowSettings
-    Private AssetWindowsettingsRefinery As AssetWindowSettings
+    Private AssetWindowsettingsReprocessing As AssetWindowSettings
 
     ' 5 belt types
     Private IndustryBeltOreChecksSettings1 As IndustryBeltOreChecks
@@ -1295,6 +1304,8 @@ Public Class ProgramSettings
                     .AlphaAccountTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "AlphaAccountTaxRate", DefaultAlphaAccountTaxRate))
                     .StructureTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StructureTaxRate", DefaultStructureTaxRate))
                     .StationTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StationTaxRate", DefaultStationTaxRate))
+                    .BuildWhenNotEnoughItemsonMarket = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultBuildWhenNotEnoughItemsonMarket))
+                    .ManualPriceOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultManualPriceOverride))
                 End With
 
             Else
@@ -1382,6 +1393,9 @@ Public Class ProgramSettings
             .AlphaAccountTaxRate = DefaultAlphaAccountTaxRate
             .StructureTaxRate = DefaultStructureTaxRate
             .StationTaxRate = DefaultStationTaxRate
+
+            .BuildWhenNotEnoughItemsonMarket = DefaultBuildWhenNotEnoughItemsonMarket
+            .ManualPriceOverride = DefaultManualPriceOverride
         End With
 
         ' Save locally
@@ -1392,7 +1406,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(47) As Setting
+        Dim ApplicationSettingsList(49) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1443,6 +1457,8 @@ Public Class ProgramSettings
             ApplicationSettingsList(45) = New Setting("AlphaAccountTaxRate", CStr(SentSettings.AlphaAccountTaxRate))
             ApplicationSettingsList(46) = New Setting("StationTaxRate", CStr(SentSettings.StationTaxRate))
             ApplicationSettingsList(47) = New Setting("StructureTaxRate", CStr(SentSettings.StructureTaxRate))
+            ApplicationSettingsList(48) = New Setting("BuildWhenNotEnoughItemsonMarket", CStr(SentSettings.BuildWhenNotEnoughItemsonMarket))
+            ApplicationSettingsList(49) = New Setting("ManualPriceOverride", CStr(SentSettings.ManualPriceOverride))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -1711,6 +1727,9 @@ Public Class ProgramSettings
             .NPCBPOs = DefaultBPNPCBPOs
             .SellExcessBuildItems = DefaultBPSellExcessItems
 
+            .OptimalT2Decryptor = DefaultBPOptimalDecryptor
+            .OptimalT3Decryptor = DefaultBPOptimalDecryptor
+
             .IncludeInventionCost = DefaultBPIncludeInventionCost
             .IncludeInventionTime = DefaultBPIncludeInventionTime
             .IncludeCopyCost = DefaultBPIncludecopyCost
@@ -1727,6 +1746,9 @@ Public Class ProgramSettings
             .IgnoreT1Item = DefaultBPIgnoreT1Item
 
             .IncludeIgnoredBPs = DefaultBPIncludeIgnoredBPs
+
+            .HistoryAvgDays = DefaultSVRAveragePriceDuration
+            .HistoryRegion = DefaultSVRAveragePriceRegion
 
             .ExporttoShoppingListType = DefaultBPShoppingListExportType
 
@@ -1780,7 +1802,7 @@ Public Class ProgramSettings
                     .RawMaterials = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "RawMaterials", DefaultPriceChecks))
                     .Salvage = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Salvage", DefaultPriceChecks))
                     .Misc = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "Misc", DefaultPriceChecks))
-                    .BPCs = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
+                    .BPCs = CInt(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeInteger, UpdatePricesFileName, "BPCs", DefaultPriceChecks))
 
                     .AdvancedMoonMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "AdvancedMoonMats", DefaultPriceChecks))
                     .BoosterMats = CBool(GetSettingValue(SettingsFolder, UpdatePricesFileName, SettingTypes.TypeBoolean, UpdatePricesFileName, "BoosterMats", DefaultPriceChecks))
@@ -1983,7 +2005,7 @@ Public Class ProgramSettings
             .RawMaterials = DefaultPriceChecks
             .Salvage = DefaultPriceChecks
             .Misc = DefaultPriceChecks
-            .BPCs = DefaultPriceChecks
+            .BPCs = CInt(DefaultPriceChecks)
 
             .AdvancedMoonMats = DefaultPriceChecks
             .BoosterMats = DefaultPriceChecks
@@ -4630,31 +4652,32 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveConversionToOreSettings(SentSettings As ConversionToOreSettings)
-        Dim ConvertSetting(23) As Setting
+        Dim ConvertSetting(24) As Setting
 
         Try
-            ConvertSetting(0) = New Setting("ConversionType", CStr(SentSettings.ConversionType))
-            ConvertSetting(1) = New Setting("MinimizeOn", CStr(SentSettings.MinimizeOn))
-            ConvertSetting(2) = New Setting("CompressedOre", CStr(SentSettings.CompressedOre))
-            ConvertSetting(3) = New Setting("CompressedIce", CStr(SentSettings.CompressedIce))
-            ConvertSetting(4) = New Setting("HighSec", CStr(SentSettings.HighSec))
-            ConvertSetting(5) = New Setting("LowSec", CStr(SentSettings.LowSec))
-            ConvertSetting(6) = New Setting("NullSec", CStr(SentSettings.NullSec))
-            ConvertSetting(7) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
-            ConvertSetting(8) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
-            ConvertSetting(9) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
-            ConvertSetting(10) = New Setting("Amarr", CStr(SentSettings.Amarr))
-            ConvertSetting(11) = New Setting("Caldari", CStr(SentSettings.Caldari))
-            ConvertSetting(12) = New Setting("Gallente", CStr(SentSettings.Gallente))
-            ConvertSetting(13) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
-            ConvertSetting(14) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
-            ConvertSetting(15) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
-            ConvertSetting(16) = New Setting("C1", CStr(SentSettings.C1))
-            ConvertSetting(17) = New Setting("C2", CStr(SentSettings.C2))
-            ConvertSetting(18) = New Setting("C3", CStr(SentSettings.C3))
-            ConvertSetting(19) = New Setting("C4", CStr(SentSettings.C4))
-            ConvertSetting(20) = New Setting("C5", CStr(SentSettings.C5))
-            ConvertSetting(21) = New Setting("C6", CStr(SentSettings.C6))
+            ConvertSetting(0) = New Setting("MinimizeOn", CStr(SentSettings.MinimizeOn))
+            ConvertSetting(1) = New Setting("ConvertOre", CStr(SentSettings.ConvertOre))
+            ConvertSetting(2) = New Setting("ConvertIce", CStr(SentSettings.ConvertIce))
+            ConvertSetting(3) = New Setting("ConvertMoonOre", CStr(SentSettings.ConvertMoonOre))
+            ConvertSetting(4) = New Setting("ConvertGas", CStr(SentSettings.ConvertGas))
+            ConvertSetting(5) = New Setting("HighSec", CStr(SentSettings.HighSec))
+            ConvertSetting(6) = New Setting("LowSec", CStr(SentSettings.LowSec))
+            ConvertSetting(7) = New Setting("NullSec", CStr(SentSettings.NullSec))
+            ConvertSetting(8) = New Setting("OreVariant0", CStr(SentSettings.OreVariant0))
+            ConvertSetting(9) = New Setting("OreVariant5", CStr(SentSettings.OreVariant5))
+            ConvertSetting(10) = New Setting("OreVariant10", CStr(SentSettings.OreVariant10))
+            ConvertSetting(11) = New Setting("Amarr", CStr(SentSettings.Amarr))
+            ConvertSetting(12) = New Setting("Caldari", CStr(SentSettings.Caldari))
+            ConvertSetting(13) = New Setting("Gallente", CStr(SentSettings.Gallente))
+            ConvertSetting(14) = New Setting("Minmatar", CStr(SentSettings.Minmatar))
+            ConvertSetting(15) = New Setting("Wormhole", CStr(SentSettings.Wormhole))
+            ConvertSetting(16) = New Setting("Triglavian", CStr(SentSettings.Triglavian))
+            ConvertSetting(17) = New Setting("C1", CStr(SentSettings.C1))
+            ConvertSetting(18) = New Setting("C2", CStr(SentSettings.C2))
+            ConvertSetting(19) = New Setting("C3", CStr(SentSettings.C3))
+            ConvertSetting(20) = New Setting("C4", CStr(SentSettings.C4))
+            ConvertSetting(21) = New Setting("C5", CStr(SentSettings.C5))
+            ConvertSetting(22) = New Setting("C6", CStr(SentSettings.C6))
 
             ' For overridechecks, just make one long string with the value for each index in order
             Dim OverrideList As String = ""
@@ -4663,14 +4686,14 @@ Public Class ProgramSettings
                 OverrideList &= CheckValue & ","
             Next
             OverrideList = OverrideList.Substring(0, Len(OverrideList) - 1)
-            ConvertSetting(22) = New Setting("OverrideChecks", OverrideList)
+            ConvertSetting(23) = New Setting("OverrideChecks", OverrideList)
 
             Dim IgnoreItemsList As String = ""
             For Each item In SentSettings.IgnoreRefinedItems
                 IgnoreItemsList &= item & ","
             Next
             IgnoreItemsList = IgnoreItemsList.Substring(0, Len(IgnoreItemsList) - 1)
-            ConvertSetting(23) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
+            ConvertSetting(24) = New Setting("IgnoreRefinedItems", IgnoreItemsList)
 
             Call WriteSettingsToFile(SettingsFolder, ConvertToOreSettingsFileName, ConvertSetting, ConvertToOreSettingsFileName)
 
@@ -4721,7 +4744,7 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
@@ -4816,8 +4839,8 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = TempSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = TempSettings
-            Case AssetWindow.Refinery
-                AssetWindowsettingsRefinery = TempSettings
+            Case AssetWindow.ReprocessingPlant
+                AssetWindowsettingsReprocessing = TempSettings
         End Select
 
         Return TempSettings
@@ -4836,7 +4859,7 @@ Public Class ProgramSettings
                 AssetWindowFileName = AssetWindowFileNameManufacturingTab
             Case AssetWindow.ShoppingList
                 AssetWindowFileName = AssetWindowFileNameShoppingList
-            Case AssetWindow.Refinery
+            Case AssetWindow.ReprocessingPlant
                 AssetWindowFileName = AssetWindowFileNameRefinery
         End Select
 
@@ -4899,6 +4922,8 @@ Public Class ProgramSettings
             AssetWindowSettingsList(53) = New Setting("Pirate", CStr(ItemsSelected.Pirate))
             AssetWindowSettingsList(54) = New Setting("Storyline", CStr(ItemsSelected.Storyline))
             AssetWindowSettingsList(55) = New Setting("NoBuildItems", CStr(ItemsSelected.NoBuildItems))
+            AssetWindowSettingsList(56) = New Setting("SelectedAccount", CStr(ItemsSelected.SelectedAccount))
+            AssetWindowSettingsList(57) = New Setting("SelectedCharacterIDs", CStr(ItemsSelected.SelectedCharacterIDs))
 
             Call WriteSettingsToFile(SettingsFolder, AssetWindowFileName, AssetWindowSettingsList, AssetWindowFileName)
 
@@ -4916,8 +4941,8 @@ Public Class ProgramSettings
                 Return AssetWindowSettingsManufacturingTab
             Case AssetWindow.ShoppingList
                 Return AssetWindowSettingsShoppingList
-            Case AssetWindow.Refinery
-                Return AssetWindowsettingsRefinery
+            Case AssetWindow.ReprocessingPlant
+                Return AssetWindowsettingsReprocessing
             Case Else
                 Return Nothing
         End Select
@@ -4993,8 +5018,8 @@ Public Class ProgramSettings
                 AssetWindowSettingsManufacturingTab = LocalSettings
             Case AssetWindow.ShoppingList
                 AssetWindowSettingsShoppingList = LocalSettings
-            Case AssetWindow.Refinery
-                AssetWindowsettingsRefinery = LocalSettings
+            Case AssetWindow.ReprocessingPlant
+                AssetWindowsettingsReprocessing = LocalSettings
         End Select
 
         Return LocalSettings
@@ -5430,6 +5455,8 @@ Public Structure ApplicationSettings
     ' For Build/Buy 
     Dim CheckBuildBuy As Boolean ' Default for setting the check box for build/buy on the blueprints screen
     Dim SuggestBuildBPNotOwned As Boolean ' For Build/Buy suggestions
+    Dim BuildWhenNotEnoughItemsonMarket As Boolean
+    Dim ManualPriceOverride As Boolean
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
     Dim AlwaysBuyFuelBlocks As Boolean ' Forces build/buy to always buy fuel blocks instead of making a decision
     Dim AlwaysBuyRAMs As Boolean ' Forces build/buy to always buy RAMs instead of making a decision
@@ -5499,6 +5526,9 @@ Public Structure BPTabSettings
     Dim IncludeT3Cost As Boolean
     Dim IncludeT3Time As Boolean
 
+    Dim OptimalT2Decryptor As Integer
+    Dim OptimalT3Decryptor As Integer
+
     Dim PricePerUnit As Boolean
 
     Dim SimpleCopyCheck As Boolean
@@ -5529,6 +5559,9 @@ Public Structure BPTabSettings
     Dim CompressedOre As Boolean
 
     Dim SellExcessBuildItems As Boolean
+
+    Dim HistoryRegion As String
+    Dim HistoryAvgDays As String
 
     Dim BuildT2T3Materials As BuildMatType ' How they want to build T2/T3 items (BuildMatType) - BP Tab
 
@@ -5563,7 +5596,7 @@ Public Structure UpdatePriceTabSettings
     Dim RawMaterials As Boolean
     Dim Salvage As Boolean
     Dim Misc As Boolean
-    Dim BPCs As Boolean
+    Dim BPCs As Integer ' Tri-check
 
     Dim AdvancedMoonMats As Boolean
     Dim BoosterMats As Boolean
@@ -5912,6 +5945,10 @@ Public Structure MiningTabSettings
 
     Dim ColumnSort As Integer
     Dim ColumnSortType As String
+
+    Dim OverrideCheck As Boolean
+    Dim OverrideCycleTime As Double
+    Dim OverrideLaserRange As Double
 
 End Structure
 
@@ -6316,7 +6353,6 @@ Public Structure IceBeltCheckSettings
 
 End Structure
 
-' For Ice Flip Belt Settings
 Public Structure ConversionToOreSettings
     Dim ConversionType As String
     Dim MinimizeOn As String
@@ -6328,6 +6364,11 @@ Public Structure ConversionToOreSettings
     Dim OreVariant0 As Boolean
     Dim OreVariant5 As Boolean
     Dim OreVariant10 As Boolean
+    ' Tri-checks
+    Dim ConvertOre As Integer
+    Dim ConvertIce As Integer
+    Dim ConvertMoonOre As Integer
+    Dim ConvertGas As Integer
     Dim Amarr As Boolean
     Dim Caldari As Boolean
     Dim Gallente As Boolean
@@ -6360,6 +6401,11 @@ Public Structure AssetWindowSettings
     ' Main window
     Dim AssetType As String
     Dim SortbyName As Boolean
+
+    ' Accounts
+    Dim SelectedAccount As Boolean ' False is multi account
+    ' List of selected characters, comma separated - default is going to be empty but will automatically choose the selected character
+    Dim SelectedCharacterIDs As String
 
     ' Selected Items
     Dim ItemFilterText As String
