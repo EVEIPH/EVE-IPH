@@ -2085,10 +2085,10 @@ SkipProcessing:
 
             ' Set Alpha tax
             If BPUserSettings.AlphaAccount Then
-                AlphaCloneTax = AlphaAccountTaxRate
+                AlphaCloneTax = UserApplicationSettings.AlphaAccountTaxRate
             End If
 
-            Dim ModSCCSurcharge As Double = SCCIndustryFeeSurcharge
+            Dim ModSCCSurcharge As Double = UserApplicationSettings.SCCIndustryFeeSurcharge
             With SelectedCharacter.CharacterCorporation
                 If MainManufacturingFacility.FacilityID = 60015187 And (.FactionID = 500010 Or .FactionID = 500011) Then
                     ModSCCSurcharge *= 0.1 ' 90% reduction if in pirate factions at fulcrum for any build

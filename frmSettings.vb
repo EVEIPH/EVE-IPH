@@ -653,6 +653,15 @@ Public Class frmSettings
                 ' SVR
                 .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
 
+                ' Save the editable rates - these are set on the other screen
+                .AlphaAccountTaxRate = UserApplicationSettings.AlphaAccountTaxRate
+                .BaseBrokerFeeRate = UserApplicationSettings.BaseBrokerFeeRate
+                .BaseSalesTaxRate = UserApplicationSettings.BaseSalesTaxRate
+                .SCCBrokerFeeSurcharge = UserApplicationSettings.SCCBrokerFeeSurcharge
+                .SCCIndustryFeeSurcharge = UserApplicationSettings.SCCIndustryFeeSurcharge
+                .StructureTaxRate = UserApplicationSettings.StructureTaxRate
+                .StationTaxRate = UserApplicationSettings.StationTaxRate
+
                 If txtProxyAddress.Text <> "" Then
                     .ProxyAddress = txtProxyAddress.Text
                 Else
@@ -822,6 +831,11 @@ InvalidData:
     Private Sub chkUseActiveSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkUseActiveSkills.CheckedChanged
         ' They changed active skills, so reload character skills on exit
         ReloadSkills = True
+    End Sub
+
+    Private Sub btnOpenRates_Click(sender As Object, e As EventArgs) Handles btnOpenRates.Click
+        Dim f1 As New frmEditDefaultRates
+        f1.ShowDialog()
     End Sub
 
 End Class
