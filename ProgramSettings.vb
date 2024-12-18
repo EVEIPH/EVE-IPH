@@ -1613,6 +1613,8 @@ Public Class ProgramSettings
                     .NPCBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "NPCBPOs", DefaultBPNPCBPOs))
                     .SellExcessBuildItems = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SellExcessBuildItems", DefaultBPSellExcessItems))
                     .BuildT2T3Materials = CType(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType), BuildMatType)
+                    .HistoryRegion = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "HistoryRegion", DefaultSVRAveragePriceRegion))
+                    .HistoryAvgDays = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "HistoryAvgDays", DefaultSVRAveragePriceDuration))
                 End With
 
             Else
@@ -1635,7 +1637,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(43) As Setting
+        Dim BPSettingsList(47) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1690,6 +1692,12 @@ Public Class ProgramSettings
             BPSettingsList(42) = New Setting("BrokerFeeRate", CStr(SentSettings.BrokerFeeRate))
 
             BPSettingsList(43) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
+
+            BPSettingsList(44) = New Setting("OptimalT2Decryptor", CStr(SentSettings.OptimalT2Decryptor))
+            BPSettingsList(45) = New Setting("OptimalT3Decryptor", CStr(SentSettings.OptimalT3Decryptor))
+
+            BPSettingsList(46) = New Setting("HistoryRegion", CStr(SentSettings.HistoryRegion))
+            BPSettingsList(47) = New Setting("HistoryAvgDays", CStr(SentSettings.HistoryAvgDays))
 
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
@@ -2662,6 +2670,9 @@ Public Class ProgramSettings
                     .CheckMineForemanLaserRangeBoost = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckMineForemanLaserRangeBoost", DefaultMiningCheckMineForemanLaserOpBoost))
                     .CheckMiningForemanMindLink = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CheckMiningForemanMindLink", DefaultMiningCheckMiningForemanMindLink))
                     .CheckRorqDeployed = CInt(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "CheckRorqDeployed", DefaultMiningRorqDeployed))
+                    .OverrideCheck = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "OverrideCheck", DefaultMiningOverrideCheck))
+                    .OverrideCycleTime = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "OverrideCycleTime", DefaultMiningOverrideCycleTime))
+                    .OverrideLaserRange = CDbl(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeInteger, MiningSettingsFileName, "OverrideLaserRange", DefaultMiningOverrideLaserRange))
                     .RefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "RefinedOre", DefaultMiningRefinedOre))
                     .UnrefinedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "UnrefinedOre", DefaultMiningUnrefinedOre))
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, MiningSettingsFileName, SettingTypes.TypeBoolean, MiningSettingsFileName, "CompressedOre", DefaultMiningCompressedOre))
@@ -2798,6 +2809,9 @@ Public Class ProgramSettings
             .CheckMineForemanLaserRangeBoost = DefaultMiningCheckMineForemanLaserOpBoost
             .CheckMiningForemanMindLink = DefaultMiningCheckMiningForemanMindLink
             .CheckRorqDeployed = DefaultMiningRorqDeployed
+            .OverrideCheck = DefaultMiningOverrideCheck
+            .OverrideCycleTime = DefaultMiningOverrideCycleTime
+            .OverrideLaserRange = DefaultMiningOverrideLaserRange
             .RefinedOre = DefaultMiningRefinedOre
             .UnrefinedOre = DefaultMiningUnrefinedOre
             .CompressedOre = DefaultMiningCompressedOre
@@ -2852,7 +2866,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveMiningSettings(SentSettings As MiningTabSettings)
-        Dim MiningSettingsList(99) As Setting
+        Dim MiningSettingsList(102) As Setting
 
         Try
             MiningSettingsList(0) = New Setting("OreType", CStr(SentSettings.OreType))
@@ -2965,6 +2979,10 @@ Public Class ProgramSettings
 
             MiningSettingsList(98) = New Setting("CheckEDENCOM", CStr(SentSettings.CheckEDENCOM))
             MiningSettingsList(99) = New Setting("CheckA0Ores", CStr(SentSettings.CheckA0Ores))
+
+            MiningSettingsList(100) = New Setting("OverrideCheck", CStr(SentSettings.OverrideCheck))
+            MiningSettingsList(101) = New Setting("OverrideCycleTime", CStr(SentSettings.OverrideCycleTime))
+            MiningSettingsList(102) = New Setting("OverrideLaserRange", CStr(SentSettings.OverrideLaserRange))
 
             Call WriteSettingsToFile(SettingsFolder, MiningSettingsFileName, MiningSettingsList, MiningSettingsFileName)
 

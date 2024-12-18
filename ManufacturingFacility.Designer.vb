@@ -359,6 +359,7 @@ Partial Class ManufacturingFacility
         Me.btnStructureDelete.TabIndex = 67
         Me.btnStructureDelete.Text = "Del"
         Me.btnStructureDelete.UseVisualStyleBackColor = True
+        Me.btnStructureDelete.Visible = False
         '
         'ManufacturingFacility
         '

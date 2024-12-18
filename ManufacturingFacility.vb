@@ -126,6 +126,7 @@ Public Class ManufacturingFacility
         txtFacilityManualTax.Visible = False
         lblFacilityManualTax.Visible = False
         btnFacilitySave.Visible = False
+        btnStructureDelete.Visible = False
         txtFacilityManualTE.Visible = False
         txtFacilityManualME.Visible = False
         lblFacilityManualTE.Visible = False
@@ -2491,9 +2492,13 @@ Public Class ManufacturingFacility
             ' Enable fitting
             btnFacilityFitting.Enabled = True
             btnFacilityFitting.Visible = True
+            btnStructureDelete.Visible = True
+            ' if this isn't one of the default names, then enable the button
+            btnStructureDelete.Enabled = False
         Else
             btnFacilityFitting.Enabled = False
             btnFacilityFitting.Visible = False
+            btnStructureDelete.Visible = False
         End If
 
         ' Enable the FW settings 

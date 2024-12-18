@@ -548,7 +548,7 @@ Public Class frmMain
             ttBP.SetToolTip(lblBPRawMats, "Total list of materials to build all components and base materials for this blueprint")
             ttBP.SetToolTip(lblBPDecryptorStats, "Selected Decryptor Stats and Runs per BPC")
             ttBP.SetToolTip(lblBPT3Stats, "Selected Decryptor Stats and Runs per BPC")
-            ttBP.SetToolTip(lblBPSimpleCopy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
+            ttBP.SetToolTip(chkBPSimpleCopy, "When checked, this will copy the list into a format that will work with Multi-Buy when pressing the Copy button.")
             ttBP.SetToolTip(lblBPRawProfit, "Double-Click to toggle value between Profit and Profit Percent")
             ttBP.SetToolTip(lblBPCompProfit, "Double-Click to toggle value between Profit and Profit Percent")
             ttBP.SetToolTip(lblBPHistoryAvgDays, "When set, this will be the default days the Sales to Volume Ratio will be averaged over for the BP and Manufacturing tabs")
@@ -2836,6 +2836,26 @@ Public Class frmMain
         Call ProcessT2MatSelection()
     End Sub
 
+    Private Sub chkBPOptimalT3Decryptor_CheckStateChanged(sender As Object, e As EventArgs) Handles chkBPOptimalT3Decryptor.CheckStateChanged
+        If chkBPOptimalT3Decryptor.CheckState = CheckState.Indeterminate Then
+            chkBPOptimalT3Decryptor.Text = "Optimal Profit"
+        ElseIf chkBPOptimalT3Decryptor.CheckState = CheckState.Checked Then
+            chkBPOptimalT3Decryptor.Text = "Optimal IPH"
+        Else
+            chkBPOptimalT3Decryptor.Text = "Optimal"
+        End If
+    End Sub
+
+    Private Sub chkBPOptimalT2Decryptor_CheckStateChanged(sender As Object, e As EventArgs) Handles chkBPOptimalT2Decryptor.CheckStateChanged
+        If chkBPOptimalT2Decryptor.CheckState = CheckState.Indeterminate Then
+            chkBPOptimalT2Decryptor.Text = "Optimal Profit"
+        ElseIf chkBPOptimalT2Decryptor.CheckState = CheckState.Checked Then
+            chkBPOptimalT2Decryptor.Text = "Optimal IPH"
+        Else
+            chkBPOptimalT2Decryptor.Text = "Optimal"
+        End If
+    End Sub
+
     Private Sub chkPerUnit_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles chkBPPricePerUnit.CheckedChanged
         If Not FirstLoad And Not UpdatingCheck Then
             Call UpdateBPPriceLabels()
@@ -3706,7 +3726,7 @@ Public Class frmMain
         End If
     End Sub
 
-    Private Sub chkBPNPCBPOs_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPNPCBPOs.CheckedChanged
+    Private Sub chkBPNPCBPOs_CheckedChanged(sender As Object, e As EventArgs) Handles chkBPMarketBPOs.CheckedChanged
         Call ResetBlueprintCombo(True, False, False, False, False, False)
     End Sub
 
@@ -3714,9 +3734,9 @@ Public Class frmMain
         If Not FirstLoad Then
             Call ResetfromTechSizeCheck()
             If chkBPT1.Checked Then
-                chkBPNPCBPOs.Enabled = True
+                chkBPMarketBPOs.Enabled = True
             Else
-                chkBPNPCBPOs.Enabled = False
+                chkBPMarketBPOs.Enabled = False
             End If
         End If
     End Sub
@@ -4531,7 +4551,7 @@ Public Class frmMain
 
         Dim NPCBPOsClause As String = ""
 
-        If chkBPNPCBPOs.Checked And chkBPNPCBPOs.Enabled Then
+        If chkBPMarketBPOs.Checked And chkBPMarketBPOs.Enabled Then
             NPCBPOsClause = " AND IT2.marketGroupID IS NOT NULL AND ITEM_TYPE = 1 " ' only include T1 BPOs
         End If
 
@@ -4682,7 +4702,7 @@ Public Class frmMain
             chkBPPirateFaction.Checked = .TechPirateCheck
 
             chkBPSimpleCopy.Checked = .SimpleCopyCheck
-            chkBPNPCBPOs.Checked = .NPCBPOs
+            chkBPMarketBPOs.Checked = .NPCBPOs
             chkBPSellExcessItems.Checked = .SellExcessBuildItems
 
             chkBPSmall.Checked = .SmallCheck
@@ -5007,7 +5027,7 @@ Public Class frmMain
 
             ' .IncludeIgnoredBPs = chkBPIncludeIgnoredBPs.Checked
             .SimpleCopyCheck = chkBPSimpleCopy.Checked
-            .NPCBPOs = chkBPNPCBPOs.Checked
+            .NPCBPOs = chkBPMarketBPOs.Checked
             .SellExcessBuildItems = chkBPSellExcessItems.Checked
 
             .SmallCheck = chkBPSmall.Checked
@@ -5027,19 +5047,19 @@ Public Class frmMain
             .BrokerFeeRate = FormatManualPercentEntry(txtBPBrokerFeeRate.Text)
 
             If chkBPOptimalT2Decryptor.CheckState = CheckState.Indeterminate Then
-                .IncludeFees = 2
+                .OptimalT2Decryptor = 2
             ElseIf chkBPOptimalT2Decryptor.CheckState = CheckState.Checked Then
-                .IncludeFees = 1
+                .OptimalT2Decryptor = 1
             Else
-                .IncludeFees = 0
+                .OptimalT2Decryptor = 0
             End If
 
             If chkBPOptimalT3Decryptor.CheckState = CheckState.Indeterminate Then
-                .IncludeFees = 2
+                .OptimalT3Decryptor = 2
             ElseIf chkBPOptimalT3Decryptor.CheckState = CheckState.Checked Then
-                .IncludeFees = 1
+                .OptimalT3Decryptor = 1
             Else
-                .IncludeFees = 0
+                .OptimalT3Decryptor = 0
             End If
 
             .IncludeInventionCost = chkBPIncludeInventionCosts.Checked
@@ -7307,7 +7327,7 @@ ExitForm:
 
     Private Sub ProcessnonTechItemChecks_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAdvancedProtectiveTechnology.CheckedChanged,
         chkGas.CheckedChanged, chkIceProducts.CheckedChanged, chkMolecularForgingTools.CheckedChanged, chkFactionMaterials.CheckedChanged, chkNamedComponents.CheckedChanged,
-        chkMinerals.CheckedChanged, chkPlanetary.CheckedChanged, chkRawMaterials.CheckedChanged, chkSalvage.CheckedChanged, chkMisc.CheckedChanged, chkBPCs.CheckedChanged,
+        chkMinerals.CheckedChanged, chkPlanetary.CheckedChanged, chkRawMaterials.CheckedChanged, chkSalvage.CheckedChanged, chkMisc.CheckedChanged,
         chkDatacores.CheckedChanged, chkDecryptors.CheckedChanged, chkAncientRelics.CheckedChanged, chkRDb.CheckedChanged, chkAdvancedMats.CheckedChanged, chkBoosterMats.CheckedChanged,
         chkMolecularForgedMaterials.CheckedChanged, chkPolymers.CheckedChanged, chkProcessedMats.CheckedChanged, chkRawMoonMats.CheckedChanged, chkBoosters.CheckedChanged,
         chkCapT2Components.CheckedChanged, chkComponents.CheckedChanged, chkFuelBlocks.CheckedChanged, chkProtectiveComponents.CheckedChanged, chkRAM.CheckedChanged,
@@ -7315,7 +7335,9 @@ ExitForm:
         chkStructureModules.CheckedChanged, chkImplants.CheckedChanged, chkCelestials.CheckedChanged, chkNoBuildItems.CheckedChanged
         Call UpdatePriceList()
     End Sub
-
+    Private Sub chkBPCs_CheckStateChanged(sender As Object, e As EventArgs) Handles chkBPCs.CheckStateChanged
+        Call UpdatePriceList()
+    End Sub
     Private Sub chkTechManufacturedItems_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkModules.CheckedChanged, chkDrones.CheckedChanged, chkRigs.CheckedChanged,
             chkSubsystems.CheckedChanged, chkStructures.CheckedChanged, chkUpdatePricesNoPrice.CheckedChanged, chkStructureRigs.CheckedChanged
         RefreshList = False
