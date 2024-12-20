@@ -91,6 +91,9 @@ Partial Class frmSettings
         Me.gbPriceOptions = New System.Windows.Forms.GroupBox()
         Me.chkAutoUpdateSVRBPTab = New System.Windows.Forms.CheckBox()
         Me.chkManualPriceOverride = New System.Windows.Forms.CheckBox()
+        Me.btnOpenRates = New System.Windows.Forms.Button()
+        Me.gbAdjustRates = New System.Windows.Forms.GroupBox()
+        Me.lblEditRates = New System.Windows.Forms.Label()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -103,6 +106,7 @@ Partial Class frmSettings
         Me.gbProxySettings.SuspendLayout()
         Me.gbCharacterOptions.SuspendLayout()
         Me.gbPriceOptions.SuspendLayout()
+        Me.gbAdjustRates.SuspendLayout()
         Me.SuspendLayout()
         '
         'chkCheckUpdatesStartup
@@ -786,12 +790,41 @@ Partial Class frmSettings
         Me.chkManualPriceOverride.Text = "Do not overwrite manual price updates."
         Me.chkManualPriceOverride.UseVisualStyleBackColor = True
         '
+        'btnOpenRates
+        '
+        Me.btnOpenRates.Location = New System.Drawing.Point(85, 19)
+        Me.btnOpenRates.Name = "btnOpenRates"
+        Me.btnOpenRates.Size = New System.Drawing.Size(67, 39)
+        Me.btnOpenRates.TabIndex = 42
+        Me.btnOpenRates.Text = "Edit Rates"
+        Me.btnOpenRates.UseVisualStyleBackColor = True
+        '
+        'gbAdjustRates
+        '
+        Me.gbAdjustRates.Controls.Add(Me.lblEditRates)
+        Me.gbAdjustRates.Controls.Add(Me.btnOpenRates)
+        Me.gbAdjustRates.Location = New System.Drawing.Point(252, 366)
+        Me.gbAdjustRates.Name = "gbAdjustRates"
+        Me.gbAdjustRates.Size = New System.Drawing.Size(161, 70)
+        Me.gbAdjustRates.TabIndex = 43
+        Me.gbAdjustRates.TabStop = False
+        '
+        'lblEditRates
+        '
+        Me.lblEditRates.Location = New System.Drawing.Point(4, 17)
+        Me.lblEditRates.Name = "lblEditRates"
+        Me.lblEditRates.Size = New System.Drawing.Size(75, 44)
+        Me.lblEditRates.TabIndex = 43
+        Me.lblEditRates.Text = "Adjust Default Tax Rates"
+        Me.lblEditRates.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(678, 516)
+        Me.Controls.Add(Me.gbAdjustRates)
         Me.Controls.Add(Me.gbPriceOptions)
         Me.Controls.Add(Me.gbCharacterOptions)
         Me.Controls.Add(Me.gbBuildBuySettings)
@@ -838,6 +871,7 @@ Partial Class frmSettings
         Me.gbCharacterOptions.PerformLayout()
         Me.gbPriceOptions.ResumeLayout(False)
         Me.gbPriceOptions.PerformLayout()
+        Me.gbAdjustRates.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -908,4 +942,7 @@ Partial Class frmSettings
     Friend WithEvents gbPriceOptions As GroupBox
     Friend WithEvents chkManualPriceOverride As CheckBox
     Friend WithEvents chkAutoUpdateSVRBPTab As CheckBox
+    Friend WithEvents btnOpenRates As Button
+    Friend WithEvents gbAdjustRates As GroupBox
+    Friend WithEvents lblEditRates As Label
 End Class

@@ -3698,7 +3698,7 @@ Public Class frmMain
 
     Private Sub rbtnBPStationPartsBlueprints_CheckedChanged(sender As System.Object, e As System.EventArgs) Handles rbtnBPStructureRigsBlueprints.CheckedChanged
         If rbtnBPStructureRigsBlueprints.Checked Then
-            Call ResetBlueprintCombo(True, False, False, False, False, False)
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
         End If
     End Sub
 
@@ -20659,7 +20659,7 @@ ProcExit:
         If cmbMineOreType.Text = "Ore" Then
 
             If cmbMineRefining.Text = "4" Or cmbMineRefining.Text = "5" Then
-                ' Veld, Scordite, Pyroxeres, and Plag
+                ' Veld, Scordite, Pyroxeres, Plag, and Mordunium
                 Call EnableOreProcessingGroup(1, True)
 
                 ' Reprocessing 4 is needed for this instead of 5
@@ -20667,17 +20667,17 @@ ProcExit:
             End If
 
             If cmbMineRefining.Text = "5" Then
-                ' Hemo, Hed, Jaspet, Kernite, Omber, Refinery Effy
+                ' Hemo, Hed, Jaspet, Kernite, Omber, Ytirium, Griemeer, Noxcite, Refinery Effy
                 Call EnableOreProcessingGroup(2, True)
             End If
 
             If cmbMineRefineryEff.Text = "4" Or cmbMineRefineryEff.Text = "5" Then
-                ' Dark Ochre, Gneiss, Crokite
+                ' Dark Ochre, Gneiss, Crokite, Kylixium
                 Call EnableOreProcessingGroup(3, True)
             End If
 
             If cmbMineRefineryEff.Text = "5" Then
-                ' Ark, Bisot, Spod,
+                ' Ark, Bisot, Spod,Eifyrium, Ducinium, Hezorime, Ueganite
                 Call EnableOreProcessingGroup(4, True)
                 Call EnableOreProcessingGroup(6, True) ' Mercoxit
                 ' Moon mining

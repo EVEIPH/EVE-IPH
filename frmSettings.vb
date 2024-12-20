@@ -840,4 +840,9 @@ InvalidData:
     Private Sub chkBuildWhenNotEnoughItemsonMarket_CheckedChanged(sender As Object, e As EventArgs) Handles chkBuildWhenNotEnoughItemsonMarket.CheckedChanged
 
     End Sub
+
+    Private Sub btnOpenRates_Click(sender As Object, e As EventArgs) Handles btnOpenRates.Click
+        Dim f1 As New frmEditDefaultRates
+        f1.ShowDialog()
+    End Sub
 End Class

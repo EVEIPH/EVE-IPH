@@ -16,14 +16,6 @@ Public Module Public_Variables
 
     Public LocalCulture As CultureInfo
 
-    Public BaseSalesTaxRate As Double = 8 ' Sales tax base is 8 and during holidays they may change to 50% or 4 to make it work
-    Public BaseBrokerFeeRate As Double = 3
-    Public SCCBrokerFeeSurcharge As Double = 0.005 ' Fixed rate of 0.5%
-    Public SCCIndustryFeeSurcharge As Double = 0.04 ' Fixed rate of 4% on 2/1/2024
-    Public Const AlphaAccountTaxRate As Double = 0.0025 ' fixed to 0.25%
-    Public Const DefaultStructureTaxRate = 0.0 ' 0% to start for structures
-    Public Const DefaultStationTaxRate = 0.0025 ' 0.25% for all stations
-
     Public EVEDB As DBConnection
     Public DBCommand As SQLiteCommand
     ' For checking the DB to see if it's ok to write
@@ -521,7 +513,7 @@ Public Module Public_Variables
         Dim Accounting As Integer = SelectedCharacter.Skills.GetSkillLevel(16622)
         ' Each level of accounting reduces tax by 11%, Max/Base Sales Tax: 8%, Min Sales Tax: 3.6%
         ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
-        Return (BaseSalesTaxRate - (Accounting * 0.11 * BaseSalesTaxRate)) / 100 * ItemMarketCost
+        Return (UserApplicationSettings.BaseSalesTaxRate - (Accounting * 0.11 * UserApplicationSettings.BaseSalesTaxRate)) / 100 * ItemMarketCost
     End Function
 
     ' Returns the tax on setting up a sell order for an item price only
@@ -534,11 +526,11 @@ Public Module Public_Variables
             ' Base broker fee = 3%, Min broker fees: 1.0%
             ' Latest info: https://www.eveonline.com/news/view/restructuring-taxes-after-relief
             ' and https://www.eveonline.com/de/news/view/viridian-expansion-notes
-            Dim BrokerTax = BaseBrokerFeeRate - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
+            Dim BrokerTax = UserApplicationSettings.BaseBrokerFeeRate - (0.3 * BrokerRelations) - (0.03 * UserApplicationSettings.BrokerFactionStanding) - (0.02 * UserApplicationSettings.BrokerCorpStanding)
             TempFee = (BrokerTax / 100) * ItemMarketCost
         ElseIf BrokerFee.IncludeFee = BrokerFeeType.SpecialFee Then
             ' use a flat rate to set the fee - Since they are setting this, assume they are in an Upwell and add in the SCC fixed rate fee added in Viridian
-            TempFee = (BrokerFee.FixedRate * ItemMarketCost) + (SCCBrokerFeeSurcharge * ItemMarketCost)
+            TempFee = (BrokerFee.FixedRate * ItemMarketCost) + (UserApplicationSettings.SCCBrokerFeeSurcharge * ItemMarketCost)
         Else
             Return 0
         End If
@@ -1847,22 +1839,22 @@ SkipItem:
 
             ' Format TechSQL 
             If TechSQL <> "" Then
-                TechSQL = " AND (" & TechSQL.Substring(0, TechSQL.Length - 3) & ")" '& "OR ITEM_TYPE IN (21,22,23,24)) "- Add on Meta codes - 21,22,23,24 are T3 
+                TechSQL = "(" & TechSQL.Substring(0, TechSQL.Length - 3) & "OR ITEM_TYPE IN (21,22,23,24)) " ' - Add on Meta codes - 21,22,23,24 are T3 
             End If
 
             ' Build Tech 1,2,3 Manufactured Items
             If Charges.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Charge' " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Charge' AND " & TechSQL
                 If ChargeTypes.Text <> "All Charge Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ChargeTypes.Text & "'"
                 End If
                 SQL &= ") OR "
             End If
             If Drones.Checked Then
-                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY IN ('Drone', 'Fighter') AND " & TechSQL & ") OR "
             End If
             If Modules.Checked Then ' Not rigs but Modules
-                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
             End If
             If Ships.Checked Then
                 SQL &= "(ITEM_CATEGORY = 'Ship' " & TechSQL
@@ -1872,16 +1864,16 @@ SkipItem:
                 SQL &= ") OR "
             End If
             If Subsystems.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Subsystem' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Subsystem' AND " & TechSQL & ") OR "
             End If
             If StructureRigs.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' " & TechSQL & ") OR "
+                SQL &= "(ITEM_CATEGORY = 'Structure Rigs' AND " & TechSQL & ") OR "
             End If
             If Rigs.Checked Then ' Rigs
-                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
+                SQL &= "((ITEM_CATEGORY = 'Module' AND ITEM_GROUP LIKE 'Rig%' AND " & TechSQL & ") OR (ITEM_CATEGORY = 'Structure Module' AND ITEM_GROUP LIKE '%Rig%')) OR "
             End If
             If Structures.Checked Then
-                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
+                SQL &= "((ITEM_CATEGORY IN ('Starbase','Structure') AND " & TechSQL & ") OR ITEM_GROUP = 'Station Components') OR "
             End If
         End If
 
@@ -2017,7 +2009,8 @@ SkipItem:
         Dim SQL As String = ""
         Dim rsData As SQLiteDataReader
 
-        SQL = "SELECT regionName FROM REGIONS WHERE (regionName Not Like '%-R%' OR regionName = 'G-R00031') AND " & RegionFilterString & " GROUP BY regionName "
+        SQL = "SELECT regionName FROM REGIONS WHERE (regionName NOT LIKE '%-R%' OR regionName = 'G-R00031' ) AND regionName NOT LIKE 'VR-%' "
+        SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' GROUP BY regionName "
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
@@ -2026,9 +2019,10 @@ SkipItem:
         While rsData.Read
             RegionCombo.Items.Add(rsData.GetString(0))
         End While
-        rsData.Close()
         RegionCombo.EndUpdate()
         RegionCombo.Text = DefaultRegionName
+
+        rsData.Close()
 
     End Sub
 
@@ -2066,7 +2060,6 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
-        Application.DoEvents()
     End Sub
 
     ' Updates the value in the progressbar for a smooth progress - total hack from this: http://stackoverflow.com/questions/977278/how-can-i-make-the-progress-bar-update-fast-enough/1214147#1214147
@@ -2076,7 +2069,6 @@ SkipItem:
             PG.Value = PG.Value - 1
             PG.Value = PG.Value + 1
         End If
-        Application.DoEvents()
     End Sub
 
     ' Check for Fulcrum bonus - if it's an angel or gurista's subcap and they are using Fulcrum station, return true
