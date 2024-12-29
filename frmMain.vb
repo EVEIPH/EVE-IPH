@@ -1203,6 +1203,346 @@ Public Class frmMain
 
 #End Region
 
+#Region "Reset Data"
+
+    Private Sub ResetESIDates(Optional ByVal SupressMsg As Boolean = False)
+        Dim SQL As String
+
+        ' Simple update, just set all the ESI cache dates to null
+        SQL = "DELETE FROM ESI_PUBLIC_CACHE_DATES"
+        EVEDB.ExecuteNonQuerySQL(SQL)
+
+        If Not SupressMsg Then
+            MsgBox("ESI cache dates reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Private Sub ResetESIIndustrySystemIndicies(Optional ByVal SupressMsg As Boolean = False)
+
+        ' Simple update, just set all the ESI cache dates to null
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
+
+        If Not SupressMsg Then
+            MsgBox("ESI Industry System Indicies reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Public Sub ResetESIAdjustedMarketPrices(Optional ByVal SupressMsg As Boolean = False)
+
+        ' Simple update, just set all the data back to zero
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET MARKET_PRICES_CACHED_UNTIL = NULL")
+
+        If Not SupressMsg Then
+            MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Public Sub ResetESIPublicStructures(Optional ByVal SupressMsg As Boolean = False)
+        ' Delete all the public structures
+        Call ResetPublicStructureData()
+        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET PUBLIC_STRUCTURES_CACHED_UNTIL = NULL")
+
+        If Not SupressMsg Then
+            MsgBox("ESI Public Structure data reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Public Sub ResetSavedFacilities(Optional ByVal SupressMsg As Boolean = False)
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILITIES WHERE CHARACTER_ID <> 0")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES")
+        ' Re-load all the forms' facilities
+        Call LoadFacilities()
+
+        If Not SupressMsg Then
+            MsgBox("Saved Facility data reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Public Sub ResetMarketOrders(Optional ByVal SupressMsg As Boolean = False)
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+
+        ' Simple update, just set all the data back to zero
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS_UPDATE_CACHE")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS")
+
+        If Not SupressMsg Then
+            MsgBox("Market Orders reset", vbInformation, Application.ProductName)
+        End If
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
+    End Sub
+
+    Public Sub ResetMarketHistory(Optional ByVal SupressMsg As Boolean = False)
+        Application.UseWaitCursor = True
+        Application.DoEvents()
+
+        ' Simple update, just set all the data back to zero
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
+        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY")
+
+        If Not SupressMsg Then
+            MsgBox("Market History reset", vbInformation, Application.ProductName)
+        End If
+
+        Application.UseWaitCursor = False
+        Application.DoEvents()
+
+    End Sub
+
+    Public Sub ResetPriceData(Optional ByVal SupressMsg As Boolean = False)
+
+        EVEDB.ExecuteNonQuerySQL("DELETE FROM ITEM_PRICES_CACHE")
+        EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET PRICE = 0")
+
+        Call ResetMarketOrders(SupressMsg)
+        Call ResetMarketHistory(SupressMsg)
+
+    End Sub
+
+    Public Sub ResetAssets()
+
+        ' Personal
+        EVEDB.ExecuteNonQuerySQL("DELETE FROM ASSETS")
+        EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET ASSETS_CACHE_DATE = NULL")
+
+        ' Corp
+        EVEDB.ExecuteNonQuerySQL("DELETE FROM ASSETS")
+        EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CORPORATION_DATA SET ASSETS_CACHE_DATE = NULL")
+
+    End Sub
+
+    Public Sub ResetAgents()
+        EVEDB.ExecuteNonQuerySQL("DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID =" & SelectedCharacter.ID)
+        EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET RESEARCH_AGENTS_CACHE_DATE = NULL WHERE CHARACTER_ID = " & CStr(SelectedCharacter.ID))
+    End Sub
+
+    Public Sub ResetIndustryJobs()
+        EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_JOBS WHERE InstallerID =" & SelectedCharacter.ID & " AND JobType =" & ScanType.Personal)
+        EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET INDUSTRY_JOBS_CACHE_DATE = NULL WHERE CHARACTER_ID =" & CStr(SelectedCharacter.ID))
+    End Sub
+
+    ' Full reset - will delete all data downloaded, updated, or otherwise set by the user
+    Private Sub mnuResetAllData_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuResetAllData.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all data for the program including ESI Tokens, Blueprints, Assets, Industry Jobs, and Price data." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            ' Character stuff first
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CHARACTER_DATA")
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CORPORATION_DATA")
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_STANDINGS")
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_SKILLS")
+
+            Call ResetPriceData(True)
+            Call ResetAssets()
+            Call ResetAgents()
+            Call ResetIndustryJobs()
+            Call ResetAllBPData(True)
+            Call ResetSavedFacilities(True)
+            Call ResetESIPublicStructures(True)
+
+            ' Reset ESI data
+            Call ResetESIIndustrySystemIndicies(True)
+            Call ResetESIAdjustedMarketPrices(True)
+
+            ' Reset all the cache dates
+            Call ResetESIDates(True)
+
+            ' Load the dummy char
+            Call SelectedCharacter.LoadDummyCharacter(True)
+
+            ' Reset all ignored blueprints
+            EVEDB.ExecuteNonQuerySQL("UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0")
+
+            ' Re-load all the forms' facilities
+            Call LoadFacilities()
+
+            FirstLoad = True ' Temporarily just to get screen to show correctly
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            ' Reset the tabs
+            Call ResetTabs()
+
+            FirstLoad = False
+
+            MsgBox("All Data Reset", vbInformation, Application.ProductName)
+
+            ' Need to set a default, open that form
+            'Dim f2 = New frmSetCharacterDefault
+            'f2.ShowDialog()
+
+            'Call LoadCharacterNamesinMenu()
+
+        End If
+
+    End Sub
+
+    Private Sub mnuResetPriceData_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetPriceData.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all stored price data for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            Call ResetPriceData()
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Prices reset", vbInformation, Application.ProductName)
+
+        End If
+
+        Call UpdateProgramPrices()
+
+    End Sub
+
+    Private Sub mnuResetESIDates_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIDates.Click
+        Call ResetESIDates()
+    End Sub
+
+    Private Sub mnuResetESIPublicStructures_Click(sender As Object, e As EventArgs) Handles mnuResetESIPublicStructures.Click
+        Call ResetESIPublicStructures()
+    End Sub
+
+    Private Sub mnuResetSavedFacilities_Click(sender As Object, e As EventArgs) Handles mnuResetSavedFacilities.Click
+        Call ResetSavedFacilities()
+    End Sub
+
+    Private Sub mnuResetMarketOrders_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetMarketOrders.Click
+        Call ResetMarketOrders()
+    End Sub
+
+    Private Sub mnuResetMarketHistory_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetMarketHistory.Click
+        Call ResetMarketHistory()
+    End Sub
+
+    Private Sub mnuResetBlueprintData_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetBlueprintData.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all blueprints for this character" & Environment.NewLine & "deleting all scanned data and stored ME/TE values." & Environment.NewLine & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            Call ResetAllBPData()
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+        End If
+    End Sub
+
+    Private Sub mnuResetAgents_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAgents.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all stored Research Agents for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Research Agents reset", vbInformation, Application.ProductName)
+        End If
+
+    End Sub
+
+    Private Sub mnuResetIndustryJobs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIndustryJobs.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all stored Industry Jobs for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            Call ResetIndustryJobs()
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Industry Jobs reset", vbInformation, Application.ProductName)
+        End If
+
+    End Sub
+
+    Private Sub mnuResetIgnoredBPs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIgnoredBPs.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all blueprints to non-ignored" & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            EVEDB.ExecuteNonQuerySQL("UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0")
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Ignored Blueprints reset", vbInformation, Application.ProductName)
+        End If
+    End Sub
+
+    Private Sub mnuResetAssets_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAssets.Click
+        Dim Response As MsgBoxResult
+
+        Response = MsgBox("This will reset all stored Assets for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
+
+        If Response = vbYes Then
+            Application.UseWaitCursor = True
+            Application.DoEvents()
+
+            Call ResetAssets()
+
+            ' Reload the asset variables for the character, which will load nothing but clear the assets out
+            Call SelectedCharacter.GetAssets().LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
+                                                                               SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+
+            Application.UseWaitCursor = False
+            Application.DoEvents()
+
+            MsgBox("Assets reset", vbInformation, Application.ProductName)
+        End If
+
+    End Sub
+
+    Private Sub mnuResetESIMarketPrices_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIMarketPrices.Click
+        Call ResetESIAdjustedMarketPrices()
+    End Sub
+
+    Private Sub mnuResetESIIndustryFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIIndustryFacilities.Click
+        Call ResetESIIndustrySystemIndicies()
+    End Sub
+
+#End Region
+
+    Private Sub mnuCurrentIndustryJobs_Click(sender As System.Object, e As System.EventArgs) Handles mnuCurrentIndustryJobs.Click
+        Dim f1 As New frmIndustryJobsViewer
+        f1.Show()
+    End Sub
+
     Private Sub mnuViewErrorLog_Click(sender As Object, e As EventArgs) Handles mnuViewErrorLog.Click
         Dim f1 As New frmErrorLog
 
@@ -1938,338 +2278,6 @@ Public Class frmMain
 
         f1.Show()
         IceBeltFlipOpen = True
-    End Sub
-
-    ' Full reset - will delete all data downloaded, updated, or otherwise set by the user
-    Private Sub mnuResetAllData_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles mnuResetAllData.Click
-        Dim Response As MsgBoxResult
-
-        Response = MsgBox("This will reset all data for the program including ESI Tokens, Blueprints, Assets, Industry Jobs, and Price data." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CHARACTER_DATA")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CORPORATION_DATA")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_STANDINGS")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM CHARACTER_SKILLS")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM OWNED_BLUEPRINTS")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM ITEM_PRICES_CACHE")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM ASSETS")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM INDUSTRY_JOBS")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM CURRENT_RESEARCH_AGENTS")
-
-            EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET PRICE = 0")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY")
-
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
-
-            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILITIES WHERE CHARACTER_ID <> 0")
-
-            ' Load the dummy char
-            Call SelectedCharacter.LoadDummyCharacter(True)
-
-            ' Re-load all the forms' facilities
-            Call LoadFacilities()
-
-            ' Reset all the cache dates
-            Call ResetESIDates()
-
-            ' Reset ESI data
-            Call ResetESIIndustrySystemIndicies()
-            Call ResetESIAdjustedMarketPrices()
-
-            FirstLoad = True ' Temporarily just to get screen to show correctly
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            ' Reset the tabs
-            Call ResetTabs()
-
-            FirstLoad = False
-
-            MsgBox("All Data Reset", vbInformation, Application.ProductName)
-
-            ' Need to set a default, open that form
-            'Dim f2 = New frmSetCharacterDefault
-            'f2.ShowDialog()
-
-            'Call LoadCharacterNamesinMenu()
-
-        End If
-
-    End Sub
-
-    Private Sub mnuResetPriceData_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetPriceData.Click
-        Dim Response As MsgBoxResult
-        Dim SQL As String
-
-        Response = MsgBox("This will reset all stored price data for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            SQL = "DELETE FROM ITEM_PRICES_CACHE"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM MARKET_ORDERS"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM MARKET_ORDERS_UPDATE_CACHE"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM MARKET_HISTORY"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM MARKET_HISTORY_UPDATE_CACHE"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "UPDATE ITEM_PRICES_FACT SET PRICE = 0"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            MsgBox("Prices reset", vbInformation, Application.ProductName)
-
-        End If
-
-        Call UpdateProgramPrices()
-
-    End Sub
-
-    Private Sub mnuResetESIDates_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIDates.Click
-        Call ResetESIDates()
-    End Sub
-
-    Private Sub ResetESIDates()
-        Dim SQL As String
-
-        ' Simple update, just set all the ESI cache dates to null
-        SQL = "DELETE FROM ESI_PUBLIC_CACHE_DATES"
-        EVEDB.ExecuteNonQuerySQL(SQL)
-
-        MsgBox("ESI cache dates reset", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub ResetESIIndustrySystemIndicies()
-
-        ' Simple update, just set all the ESI cache dates to null
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET INDUSTRY_SYSTEMS_CACHED_UNTIL = NULL")
-
-        MsgBox("ESI Industry System Indicies reset", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Public Sub ResetESIAdjustedMarketPrices()
-
-        ' Simple update, just set all the data back to zero
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ITEM_PRICES_FACT SET ADJUSTED_PRICE = 0, AVERAGE_PRICE = 0")
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET MARKET_PRICES_CACHED_UNTIL = NULL")
-
-        MsgBox("ESI Adjusted Market Prices reset", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub mnuResetESIPublicStructures_Click(sender As Object, e As EventArgs) Handles mnuResetESIPublicStructures.Click
-        ' Delete all the public structures
-        Call ResetPublicStructureData()
-        Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_PUBLIC_CACHE_DATES SET PUBLIC_STRUCTURES_CACHED_UNTIL = NULL")
-
-        MsgBox("ESI Public Structure data reset", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub mnuResetSavedFacilities_Click(sender As Object, e As EventArgs) Handles mnuResetSavedFacilities.Click
-
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM SAVED_FACILITIES WHERE CHARACTER_ID <> 0")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM UPWELL_STRUCTURES_INSTALLED_MODULES")
-        ' Re-load all the forms' facilities
-        Call LoadFacilities()
-
-        MsgBox("Saved Facility data reset", vbInformation, Application.ProductName)
-
-    End Sub
-
-    Private Sub mnuResetMarketOrders_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetMarketOrders.Click
-
-        Application.UseWaitCursor = True
-        Application.DoEvents()
-
-        ' Simple update, just set all the data back to zero
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS_UPDATE_CACHE")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM STRUCTURE_MARKET_ORDERS")
-
-        MsgBox("Market Orders reset", vbInformation, Application.ProductName)
-
-        Application.UseWaitCursor = False
-        Application.DoEvents()
-    End Sub
-
-    Private Sub mnuResetMarketHistory_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetMarketHistory.Click
-
-        Application.UseWaitCursor = True
-        Application.DoEvents()
-
-        ' Simple update, just set all the data back to zero
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY_UPDATE_CACHE")
-        Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_HISTORY")
-
-        MsgBox("Market History reset", vbInformation, Application.ProductName)
-
-        Application.UseWaitCursor = False
-        Application.DoEvents()
-    End Sub
-
-    Private Sub mnuResetBlueprintData_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetBlueprintData.Click
-        Dim Response As MsgBoxResult
-
-        Response = MsgBox("This will reset all blueprints for this character" & Environment.NewLine & "deleting all scanned data and stored ME/TE values." & Environment.NewLine & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            Call ResetAllBPData()
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-        End If
-
-    End Sub
-
-    Private Sub mnuResetAgents_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAgents.Click
-        Dim Response As MsgBoxResult
-        Dim SQL As String
-
-        Response = MsgBox("This will reset all stored Research Agents for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID =" & SelectedCharacter.ID
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "UPDATE ESI_CHARACTER_DATA SET RESEARCH_AGENTS_CACHE_DATE = NULL WHERE CHARACTER_ID = " & CStr(SelectedCharacter.ID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            MsgBox("Research Agents reset", vbInformation, Application.ProductName)
-        End If
-
-    End Sub
-
-    Private Sub mnuResetIndustryJobs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIndustryJobs.Click
-        Dim Response As MsgBoxResult
-        Dim SQL As String
-
-        Response = MsgBox("This will reset all stored Industry Jobs for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            SQL = "DELETE FROM INDUSTRY_JOBS WHERE InstallerID =" & SelectedCharacter.ID & " AND JobType =" & ScanType.Personal
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "UPDATE ESI_CHARACTER_DATA SET INDUSTRY_JOBS_CACHE_DATE = NULL WHERE CHARACTER_ID =" & CStr(SelectedCharacter.ID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            MsgBox("Industry Jobs reset", vbInformation, Application.ProductName)
-        End If
-
-    End Sub
-
-    Private Sub mnuResetIgnoredBPs_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetIgnoredBPs.Click
-        Dim Response As MsgBoxResult
-        Dim SQL As String
-
-        Response = MsgBox("This will reset all blueprints to non-ignored" & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0"
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            MsgBox("Ignored Blueprints reset", vbInformation, Application.ProductName)
-        End If
-    End Sub
-
-    Private Sub mnuResetAssets_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetAssets.Click
-        Dim Response As MsgBoxResult
-        Dim SQL As String
-
-        Response = MsgBox("This will reset all stored Assets for this character." & Environment.NewLine & "Are you sure you want to do this?", vbYesNo, Application.ProductName)
-
-        If Response = vbYes Then
-            Application.UseWaitCursor = True
-            Application.DoEvents()
-
-            ' Personal
-            SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.ID
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "UPDATE ESI_CHARACTER_DATA SET ASSETS_CACHE_DATE = NULL WHERE CHARACTER_ID =" & CStr(SelectedCharacter.ID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Corp
-            SQL = "DELETE FROM ASSETS WHERE ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "UPDATE ESI_CORPORATION_DATA SET ASSETS_CACHE_DATE = NULL WHERE CORPORATION_ID =" & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Reload the asset variables for the character, which will load nothing but clear the assets out
-            Call SelectedCharacter.GetAssets().LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                               SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-
-            Application.UseWaitCursor = False
-            Application.DoEvents()
-
-            MsgBox("Assets reset", vbInformation, Application.ProductName)
-        End If
-
-    End Sub
-
-    Private Sub mnuCurrentIndustryJobs_Click(sender As System.Object, e As System.EventArgs) Handles mnuCurrentIndustryJobs.Click
-        Dim f1 As New frmIndustryJobsViewer
-        f1.Show()
-    End Sub
-
-    Private Sub mnuResetESIMarketPrices_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIMarketPrices.Click
-        Call ResetESIAdjustedMarketPrices()
-    End Sub
-
-    Private Sub mnuResetESIIndustryFacilities_Click(sender As System.Object, e As System.EventArgs) Handles mnuResetESIIndustryFacilities.Click
-        Call ResetESIIndustrySystemIndicies()
     End Sub
 
     ' Checks the ME and TE boxes to make sure they are ok and errors if not
@@ -8440,7 +8448,7 @@ ExitSub:
 
     End Function
 
-    ' Loads prices from the cache into the ITEM_PRICES table based on the info selected on the main form
+    ' Loads prices from the ITEM_PRICES_CACHE into the ITEM_PRICES table (fuzzworks) or into MARKET_ORDERS for CCP data based on the info selected on the main form 
     Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem), ByVal BPCRegionID As String)
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
@@ -9194,7 +9202,7 @@ LocalCancelUpdatePrices:
 
     End Function
 
-    ' Adds prices for each type id and region to the cache 
+    ' Adds prices for each type id and region to the cache for non CCP data pull
     Private Function UpdatePricesCache(ByVal CacheItems As List(Of PriceItem)) As Boolean
         Dim TypeIDUpdatePriceList As New List(Of PriceItem)
         Dim i As Integer
@@ -17599,6 +17607,13 @@ Leave:
                 lblMineLaserRange.Visible = True
             End If
         End If
+
+        If chkMineOverrideBoosts.Checked Then
+            chkMineOverrideBoosts.Text = "Skills/Boosts Override"
+        Else
+            chkMineOverrideBoosts.Text = "Skills/Boosts Stats"
+        End If
+
     End Sub
 
     Private Sub chkMineUseFleetBooster_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMineUseFleetBooster.CheckedChanged
@@ -19001,6 +19016,7 @@ Leave:
         End Select
 
         For i = 0 To OreList.Count - 1
+            Dim TempDroneYield As Double = 0
             ' Make sure we want to add Mercoxit
             If Not OreList(i).OreName.Contains("Mercoxit") Or (OreList(i).OreName.Contains("Mercoxit") And cmbMineMiningLaser.Text.Contains("Deep Core")) Then
                 lstOreRow = New ListViewItem(CStr(OreList(i).OreID))
@@ -19040,7 +19056,9 @@ Leave:
                 If MiningType = MiningOreType.Ice Then
                     lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 0)) ' Multiplier for drone mining calculated above
                 Else
-                    lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 1)) ' Multiplier for drone mining calculated above
+                    ' Convert to m3 for ore mined
+                    TempDroneYield = OreList(i).DroneYield / OreList(i).OreVolume
+                    lstOreRow.SubItems.Add(FormatNumber(TempDroneYield, 1)) ' Multiplier for drone mining calculated above
                 End If
                 lstOreRow.SubItems.Add(FormatNumber(Math.Round(OreList(i).UnitsPerHour * MinerMultiplier), 0))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).IPH * MinerMultiplier, 2))

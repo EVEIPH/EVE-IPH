@@ -4771,6 +4771,8 @@ Public Class ProgramSettings
 
                 'Get the settings
                 With TempSettings
+                    .SelectedCharacterIDs = CStr(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "SelectedCharacterIDs", DefaultSelectedCharacterIDs))
+
                     ' Main window
                     .AssetType = CStr(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeString, AssetWindowFileName, "AssetType", DefaultAssetType))
                     .SortbyName = CBool(GetSettingValue(SettingsFolder, AssetWindowFileName, SettingTypes.TypeBoolean, AssetWindowFileName, "SortbyName", DefaultAssetSortbyName))
@@ -4867,7 +4869,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveAssetWindowSettings(ItemsSelected As AssetWindowSettings, Location As AssetWindow)
-        Dim AssetWindowSettingsList(55) As Setting
+        Dim AssetWindowSettingsList(57) As Setting
         Dim AssetWindowFileName As String = ""
 
         Select Case Location

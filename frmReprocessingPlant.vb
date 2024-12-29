@@ -51,7 +51,7 @@ Public Class frmReprocessingPlant
         lstItemstoRefine.Columns.Add("Total Cost", 100, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Rate", 43, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Refined Value", 100, HorizontalAlignment.Right)
-        lstItemstoRefine.Columns.Add("% Return", 55, HorizontalAlignment.Right)
+        lstItemstoRefine.Columns.Add("Return", 55, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Material Group", 0, HorizontalAlignment.Right) ' Hidden
         lstItemstoRefine.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
 
@@ -548,58 +548,60 @@ Public Class frmReprocessingPlant
 
         If IsNothing(PasteMaterialList) Then
             Dim IDString As String = GetAssetIDString(UserAssetWindowRefinerySettings)
-
             ' Build the where clause to look up data
             Dim AssetLocationFlagList As String = ""
-            ' First look up the location and flagID pairs - unique ID of asset locations
-            SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ReprocessingPlant) & " AND ID IN (" & IDString & ")"
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerItems = DBCommand.ExecuteReader
 
-            While readerItems.Read ' Update that if we are looking at -4, then only select stuff that is marked as -4 or in the Hangar and not ships (drones - 87 flag, cargo - 5 flag)
-                If ((readerItems.GetInt32(1) = -90 Or readerItems.GetInt32(1) = -4) And readerItems.GetInt64(0) > 1000000000000) Then
-                    ' If the flag is the base location, then we want all items at the location id
-                    AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & ") OR "
-                Else
-                    AssetLocationFlagList &= "(LocationID = " & CStr(Math.Abs(readerItems.GetInt64(0))) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
-                End If
-            End While
+            If IDString <> "" Then
+                ' First look up the location and flagID pairs - unique ID of asset locations
+                SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ReprocessingPlant) & " AND ID IN (" & IDString & ")"
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerItems = DBCommand.ExecuteReader
 
-            readerItems.Close()
+                While readerItems.Read ' Update that if we are looking at -4, then only select stuff that is marked as -4 or in the Hangar and not ships (drones - 87 flag, cargo - 5 flag)
+                    If ((readerItems.GetInt32(1) = -90 Or readerItems.GetInt32(1) = -4) And readerItems.GetInt64(0) > 1000000000000) Then
+                        ' If the flag is the base location, then we want all items at the location id
+                        AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & ") OR "
+                    Else
+                        AssetLocationFlagList &= "(LocationID = " & CStr(Math.Abs(readerItems.GetInt64(0))) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
+                    End If
+                End While
 
-            If AssetLocationFlagList = "" Then
-                MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
-                Application.UseWaitCursor = False
-                Me.Cursor = Cursors.Default
-                Application.DoEvents()
-                Exit Sub
-            Else
-                ' Strip the last OR
-                AssetLocationFlagList = AssetLocationFlagList.Substring(0, Len(AssetLocationFlagList) - 4)
+                readerItems.Close()
             End If
 
-            ' Now get all the assets from the checked locations
-            SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
-            SQL &= "ASSETS, INVENTORY_TYPES AS IT "
-            SQL &= "WHERE IT.typeID = ASSETS.TypeID "
-            SQL &= "AND ID IN (" & IDString & ") "
-            SQL &= " AND (" & AssetLocationFlagList & ") "
-            SQL &= "GROUP BY IT.typeID, IT.typeName, IT.volume "
+            If AssetLocationFlagList = "" Then
+                    MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
+                    Application.UseWaitCursor = False
+                    Me.Cursor = Cursors.Default
+                    Application.DoEvents()
+                    Exit Sub
+                Else
+                    ' Strip the last OR
+                    AssetLocationFlagList = AssetLocationFlagList.Substring(0, Len(AssetLocationFlagList) - 4)
+                End If
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerItems = DBCommand.ExecuteReader
+                ' Now get all the assets from the checked locations
+                SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
+                SQL &= "ASSETS, INVENTORY_TYPES AS IT "
+                SQL &= "WHERE IT.typeID = ASSETS.TypeID "
+                SQL &= "AND ID IN (" & IDString & ") "
+                SQL &= " AND (" & AssetLocationFlagList & ") "
+                SQL &= "GROUP BY IT.typeID, IT.typeName, IT.volume "
 
-            While readerItems.Read
-                ' Add each material to the temp list
-                With readerItems
-                    TempMaterial = New Material(.GetInt64(0), .GetString(1), "", .GetInt64(2), .GetDouble(3), 0, "", "")
-                End With
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerItems = DBCommand.ExecuteReader
 
-                Call TempMaterialList.InsertMaterial(TempMaterial)
+                While readerItems.Read
+                    ' Add each material to the temp list
+                    With readerItems
+                        TempMaterial = New Material(.GetInt64(0), .GetString(1), "", .GetInt64(2), .GetDouble(3), 0, "", "")
+                    End With
 
-            End While
-        Else
-            TempMaterialList = PasteMaterialList
+                    Call TempMaterialList.InsertMaterial(TempMaterial)
+
+                End While
+            Else
+                TempMaterialList = PasteMaterialList
         End If
 
         ' First, only add items to the list that we can refine - filter out all the other junk

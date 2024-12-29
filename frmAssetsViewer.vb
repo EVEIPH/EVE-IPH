@@ -285,8 +285,8 @@ Public Class frmAssetsViewer
     Private Sub LoadAccountList()
         Dim rsAccounts As SQLiteDataReader
         Dim lstCharacterRow As ListViewItem
-        Dim SQL As String = "SELECT CHARACTER_NAME, CORPORATION_NAME, CHARACTER_ID, ESI_CHARACTER_DATA.CORPORATION_ID FROM ESI_CHARACTER_DATA, ESI_CORPORATION_DATA
-                             WHERE ESI_CHARACTER_DATA.CORPORATION_ID = ESI_CORPORATION_DATA.CORPORATION_ID AND CHARACTER_ID <> " & CStr(DummyCharacterID)
+        Dim SQL As String = "SELECT CHARACTER_NAME, CORPORATION_NAME, CHARACTER_ID, ESI_CHARACTER_DATA.CORPORATION_ID FROM ESI_CHARACTER_DATA, ESI_CORPORATION_DATA "
+        SQL &= "WHERE ESI_CHARACTER_DATA.CORPORATION_ID = ESI_CORPORATION_DATA.CORPORATION_ID AND CHARACTER_ID <> " & CStr(DummyCharacterID)
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsAccounts = DBCommand.ExecuteReader
         lstCharacters.BeginUpdate()
@@ -300,9 +300,16 @@ Public Class frmAssetsViewer
             lstCharacterRow.SubItems.Add(CStr(rsAccounts.GetInt64(3)))
             Call lstCharacters.Items.Add(lstCharacterRow)
             ' check the selected character to start if only selected account 
-            If rbtnMultiAccounts.Checked And SelectedSettings.SelectedCharacterIDs.Contains(rsAccounts.GetInt64(2).ToString) Then
-                lstCharacterRow.Checked = True
+            If rbtnMultiAccounts.Checked Then
+                If Not IsNothing(SelectedSettings.SelectedCharacterIDs) Then
+                    If SelectedSettings.SelectedCharacterIDs.Contains(rsAccounts.GetInt64(2).ToString) Then
+                        lstCharacterRow.Checked = True
+                    End If
+                Else
+                    lstCharacterRow.Checked = True
+                End If
             End If
+
         End While
         lstCharacters.EndUpdate()
     End Sub

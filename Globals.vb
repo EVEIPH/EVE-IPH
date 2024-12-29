@@ -1211,13 +1211,17 @@ SkipItem:
 
     ' Gets the ID's for personal and corp assets for querying in asset windows
     Public Function GetAssetIDString(AssetSettings As AssetWindowSettings) As String
-        Dim IDs() As String
+        Dim IDs(0) As String
         Dim IDString As String = ""
         Dim CorpID As Long = 0
         Dim readerIDs As SQLiteDataReader
 
         ' Read the character IDs selected and get locations for each
-        IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
+        If Not IsNothing(AssetSettings.SelectedCharacterIDs) Then
+            IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
+        Else
+            Return ""
+        End If
 
         ' Get the characterIDs
         For Each ID In IDs
@@ -2530,7 +2534,7 @@ SkipItem:
     End Function
 
     ' Deletes all data related to blueprints for the selected character and corporation they are part
-    Public Sub ResetAllBPData()
+    Public Sub ResetAllBPData(Optional ByVal Supressmsg As Boolean = False)
         Dim SQL As String
 
         Dim CorpID As String = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
@@ -2549,7 +2553,9 @@ SkipItem:
 
         Call EVEDB.CommitSQLiteTransaction()
 
-        MsgBox("Blueprints reset", vbInformation, Application.ProductName)
+        If Not Supressmsg Then
+            MsgBox("Blueprints reset", vbInformation, Application.ProductName)
+        End If
 
     End Sub
 
