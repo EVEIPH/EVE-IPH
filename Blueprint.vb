@@ -422,7 +422,8 @@ Public Class Blueprint
     End Sub
 
     Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor,
-                ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility, ByVal InventionItemTypeID As Long) As Integer
+                                    ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility,
+                                    ByVal InventionItemTypeID As Long) As Integer
 
         ' 3406 laboratory operation and 24624 is adv laboratory operation
         NumberofLaboratoryLines = NumLaboratoryLines
@@ -505,7 +506,7 @@ Public Class Blueprint
 
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
     Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByVal SetProductionCosts As Boolean,
-                        ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
+                          ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
         If NumberofBlueprints = 1 Then

@@ -215,6 +215,10 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
+    Private Sub chkSaveBPCCostperBP_CheckedChanged(sender As Object, e As EventArgs) Handles chkSaveBPCCostperBP.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
     Private Sub chkBuyRAMs_CheckedChanged(sender As Object, e As EventArgs) Handles chkAlwaysBuyRAMs.CheckedChanged
         btnSave.Text = "Save"
     End Sub
@@ -317,6 +321,7 @@ Public Class frmSettings
 
                 .SetToolTip(chkAlwaysBuyFuelBlocks, "When selected, IPH will always force buying of fuel blocks as components in Build/Buy calculations")
                 .SetToolTip(chkAlwaysBuyRAMs, "When selected, IPH will always force buying of R.A.M.s as components in Build/Buy calculations")
+                .SetToolTip(chkSaveBPCCostperBP, "When selected and users check BPC Cost on the BP Tab and then Save BP, IPH will save the option to include the BPC cost only for this blueprint. ")
 
                 .SetToolTip(chkSuggestBuildwhenBPnotOwned, "When selected, IPH will always Build the item if the BP is not owned")
                 .SetToolTip(chkBuildWhenNotEnoughItemsonMarket, "When selected, IPH will build items if suggesting buy components without enough components on market to buy")
@@ -437,6 +442,7 @@ Public Class frmSettings
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
             chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
             chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
+            chkSaveBPCCostperBP.Checked = .SaveBPCCostperBP
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
@@ -638,6 +644,7 @@ Public Class frmSettings
 
                 .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked
                 .AlwaysBuyRAMs = chkAlwaysBuyRAMs.Checked
+                .SaveBPCCostperBP = chkSaveBPCCostperBP.Checked
 
                 .AlphaAccount = chkAlphaAccount.Checked
                 .UseActiveSkillLevels = chkUseActiveSkills.Checked
@@ -845,4 +852,5 @@ InvalidData:
         Dim f1 As New frmEditDefaultRates
         f1.ShowDialog()
     End Sub
+
 End Class

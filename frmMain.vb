@@ -227,7 +227,7 @@ Public Class frmMain
     Private IgnoreMarketFocus As Boolean
 
     ' Column width consts - may change depending on Ore, Ice or Gas so change the widths of the columns based on these and use them to add and move
-    Private Const MineOreNameColumnWidth As Integer = 114
+    Private Const MineOreNameColumnWidth As Integer = 148
     Private Const MineRefineYieldColumnWidth As Integer = 70
     Private Const MineCrystalColumnWidth As Integer = 55
     Private Const PriceListHeaderCSV As String = "Group Name,Item Name,Price,Price Type,Raw Material,Type ID"
@@ -714,20 +714,19 @@ Public Class frmMain
         '****************************************
         '**** Mining Tab Initializations ********
         '****************************************
-        ' Width 700, 21 for scrollbar - 679 total space
+        ' Width 817, 21 for scrollbar - 796 total space
         lstMineGrid.Columns.Add("Ore ID", 0, HorizontalAlignment.Right) ' Hidden
         lstMineGrid.Columns.Add("Ore Name", MineOreNameColumnWidth, HorizontalAlignment.Left)
         lstMineGrid.Columns.Add("Refine Type", 70, HorizontalAlignment.Left)
-        lstMineGrid.Columns.Add("Unit Price", 67, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Unit Price", 81, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("Refine Yield", MineRefineYieldColumnWidth, HorizontalAlignment.Center)
         lstMineGrid.Columns.Add("Crystal", MineCrystalColumnWidth, HorizontalAlignment.Left)
-        ' lstMineGrid.Columns.Add("m3/Cycle", 60, HorizontalAlignment.Right)
+        lstMineGrid.Columns.Add("Cycle Time", 64, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("RP", 47, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("RV", 27, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("Drone yield", 65, HorizontalAlignment.Right)
         lstMineGrid.Columns.Add("Units/Hour", 64, HorizontalAlignment.Right)
-        lstMineGrid.Columns.Add("Isk per Hour", 100, HorizontalAlignment.Right)
-        lstMineGrid.Columns.Add("CycleTime", 0, HorizontalAlignment.Right) ' Hidden
+        lstMineGrid.Columns.Add("Isk per Hour", 105, HorizontalAlignment.Right)
 
         MineProcessingCheckBoxes = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "chkOreProcessing"), CheckBox())
         MineProcessingLabels = DirectCast(ControlArrayUtils.getControlArray(Me, Me.MyControls, "lblOreProcessing"), Label())
@@ -5259,9 +5258,10 @@ Public Class frmMain
         'txtBPME.Text = "0"
         'txtBPTE.Text = "0"
 
-        SQL = "SELECT ALL_BLUEPRINTS.BLUEPRINT_ID, TECH_LEVEL, ITEM_TYPE, ITEM_GROUP_ID, ITEM_CATEGORY_ID, BLUEPRINT_GROUP "
-        SQL &= "FROM ALL_BLUEPRINTS "
-        SQL &= "WHERE ALL_BLUEPRINTS.BLUEPRINT_NAME = "
+        SQL = "SELECT AB.BLUEPRINT_ID, AB.TECH_LEVEL, AB.ITEM_TYPE, AB.ITEM_GROUP_ID, AB.ITEM_CATEGORY_ID, AB.BLUEPRINT_GROUP, IP.PRICE "
+        SQL &= "FROM ALL_BLUEPRINTS AS AB, ITEM_PRICES_FACT AS IP "
+        SQL &= "WHERE AB.BLUEPRINT_ID = IP.ITEM_ID "
+        SQL &= "AND AB.BLUEPRINT_NAME = "
 
         If SelectedBPText = "" Then
             SelectedBPText = cmbBPBlueprintSelection.Text
@@ -5279,6 +5279,8 @@ Public Class frmMain
             ItemGroupID = readerBP.GetInt32(3)
             ItemCategoryID = readerBP.GetInt32(4)
             BPGroup = readerBP.GetString(5)
+            ' Load the BPC cost each time
+            txtBPBPCCCost.Text = FormatNumber(readerBP.GetDouble(6), 2)
         Else
             Exit Sub
         End If
@@ -17591,29 +17593,20 @@ Leave:
     End Sub
 
     Private Sub chkMineOverrideBoosts_CheckedChanged(sender As Object, e As EventArgs) Handles chkMineOverrideBoosts.CheckedChanged
-        If Not FirstLoad Then
-            If chkMineOverrideBoosts.Checked Then
-                Call UpdateBoosterSkills(True)
-                ' Show text boxes instead of labels
-                txtMineOverrideCycleTime.Visible = True
-                txtMineOverrideLaserRange.Visible = True
-                lblMineCycleTime.Visible = False
-                lblMineLaserRange.Visible = False
-            Else
-                Call UpdateBoosterSkills()
-                txtMineOverrideCycleTime.Visible = False
-                txtMineOverrideLaserRange.Visible = False
-                lblMineCycleTime.Visible = True
-                lblMineLaserRange.Visible = True
-            End If
-        End If
-
         If chkMineOverrideBoosts.Checked Then
+            ' Show text boxes instead of labels
+            txtMineOverrideCycleTime.Visible = True
+            txtMineOverrideLaserRange.Visible = True
+            lblMineCycleTime.Visible = False
+            lblMineLaserRange.Visible = False
             chkMineOverrideBoosts.Text = "Skills/Boosts Override"
         Else
+            txtMineOverrideCycleTime.Visible = False
+            txtMineOverrideLaserRange.Visible = False
+            lblMineCycleTime.Visible = True
+            lblMineLaserRange.Visible = True
             chkMineOverrideBoosts.Text = "Skills/Boosts Stats"
         End If
-
     End Sub
 
     Private Sub chkMineUseFleetBooster_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMineUseFleetBooster.CheckedChanged
@@ -17625,13 +17618,6 @@ Leave:
             Else
                 tabBoosterDrones.Enabled = False
             End If
-
-            If chkMineUseFleetBooster.Checked Then
-                chkMineOverrideBoosts.Enabled = True
-            Else
-                chkMineOverrideBoosts.Enabled = False
-            End If
-
         End If
     End Sub
 
@@ -18439,10 +18425,7 @@ Leave:
         Dim RTTimetoStationSeconds As Long = 0 ' Seconds to get back to station to drop off ore
 
         Dim HeavyWaterCost As Double = 0 ' Total it costs to run the Rorq in deployed mode
-
         Dim MoonType As String = ""
-        Dim OverrideBoosts As Boolean = False
-
         Dim CycletimeNoCrystal As Double = 0 ' If this is zero, then use the calculated rate, else use the base time because it takes crystal time into account
 
         ' Determine multiplier - assume all additional mining ships have the same yield and other costs
@@ -18676,12 +18659,8 @@ Leave:
         Dim GangBurstBonusCycle As Double = 0
         Dim GangBurstBonusRange As Double = 0
         If chkMineUseFleetBooster.Checked Then
-            If Not chkMineOverrideBoosts.Checked Then
-                GangBurstBonusCycle = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
-                GangBurstBonusRange = CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost)
-            Else
-                OverrideBoosts = True
-            End If
+            GangBurstBonusCycle = CalculateBurstBonus(BurstBonusType.Cycle, chkMineForemanLaserOpBoost)
+            GangBurstBonusRange = CalculateBurstBonus(BurstBonusType.Range, chkMineForemanLaserRangeBoost)
         End If
 
         ' Loop through all the ores and determine ore amount, refine, 
@@ -18748,15 +18727,9 @@ Leave:
                     ' Duration is in milliseconds - add in crystal bonus too
                     CycletimeNoCrystal = CalculateMiningCycleTime(MiningLaserBaseCycleTime / 1000, GangBurstBonusCycle)
                     BaseCycleTime = CycletimeNoCrystal * CrystalAsteroidDurationMultiplier
-                    If CrystalAsteroidDurationMultiplier = 1 Then
-                        CycleTimeLabel = FormatNumber(BaseCycleTime, 1) & " s"
-                        ttMining.SetToolTip(lblMineCycleTime, "")
-                    Else
-                        CycleTimeLabel = FormatNumber(CycletimeNoCrystal, 1) & " s*"
-                        ttMining.SetToolTip(lblMineCycleTime, "* Base Cycle time without Crystal Bonus")
-                    End If
-
-                    If OverrideBoosts Then
+                    CycleTimeLabel = FormatNumber(CycletimeNoCrystal, 1) & " s*"
+                    ttMining.SetToolTip(lblMineCycleTime, "* Base Cycle time without Crystal Bonus")
+                    If chkMineOverrideBoosts.Checked Then
                         BaseCycleTime = CDbl(txtMineOverrideCycleTime.Text.Replace(" s", ""))
                     End If
                 Else
@@ -19047,11 +19020,11 @@ Leave:
                     lstOreRow.SubItems.Add(FormatPercent(OreList(i).RefineYield, 3))
                 End If
                 lstOreRow.SubItems.Add(OreList(i).CrystalType)
+                ' cycle Time for this crystal
+                lstOreRow.SubItems.Add(FormatNumber(OreList(i).CycleTime, 1) & " s")
                 ' Add residue values
                 lstOreRow.SubItems.Add(FormatPercent(OreList(i).ResidueProbability / 100, 1))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).ResidueVolumeMuliplier, 0))
-                ' Modify all three by mining multiplier
-                'lstOreRow.SubItems.Add(FormatNumber(OreList(i).OreUnitsPerCycle * MinerMultiplier, 2))
                 ' For drone yield, we only apply the miner multipler to drone yield from mining ships, not booster
                 If MiningType = MiningOreType.Ice Then
                     lstOreRow.SubItems.Add(FormatNumber(OreList(i).DroneYield, 0)) ' Multiplier for drone mining calculated above
@@ -19062,7 +19035,6 @@ Leave:
                 End If
                 lstOreRow.SubItems.Add(FormatNumber(Math.Round(OreList(i).UnitsPerHour * MinerMultiplier), 0))
                 lstOreRow.SubItems.Add(FormatNumber(OreList(i).IPH * MinerMultiplier, 2))
-                lstOreRow.SubItems.Add(FormatNumber(OreList(i).CycleTime, 1) & " s")
                 Call lstMineGrid.Items.Add(lstOreRow)
             End If
             Call IncrementToolStripProgressBar(pnlProgressBar)
@@ -19074,9 +19046,7 @@ Leave:
         lstMineGrid.EndUpdate()
 
         ' Update the mining range of the mining lasers selected
-        If Not OverrideBoosts Then
-            lblMineLaserRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text, GangBurstBonusRange) / 1000, 2) & " km"
-        End If
+        lblMineLaserRange.Text = FormatNumber(CalculateMiningRange(AttribLookup.GetAttribute(cmbMineMiningLaser.Text, ItemAttributes.maxRange), cmbMineOreType.Text, GangBurstBonusRange) / 1000, 2) & " km"
         lblMineCycleTime.Text = CycleTimeLabel
 
         i = 0

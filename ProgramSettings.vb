@@ -125,6 +125,7 @@ Public Class ProgramSettings
 
     Public DefaultAlwaysBuyFuelBlocks As Boolean = False
     Public DefaultAlwaysBuyRAMs As Boolean = False
+    Public DefaultSaveBPCCostperBP As Boolean = True
 
     Public DefaultSettingME As Integer = 0
     Public DefaultSettingTE As Integer = 0
@@ -1284,6 +1285,7 @@ Public Class ProgramSettings
                     .SaveBPRelicsDecryptors = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPRelicsDecryptors", DefaultSaveBPRelicsDecryptors))
                     .AlwaysBuyFuelBlocks = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyFuelBlocks", DefaultAlwaysBuyFuelBlocks))
                     .AlwaysBuyRAMs = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "AlwaysBuyRAMs", DefaultAlwaysBuyRAMs))
+                    .SaveBPCCostperBP = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "SaveBPCCostperBP", DefaultSaveBPCCostperBP))
                     .IgnoreSVRThresholdValue = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "IgnoreSVRThresholdValue", DefaultIgnoreSVRThresholdValue))
                     .SVRAveragePriceRegion = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceRegion", DefaultSVRAveragePriceRegion))
                     .SVRAveragePriceDuration = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "SVRAveragePriceDuration", DefaultSVRAveragePriceDuration))
@@ -1367,6 +1369,7 @@ Public Class ProgramSettings
 
             .AlwaysBuyFuelBlocks = DefaultAlwaysBuyFuelBlocks
             .AlwaysBuyRAMs = DefaultAlwaysBuyRAMs
+            .SaveBPCCostperBP = DefaultSaveBPCCostperBP
 
             .ShopListIncludeInventMats = DefaultShopListIncludeInventMats
             .ShopListIncludeCopyMats = DefaultShopListIncludeCopyMats
@@ -1406,7 +1409,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(49) As Setting
+        Dim ApplicationSettingsList(50) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1459,6 +1462,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(47) = New Setting("StructureTaxRate", CStr(SentSettings.StructureTaxRate))
             ApplicationSettingsList(48) = New Setting("BuildWhenNotEnoughItemsonMarket", CStr(SentSettings.BuildWhenNotEnoughItemsonMarket))
             ApplicationSettingsList(49) = New Setting("ManualPriceOverride", CStr(SentSettings.ManualPriceOverride))
+            ApplicationSettingsList(50) = New Setting("SaveBPCCostperBP", CStr(SentSettings.SaveBPCCostperBP))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -5480,6 +5484,7 @@ Public Structure ApplicationSettings
     Dim SaveBPRelicsDecryptors As Boolean ' For auto-loading relics and decryptor types
     Dim AlwaysBuyFuelBlocks As Boolean ' Forces build/buy to always buy fuel blocks instead of making a decision
     Dim AlwaysBuyRAMs As Boolean ' Forces build/buy to always buy RAMs instead of making a decision
+    Dim SaveBPCCostperBP As Boolean ' Allows saving the inclusion of BPC cost in the production cost for the selected BPC
 
     Dim DisableSVR As Boolean ' For disabling SVR updates
     Dim DisableGATracking As Boolean ' for disabling tracking app usage through Google Analytics

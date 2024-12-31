@@ -94,6 +94,7 @@ Partial Class frmSettings
         Me.btnOpenRates = New System.Windows.Forms.Button()
         Me.gbAdjustRates = New System.Windows.Forms.GroupBox()
         Me.lblEditRates = New System.Windows.Forms.Label()
+        Me.chkSaveBPCCostperBP = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -121,7 +122,7 @@ Partial Class frmSettings
         '
         'btnSave
         '
-        Me.btnSave.Location = New System.Drawing.Point(184, 473)
+        Me.btnSave.Location = New System.Drawing.Point(184, 521)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(101, 30)
         Me.btnSave.TabIndex = 29
@@ -130,7 +131,7 @@ Partial Class frmSettings
         '
         'btnCancel
         '
-        Me.btnCancel.Location = New System.Drawing.Point(394, 473)
+        Me.btnCancel.Location = New System.Drawing.Point(394, 521)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(101, 30)
         Me.btnCancel.TabIndex = 31
@@ -344,7 +345,7 @@ Partial Class frmSettings
         '
         'btnReset
         '
-        Me.btnReset.Location = New System.Drawing.Point(289, 473)
+        Me.btnReset.Location = New System.Drawing.Point(289, 521)
         Me.btnReset.Name = "btnReset"
         Me.btnReset.Size = New System.Drawing.Size(101, 30)
         Me.btnReset.TabIndex = 30
@@ -353,6 +354,7 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
+        Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPCCostperBP)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildWhenNotEnoughItemsonMarket)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyRAMs)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyFuelBlocks)
@@ -361,7 +363,7 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.Controls.Add(Me.chkSuggestBuildwhenBPnotOwned)
         Me.gbBuildBuySettings.Location = New System.Drawing.Point(417, 175)
         Me.gbBuildBuySettings.Name = "gbBuildBuySettings"
-        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 145)
+        Me.gbBuildBuySettings.Size = New System.Drawing.Size(250, 195)
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
@@ -529,16 +531,16 @@ Partial Class frmSettings
         '
         Me.gb3rdpartyMarketRefresh.Controls.Add(Me.txtFuzzworksMarketInterval)
         Me.gb3rdpartyMarketRefresh.Controls.Add(Me.chkFuzzworksMarketInterval)
-        Me.gb3rdpartyMarketRefresh.Location = New System.Drawing.Point(417, 326)
+        Me.gb3rdpartyMarketRefresh.Location = New System.Drawing.Point(12, 448)
         Me.gb3rdpartyMarketRefresh.Name = "gb3rdpartyMarketRefresh"
-        Me.gb3rdpartyMarketRefresh.Size = New System.Drawing.Size(250, 44)
+        Me.gb3rdpartyMarketRefresh.Size = New System.Drawing.Size(235, 44)
         Me.gb3rdpartyMarketRefresh.TabIndex = 38
         Me.gb3rdpartyMarketRefresh.TabStop = False
         Me.gb3rdpartyMarketRefresh.Text = "Fuzzworks Price Updates:"
         '
         'txtFuzzworksMarketInterval
         '
-        Me.txtFuzzworksMarketInterval.Location = New System.Drawing.Point(165, 16)
+        Me.txtFuzzworksMarketInterval.Location = New System.Drawing.Point(172, 17)
         Me.txtFuzzworksMarketInterval.Name = "txtFuzzworksMarketInterval"
         Me.txtFuzzworksMarketInterval.Size = New System.Drawing.Size(41, 20)
         Me.txtFuzzworksMarketInterval.TabIndex = 24
@@ -547,7 +549,7 @@ Partial Class frmSettings
         'chkFuzzworksMarketInterval
         '
         Me.chkFuzzworksMarketInterval.AutoSize = True
-        Me.chkFuzzworksMarketInterval.Location = New System.Drawing.Point(9, 19)
+        Me.chkFuzzworksMarketInterval.Location = New System.Drawing.Point(17, 19)
         Me.chkFuzzworksMarketInterval.Name = "chkFuzzworksMarketInterval"
         Me.chkFuzzworksMarketInterval.Size = New System.Drawing.Size(150, 17)
         Me.chkFuzzworksMarketInterval.TabIndex = 23
@@ -763,7 +765,7 @@ Partial Class frmSettings
         '
         Me.gbPriceOptions.Controls.Add(Me.chkAutoUpdateSVRBPTab)
         Me.gbPriceOptions.Controls.Add(Me.chkManualPriceOverride)
-        Me.gbPriceOptions.Location = New System.Drawing.Point(12, 366)
+        Me.gbPriceOptions.Location = New System.Drawing.Point(12, 372)
         Me.gbPriceOptions.Name = "gbPriceOptions"
         Me.gbPriceOptions.Size = New System.Drawing.Size(235, 70)
         Me.gbPriceOptions.TabIndex = 39
@@ -803,7 +805,7 @@ Partial Class frmSettings
         '
         Me.gbAdjustRates.Controls.Add(Me.lblEditRates)
         Me.gbAdjustRates.Controls.Add(Me.btnOpenRates)
-        Me.gbAdjustRates.Location = New System.Drawing.Point(252, 366)
+        Me.gbAdjustRates.Location = New System.Drawing.Point(252, 376)
         Me.gbAdjustRates.Name = "gbAdjustRates"
         Me.gbAdjustRates.Size = New System.Drawing.Size(161, 70)
         Me.gbAdjustRates.TabIndex = 43
@@ -818,12 +820,22 @@ Partial Class frmSettings
         Me.lblEditRates.Text = "Adjust Default Tax Rates"
         Me.lblEditRates.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
+        'chkSaveBPCCostperBP
+        '
+        Me.chkSaveBPCCostperBP.AutoSize = True
+        Me.chkSaveBPCCostperBP.Location = New System.Drawing.Point(9, 138)
+        Me.chkSaveBPCCostperBP.Name = "chkSaveBPCCostperBP"
+        Me.chkSaveBPCCostperBP.Size = New System.Drawing.Size(134, 17)
+        Me.chkSaveBPCCostperBP.TabIndex = 42
+        Me.chkSaveBPCCostperBP.Text = "Save BPC Cost per BP"
+        Me.chkSaveBPCCostperBP.UseVisualStyleBackColor = True
+        '
         'frmSettings
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(678, 516)
+        Me.ClientSize = New System.Drawing.Size(678, 563)
         Me.Controls.Add(Me.gbAdjustRates)
         Me.Controls.Add(Me.gbPriceOptions)
         Me.Controls.Add(Me.gbCharacterOptions)
@@ -945,4 +957,5 @@ Partial Class frmSettings
     Friend WithEvents btnOpenRates As Button
     Friend WithEvents gbAdjustRates As GroupBox
     Friend WithEvents lblEditRates As Label
+    Friend WithEvents chkSaveBPCCostperBP As CheckBox
 End Class
