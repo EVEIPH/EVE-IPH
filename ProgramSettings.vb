@@ -191,6 +191,7 @@ Public Class ProgramSettings
     Public DefaultBPIncludecopyCost As Boolean = True
     Public DefaultBPIncludeT3Cost As Boolean = False
     Public DefaultBPIncludeT3Time As Boolean = False
+    Public DefaultBPIncludeBPCCost As Boolean = False
     Public DefaultBPSimpleCopyCheck As Boolean = False
     Public DefaultBPNPCBPOs As Boolean = False
     Public DefaultBPProductionLines As Integer = 1
@@ -1589,6 +1590,7 @@ Public Class ProgramSettings
                     .IncludeCopyTime = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeCopyTime", DefaultBPIncludeCopyTime))
                     .IncludeT3Cost = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeT3Cost", DefaultBPIncludeT3Cost))
                     .IncludeT3Time = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeT3Time", DefaultBPIncludeT3Time))
+                    .IncludeBPCCost = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "IncludeBPCCost", DefaultBPIncludeBPCCost))
                     .ProductionLines = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "ProductionLines", DefaultBPProductionLines))
                     .LaboratoryLines = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "LaboratoryLines", DefaultBPLaboratoryLines))
                     .T3Lines = CInt(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeInteger, BPSettingsFileName, "RELines", DefaultBPRELines))
@@ -1641,7 +1643,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(47) As Setting
+        Dim BPSettingsList(48) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1703,6 +1705,8 @@ Public Class ProgramSettings
             BPSettingsList(46) = New Setting("HistoryRegion", CStr(SentSettings.HistoryRegion))
             BPSettingsList(47) = New Setting("HistoryAvgDays", CStr(SentSettings.HistoryAvgDays))
 
+            BPSettingsList(48) = New Setting("IncludeBPCCost", CStr(SentSettings.IncludeBPCCost))
+
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
@@ -1748,6 +1752,7 @@ Public Class ProgramSettings
             .IncludeCopyTime = DefaultBPIncludeCopyTime
             .IncludeT3Cost = DefaultBPIncludeT3Cost
             .IncludeT3Time = DefaultBPIncludeT3Time
+            .IncludeBPCCost = DefaultBPIncludeBPCCost
 
             .RelicType = DefaultBPRelicType
             .T2DecryptorType = DefaultBPT2DecryptorType
@@ -5550,6 +5555,7 @@ Public Structure BPTabSettings
     Dim IncludeCopyTime As Boolean
     Dim IncludeT3Cost As Boolean
     Dim IncludeT3Time As Boolean
+    Dim IncludeBPCCost As Boolean
 
     Dim OptimalT2Decryptor As Integer
     Dim OptimalT3Decryptor As Integer

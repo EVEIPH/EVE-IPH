@@ -85,7 +85,7 @@ Public Module Public_Variables
                                             & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE " _
                                             & "ELSE CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NOT NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS FAVORITE, " _
                                             & "IT.volume, IT.marketGroupID, " _
-                                            & "CASE WHEN OBP.ADDITIONAL_COSTS Is Not NULL THEN OBP.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
+                                            & "CASE WHEN ALL_BLUEPRINTS.ADDITIONAL_COSTS IS Not NULL THEN ALL_BLUEPRINTS.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID Is Not NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
@@ -2565,7 +2565,8 @@ SkipItem:
                                 Optional Favorite As Boolean = False,
                                 Optional Ignore As Boolean = False,
                                 Optional AdditionalCosts As Double = 0,
-                                Optional RemoveAll As Boolean = False) As BPType
+                                Optional RemoveAll As Boolean = False,
+                                Optional IncludeBPCCost As Boolean = False) As BPType
         Dim SQL As String
         Dim readerBP As SQLiteDataReader
         Dim rsMaxRuns As SQLiteDataReader
@@ -2587,7 +2588,7 @@ SkipItem:
         If UpdatedBPType = BPType.Original Then
             UserRuns = -1
         Else
-            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS WHERE BLUEPRINT_ID = " & CStr(BPID), EVEDB.DBREf)
+            DBCommand = New SQLiteCommand("SELECT MAX_PRODUCTION_LIMIT FROM ALL_BLUEPRINTS_FACT WHERE BLUEPRINT_ID = " & CStr(BPID), EVEDB.DBREf)
             rsMaxRuns = DBCommand.ExecuteReader
             If rsMaxRuns.Read() Then
                 UserRuns = rsMaxRuns.GetInt32(0)
@@ -2632,9 +2633,9 @@ SkipItem:
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS Set OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
+                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
                 SQL &= "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
-                SQL &= "And BLUEPRINT_ID =" & CStr(BPID)
+                SQL &= "AND BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             Else
                 ' Just delete the record since it's not scanned
@@ -2643,7 +2644,7 @@ SkipItem:
             End If
 
             ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0 WHERE BLUEPRINT_ID = " & CStr(BPID)
+            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = 0 AND SET INCLUDEBPCCOST = " & CStr(CInt(IncludeBPCCost)) & "WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         Else
@@ -2685,22 +2686,23 @@ SkipItem:
             If Not readerBP.HasRows Then
                 ' No record, So add it and mark as owned (code 2) - save the scanned data if it was scanned - no item id or location id (from API), so set to 0 on manual saves
                 SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, "
-                SQL &= "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                SQL &= "ME, TE, RUNS, BP_TYPE, OWNED, SCANNED) "
                 SQL &= "VALUES (" & CharID & ",0,0," & BPID & ",'" & FormatDBString(BPName) & "',1,"
-                SQL &= CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0," & TempFavorite & "," & CStr(AdditionalCosts) & ")"
+                SQL &= CStr(bpME) & "," & CStr(bpTE) & "," & CStr(UserRuns) & "," & CStr(UpdatedBPType) & "," & TempOwned & ",0)"
+                '& TempFavorite & "," & CStr(AdditionalCosts) & ")"
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
 
             Else
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", FAVORITE = " & TempFavorite
-                SQL &= ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
+                SQL = "UPDATE OWNED_BLUEPRINTS SET ME = " & CStr(bpME) & ", TE = " & CStr(bpTE) & ", OWNED = " & TempOwned & ", BP_TYPE = " & CStr(UpdatedBPType) & ", RUNS = " & CStr(UserRuns) & " "
                 SQL &= "WHERE (USER_ID =" & CStr(CharID) & " OR USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "AND BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
-            ' Update the bp ignore flag (note for all accounts on this pc)
-            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = " & TempIgnore & " WHERE BLUEPRINT_ID = " & CStr(BPID)
+            ' Update the bp ignore flag, favorite, and any additional costs (note for all accounts on this pc)
+            SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = " & TempIgnore & ", FAVORITE = " & TempFavorite
+            SQL &= ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " WHERE BLUEPRINT_ID = " & CStr(BPID)
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If

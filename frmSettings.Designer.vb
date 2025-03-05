@@ -49,6 +49,7 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
+        Me.chkSaveBPCCostperBP = New System.Windows.Forms.CheckBox()
         Me.chkBuildWhenNotEnoughItemsonMarket = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyRAMs = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyFuelBlocks = New System.Windows.Forms.CheckBox()
@@ -94,7 +95,6 @@ Partial Class frmSettings
         Me.btnOpenRates = New System.Windows.Forms.Button()
         Me.gbAdjustRates = New System.Windows.Forms.GroupBox()
         Me.lblEditRates = New System.Windows.Forms.Label()
-        Me.chkSaveBPCCostperBP = New System.Windows.Forms.CheckBox()
         Me.gbGeneral.SuspendLayout()
         Me.gbStationStandings.SuspendLayout()
         Me.gbBuildBuySettings.SuspendLayout()
@@ -367,6 +367,17 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.TabIndex = 9
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
+        '
+        'chkSaveBPCCostperBP
+        '
+        Me.chkSaveBPCCostperBP.AutoSize = True
+        Me.chkSaveBPCCostperBP.Location = New System.Drawing.Point(9, 138)
+        Me.chkSaveBPCCostperBP.Name = "chkSaveBPCCostperBP"
+        Me.chkSaveBPCCostperBP.Size = New System.Drawing.Size(111, 17)
+        Me.chkSaveBPCCostperBP.TabIndex = 42
+        Me.chkSaveBPCCostperBP.Text = "future setting here"
+        Me.chkSaveBPCCostperBP.UseVisualStyleBackColor = True
+        Me.chkSaveBPCCostperBP.Visible = False
         '
         'chkBuildWhenNotEnoughItemsonMarket
         '
@@ -819,16 +830,6 @@ Partial Class frmSettings
         Me.lblEditRates.TabIndex = 43
         Me.lblEditRates.Text = "Adjust Default Tax Rates"
         Me.lblEditRates.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
-        '
-        'chkSaveBPCCostperBP
-        '
-        Me.chkSaveBPCCostperBP.AutoSize = True
-        Me.chkSaveBPCCostperBP.Location = New System.Drawing.Point(9, 138)
-        Me.chkSaveBPCCostperBP.Name = "chkSaveBPCCostperBP"
-        Me.chkSaveBPCCostperBP.Size = New System.Drawing.Size(134, 17)
-        Me.chkSaveBPCCostperBP.TabIndex = 42
-        Me.chkSaveBPCCostperBP.Text = "Save BPC Cost per BP"
-        Me.chkSaveBPCCostperBP.UseVisualStyleBackColor = True
         '
         'frmSettings
         '

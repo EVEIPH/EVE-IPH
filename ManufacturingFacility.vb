@@ -2262,7 +2262,7 @@ Public Class ManufacturingFacility
                     Case FacilityTypes.Station
                         If BuildType = ProductionType.Reprocessing Then
                             ' Get Refine rate and tax for station
-                            SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, SelectedFacility.BaseME)
+                            SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacter.ID, FacilityID, SelectedFacility.BaseME)
                         Else
                             SelectedFacility.BaseTax = UserApplicationSettings.StationTaxRate
                             SelectedFacility.BaseCost = 1
@@ -4365,14 +4365,16 @@ Public Class IndustryFacility
         ' Load these for later use
         ThukkerRigIDs = New List(Of Integer)
 
-        DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
+        If InitialProductionType = ProductionType.CapitalComponentManufacturing Or InitialProductionType = ProductionType.ComponentManufacturing Then
+            DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
+            rsLoader = DBCommand.ExecuteReader
 
-        While rsLoader.Read
-            ThukkerRigIDs.Add(rsLoader.GetInt32(0))
-        End While
+            While rsLoader.Read
+                ThukkerRigIDs.Add(rsLoader.GetInt32(0))
+            End While
 
-        rsLoader.Close()
+            rsLoader.Close()
+        End If
 
         ' Save the reference to the program location
         ControlLocation = FacilityLocation
@@ -4400,7 +4402,7 @@ Public Class IndustryFacility
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
         Dim CharID As String = ""
 
-        ' See what type of character ID
+        ' See what type of character ID - reprocessing needs to use the selected character standings for tax rates
         If UserApplicationSettings.SaveFacilitiesbyChar Then
             CharID = CStr(SelectedCharacter.ID)
         Else
@@ -4530,8 +4532,8 @@ Public Class IndustryFacility
                         ElseIf TaxRate = -1 Then
                             ' Nothing from saved facilties, so use what is in SDE unless it's 
                             If InitialProductionType = ProductionType.Reprocessing And FacilityType = FacilityTypes.Station Then
-                                ' Calculate it for reprocessing in stations - structures are always 0 unless saved otherwise
-                                TaxRate = CalculateStationReprocessingTaxRate(CLng(CharID), FacilityID, Nothing)
+                                ' Calculate it for reprocessing in stations - structures are always 0 unless saved otherwise. Also, always use the character for standings and not common.
+                                TaxRate = CalculateStationReprocessingTaxRate(CLng(SelectedCharacter.ID), FacilityID, Nothing)
                             Else
                                 TaxRate = .GetDouble(1)
                             End If
@@ -4570,11 +4572,12 @@ ExitBlock:
         Dim CalcTax As Double = 0
         Dim UnadjustedCorpStanding As Double = 0
 
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsStats As SQLiteDataReader
 
         SQL = "SELECT REPROCESSING_TAX_RATE, CASE WHEN STANDING IS NULL THEN 0 ELSE STANDING END, REPROCESSING_EFFICIENCY FROM STATIONS "
-        SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID And CHARACTER_STANDINGS.CHARACTER_ID = {0} WHERE STATION_ID = {1}"
+        SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID "
+        SQL &= "AND CHARACTER_STANDINGS.CHARACTER_ID = {0} WHERE STATION_ID = {1}"
 
         DBCommand = New SQLiteCommand(String.Format(SQL, CharacterID, SentFacilityID), EVEDB.DBREf)
         rsStats = DBCommand.ExecuteReader

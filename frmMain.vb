@@ -4797,6 +4797,7 @@ Public Class frmMain
             chkBPIncludeCopyTime.Checked = .IncludeCopyTime
             chkBPIncludeT3Costs.Checked = .IncludeT3Cost
             chkBPIncludeT3Time.Checked = .IncludeT3Time
+            chkBPIncludeBPCCost.Checked = .IncludeBPCCost
             UpdatingInventionChecks = False
 
             Select Case .OptimalT2Decryptor
@@ -5082,6 +5083,7 @@ Public Class frmMain
             ' For T3 on the BP tab, save both facility data
             .IncludeT3Cost = chkBPIncludeT3Costs.Checked
             .IncludeT3Time = chkBPIncludeT3Time.Checked
+            .IncludeBPCCost = chkBPIncludeBPCCost.Checked
 
             ' Ignore settings
             .IgnoreInvention = chkBPIgnoreInvention.Checked
@@ -5201,8 +5203,14 @@ Public Class frmMain
                 SaveBPType = BPType.Copy
             End If
 
+            Dim IncludeBPCCost As Boolean = False
+            ' Save the BPC Cost checkbox if it's different than the tab setting value
+            If chkBPIncludeBPCCost.Checked <> UserBPTabSettings.IncludeBPCCost Then
+                IncludeBPCCost = True
+            End If
+
             Call UpdateBPinDB(SelectedBlueprint.GetTypeID, CInt(txtBPME.Text), CInt(txtBPTE.Text), SaveBPType,
-                              CInt(txtBPME.Text), CInt(txtBPTE.Text), False, False, AdditionalCost)
+                              CInt(txtBPME.Text), CInt(txtBPTE.Text), False, False, AdditionalCost, False, IncludeBPCCost)
 
             Call RefreshBP()
 
@@ -5427,8 +5435,8 @@ Public Class frmMain
 
         ' Finally set the ME and TE in the display (need to allow the user to choose different BP's and play with ME/TE) - Search user bps first
         SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-        SQL &= " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
-        SQL &= " AND BLUEPRINT_ID = " & BlueprintID & " AND OWNED <> 0 " ' Only load user or api owned bps
+        SQL &= " FROM OWNED_BLUEPRINTS AS OBP, ALL_BLUEPRINTS_FACT AS ABF WHERE USER_ID =" & GetBPUserID(SelectedCharacter.ID)
+        SQL &= " AND OBP.BLUEPRINT_ID = ABF.BLUEPRINT_ID AND OBP.BLUEPRINT_ID = " & BlueprintID & " AND OWNED <> 0 " ' Only load user or api owned bps
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBP = DBCommand.ExecuteReader()
@@ -5448,8 +5456,8 @@ Public Class frmMain
             ' Try again with corp
             readerBP.Close()
             SQL = "SELECT ME, TE, ADDITIONAL_COSTS, RUNS, BP_TYPE"
-            SQL &= " FROM OWNED_BLUEPRINTS WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
-            SQL &= " AND BLUEPRINT_ID = " & BlueprintID & " AND SCANNED <> 0 AND OWNED <> 0 "
+            SQL &= " FROM OWNED_BLUEPRINTS As OBP, ALL_BLUEPRINTS_FACT As ABF WHERE USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID
+            SQL &= " And OBP.BLUEPRINT_ID = ABF.BLUEPRINT_ID And OBP.BLUEPRINT_ID = " & BlueprintID & " And SCANNED <> 0 And OWNED <> 0 "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerBP = DBCommand.ExecuteReader()
@@ -5639,7 +5647,7 @@ Public Class frmMain
 
         ' Check the quantity
         If Not IsNumeric(txtBPRuns.Text) Or Val(txtBPRuns.Text) <= 0 Then
-            MsgBox("You must enter a valid number of runs", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of runs", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPRuns.Focus()
             Exit Sub
@@ -5649,7 +5657,7 @@ Public Class frmMain
 
         ' Check the num bps
         If Not IsNumeric(txtBPNumBPs.Text) Or Trim(txtBPNumBPs.Text) = "" Then
-            MsgBox("You must enter a valid number of BPs", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of BPs", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPNumBPs.Focus()
             Exit Sub
@@ -5668,7 +5676,7 @@ Public Class frmMain
 
         ' Check num lines
         If Not IsNumeric(txtBPLines.Text) Or Val(txtBPLines.Text) <= 0 Then
-            MsgBox("You must enter a valid number of Production Lines", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of Production Lines", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPLines.Focus()
             Exit Sub
@@ -5676,14 +5684,14 @@ Public Class frmMain
 
         ' Check the laboratory lines
         If Not IsNumeric(txtBPInventionLines.Text) Or Val(txtBPInventionLines.Text) <= 0 Then
-            MsgBox("You must enter a valid number of Invention Lines", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of Invention Lines", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPInventionLines.Focus()
             Exit Sub
         End If
 
         If Not IsNumeric(txtBPRelicLines.Text) Or Val(txtBPRelicLines.Text) <= 0 Then
-            MsgBox("You must enter a valid number of T3 Invention Lines", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of T3 Invention Lines", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPRelicLines.Focus()
             Exit Sub
@@ -5691,7 +5699,7 @@ Public Class frmMain
 
         ' Check num bps
         If Not IsNumeric(txtBPNumBPs.Text) Or Val(txtBPNumBPs.Text) <= 0 Then
-            MsgBox("You must enter a valid number of BPs", vbExclamation, Application.ProductName)
+            MsgBox("You must enter a valid number Of BPs", vbExclamation, Application.ProductName)
             txtBPRuns.SelectAll()
             txtBPRuns.Focus()
             Exit Sub

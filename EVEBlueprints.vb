@@ -32,9 +32,10 @@ Public Class EVEBlueprints
         End If
 
         ' Load the blueprints
-        SQL = "SELECT ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, ME, TE, "
+        SQL = "SELECT OBP.ITEM_ID, LOCATION_ID, OBP.BLUEPRINT_ID, BLUEPRINT_NAME, QUANTITY, ME, TE, "
         SQL &= "RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS "
-        SQL &= "FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CharID
+        SQL &= "FROM OWNED_BLUEPRINTS AS OBP, ALL_BLUEPRINTS_FACT AS ABF "
+        SQL &= "WHERE OBP.BLUEPRINT_ID = ABF.BLUEPRINT_ID and USER_ID = " & CharID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerBlueprints = DBCommand.ExecuteReader
@@ -195,11 +196,11 @@ Public Class EVEBlueprints
 
                                 If InsertBP Then
                                     SQL = "INSERT INTO OWNED_BLUEPRINTS (USER_ID, ITEM_ID, LOCATION_ID, BLUEPRINT_ID, BLUEPRINT_NAME, "
-                                    SQL &= "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED, FAVORITE, ADDITIONAL_COSTS) "
+                                    SQL &= "QUANTITY, ME, TE, RUNS, BP_TYPE, OWNED, SCANNED) "
                                     SQL &= "VALUES (" & CStr(TempID) & "," & CStr(.ItemID) & "," & CStr(.LocationID) & ","
                                     SQL &= CStr(.TypeID) & ",'" & FormatDBString(.TypeName) & "',"
                                     SQL &= "1," & CStr(.MaterialEfficiency) & "," & CStr(.TimeEfficiency) & ","
-                                    SQL &= .Runs & "," & CStr(CurrentBPType) & ",1," & CStr(ScannedFlag) & ", 0, 0)"
+                                    SQL &= .Runs & "," & CStr(CurrentBPType) & ",1," & CStr(ScannedFlag) & ")"
                                 Else
                                     ' Update the BP 
                                     SQL = "UPDATE OWNED_BLUEPRINTS SET "
