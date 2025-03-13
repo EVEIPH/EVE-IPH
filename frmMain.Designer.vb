@@ -5658,11 +5658,11 @@ Partial Class frmMain
         'chkCalcNPCBPOs
         '
         Me.chkCalcNPCBPOs.AutoSize = True
-        Me.chkCalcNPCBPOs.Location = New System.Drawing.Point(443, 13)
+        Me.chkCalcNPCBPOs.Location = New System.Drawing.Point(439, 13)
         Me.chkCalcNPCBPOs.Name = "chkCalcNPCBPOs"
-        Me.chkCalcNPCBPOs.Size = New System.Drawing.Size(78, 17)
+        Me.chkCalcNPCBPOs.Size = New System.Drawing.Size(100, 17)
         Me.chkCalcNPCBPOs.TabIndex = 15
-        Me.chkCalcNPCBPOs.Text = "NPC BPOs"
+        Me.chkCalcNPCBPOs.Text = "NPC BPOs only"
         Me.chkCalcNPCBPOs.UseVisualStyleBackColor = True
         '
         'btnCalcShowAssets
