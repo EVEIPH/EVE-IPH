@@ -901,7 +901,7 @@ Public Class ManufacturingFacility
         cmbFacilityActivities.BeginUpdate()
 
         ' If it's a reaction, only load that activity and manufacturing for fuel blocks
-        If IsReaction(BPGroupID) Or BPCategoryID = ItemIDs.BoosterCategoryID Then
+        If IsReaction(BPGroupID) Then
             cmbFacilityActivities.Items.Clear()
             cmbFacilityActivities.Items.Add(ActivityReactions)
             cmbFacilityActivities.Items.Add(ActivityManufacturing)
@@ -965,8 +965,8 @@ Public Class ManufacturingFacility
                         cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
                     End If
                 Case Else
-                    ' Iif it's not a T2 component, then load the component manufacturing activity else it will get a reaction load below
-                    If Not (BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) Then
+                    ' If it's not a T2 component, then load the component manufacturing activity else it will get a reaction load below - boosters only do reactions as components
+                    If Not (BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And BPCategoryID <> ItemIDs.BoosterImplantCategoryID Then
                         ' Just regular
                         cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
                     End If
@@ -1596,8 +1596,6 @@ Public Class ManufacturingFacility
 
                 ' Check for production types so that we don't show facilities that can't use services for that type (i.e. capital building)
                 Select Case SelectedProductionType
-                    Case ProductionType.BoosterManufacturing
-                        SQL = String.Format(SQL, CInt(Services.StandupBiochemicalReactor))
                     Case ProductionType.CapitalManufacturing
                         SQL = String.Format(SQL, CInt(Services.StandupCapitalShipyard))
                     Case ProductionType.SuperManufacturing
@@ -1610,7 +1608,7 @@ Public Class ManufacturingFacility
                         SQL = String.Format(SQL, CInt(Services.StandupCompositeReactor))
                     Case ProductionType.Reprocessing
                         SQL = String.Format(SQL, CInt(Services.StandupReprocessingFaclity))
-                    Case Else ' All others get manufacturing
+                    Case Else ' All others get manufacturing (including boosters)
                         SQL = String.Format(SQL, CInt(Services.StandupManufacturingPlant))
                 End Select
 
@@ -2596,7 +2594,7 @@ Public Class ManufacturingFacility
                 TechLevel = BPTechLevel.T3
                 ActivityComboText = ActivityManufacturing
             Case ProductionType.BoosterManufacturing
-                CategoryID = ItemIDs.BoosterCategoryID
+                CategoryID = ItemIDs.BoosterImplantCategoryID
                 GroupID = ItemIDs.BoosterGroupID
                 TechLevel = BPTechLevel.T1
                 ActivityComboText = ActivityManufacturing
@@ -2904,8 +2902,6 @@ Public Class ManufacturingFacility
                 Select Case BPGroupID
                     Case ItemIDs.SupercarrierGroupID, ItemIDs.TitanGroupID
                         SelectedIndyType = ProductionType.SuperManufacturing
-                    Case ItemIDs.BoosterGroupID
-                        SelectedIndyType = ProductionType.BoosterManufacturing
                     Case ItemIDs.CarrierGroupID, ItemIDs.DreadnoughtGroupID, ItemIDs.CapitalIndustrialShipGroupID, ItemIDs.FAXGroupID
                         SelectedIndyType = ProductionType.CapitalManufacturing
                     Case ItemIDs.StrategicCruiserGroupID
@@ -2919,6 +2915,8 @@ Public Class ManufacturingFacility
 
                         If BPCategoryID = ItemIDs.SubsystemCategoryID Then
                             SelectedIndyType = ProductionType.SubsystemManufacturing
+                        ElseIf BPCategoryID = ItemIDs.BoosterImplantCategoryID Then ' For implants and boosters
+                            SelectedIndyType = ProductionType.BoosterManufacturing
                         ElseIf BPCategoryID = ItemIDs.ComponentCategoryID Then
                             ' Add category for component
                             If BPGroupID = ItemIDs.CapitalComponentGroupID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID Then

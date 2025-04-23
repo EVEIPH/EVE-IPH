@@ -212,7 +212,7 @@ Public Class EVENPCStandings
 
             If Not IsNothing(TempStandings) Then
                 If TempStandings.GetStandingsList.Count > 0 Then
-                    ' Get all the standing names for corps and agents first
+                    ' Get all the standing names for corps and agents first, needs to be unique IDs
                     For Each entry In TempStandings.NPCStandings
                         If entry.NPCType <> "Faction" Then
                             NonFactionIDs.Add(entry.NPCID)
@@ -223,16 +223,18 @@ Public Class EVENPCStandings
                         ' Get the faction names
                         ReturnFactionData = ESIData.GetFactionData()
 
-                        For Each Record In ReturnFactionData
-                            ' Update the Standings list with name
-                            IDtoFind = Record.faction_id
-                            TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
-                            If Not IsNothing(TempStanding) Then
-                                Call TempStandings.NPCStandings.Remove(TempStanding)
-                                TempStanding.NPCName = Record.name
-                                Call TempStandings.NPCStandings.Add(TempStanding)
-                            End If
-                        Next
+                        If Not IsNothing(ReturnFactionData) Then
+                            For Each Record In ReturnFactionData
+                                ' Update the Standings list with name
+                                IDtoFind = Record.faction_id
+                                TempStanding = TempStandings.NPCStandings.Find(AddressOf FindNPCID)
+                                If Not IsNothing(TempStanding) Then
+                                    Call TempStandings.NPCStandings.Remove(TempStanding)
+                                    TempStanding.NPCName = Record.name
+                                    Call TempStandings.NPCStandings.Add(TempStanding)
+                                End If
+                            Next
+                        End If
 
                         ' Get the corp and agent names
                         ReturnNameData = ESIData.GetNameData(NonFactionIDs)

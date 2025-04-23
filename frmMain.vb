@@ -4431,7 +4431,7 @@ Tabs:
 
     Private Sub rbtnDroneBlueprints_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rbtnBPDroneBlueprints.CheckedChanged
         If rbtnBPDroneBlueprints.Checked Then
-            Call ResetBlueprintCombo(True, True, False, False, False, True)
+            Call ResetBlueprintCombo(True, True, False, False, True, True)
         End If
     End Sub
 
@@ -4491,7 +4491,7 @@ Tabs:
 
     Private Sub rbtnBPStationModulesBlueprints_CheckedChanged(sender As Object, e As EventArgs) Handles rbtnBPStructureModulesBlueprints.CheckedChanged
         If rbtnBPStructureModulesBlueprints.Checked Then
-            Call ResetBlueprintCombo(True, False, False, False, False, False)
+            Call ResetBlueprintCombo(True, True, False, False, False, False)
         End If
     End Sub
 
@@ -21452,7 +21452,12 @@ ProcExit:
             End If
 
             ' Role bonus
-            RoleBonus = (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusOreMiningYield) / 100 + 1)
+            If cmbMineShipName.Text = Venture Then
+                ' Venture doesn't have the role bonus apparently and is already a multiplier value
+                RoleBonus = (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.miningAmountMultiplier))
+            Else
+                RoleBonus = (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusOreMiningYield) / 100 + 1)
+            End If
 
             ' Add skills
             m3YieldperCycle *= (1 + (AttribLookup.GetAttribute(MiningSkillTypeID, ItemAttributes.miningAmountBonus) * Mining) / 100)
@@ -21463,10 +21468,6 @@ ProcExit:
             m3YieldperCycle *= (1 + (BaseShipBonus / 100))
             m3YieldperCycle *= (1 + (AdvancedShipBonus / 100))
             m3YieldperCycle *= RoleBonus
-
-            If chkMineEDENCOM.Checked Then
-                m3YieldperCycle *= 1.1
-            End If
 
             Return m3YieldperCycle
 
@@ -21654,6 +21655,10 @@ ProcExit:
                 TempCycleTime *= ((AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.exhumersBonusOreMiningDuration) / 100 * AdvShipLevel) + 1)
                 ' Role bonus
                 TempCycleTime *= (AttribLookup.GetAttribute(cmbMineShipName.Text, ItemAttributes.shipRoleBonusOreMiningDuration) / 100 + 1)
+
+                If chkMineEDENCOM.Checked Then
+                    TempCycleTime *= 0.9 ' 10% mining speed bonus
+                End If
 
             Case "Ice"
                 ' Frigate bonus

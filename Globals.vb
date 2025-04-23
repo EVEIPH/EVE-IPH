@@ -413,7 +413,7 @@ Public Module Public_Variables
         FAXGroupID = 1538
         TitanGroupID = 30
         BoosterGroupID = 303
-        BoosterCategoryID = 20
+        BoosterImplantCategoryID = 20
 
         ' T3 items
         StrategicCruiserGroupID = 963
