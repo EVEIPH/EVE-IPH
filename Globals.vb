@@ -236,6 +236,8 @@ Public Module Public_Variables
     Public Const MaxMarketHistoryCallsPerMinute As Integer = 300
     Public MarketHistoryCallsPerMinute As Integer = 0
     Public LastMarketHistoryUpdate As Date = NoDate
+    Public RunningAllHistoryUpdate As Boolean
+    Public CancelHistoryImport As Boolean
 
     Public BuyListDataChange As Boolean = True
 

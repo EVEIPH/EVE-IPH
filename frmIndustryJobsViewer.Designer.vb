@@ -36,13 +36,13 @@ Partial Class frmIndustryJobsViewer
         Me.btnSaveSettings = New System.Windows.Forms.Button()
         Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
         Me.gbInventionJobs = New System.Windows.Forms.GroupBox()
+        Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
         Me.gbJobTimes = New System.Windows.Forms.GroupBox()
         Me.rbtnJobHistory = New System.Windows.Forms.RadioButton()
         Me.rbtnCurrentJobs = New System.Windows.Forms.RadioButton()
         Me.gbButtons = New System.Windows.Forms.GroupBox()
         Me.chkAutoUpdate = New System.Windows.Forms.CheckBox()
         Me.btnRefreshList = New System.Windows.Forms.Button()
-        Me.lstCharacters = New EVE_Isk_per_Hour.MyListView()
         Me.gbIndustryJobType.SuspendLayout()
         Me.gbInventionJobs.SuspendLayout()
         Me.gbJobTimes.SuspendLayout()
@@ -160,6 +160,22 @@ Partial Class frmIndustryJobsViewer
         Me.gbInventionJobs.TabIndex = 69
         Me.gbInventionJobs.TabStop = False
         '
+        'lstCharacters
+        '
+        Me.lstCharacters.CheckBoxes = True
+        Me.lstCharacters.FullRowSelect = True
+        Me.lstCharacters.GridLines = True
+        Me.lstCharacters.HideSelection = False
+        Me.lstCharacters.Location = New System.Drawing.Point(349, 512)
+        Me.lstCharacters.MultiSelect = False
+        Me.lstCharacters.Name = "lstCharacters"
+        Me.lstCharacters.Size = New System.Drawing.Size(725, 140)
+        Me.lstCharacters.TabIndex = 70
+        Me.lstCharacters.TabStop = False
+        Me.lstCharacters.Tag = "20"
+        Me.lstCharacters.UseCompatibleStateImageBehavior = False
+        Me.lstCharacters.View = System.Windows.Forms.View.Details
+        '
         'gbJobTimes
         '
         Me.gbJobTimes.Controls.Add(Me.rbtnJobHistory)
@@ -224,21 +240,6 @@ Partial Class frmIndustryJobsViewer
         Me.btnRefreshList.TabIndex = 70
         Me.btnRefreshList.Text = "Refresh"
         Me.btnRefreshList.UseVisualStyleBackColor = True
-        '
-        'lstCharacters
-        '
-        Me.lstCharacters.CheckBoxes = True
-        Me.lstCharacters.FullRowSelect = True
-        Me.lstCharacters.GridLines = True
-        Me.lstCharacters.Location = New System.Drawing.Point(349, 512)
-        Me.lstCharacters.MultiSelect = False
-        Me.lstCharacters.Name = "lstCharacters"
-        Me.lstCharacters.Size = New System.Drawing.Size(725, 140)
-        Me.lstCharacters.TabIndex = 70
-        Me.lstCharacters.TabStop = False
-        Me.lstCharacters.Tag = "20"
-        Me.lstCharacters.UseCompatibleStateImageBehavior = False
-        Me.lstCharacters.View = System.Windows.Forms.View.Details
         '
         'frmIndustryJobsViewer
         '

@@ -28,16 +28,34 @@ Public Class MarketPriceInterface
     End Enum
 
     ' Updates all the price history from ESI
-    Public Function UpdateESIPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long) As Boolean
+    Public Function UpdateESIPriceHistory(SentTypeIDs As List(Of Long), UpdateRegionID As Long, Optional UpdateAll As Boolean = False) As Boolean
         Dim Pairs As New List(Of ItemRegionPairs)
         Dim ReturnValue As Boolean = True
         Dim Threads As New ThreadingArray
+
+        ' Check if we want to do the update or not if we are updating all
+        If RunningAllHistoryUpdate And Not UpdateAll Then
+            Return True ' exit but return true so the rest runs normally while doing a history update
+        End If
+
+        ' For all updates
+        Dim PairSets As New List(Of List(Of ItemRegionPairs))
+        Dim TempSet As New List(Of ItemRegionPairs)
+        Dim SetCounter As Integer = 0
 
         ' If the last time we called for history update was one minute, then reset the last date called and calls per minute counter
         If DateDiff(DateInterval.Second, LastMarketHistoryUpdate, Now) > 60 Then
             MarketHistoryCallsPerMinute = 0
             LastMarketHistoryUpdate = Now
-        End If
+        Else
+            If UpdateAll Then
+                ' For a full update, we need to pause until the 60 elapses before starting
+                Dim Interval As Integer = CInt(DateDiff(DateInterval.Second, LastMarketHistoryUpdate, Now))
+                If Interval > 0 And Interval < 60 Then
+                    Thread.Sleep(Interval * 1000)
+                End If
+            End If
+            End If
 
         ' Build the pairs
         For i = 0 To SentTypeIDs.Count - 1
@@ -46,104 +64,176 @@ Public Class MarketPriceInterface
             TempPair.ItemID = SentTypeIDs(i)
             TempPair.RegionID = UpdateRegionID
             If UpdatableMarketData(TempPair, MarketPriceCacheType.History) Then
-                ' Check if we reached the max per calls and then don't add anything else
-                If MarketHistoryCallsPerMinute < MaxMarketHIstoryCallsPerMinute Then
-                    Pairs.Add(TempPair)
-                    MarketHistoryCallsPerMinute += 1
+                If Not UpdateAll Then
+                    ' Check if we reached the max per calls and then don't add anything else
+                    If MarketHistoryCallsPerMinute < MaxMarketHistoryCallsPerMinute Then
+                        Pairs.Add(TempPair)
+                        MarketHistoryCallsPerMinute += 1
+                    Else
+                        ' Can't do more than max calls
+                        Exit For
+                    End If
                 Else
-                    ' Can't do more than max calls
-                    Exit For
+                    ' if we are updating all, then just add all to pairs
+                    Pairs.Add(TempPair)
                 End If
             End If
         Next
 
         Try
             If Pairs.Count > 0 Then
-                Dim ESIData As New ESI
-                Dim NumberofThreads As Integer = 0
-                ' How many records per thread do we need?
-                Dim Splits As Integer = CInt(Math.Ceiling(Pairs.Count / ESIData.GetMaximumConnections))
-                If Splits = 1 Then
-                    ' If the return is 1, then we have less than the max connections
-                    ' so just set up enough pairs for 1 run each
-                    NumberofThreads = Pairs.Count
-                Else
-                    NumberofThreads = ESIData.GetMaximumConnections
-                End If
+                ' Split up all pairs into sets of 300 (or fewer)
+                For i = 0 To Pairs.Count - 1
+                    TempSet.Add(Pairs(i))
+                    SetCounter += 1
+                    If SetCounter = 300 Then
+                        ' Break this into a set
+                        PairSets.Add(TempSet)
+                        ' Reset for next
+                        TempSet = New List(Of ItemRegionPairs)
+                        SetCounter = 0
+                    End If
+                Next
+                ' Whatever is left will be in the temp set
+                PairSets.Add(TempSet)
 
-                ' For processing
-                Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
-                Dim TempPairs As New List(Of ItemRegionPairs)
-                Dim PairMarker As Integer = 0
-                Dim j As Integer = 0
+                ' Run each pair set and wait for 1 minute before doing again
+                For Each PairSet In PairSets
+                    Dim ESIData As New ESI
+                    Dim NumberofThreads As Integer = 0
+                    ' How many records per thread do we need?
+                    Dim Splits As Integer = CInt(Math.Ceiling(PairSet.Count / ESIData.GetMaximumConnections))
+                    If Splits = 1 Then
+                        ' If the return is 1, then we have less than the max connections
+                        ' so just set up enough pairs for 1 run each
+                        NumberofThreads = PairSet.Count
+                    Else
+                        NumberofThreads = ESIData.GetMaximumConnections
+                    End If
 
-                ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
-                For i = 0 To NumberofThreads - 1
-                    For j = PairMarker To Pairs.Count - 1
-                        If j < Splits * (i + 1) Then
-                            TempPairs.Add(Pairs(j))
-                        Else
+                    ' For processing
+                    Dim ThreadPairs As New List(Of List(Of ItemRegionPairs))
+                    Dim TempPairs As New List(Of ItemRegionPairs)
+                    Dim PairMarker As Integer = 0
+                    Dim j As Integer = 0
+
+                    ' Cut up the pairs into chunks of split count and put them into the threadpairs list for threading later
+                    For i = 0 To NumberofThreads - 1
+                        For j = PairMarker To PairSet.Count - 1
+                            If j < Splits * (i + 1) Then
+                                TempPairs.Add(PairSet(j))
+                            Else
+                                Exit For
+                            End If
+                        Next
+                        ThreadPairs.Add(TempPairs)
+                        TempPairs = New List(Of ItemRegionPairs)
+                        PairMarker = j
+                        If j = PairSet.Count Then
                             Exit For
                         End If
                     Next
-                    ThreadPairs.Add(TempPairs)
-                    TempPairs = New List(Of ItemRegionPairs)
-                    PairMarker = j
-                    If j = Pairs.Count Then
-                        Exit For
+
+                    If UpdateAll Then
+                        LastMarketHistoryUpdate = Now ' Reset this so we can't come back in and re-run this immediately
                     End If
+
+                    ' Start a transaction here to speed up processing in the updates
+                    Call EVEDB.BeginSQLiteTransaction()
+
+                    ' Reset the value of the progress bar
+                    If Not IsNothing(RefProgressBar) Then
+                        With RefProgressBar.ProgressBar
+                            SetProgressBarData(UpdateType.bVisible, 1)
+                            SetProgressBarData(UpdateType.MinValue, 0)
+                            SetProgressBarData(UpdateType.MaxValue, Pairs.Count)
+                        End With
+                    End If
+                    Application.DoEvents()
+
+                    ' Call this manually if it's just one item to update
+                    If ThreadPairs.Count = 1 Then
+                        Call UpdateMarketHistory(ThreadPairs(0))
+                    Else
+                        ' Call each thread for the pairs
+                        For i = 0 To ThreadPairs.Count - 1
+                            Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
+                            UPHThread.Start(ThreadPairs(i))
+                            ' Save the thread if we need to kill it
+                            Threads.AddThread(UPHThread)
+                        Next
+
+                        ' Now loop until all the threads are done
+                        ReturnValue = WaitforUpdatetoComplete(Threads, CancelManufacturingTabCalc, PriceHistoryUpdateCount, Pairs.Count)
+
+                    End If
+
+                    ' Make sure all threads are not running
+                    Call Threads.StopAllThreads()
+                    ' Reset the error handler
+                    ESIErrorHandler = New ESIErrorProcessor
+
+                    ' Finish updating the DB
+                    Call EVEDB.CommitSQLiteTransaction()
+
+                    ' If our pair sets have more than 1 set, then wait 60 seconds before running again
+                    If PairSets.Count > 1 Then
+                        Thread.Sleep(61000)
+                    End If
+
+                    Application.DoEvents()
                 Next
 
-                ' Start a transaction here to speed up processing in the updates
-                Call EVEDB.BeginSQLiteTransaction()
-
-                ' Reset the value of the progress bar
+                ' Clear bar
                 If Not IsNothing(RefProgressBar) Then
-                    RefProgressBar.Visible = True
-                    RefProgressBar.Value = 0
-                    PriceHistoryUpdateCount = 0
-                    RefProgressBar.Maximum = Pairs.Count
-                End If
-                Application.DoEvents()
-
-                ' Call this manually if it's just one item to update
-                If ThreadPairs.Count = 1 Then
-                    Call UpdateMarketHistory(ThreadPairs(0))
-                Else
-                    ' Call each thread for the pairs
-                    For i = 0 To ThreadPairs.Count - 1
-                        Dim UPHThread As New Thread(AddressOf UpdateMarketHistory)
-                        UPHThread.Start(ThreadPairs(i))
-                        ' Save the thread if we need to kill it
-                        Threads.AddThread(UPHThread)
-                    Next
-
-                    ' Now loop until all the threads are done
-                    ReturnValue = WaitforUpdatetoComplete(Threads, CancelManufacturingTabCalc, PriceHistoryUpdateCount, Pairs.Count)
-
+                    SetProgressBarData(UpdateType.Value, 0)
+                    SetProgressBarData(UpdateType.bVisible, 0)
                 End If
 
-                ' Make sure all threads are not running
-                Call Threads.StopAllThreads()
-                ' Reset the error handler
-                ESIErrorHandler = New ESIErrorProcessor
-
-                ' Finish updating the DB
-                Call EVEDB.CommitSQLiteTransaction()
-
-                If Not IsNothing(RefProgressBar) Then
-                    RefProgressBar.Visible = False
-                End If
-                Application.DoEvents()
             End If
 
         Catch ex As Exception
-            Application.DoEvents()
+            If ex.Message <> "Thread was being aborted." Then
+                MsgBox("There was an error in the update: " & ex.Message, vbCritical, Application.ProductName)
+            End If
+            If EVEDB.TransactionActive Then
+                EVEDB.RollbackSQLiteTransaction()
+            End If
+            ReturnValue = False
         End Try
 
         Return ReturnValue
 
     End Function
+    Private Enum UpdateType
+        Value = 0
+        MinValue = 1
+        MaxValue = 2
+        Increment = 3
+        bVisible = 4
+    End Enum
+
+    Private Delegate Sub ProgressBarUpdate(ByVal TypeofUpdate As UpdateType, ByVal value As Integer)
+
+    Private Sub SetProgressBarData(ByVal TypeofUpdate As UpdateType, ByVal value As Integer)
+        If RefProgressBar.ProgressBar.InvokeRequired Then
+            RefProgressBar.ProgressBar.Invoke(New ProgressBarUpdate(AddressOf SetProgressBarData), TypeofUpdate, value)
+        Else
+            ' Set depending on type
+            Select Case TypeofUpdate
+                Case UpdateType.Value
+                    RefProgressBar.Value = value
+                Case UpdateType.MinValue
+                    RefProgressBar.Minimum = value
+                Case UpdateType.MaxValue
+                    RefProgressBar.Maximum = value
+                Case UpdateType.Increment
+                    IncrementToolStripProgressBar(value)
+                Case UpdateType.bVisible
+                    RefProgressBar.Visible = CBool(value)
+            End Select
+        End If
+    End Sub
 
     ' For use with threading to speed up the ESI calls
     Private Sub UpdateMarketHistory(ByVal PairsList As Object)
@@ -321,7 +411,7 @@ Public Class MarketPriceInterface
             StillWorking = Not ThreadsArray.Complete
 
             ' Update the progress bar with data from each thread
-            Call IncrementToolStripProgressBar(Counter)
+            Call SetProgressBarData(UpdateType.Increment, Counter)
             Application.DoEvents()
 
             If Not StillWorking Then

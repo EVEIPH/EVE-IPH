@@ -1309,6 +1309,7 @@ Public Class ProgramSettings
                     .StationTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StationTaxRate", DefaultStationTaxRate))
                     .BuildWhenNotEnoughItemsonMarket = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultBuildWhenNotEnoughItemsonMarket))
                     .ManualPriceOverride = CBool(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeBoolean, AppSettingsFileName, "BuildWhenNotEnoughItemsonMarket", DefaultManualPriceOverride))
+                    .MarketHistoryRegion = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "MarketHistoryRegion", DefaultSVRAveragePriceRegion))
                 End With
 
             Else
@@ -1385,6 +1386,8 @@ Public Class ProgramSettings
             .ProxyAddress = DefaultProxyAddress
             .ProxyPort = DefaultProxyPort
 
+            .MarketHistoryRegion = DefaultSVRAveragePriceRegion
+
             .LoadBPsbyChar = DefaultLoadBPsbyChar
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
 
@@ -1410,7 +1413,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(50) As Setting
+        Dim ApplicationSettingsList(51) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1464,6 +1467,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(48) = New Setting("BuildWhenNotEnoughItemsonMarket", CStr(SentSettings.BuildWhenNotEnoughItemsonMarket))
             ApplicationSettingsList(49) = New Setting("ManualPriceOverride", CStr(SentSettings.ManualPriceOverride))
             ApplicationSettingsList(50) = New Setting("SaveBPCCostperBP", CStr(SentSettings.SaveBPCCostperBP))
+            ApplicationSettingsList(51) = New Setting("MarketHistoryRegion", CStr(SentSettings.MarketHistoryRegion))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -5518,6 +5522,8 @@ Public Structure ApplicationSettings
 
     Dim ProxyAddress As String
     Dim ProxyPort As Integer
+
+    Dim MarketHistoryRegion As String
 
 End Structure
 

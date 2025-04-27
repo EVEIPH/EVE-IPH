@@ -293,6 +293,7 @@ Public Class frmMain
         InitializeComponent()
 
         FirstLoad = True
+        RunningAllHistoryUpdate = False
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
 
@@ -2392,8 +2393,8 @@ Public Class frmMain
         '' Take them to eve marketer page
         'Call Process.Start("https://evemarketer.com/")
 
-        ' Temp change while EVE Market History down
-        Dim f1 As New frmUploadPriceHistoryData
+        ' This runs the market history updater in the background if open
+        Dim f1 As New frmRefreshMarketHistory
         f1.Show()
 
     End Sub

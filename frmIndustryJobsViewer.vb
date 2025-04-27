@@ -274,7 +274,7 @@ Public Class frmIndustryJobsViewer
                     JobState = "Completed"
                     JobStateColor = Color.DarkGray
                 Case "cancelled"
-                    JobState = "Cancelled"
+                    JobState = "Canceled"
                     JobStateColor = Color.Red
                 Case "paused"
                     JobState = "Paused"
