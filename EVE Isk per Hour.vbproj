@@ -185,6 +185,12 @@
     <Compile Include="frmEditDefaultRates.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmRefreshMarketHistory.Designer.vb">
+      <DependentUpon>frmRefreshMarketHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmRefreshMarketHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmUploadPriceHistoryData.Designer.vb">
       <DependentUpon>frmUploadPriceHistoryData.vb</DependentUpon>
     </Compile>
@@ -576,6 +582,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmMETE.resx">
       <DependentUpon>frmMETE.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmRefreshMarketHistory.resx">
+      <DependentUpon>frmRefreshMarketHistory.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmSupportSplash.resx">
       <DependentUpon>frmSupportSplash.vb</DependentUpon>

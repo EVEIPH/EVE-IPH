@@ -1295,6 +1295,7 @@ Public Class ProgramSettings
                     .AlphaAccountTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "AlphaAccountTaxRate", DefaultAlphaAccountTaxRate))
                     .StructureTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StructureTaxRate", DefaultStructureTaxRate))
                     .StationTaxRate = CDbl(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeDouble, AppSettingsFileName, "StationTaxRate", DefaultStationTaxRate))
+                    .MarketHistoryRegion = CStr(GetSettingValue(SettingsFolder, AppSettingsFileName, SettingTypes.TypeString, AppSettingsFileName, "MarketHistoryRegion", DefaultSVRAveragePriceRegion))
                 End With
 
             Else
@@ -1370,6 +1371,8 @@ Public Class ProgramSettings
             .ProxyAddress = DefaultProxyAddress
             .ProxyPort = DefaultProxyPort
 
+            .MarketHistoryRegion = DefaultSVRAveragePriceRegion
+
             .LoadBPsbyChar = DefaultLoadBPsbyChar
             .SaveFacilitiesbyChar = DefaultSaveFacilitiesbyChar
 
@@ -1392,7 +1395,7 @@ Public Class ProgramSettings
 
     ' Saves the application settings to XML
     Public Sub SaveApplicationSettings(SentSettings As ApplicationSettings)
-        Dim ApplicationSettingsList(47) As Setting
+        Dim ApplicationSettingsList(48) As Setting
 
         Try
             ApplicationSettingsList(0) = New Setting("CheckforUpdatesonStart", CStr(SentSettings.CheckforUpdatesonStart))
@@ -1443,6 +1446,7 @@ Public Class ProgramSettings
             ApplicationSettingsList(45) = New Setting("AlphaAccountTaxRate", CStr(SentSettings.AlphaAccountTaxRate))
             ApplicationSettingsList(46) = New Setting("StationTaxRate", CStr(SentSettings.StationTaxRate))
             ApplicationSettingsList(47) = New Setting("StructureTaxRate", CStr(SentSettings.StructureTaxRate))
+            ApplicationSettingsList(48) = New Setting("MarketHistoryRegion", CStr(SentSettings.MarketHistoryRegion))
 
             Call WriteSettingsToFile(SettingsFolder, AppSettingsFileName, ApplicationSettingsList, AppSettingsFileName)
 
@@ -5461,6 +5465,8 @@ Public Structure ApplicationSettings
 
     Dim ProxyAddress As String
     Dim ProxyPort As Integer
+
+    Dim MarketHistoryRegion As String
 
 End Structure
 
