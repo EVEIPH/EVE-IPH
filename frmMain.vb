@@ -13971,7 +13971,7 @@ CheckTechs:
 
             ' *** Calculate ***
             ' Got all the data, now see if they want to calculate prices
-            If Calculate Then
+            If Calculate And BaseItems.Count > 0 Then
                 'If TotalItemCount > 1000 Then
                 '    ' Make sure they know this will take a bit to run - unless this is fairly quick
                 '    Response = MsgBox("This may take some time to complete. Do you want to continue?", vbYesNo, Me.Text)
