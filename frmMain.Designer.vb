@@ -64,8 +64,8 @@ Partial Class frmMain
         Me.ToolStripSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuCurrentResearchAgents = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuCurrentIndustryJobs = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.mnuViewESIStatus = New System.Windows.Forms.ToolStripMenuItem()
+        Me.DarkModeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuTools = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuMETECalculator = New System.Windows.Forms.ToolStripMenuItem()
         Me.mnuReprocessingPlant = New System.Windows.Forms.ToolStripMenuItem()
@@ -513,6 +513,7 @@ Partial Class frmMain
         Me.chkCalcCanInvent = New System.Windows.Forms.CheckBox()
         Me.chkCalcCanBuild = New System.Windows.Forms.CheckBox()
         Me.gbCalcMarketFilters = New System.Windows.Forms.GroupBox()
+        Me.chkCalcIncludeBPCCost = New System.Windows.Forms.CheckBox()
         Me.txtCalcProfitThreshold = New System.Windows.Forms.TextBox()
         Me.tpMaxBuildTimeFilter = New EVE_Isk_per_Hour.TimePicker()
         Me.txtCalcSVRThreshold = New System.Windows.Forms.TextBox()
@@ -775,14 +776,13 @@ Partial Class frmMain
         Me.chkUpdatePricesNoPrice = New System.Windows.Forms.CheckBox()
         Me.chkImplants = New System.Windows.Forms.CheckBox()
         Me.chkStructureModules = New System.Windows.Forms.CheckBox()
-        Me.btnOpenMarketBrowser = New System.Windows.Forms.Button()
+        Me.btnRefreshPriceHistory = New System.Windows.Forms.Button()
         Me.tabBlueprints = New System.Windows.Forms.TabPage()
-        Me.lstBPList = New System.Windows.Forms.ListBox()
         Me.gbBPMEPEImage = New System.Windows.Forms.GroupBox()
-        Me.btnBPMarketHistory = New System.Windows.Forms.Button()
-        Me.chkBPIncludeBPCCost = New System.Windows.Forms.CheckBox()
-        Me.txtBPBPCCCost = New System.Windows.Forms.TextBox()
         Me.pbMarketBP = New System.Windows.Forms.PictureBox()
+        Me.btnBPMarketHistory = New System.Windows.Forms.Button()
+        Me.chkBPBaseBPCCost = New System.Windows.Forms.CheckBox()
+        Me.txtBPBPCCost = New System.Windows.Forms.TextBox()
         Me.rbtnBPRawT2MatType = New System.Windows.Forms.RadioButton()
         Me.pbLPStoreBP = New System.Windows.Forms.PictureBox()
         Me.rbtnBPProcT2MatType = New System.Windows.Forms.RadioButton()
@@ -861,6 +861,8 @@ Partial Class frmMain
         Me.btnBPBuiltComponents = New System.Windows.Forms.Button()
         Me.btnBPComponents = New System.Windows.Forms.Button()
         Me.gbBPBlueprintType = New System.Windows.Forms.GroupBox()
+        Me.lstBPList = New System.Windows.Forms.ListBox()
+        Me.chkBPLPBPOs = New System.Windows.Forms.CheckBox()
         Me.chkBPMarketBPOs = New System.Windows.Forms.CheckBox()
         Me.rbtnBPReactionsBlueprints = New System.Windows.Forms.RadioButton()
         Me.rbtnBPStructureModulesBlueprints = New System.Windows.Forms.RadioButton()
@@ -1272,7 +1274,7 @@ Partial Class frmMain
         '
         'ViewToolStripMenuItem
         '
-        Me.ViewToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuViewAssets, Me.mnuSelectionShoppingList, Me.mnuCharacterSkills, Me.mnuCharacterStandings, Me.ToolStripSeparator5, Me.mnuCurrentResearchAgents, Me.mnuCurrentIndustryJobs, Me.ToolStripSeparator3, Me.mnuViewESIStatus})
+        Me.ViewToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuViewAssets, Me.mnuSelectionShoppingList, Me.mnuCharacterSkills, Me.mnuCharacterStandings, Me.ToolStripSeparator5, Me.mnuCurrentResearchAgents, Me.mnuCurrentIndustryJobs, Me.mnuViewESIStatus, Me.DarkModeToolStripMenuItem})
         Me.ViewToolStripMenuItem.Name = "ViewToolStripMenuItem"
         Me.ViewToolStripMenuItem.Size = New System.Drawing.Size(44, 21)
         Me.ViewToolStripMenuItem.Text = "View"
@@ -1318,16 +1320,20 @@ Partial Class frmMain
         Me.mnuCurrentIndustryJobs.Size = New System.Drawing.Size(204, 22)
         Me.mnuCurrentIndustryJobs.Text = "Current Industry Jobs"
         '
-        'ToolStripSeparator3
-        '
-        Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
-        Me.ToolStripSeparator3.Size = New System.Drawing.Size(201, 6)
-        '
         'mnuViewESIStatus
         '
         Me.mnuViewESIStatus.Name = "mnuViewESIStatus"
         Me.mnuViewESIStatus.Size = New System.Drawing.Size(204, 22)
         Me.mnuViewESIStatus.Text = "View ESI Status"
+        Me.mnuViewESIStatus.Visible = False
+        '
+        'DarkModeToolStripMenuItem
+        '
+        Me.DarkModeToolStripMenuItem.CheckOnClick = True
+        Me.DarkModeToolStripMenuItem.Name = "DarkModeToolStripMenuItem"
+        Me.DarkModeToolStripMenuItem.Size = New System.Drawing.Size(204, 22)
+        Me.DarkModeToolStripMenuItem.Text = "Dark Mode"
+        Me.DarkModeToolStripMenuItem.Visible = False
         '
         'mnuTools
         '
@@ -1339,14 +1345,14 @@ Partial Class frmMain
         'mnuMETECalculator
         '
         Me.mnuMETECalculator.Name = "mnuMETECalculator"
-        Me.mnuMETECalculator.Size = New System.Drawing.Size(180, 22)
+        Me.mnuMETECalculator.Size = New System.Drawing.Size(174, 22)
         Me.mnuMETECalculator.Text = "ME/TE Calculator"
         Me.mnuMETECalculator.Visible = False
         '
         'mnuReprocessingPlant
         '
         Me.mnuReprocessingPlant.Name = "mnuReprocessingPlant"
-        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(180, 22)
+        Me.mnuReprocessingPlant.Size = New System.Drawing.Size(174, 22)
         Me.mnuReprocessingPlant.Text = "Reprocessing Plant"
         '
         'mnuSettings
@@ -1464,9 +1470,9 @@ Partial Class frmMain
         'pnlMain
         '
         Me.pnlMain.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.mnuCharacter, Me.pnlSkills, Me.pnlShoppingList, Me.pnlStatus, Me.pnlProgressBar})
-        Me.pnlMain.Location = New System.Drawing.Point(0, 659)
+        Me.pnlMain.Location = New System.Drawing.Point(0, 657)
         Me.pnlMain.Name = "pnlMain"
-        Me.pnlMain.Size = New System.Drawing.Size(1264, 22)
+        Me.pnlMain.Size = New System.Drawing.Size(1264, 24)
         Me.pnlMain.SizingGrip = False
         Me.pnlMain.TabIndex = 1
         Me.pnlMain.Text = "pnlMain"
@@ -1483,7 +1489,7 @@ Partial Class frmMain
         Me.mnuCharacter.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
         Me.mnuCharacter.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.mnuCharacter.Name = "mnuCharacter"
-        Me.mnuCharacter.Size = New System.Drawing.Size(290, 20)
+        Me.mnuCharacter.Size = New System.Drawing.Size(290, 22)
         Me.mnuCharacter.Text = "Character Loaded:"
         Me.mnuCharacter.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         Me.mnuCharacter.TextDirection = System.Windows.Forms.ToolStripTextDirection.Horizontal
@@ -1491,122 +1497,122 @@ Partial Class frmMain
         'tsCharacter1
         '
         Me.tsCharacter1.Name = "tsCharacter1"
-        Me.tsCharacter1.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter1.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter1.Text = "tsCharacter1"
         '
         'tsCharacter2
         '
         Me.tsCharacter2.Name = "tsCharacter2"
-        Me.tsCharacter2.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter2.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter2.Text = "tsCharacter2"
         '
         'tsCharacter3
         '
         Me.tsCharacter3.Name = "tsCharacter3"
-        Me.tsCharacter3.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter3.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter3.Text = "tsCharacter3"
         '
         'tsCharacter4
         '
         Me.tsCharacter4.Name = "tsCharacter4"
-        Me.tsCharacter4.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter4.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter4.Text = "tsCharacter4"
         '
         'tsCharacter5
         '
         Me.tsCharacter5.ImageTransparentColor = System.Drawing.Color.White
         Me.tsCharacter5.Name = "tsCharacter5"
-        Me.tsCharacter5.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter5.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter5.Text = "tsCharacter5"
         '
         'tsCharacter6
         '
         Me.tsCharacter6.Name = "tsCharacter6"
-        Me.tsCharacter6.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter6.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter6.Text = "tsCharacter6"
         '
         'tsCharacter7
         '
         Me.tsCharacter7.Name = "tsCharacter7"
-        Me.tsCharacter7.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter7.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter7.Text = "tsCharacter7"
         '
         'tsCharacter8
         '
         Me.tsCharacter8.Name = "tsCharacter8"
-        Me.tsCharacter8.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter8.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter8.Text = "tsCharacter8"
         '
         'tsCharacter9
         '
         Me.tsCharacter9.Name = "tsCharacter9"
-        Me.tsCharacter9.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter9.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter9.Text = "tsCharacter9"
         '
         'tsCharacter10
         '
         Me.tsCharacter10.Name = "tsCharacter10"
-        Me.tsCharacter10.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter10.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter10.Text = "tsCharacter10"
         '
         'tsCharacter11
         '
         Me.tsCharacter11.Name = "tsCharacter11"
-        Me.tsCharacter11.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter11.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter11.Text = "tsCharacter11"
         '
         'tsCharacter12
         '
         Me.tsCharacter12.Name = "tsCharacter12"
-        Me.tsCharacter12.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter12.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter12.Text = "tsCharacter12"
         '
         'tsCharacter13
         '
         Me.tsCharacter13.Name = "tsCharacter13"
-        Me.tsCharacter13.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter13.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter13.Text = "tsCharacter13"
         '
         'tsCharacter14
         '
         Me.tsCharacter14.Name = "tsCharacter14"
-        Me.tsCharacter14.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter14.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter14.Text = "tsCharacter14"
         '
         'tsCharacter15
         '
         Me.tsCharacter15.Name = "tsCharacter15"
-        Me.tsCharacter15.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter15.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter15.Text = "tsCharacter15"
         '
         'tsCharacter16
         '
         Me.tsCharacter16.Name = "tsCharacter16"
-        Me.tsCharacter16.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter16.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter16.Text = "tsCharacter16"
         '
         'tsCharacter17
         '
         Me.tsCharacter17.Name = "tsCharacter17"
-        Me.tsCharacter17.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter17.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter17.Text = "tsCharacter17"
         '
         'tsCharacter18
         '
         Me.tsCharacter18.Name = "tsCharacter18"
-        Me.tsCharacter18.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter18.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter18.Text = "tsCharacter18"
         '
         'tsCharacter19
         '
         Me.tsCharacter19.Name = "tsCharacter19"
-        Me.tsCharacter19.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter19.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter19.Text = "tsCharacter19"
         '
         'tsCharacter20
         '
         Me.tsCharacter20.Name = "tsCharacter20"
-        Me.tsCharacter20.Size = New System.Drawing.Size(180, 22)
+        Me.tsCharacter20.Size = New System.Drawing.Size(156, 22)
         Me.tsCharacter20.Text = "tsCharacter20"
         '
         'pnlSkills
@@ -1614,7 +1620,7 @@ Partial Class frmMain
         Me.pnlSkills.AutoSize = False
         Me.pnlSkills.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.pnlSkills.Name = "pnlSkills"
-        Me.pnlSkills.Size = New System.Drawing.Size(153, 17)
+        Me.pnlSkills.Size = New System.Drawing.Size(153, 19)
         Me.pnlSkills.Text = "Skills Overidden"
         '
         'pnlShoppingList
@@ -1622,7 +1628,7 @@ Partial Class frmMain
         Me.pnlShoppingList.AutoSize = False
         Me.pnlShoppingList.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.pnlShoppingList.Name = "pnlShoppingList"
-        Me.pnlShoppingList.Size = New System.Drawing.Size(200, 17)
+        Me.pnlShoppingList.Size = New System.Drawing.Size(200, 19)
         Me.pnlShoppingList.ToolTipText = "Click to Open Shopping List"
         '
         'pnlStatus
@@ -1630,7 +1636,7 @@ Partial Class frmMain
         Me.pnlStatus.AutoSize = False
         Me.pnlStatus.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.pnlStatus.Name = "pnlStatus"
-        Me.pnlStatus.Size = New System.Drawing.Size(235, 17)
+        Me.pnlStatus.Size = New System.Drawing.Size(235, 19)
         Me.pnlStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'pnlProgressBar
@@ -1638,7 +1644,7 @@ Partial Class frmMain
         Me.pnlProgressBar.AutoSize = False
         Me.pnlProgressBar.Font = New System.Drawing.Font("Segoe UI", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.pnlProgressBar.Name = "pnlProgressBar"
-        Me.pnlProgressBar.Size = New System.Drawing.Size(378, 16)
+        Me.pnlProgressBar.Size = New System.Drawing.Size(378, 18)
         Me.pnlProgressBar.Step = 1
         Me.pnlProgressBar.Visible = False
         '
@@ -2624,7 +2630,7 @@ Partial Class frmMain
         'chkMineBoosterDroneRig3
         '
         Me.chkMineBoosterDroneRig3.AutoSize = True
-        Me.chkMineBoosterDroneRig3.Location = New System.Drawing.Point(376, 95)
+        Me.chkMineBoosterDroneRig3.Location = New System.Drawing.Point(363, 96)
         Me.chkMineBoosterDroneRig3.Name = "chkMineBoosterDroneRig3"
         Me.chkMineBoosterDroneRig3.Size = New System.Drawing.Size(90, 17)
         Me.chkMineBoosterDroneRig3.TabIndex = 146
@@ -2634,7 +2640,7 @@ Partial Class frmMain
         '
         'pictMineLaserOptmize
         '
-        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(626, 61)
+        Me.pictMineLaserOptmize.Location = New System.Drawing.Point(626, 55)
         Me.pictMineLaserOptmize.Name = "pictMineLaserOptmize"
         Me.pictMineLaserOptmize.Size = New System.Drawing.Size(32, 32)
         Me.pictMineLaserOptmize.TabIndex = 139
@@ -2651,7 +2657,7 @@ Partial Class frmMain
         'chkMineBoosterDroneRig2
         '
         Me.chkMineBoosterDroneRig2.AutoSize = True
-        Me.chkMineBoosterDroneRig2.Location = New System.Drawing.Point(273, 95)
+        Me.chkMineBoosterDroneRig2.Location = New System.Drawing.Point(271, 96)
         Me.chkMineBoosterDroneRig2.Name = "chkMineBoosterDroneRig2"
         Me.chkMineBoosterDroneRig2.Size = New System.Drawing.Size(90, 17)
         Me.chkMineBoosterDroneRig2.TabIndex = 145
@@ -2662,7 +2668,7 @@ Partial Class frmMain
         'chkMineBoosterDroneRig1
         '
         Me.chkMineBoosterDroneRig1.AutoSize = True
-        Me.chkMineBoosterDroneRig1.Location = New System.Drawing.Point(170, 95)
+        Me.chkMineBoosterDroneRig1.Location = New System.Drawing.Point(179, 96)
         Me.chkMineBoosterDroneRig1.Name = "chkMineBoosterDroneRig1"
         Me.chkMineBoosterDroneRig1.Size = New System.Drawing.Size(90, 17)
         Me.chkMineBoosterDroneRig1.TabIndex = 144
@@ -2692,9 +2698,9 @@ Partial Class frmMain
         '
         'chkMineForemanLaserRangeBoost
         '
-        Me.chkMineForemanLaserRangeBoost.Location = New System.Drawing.Point(389, 19)
+        Me.chkMineForemanLaserRangeBoost.Location = New System.Drawing.Point(392, 22)
         Me.chkMineForemanLaserRangeBoost.Name = "chkMineForemanLaserRangeBoost"
-        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(231, 45)
+        Me.chkMineForemanLaserRangeBoost.Size = New System.Drawing.Size(228, 30)
         Me.chkMineForemanLaserRangeBoost.TabIndex = 9
         Me.chkMineForemanLaserRangeBoost.Text = "Mining Foreman Link - Mining Laser Field Enhancement Charge"
         Me.chkMineForemanLaserRangeBoost.ThreeState = True
@@ -2753,9 +2759,9 @@ Partial Class frmMain
         '
         'chkMineForemanLaserOpBoost
         '
-        Me.chkMineForemanLaserOpBoost.Location = New System.Drawing.Point(389, 56)
+        Me.chkMineForemanLaserOpBoost.Location = New System.Drawing.Point(392, 56)
         Me.chkMineForemanLaserOpBoost.Name = "chkMineForemanLaserOpBoost"
-        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(231, 40)
+        Me.chkMineForemanLaserOpBoost.Size = New System.Drawing.Size(228, 30)
         Me.chkMineForemanLaserOpBoost.TabIndex = 10
         Me.chkMineForemanLaserOpBoost.Text = "Mining Foreman Link - Laser Optimization Charge"
         Me.chkMineForemanLaserOpBoost.ThreeState = True
@@ -5688,6 +5694,7 @@ Partial Class frmMain
         '
         'gbCalcMarketFilters
         '
+        Me.gbCalcMarketFilters.Controls.Add(Me.chkCalcIncludeBPCCost)
         Me.gbCalcMarketFilters.Controls.Add(Me.txtCalcProfitThreshold)
         Me.gbCalcMarketFilters.Controls.Add(Me.tpMaxBuildTimeFilter)
         Me.gbCalcMarketFilters.Controls.Add(Me.txtCalcSVRThreshold)
@@ -5713,6 +5720,15 @@ Partial Class frmMain
         Me.gbCalcMarketFilters.TabIndex = 27
         Me.gbCalcMarketFilters.TabStop = False
         Me.gbCalcMarketFilters.Text = "Market Filters:"
+        '
+        'chkCalcIncludeBPCCost
+        '
+        Me.chkCalcIncludeBPCCost.Location = New System.Drawing.Point(9, 69)
+        Me.chkCalcIncludeBPCCost.Name = "chkCalcIncludeBPCCost"
+        Me.chkCalcIncludeBPCCost.Size = New System.Drawing.Size(77, 32)
+        Me.chkCalcIncludeBPCCost.TabIndex = 78
+        Me.chkCalcIncludeBPCCost.Text = "Include BPC Cost"
+        Me.chkCalcIncludeBPCCost.UseVisualStyleBackColor = True
         '
         'txtCalcProfitThreshold
         '
@@ -7189,7 +7205,7 @@ Partial Class frmMain
         Me.tabUpdatePrices.Controls.Add(Me.btnDownloadPrices)
         Me.tabUpdatePrices.Controls.Add(Me.lblItemFilter)
         Me.tabUpdatePrices.Controls.Add(Me.gbManufacturedItems)
-        Me.tabUpdatePrices.Controls.Add(Me.btnOpenMarketBrowser)
+        Me.tabUpdatePrices.Controls.Add(Me.btnRefreshPriceHistory)
         Me.tabUpdatePrices.Location = New System.Drawing.Point(4, 22)
         Me.tabUpdatePrices.Name = "tabUpdatePrices"
         Me.tabUpdatePrices.Padding = New System.Windows.Forms.Padding(3)
@@ -8447,19 +8463,18 @@ Partial Class frmMain
         Me.chkStructureModules.Text = "Structure Modules"
         Me.chkStructureModules.UseVisualStyleBackColor = True
         '
-        'btnOpenMarketBrowser
+        'btnRefreshPriceHistory
         '
-        Me.btnOpenMarketBrowser.Location = New System.Drawing.Point(493, 569)
-        Me.btnOpenMarketBrowser.Name = "btnOpenMarketBrowser"
-        Me.btnOpenMarketBrowser.Size = New System.Drawing.Size(119, 32)
-        Me.btnOpenMarketBrowser.TabIndex = 127
-        Me.btnOpenMarketBrowser.Text = "Open Market Browser"
-        Me.btnOpenMarketBrowser.UseVisualStyleBackColor = True
+        Me.btnRefreshPriceHistory.Location = New System.Drawing.Point(493, 569)
+        Me.btnRefreshPriceHistory.Name = "btnRefreshPriceHistory"
+        Me.btnRefreshPriceHistory.Size = New System.Drawing.Size(119, 32)
+        Me.btnRefreshPriceHistory.TabIndex = 127
+        Me.btnRefreshPriceHistory.Text = "Refresh Price History"
+        Me.btnRefreshPriceHistory.UseVisualStyleBackColor = True
         '
         'tabBlueprints
         '
         Me.tabBlueprints.BackColor = System.Drawing.Color.Transparent
-        Me.tabBlueprints.Controls.Add(Me.lstBPList)
         Me.tabBlueprints.Controls.Add(Me.gbBPMEPEImage)
         Me.tabBlueprints.Controls.Add(Me.btnBPBuiltComponents)
         Me.tabBlueprints.Controls.Add(Me.btnBPComponents)
@@ -8495,23 +8510,13 @@ Partial Class frmMain
         Me.tabBlueprints.Text = "Blueprints"
         Me.tabBlueprints.UseVisualStyleBackColor = True
         '
-        'lstBPList
-        '
-        Me.lstBPList.BackColor = System.Drawing.SystemColors.Window
-        Me.lstBPList.FormattingEnabled = True
-        Me.lstBPList.Location = New System.Drawing.Point(4, 47)
-        Me.lstBPList.Name = "lstBPList"
-        Me.lstBPList.Size = New System.Drawing.Size(404, 134)
-        Me.lstBPList.TabIndex = 64
-        Me.lstBPList.Visible = False
-        '
         'gbBPMEPEImage
         '
         Me.gbBPMEPEImage.BackColor = System.Drawing.Color.Transparent
-        Me.gbBPMEPEImage.Controls.Add(Me.btnBPMarketHistory)
-        Me.gbBPMEPEImage.Controls.Add(Me.chkBPIncludeBPCCost)
-        Me.gbBPMEPEImage.Controls.Add(Me.txtBPBPCCCost)
         Me.gbBPMEPEImage.Controls.Add(Me.pbMarketBP)
+        Me.gbBPMEPEImage.Controls.Add(Me.btnBPMarketHistory)
+        Me.gbBPMEPEImage.Controls.Add(Me.chkBPBaseBPCCost)
+        Me.gbBPMEPEImage.Controls.Add(Me.txtBPBPCCost)
         Me.gbBPMEPEImage.Controls.Add(Me.rbtnBPRawT2MatType)
         Me.gbBPMEPEImage.Controls.Add(Me.pbLPStoreBP)
         Me.gbBPMEPEImage.Controls.Add(Me.rbtnBPProcT2MatType)
@@ -8542,34 +8547,6 @@ Partial Class frmMain
         Me.gbBPMEPEImage.TabIndex = 6
         Me.gbBPMEPEImage.TabStop = False
         '
-        'btnBPMarketHistory
-        '
-        Me.btnBPMarketHistory.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources._7_32_4
-        Me.btnBPMarketHistory.Location = New System.Drawing.Point(417, 186)
-        Me.btnBPMarketHistory.Name = "btnBPMarketHistory"
-        Me.btnBPMarketHistory.Size = New System.Drawing.Size(32, 32)
-        Me.btnBPMarketHistory.TabIndex = 143
-        Me.btnBPMarketHistory.UseVisualStyleBackColor = True
-        '
-        'chkBPIncludeBPCCost
-        '
-        Me.chkBPIncludeBPCCost.AutoSize = True
-        Me.chkBPIncludeBPCCost.Location = New System.Drawing.Point(146, 194)
-        Me.chkBPIncludeBPCCost.Name = "chkBPIncludeBPCCost"
-        Me.chkBPIncludeBPCCost.Size = New System.Drawing.Size(74, 17)
-        Me.chkBPIncludeBPCCost.TabIndex = 25
-        Me.chkBPIncludeBPCCost.Text = "BPC Cost:"
-        Me.chkBPIncludeBPCCost.UseVisualStyleBackColor = True
-        '
-        'txtBPBPCCCost
-        '
-        Me.txtBPBPCCCost.Location = New System.Drawing.Point(221, 192)
-        Me.txtBPBPCCCost.MaxLength = 15
-        Me.txtBPBPCCCost.Name = "txtBPBPCCCost"
-        Me.txtBPBPCCCost.Size = New System.Drawing.Size(114, 20)
-        Me.txtBPBPCCCost.TabIndex = 142
-        Me.txtBPBPCCCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        '
         'pbMarketBP
         '
         Me.pbMarketBP.BackColor = System.Drawing.Color.White
@@ -8580,6 +8557,34 @@ Partial Class frmMain
         Me.pbMarketBP.TabIndex = 141
         Me.pbMarketBP.TabStop = False
         Me.pbMarketBP.Visible = False
+        '
+        'btnBPMarketHistory
+        '
+        Me.btnBPMarketHistory.Image = Global.EVE_Isk_per_Hour.My.Resources.Resources._7_32_4
+        Me.btnBPMarketHistory.Location = New System.Drawing.Point(417, 186)
+        Me.btnBPMarketHistory.Name = "btnBPMarketHistory"
+        Me.btnBPMarketHistory.Size = New System.Drawing.Size(32, 32)
+        Me.btnBPMarketHistory.TabIndex = 143
+        Me.btnBPMarketHistory.UseVisualStyleBackColor = True
+        '
+        'chkBPBaseBPCCost
+        '
+        Me.chkBPBaseBPCCost.AutoSize = True
+        Me.chkBPBaseBPCCost.Location = New System.Drawing.Point(146, 194)
+        Me.chkBPBaseBPCCost.Name = "chkBPBaseBPCCost"
+        Me.chkBPBaseBPCCost.Size = New System.Drawing.Size(74, 17)
+        Me.chkBPBaseBPCCost.TabIndex = 25
+        Me.chkBPBaseBPCCost.Text = "BPC Cost:"
+        Me.chkBPBaseBPCCost.UseVisualStyleBackColor = True
+        '
+        'txtBPBPCCost
+        '
+        Me.txtBPBPCCost.Location = New System.Drawing.Point(221, 192)
+        Me.txtBPBPCCost.MaxLength = 15
+        Me.txtBPBPCCost.Name = "txtBPBPCCost"
+        Me.txtBPBPCCost.Size = New System.Drawing.Size(114, 20)
+        Me.txtBPBPCCost.TabIndex = 142
+        Me.txtBPBPCCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
         '
         'rbtnBPRawT2MatType
         '
@@ -9082,9 +9087,9 @@ Partial Class frmMain
         Me.lblBPHistoryRegion.AutoSize = True
         Me.lblBPHistoryRegion.Location = New System.Drawing.Point(8, 96)
         Me.lblBPHistoryRegion.Name = "lblBPHistoryRegion"
-        Me.lblBPHistoryRegion.Size = New System.Drawing.Size(115, 13)
+        Me.lblBPHistoryRegion.Size = New System.Drawing.Size(142, 13)
         Me.lblBPHistoryRegion.TabIndex = 27
-        Me.lblBPHistoryRegion.Text = "Market History Region:"
+        Me.lblBPHistoryRegion.Text = "Market History/SVR Region:"
         '
         'cmbBPHistoryRegion
         '
@@ -9371,6 +9376,8 @@ Partial Class frmMain
         '
         'gbBPBlueprintType
         '
+        Me.gbBPBlueprintType.Controls.Add(Me.lstBPList)
+        Me.gbBPBlueprintType.Controls.Add(Me.chkBPLPBPOs)
         Me.gbBPBlueprintType.Controls.Add(Me.chkBPMarketBPOs)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPReactionsBlueprints)
         Me.gbBPBlueprintType.Controls.Add(Me.rbtnBPStructureModulesBlueprints)
@@ -9396,6 +9403,27 @@ Partial Class frmMain
         Me.gbBPBlueprintType.TabIndex = 71
         Me.gbBPBlueprintType.TabStop = False
         Me.gbBPBlueprintType.Text = "Blueprint Type"
+        '
+        'lstBPList
+        '
+        Me.lstBPList.BackColor = System.Drawing.SystemColors.Window
+        Me.lstBPList.FormattingEnabled = True
+        Me.lstBPList.Location = New System.Drawing.Point(0, 0)
+        Me.lstBPList.Name = "lstBPList"
+        Me.lstBPList.Size = New System.Drawing.Size(404, 121)
+        Me.lstBPList.TabIndex = 64
+        Me.lstBPList.Visible = False
+        '
+        'chkBPLPBPOs
+        '
+        Me.chkBPLPBPOs.AutoSize = True
+        Me.chkBPLPBPOs.Location = New System.Drawing.Point(287, 101)
+        Me.chkBPLPBPOs.Name = "chkBPLPBPOs"
+        Me.chkBPLPBPOs.Size = New System.Drawing.Size(97, 17)
+        Me.chkBPLPBPOs.TabIndex = 67
+        Me.chkBPLPBPOs.Text = "LP Store BPOs"
+        Me.chkBPLPBPOs.TextAlign = System.Drawing.ContentAlignment.TopLeft
+        Me.chkBPLPBPOs.UseVisualStyleBackColor = True
         '
         'chkBPMarketBPOs
         '
@@ -10368,7 +10396,7 @@ Partial Class frmMain
         Me.tabMain.Controls.Add(Me.tabPI)
         Me.tabMain.DataBindings.Add(New System.Windows.Forms.Binding("Font", Global.EVE_Isk_per_Hour.My.MySettings.Default, "MyDefault", True, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged))
         Me.tabMain.Font = Global.EVE_Isk_per_Hour.My.MySettings.Default.MyDefault
-        Me.tabMain.Location = New System.Drawing.Point(2, 25)
+        Me.tabMain.Location = New System.Drawing.Point(2, 23)
         Me.tabMain.Name = "tabMain"
         Me.tabMain.SelectedIndex = 0
         Me.tabMain.Size = New System.Drawing.Size(1260, 632)
@@ -10694,7 +10722,6 @@ Partial Class frmMain
     Friend WithEvents mnuUpdateESIPublicStructures As ToolStripMenuItem
     Friend WithEvents mnuResetESIPublicStructures As ToolStripMenuItem
     Friend WithEvents mnuChangeDummyCharacterName As ToolStripMenuItem
-    Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
     Friend WithEvents mnuViewESIStatus As ToolStripMenuItem
     Friend WithEvents tabPI As TabPage
     Friend WithEvents btnPISaveSettings As Button
@@ -11437,7 +11464,7 @@ Partial Class frmMain
     Friend WithEvents gbPriceProfile As GroupBox
     Friend WithEvents gbMarketStructures As GroupBox
     Friend WithEvents gbRegionSystemPrice As GroupBox
-    Friend WithEvents btnOpenMarketBrowser As Button
+    Friend WithEvents btnRefreshPriceHistory As Button
     Friend WithEvents chkSystems6 As CheckBox
     Friend WithEvents chkMolecularForgedMaterials As CheckBox
     Friend WithEvents chkAdvancedProtectiveTechnology As CheckBox
@@ -11514,9 +11541,9 @@ Partial Class frmMain
     Friend WithEvents chkMineIncludeA0StarOres As CheckBox
     Friend WithEvents tabOptions As TabPage
     Friend WithEvents pbLPStoreBP As PictureBox
-    Friend WithEvents chkBPIncludeBPCCost As CheckBox
+    Friend WithEvents chkBPBaseBPCCost As CheckBox
     Friend WithEvents pbMarketBP As PictureBox
-    Friend WithEvents txtBPBPCCCost As TextBox
+    Friend WithEvents txtBPBPCCost As TextBox
     Friend WithEvents chkMineOverrideBoosts As CheckBox
     Friend WithEvents txtMineOverrideCycleTime As TextBox
     Friend WithEvents txtMineOverrideLaserRange As TextBox
@@ -11525,4 +11552,7 @@ Partial Class frmMain
     Friend WithEvents lblBPHistoryRegion As Label
     Friend WithEvents cmbBPHistoryRegion As ComboBox
     Friend WithEvents lblBPHistoryAvgDays As Label
+    Friend WithEvents chkCalcIncludeBPCCost As CheckBox
+    Friend WithEvents chkBPLPBPOs As CheckBox
+    Friend WithEvents DarkModeToolStripMenuItem As ToolStripMenuItem
 End Class

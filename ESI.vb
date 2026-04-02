@@ -18,7 +18,7 @@ Public Class ESI
     Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/v2/oauth/authorize"
     Private Const ESITokenURL As String = "https://login.eveonline.com/v2/oauth/token"
     Private Const ESIURL As String = "https://esi.evetech.net/latest/"
-    Private Const ESIStatusURL As String = "https://esi.evetech.net/status.json?version=latest"
+    Private Const ESIStatusURL As String = "https://esi.evetech.net/meta/status/?compatibility_date=2025-11-06"
     Private Const TranquilityDataSource As String = "?datasource=tranquility"
 
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
@@ -1537,10 +1537,7 @@ Public Class ESI
             Dim CB As New CacheBox
             Dim CacheDate As Date
             Dim ESIData As New ESI
-            Dim StatusItems As New List(Of ESIStatusItem)
-            Dim tag1 As String
-            Dim tag2 As String
-            Dim tag3 As String
+            Dim StatusItems As New ESIStatusItems
 
             Dim rsUpdate As SQLiteDataReader
             Dim SQL As String
@@ -1565,45 +1562,27 @@ Public Class ESI
                 RawData = ESIData.GetPublicData(ESIStatusURL, CacheDate)
 
                 If Not IsNothing(RawData) Then
-                    StatusItems = JsonConvert.DeserializeObject(Of List(Of ESIStatusItem))(RawData)
+                    StatusItems = JsonConvert.DeserializeObject(Of ESIStatusItems)(RawData)
                     EVEDB.BeginSQLiteTransaction()
 
                     ' Set all to red first - if one goes down or is removed from the list (e.g., assets) then we will see it as down
-                    EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET status = 'red'"))
+                    EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET status = 'Unknown'"))
 
                     ' Add all to status table incase we use one in the future that's not used now
-                    For Each item In StatusItems
-                        With item
-                            tag1 = ""
-                            tag2 = ""
-                            tag3 = ""
-                            Select Case .tags.Count
-                                Case 1
-                                    tag1 = .tags(0)
-                                Case 2
-                                    tag1 = .tags(0)
-                                    tag2 = .tags(1)
-                                Case 3
-                                    tag1 = .tags(0)
-                                    tag2 = .tags(1)
-                                    tag3 = .tags(2)
-                            End Select
+                    For Each route In StatusItems.Routes
+                        ' Look up each entry and if not in there, insert, if there, update
+                        SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & route.Path & "'"
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        rsUpdate = DBCommand.ExecuteReader
+                        rsUpdate.Read()
 
-                            ' Look up each entry and if not in there, insert, if there, update
-                            SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & item.route & "'"
-                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                            rsUpdate = DBCommand.ExecuteReader
-                            rsUpdate.Read()
-
-                            If rsUpdate.HasRows Then
-                                ' just update the values
-                                EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET endpoint='{0}', method='{1}', status='{2}', tag1='{3}',tag2='{4}',tag3='{5}' WHERE route = '{6}'", .endpoint, .method, .status, tag1, tag2, tag3, .route))
-                            Else
-                                EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')", .endpoint, .method, .route, .status, tag1, tag2, tag3))
-                            End If
-                            rsUpdate.Close()
-
-                        End With
+                        If rsUpdate.HasRows Then
+                            ' just update the values
+                            EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET method='{0}', status='{1}' WHERE route = '{2}'", route.Method, route.Status, route.Path))
+                        Else
+                            EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}')", route.Method, route.Path, route.Status))
+                        End If
+                        rsUpdate.Close()
                     Next
 
                     EVEDB.CommitSQLiteTransaction()
@@ -2681,6 +2660,16 @@ Public Class ESIStatusItem
     <JsonProperty("route")> Public route As String
     <JsonProperty("status")> Public status As String
     <JsonProperty("tags")> Public tags As List(Of String)
+End Class
+
+Public Class ESIStatusItems
+    <JsonProperty("routes")> Public Property Routes As List(Of RouteInfo)
+End Class
+
+Public Class RouteInfo
+    <JsonProperty("method")> Public Property Method As String
+    <JsonProperty("path")> Public Property Path As String
+    <JsonProperty("status")> Public Property Status As String
 End Class
 
 Public Class ESIContract

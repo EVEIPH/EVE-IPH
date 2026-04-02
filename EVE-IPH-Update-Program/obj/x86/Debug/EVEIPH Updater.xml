@@ -22,5 +22,11 @@ EVEIPH Updater
   resource lookups using this strongly typed resource class.
 </summary>
 </member>
+<member name="M:EVEIPH_Updater.FrmUpdaterMain.CreateNewDirectory(System.String)">
+ <summary>
+ This will create a new directory. If the directory already exists it will delete it first.
+ </summary>
+ <param name="DirectoryPath"></param>
+</member>
 </members>
 </doc>

@@ -51,11 +51,11 @@ Public Class ConvertToOre
         With OreConversionSettings
             For Each Ore In .SelectedOres
                 SQL = "SELECT ORES.ORE_ID, ORE_NAME, UNITS_TO_REFINE, ORE_VOLUME, PRICE, "
-                SQL &= "CASE WHEN ITEM_GROUP = 'Ice' THEN CASE WHEN SUBSTR(ORE_NAME,1,10) ='Compressed' THEN SUBSTR(ORE_NAME,12) ELSE ORE_NAME END ELSE ITEM_GROUP END AS ORE_GROUP "
+                SQL &= "CASE WHEN ITEM_GROUP = 'Ice' OR ITEM_GROUP LIKE '%Moon%' THEN CASE WHEN SUBSTR(ORE_NAME,1,10) ='Compressed' THEN SUBSTR(ORE_NAME,12) ELSE ORE_NAME END ELSE ITEM_GROUP END AS ORE_GROUP "
                 SQL &= "FROM ORES, ORE_LOCATIONS, ITEM_PRICES WHERE ORES.ORE_ID = ITEM_PRICES.ITEM_ID "
                 SQL &= "AND ORE_GROUP = '" & Ore.OreName & "' "
                 ' Check Variants for ore only
-                If Ore.OreGroup = "Ore" Then
+                If Ore.OreGroup = "Ore" Or Ore.OreGroup = "Moon Ore" Then
                     SQL &= "AND HIGH_YIELD_ORE IN ("
                     If .OreVariant0 Then
                         SQL &= "0,"
@@ -70,7 +70,7 @@ Public Class ConvertToOre
                     SQL = SQL.Substring(0, Len(SQL) - 1) & ") "
                 End If
 
-                If (Ore.OreGroup = "Ice" And .ConvertIce = 1) Or (Ore.OreGroup = "Ore" And .ConvertOre = 1) Then
+                If (Ore.OreGroup = "Ice" And .ConvertIce = 2) Or (Ore.OreGroup = "Ore" And .ConvertOre = 2) Or (Ore.OreGroup = "Moon Ore" And .ConvertMoonOre = 2) Then
                     SQL &= "AND ORE_NAME LIKE 'Compressed%' "
                 Else
                     SQL &= "AND ORE_NAME NOT LIKE 'Compressed%' "

@@ -8,8 +8,8 @@ Imports System.Security.Cryptography
 ' Place to store all public variables and functions
 Public Module Public_Variables
     ' DB name and version
-    Public Const SDEVersion As String = "December 14, 2023 Release"
-    Public Const VersionNumber As String = "6.0.*"
+    Public Const SDEVersion As String = "March 31, 2026 Release"
+    Public Const VersionNumber As String = "5.1.*"
 
     Public TestingVersion As Boolean ' This flag will test the test downloads from the server for an update
     Public Developer As Boolean ' This is if I'm developing something and only want me to see it instead of public release
@@ -73,19 +73,18 @@ Public Module Public_Variables
 
     Public Const USER_BLUEPRINTS As String = "(SELECT ALL_BLUEPRINTS.BLUEPRINT_ID AS BP_ID, ALL_BLUEPRINTS.BLUEPRINT_GROUP, ALL_BLUEPRINTS.BLUEPRINT_NAME, " _
                                             & "ITEM_GROUP_ID, ITEM_GROUP, ITEM_CATEGORY_ID, CASE WHEN ITEM_GROUP LIKE 'Rig%' THEN 'Rig' ELSE ITEM_CATEGORY END AS ITEM_CATEGORY, " _
-                                            & "ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME," _
-                                            & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME," _
-                                            & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE," _
-                                            & "CASE WHEN USER_ID IS NOT NULL THEN USER_ID ELSE 0 END AS USER_ID, ITEM_TYPE," _
-                                            & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID," _
-                                            & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED," _
-                                            & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED," _
-                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE," _
+                                            & "ALL_BLUEPRINTS.ITEM_ID, ITEM_NAME, " _
+                                            & "CASE WHEN OBP.ME IS NOT NULL THEN OBP.ME ELSE 0 END AS ME, " _
+                                            & "CASE WHEN OBP.TE IS NOT NULL THEN OBP.TE ELSE 0 END AS TE, " _
+                                            & "CASE WHEN USER_ID IS NOT NULL THEN USER_ID ELSE 0 END AS USER_ID, ITEM_TYPE, " _
+                                            & "CASE WHEN ALL_BLUEPRINTS.RACE_ID IS NOT NULL THEN ALL_BLUEPRINTS.RACE_ID ELSE 0 END AS RACE_ID, " _
+                                            & "CASE WHEN OBP.OWNED IS NOT NULL THEN OBP.OWNED ELSE 0 END AS OWNED, " _
+                                            & "CASE WHEN OBP.SCANNED IS NOT NULL THEN OBP.SCANNED ELSE 0 END AS SCANNED, " _
+                                            & "CASE WHEN OBP.BP_TYPE IS NOT NULL THEN OBP.BP_TYPE ELSE 0 END AS BP_TYPE, " _
                                             & "CASE WHEN OBP.ITEM_ID IS NOT NULL THEN OBP.ITEM_ID ELSE 0 END AS UNIQUE_BP_ITEM_ID, " _
-                                            & "CASE WHEN OBP.FAVORITE IS NOT NULL THEN OBP.FAVORITE " _
-                                            & "ELSE CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NOT NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END END AS FAVORITE, " _
+                                            & "CASE WHEN ALL_BLUEPRINTS.FAVORITE IS NOT NULL THEN ALL_BLUEPRINTS.FAVORITE ELSE 0 END AS FAVORITE, " _
                                             & "IT.volume, IT.marketGroupID, " _
-                                            & "CASE WHEN ALL_BLUEPRINTS.ADDITIONAL_COSTS IS Not NULL THEN ALL_BLUEPRINTS.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
+                                            & "CASE WHEN ALL_BLUEPRINTS.ADDITIONAL_COSTS IS NOT NULL THEN ALL_BLUEPRINTS.ADDITIONAL_COSTS ELSE 0 END AS ADDITIONAL_COSTS, " _
                                             & "CASE WHEN OBP.LOCATION_ID Is Not NULL THEN OBP.LOCATION_ID ELSE 0 END AS LOCATION_ID, " _
                                             & "CASE WHEN OBP.QUANTITY Is Not NULL THEN OBP.QUANTITY ELSE 0 END AS QUANTITY, " _
                                             & "CASE WHEN OBP.RUNS Is Not NULL THEN OBP.RUNS ELSE 0 END AS RUNS, " _
@@ -214,6 +213,12 @@ Public Module Public_Variables
     Public Const Drake As String = "Drake"
     Public Const Gnosis As String = "Gnosis"
     Public Const Rokh As String = "Rokh"
+
+    Public Const Pioneer As String = "Pioneer"
+    Public Const PioneerConsortiumIssue As String = "Pioneer Consortium Issue"
+    Public Const VentureConsortiumIssue As String = "Venture Consortium Issue"
+    Public Const Outrider As String = "Outrider"
+    Public Const Odysseus As String = "Odysseus"
 
     ' For exporting Data
     Public Const DefaultTextDataExport As String = "Default"
@@ -2429,7 +2434,7 @@ SkipItem:
 
         If RelicName <> "" Then
             ' Need to add the relic variant to the query for just one item
-            SQL &= " And typeName Like '%" & RelicName & "%'"
+            SQL &= " AND typeName LIKE '%" & RelicName & "%'"
         End If
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
@@ -2635,7 +2640,7 @@ SkipItem:
             ' If Found then update then just reset the owned flag - might be scanned
             If readerBP.HasRows Then
                 ' Update it
-                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, FAVORITE = 0, BP_TYPE = 0 "
+                SQL = "UPDATE OWNED_BLUEPRINTS SET OWNED = 0, ME = 0, TE = 0, BP_TYPE = 0 "
                 SQL &= "WHERE (USER_ID =" & CStr(CharID) & " Or USER_ID =" & SelectedCharacter.CharacterCorporation.CorporationID & ") "
                 SQL &= "AND BLUEPRINT_ID =" & CStr(BPID)
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
@@ -2702,9 +2707,11 @@ SkipItem:
                 Call EVEDB.ExecuteNonQuerySQL(SQL)
             End If
 
-            ' Update the bp ignore flag, favorite, and any additional costs (note for all accounts on this pc)
+            ' Update the bp ignore flag, favorite, and any additional costs (note for all accounts on this pc), and bpc flag
             SQL = "UPDATE ALL_BLUEPRINTS_FACT SET IGNORE = " & TempIgnore & ", FAVORITE = " & TempFavorite
-            SQL &= ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & " WHERE BLUEPRINT_ID = " & CStr(BPID)
+            SQL &= ", ADDITIONAL_COSTS = " & CStr(AdditionalCosts) & ", INCLUDEBPCCOST = " & CStr(CInt(IncludeBPCCost))
+            SQL &= " WHERE BLUEPRINT_ID = " & CStr(BPID)
+
             Call EVEDB.ExecuteNonQuerySQL(SQL)
 
         End If

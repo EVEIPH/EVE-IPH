@@ -194,6 +194,7 @@ Public Class ProgramSettings
     Public DefaultBPIncludeBPCCost As Boolean = False
     Public DefaultBPSimpleCopyCheck As Boolean = False
     Public DefaultBPNPCBPOs As Boolean = False
+    Public DefaultBPLPBPOs As Boolean = False
     Public DefaultBPProductionLines As Integer = 1
     Public DefaultBPLaboratoryLines As Integer = 1
     Public DefaultBPRELines As Integer = 1
@@ -274,6 +275,7 @@ Public Class ProgramSettings
     Public DefaultCheckDecryptorUseforT2 As Boolean = True
     Public DefaultCheckDecryptorUseforT3 As Boolean = True
     Public DefaultCheckIgnoreInvention As Boolean = False
+    Public DefaultCheckIncludeBPCCosts As Boolean = False
     Public DefaultCheckRelicWrecked As Boolean = True
     Public DefaultCheckRelicIntact As Boolean = False
     Public DefaultCheckRelicMalfunction As Boolean = False
@@ -604,9 +606,9 @@ Public Class ProgramSettings
     Dim DefaultMTReprocessingFacilityIceRefineRate As Integer = 0
     Dim DefaultMTReprocessingFacilityMoonRefineRate As Integer = 0
 
-    Dim DefaultMTItemCategoryWidth As Integer = 100
+    Dim DefaultMTItemCategoryWidth As Integer = 191
     Dim DefaultMTItemGroupWidth As Integer = 100
-    Dim DefaultMTItemNameWidth As Integer = 225
+    Dim DefaultMTItemNameWidth As Integer = 255
     Dim DefaultMTOwnedWidth As Integer = 50
     Dim DefaultMTTechWidth As Integer = 37
     Dim DefaultMTBPMEWidth As Integer = 28
@@ -919,10 +921,11 @@ Public Class ProgramSettings
     Private DefaultCompressedWhiteGlaze As Boolean = True
 
     ' ConvertToOre
-    Private DefaultConversionType As String = None
     Private DefaultMinimizeOn As String = "Refine Price"
-    Private DefaultCompressedOre As Boolean = True
-    Private DefaultCompressedIce As Boolean = True
+    Private DefaultConvertOre As Integer = 0
+    Private DefaultConvertIce As Integer = 0
+    Private DefaultConvertMoonOre As Integer = 0
+    Private DefaultConvertGas As Integer = 0
     Private DefaultHighSec As Boolean = True
     Private DefaultLowSec As Boolean = True
     Private DefaultNullSec As Boolean = True
@@ -1621,6 +1624,7 @@ Public Class ProgramSettings
                     .CompressedOre = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "CompressedOre", DefaultBPCompressedOre))
                     .SimpleCopyCheck = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SimpleCopyCheck", DefaultBPSimpleCopyCheck))
                     .NPCBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "NPCBPOs", DefaultBPNPCBPOs))
+                    .LPBPOs = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "LPBPOs", DefaultBPLPBPOs))
                     .SellExcessBuildItems = CBool(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeBoolean, BPSettingsFileName, "SellExcessBuildItems", DefaultBPSellExcessItems))
                     .BuildT2T3Materials = CType(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "BuildT2T3Materials", DefaultBuiltMatsType), BuildMatType)
                     .HistoryRegion = CStr(GetSettingValue(SettingsFolder, BPSettingsFileName, SettingTypes.TypeString, BPSettingsFileName, "HistoryRegion", DefaultSVRAveragePriceRegion))
@@ -1647,7 +1651,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveBPSettings(SentSettings As BPTabSettings)
-        Dim BPSettingsList(48) As Setting
+        Dim BPSettingsList(49) As Setting
 
         Try
             BPSettingsList(0) = New Setting("BlueprintTypeSelection", CStr(SentSettings.BlueprintTypeSelection))
@@ -1711,6 +1715,8 @@ Public Class ProgramSettings
 
             BPSettingsList(48) = New Setting("IncludeBPCCost", CStr(SentSettings.IncludeBPCCost))
 
+            BPSettingsList(49) = New Setting("LPBPOs", CStr(SentSettings.LPBPOs))
+
             Call WriteSettingsToFile(SettingsFolder, BPSettingsFileName, BPSettingsList, BPSettingsFileName)
 
         Catch ex As Exception
@@ -1745,6 +1751,7 @@ Public Class ProgramSettings
             .XLCheck = DefaultSizeChecks
             .SimpleCopyCheck = DefaultBPSimpleCopyCheck
             .NPCBPOs = DefaultBPNPCBPOs
+            .LPBPOs = DefaultBPLPBPOs
             .SellExcessBuildItems = DefaultBPSellExcessItems
 
             .OptimalT2Decryptor = DefaultBPOptimalDecryptor
@@ -2156,6 +2163,7 @@ Public Class ProgramSettings
                     .CheckDecryptorUseforT2 = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorUseforT2", DefaultCheckDecryptorUseforT2))
                     .CheckDecryptorUseforT3 = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckDecryptorUseforT3", DefaultCheckDecryptorUseforT3))
                     .CheckIgnoreInvention = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIgnoreInvention", DefaultCheckIgnoreInvention))
+                    .CheckIncludeBPCCosts = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckIncludeBPCCosts", DefaultCheckIncludeBPCCosts))
                     .CheckRelicWrecked = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicWrecked", DefaultCheckRelicWrecked))
                     .CheckRelicIntact = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicIntact", DefaultCheckRelicIntact))
                     .CheckRelicMalfunction = CBool(GetSettingValue(SettingsFolder, ManufacturingSettingsFileName, SettingTypes.TypeBoolean, ManufacturingSettingsFileName, "CheckRelicMalfunction", DefaultCheckRelicMalfunction))
@@ -2270,6 +2278,7 @@ Public Class ProgramSettings
             .CheckDecryptorUseforT2 = DefaultCheckDecryptorUseforT2
             .CheckDecryptorUseforT3 = DefaultCheckDecryptorUseforT3
             .CheckIgnoreInvention = DefaultCheckIgnoreInvention
+            .CheckIncludeBPCCosts = DefaultBPIncludeBPCCost
             .CheckRelicWrecked = DefaultCheckRelicWrecked
             .CheckRelicIntact = DefaultCheckRelicIntact
             .CheckRelicMalfunction = DefaultCheckRelicMalfunction
@@ -2332,7 +2341,7 @@ Public Class ProgramSettings
 
     ' Saves the tab settings to XML
     Public Sub SaveManufacturingSettings(SentSettings As ManufacturingTabSettings)
-        Dim ManufacturingSettingsList(88) As Setting
+        Dim ManufacturingSettingsList(89) As Setting
 
         Try
             ManufacturingSettingsList(0) = New Setting("BlueprintType", CStr(SentSettings.BlueprintType))
@@ -2424,6 +2433,7 @@ Public Class ProgramSettings
             ManufacturingSettingsList(86) = New Setting("CheckSellExcessItems", CStr(SentSettings.CheckSellExcessItems))
             ManufacturingSettingsList(87) = New Setting("CalcBrokerFeeRate", CStr(SentSettings.CalcBrokerFeeRate))
             ManufacturingSettingsList(88) = New Setting("BuildT2T3Materials", CStr(SentSettings.BuildT2T3Materials))
+            ManufacturingSettingsList(89) = New Setting("CheckIncludeBPCCosts", CStr(SentSettings.CheckIncludeBPCCosts))
 
             Call WriteSettingsToFile(SettingsFolder, ManufacturingSettingsFileName, ManufacturingSettingsList, ManufacturingSettingsFileName)
 
@@ -4569,11 +4579,13 @@ Public Class ProgramSettings
             If FileExists(SettingsFolder, ConvertToOreSettingsFileName) Then
                 'Get the settings
                 With TempSettings
-                    .ConversionType = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "ConversionType", DefaultConversionType))
+                    .ConvertOre = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertOre", DefaultConvertOre))
+                    .ConvertIce = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertIce", DefaultConvertIce))
+                    .ConvertMoonOre = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertMoonOre", DefaultConvertMoonOre))
+                    .ConvertGas = CInt(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeInteger, ConvertToOreSettingsFileName, "ConvertGas", DefaultConvertGas))
+
                     .MinimizeOn = CStr(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeString, ConvertToOreSettingsFileName, "MinimizeOn", DefaultMinimizeOn))
 
-                    .CompressedIce = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedIce", DefaultCompressedIce))
-                    .CompressedOre = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "CompressedOre", DefaultCompressedOre))
                     .HighSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "HighSec", DefaultHighSec))
                     .LowSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "LowSec", DefaultLowSec))
                     .NullSec = CBool(GetSettingValue(SettingsFolder, ConvertToOreSettingsFileName, SettingTypes.TypeBoolean, ConvertToOreSettingsFileName, "NullSec", DefaultNullSec))
@@ -4645,10 +4657,11 @@ Public Class ProgramSettings
         Dim LocalSettings As ConversionToOreSettings
 
         With LocalSettings
-            .ConversionType = DefaultConversionType
             .MinimizeOn = DefaultMinimizeOn
-            .CompressedOre = DefaultCompressedOre
-            .CompressedIce = DefaultCompressedIce
+            .ConvertOre = DefaultConvertOre
+            .ConvertIce = DefaultConvertIce
+            .ConvertMoonOre = DefaultConvertMoonOre
+            .ConvertGas = DefaultConvertGas
             .HighSec = DefaultHighSec
             .LowSec = DefaultLowSec
             .NullSec = DefaultNullSec
@@ -5570,6 +5583,7 @@ Public Structure BPTabSettings
 
     Dim SimpleCopyCheck As Boolean
     Dim NPCBPOs As Boolean
+    Dim LPBPOs As Boolean
 
     Dim ProductionLines As Integer
     Dim LaboratoryLines As Integer
@@ -5765,6 +5779,8 @@ Public Structure ManufacturingTabSettings
     Dim CheckDecryptorUseforT3 As Boolean
 
     Dim CheckIgnoreInvention As Boolean
+
+    Dim CheckIncludeBPCCosts As Boolean
 
     Dim CheckRelicWrecked As Boolean
     Dim CheckRelicIntact As Boolean
@@ -6391,21 +6407,19 @@ Public Structure IceBeltCheckSettings
 End Structure
 
 Public Structure ConversionToOreSettings
-    Dim ConversionType As String
     Dim MinimizeOn As String
-    Dim CompressedOre As Boolean
-    Dim CompressedIce As Boolean
     Dim HighSec As Boolean
     Dim LowSec As Boolean
     Dim NullSec As Boolean
     Dim OreVariant0 As Boolean
     Dim OreVariant5 As Boolean
     Dim OreVariant10 As Boolean
-    ' Tri-checks
+    ' Tri-checks - 0 unchecked, 1 checked, 2 tri-check (compressed)
     Dim ConvertOre As Integer
     Dim ConvertIce As Integer
     Dim ConvertMoonOre As Integer
     Dim ConvertGas As Integer
+
     Dim Amarr As Boolean
     Dim Caldari As Boolean
     Dim Gallente As Boolean

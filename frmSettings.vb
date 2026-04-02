@@ -833,19 +833,21 @@ InvalidData:
         Else
             chkUseActiveSkills.Enabled = True
         End If
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub chkUseActiveSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkUseActiveSkills.CheckedChanged
         ' They changed active skills, so reload character skills on exit
         ReloadSkills = True
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub chkSuggestBuildwhenBPnotOwned_CheckedChanged(sender As Object, e As EventArgs) Handles chkSuggestBuildwhenBPnotOwned.CheckedChanged
-
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub chkBuildWhenNotEnoughItemsonMarket_CheckedChanged(sender As Object, e As EventArgs) Handles chkBuildWhenNotEnoughItemsonMarket.CheckedChanged
-
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub btnOpenRates_Click(sender As Object, e As EventArgs) Handles btnOpenRates.Click
@@ -853,4 +855,51 @@ InvalidData:
         f1.ShowDialog()
     End Sub
 
+    Private Sub chkManualPriceOverride_CheckedChanged(sender As Object, e As EventArgs) Handles chkManualPriceOverride.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkAutoUpdateSVRBPTab_CheckedChanged(sender As Object, e As EventArgs) Handles chkAutoUpdateSVRBPTab.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkSupressESImsgs_CheckedChanged(sender As Object, e As EventArgs) Handles chkSupressESImsgs.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshPublicStructureDataonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshPublicStructureDataonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshBPsonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshBPsonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshAssetsonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshAssetsonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkDisableTracking_CheckedChanged(sender As Object, e As EventArgs) Handles chkDisableTracking.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkShareFacilities_CheckedChanged(sender As Object, e As EventArgs) Handles chkShareFacilities.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkLinksInCopyText_CheckedChanged(sender As Object, e As EventArgs) Handles chkLinksInCopyText.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkIncludeShopListInventMats_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeShopListInventMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkIncludeShopListCopyMats_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeShopListCopyMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkLoadMaxAlphaSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkLoadMaxAlphaSkills.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
 End Class

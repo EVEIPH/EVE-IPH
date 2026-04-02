@@ -722,7 +722,7 @@ Public Class frmBlueprintManagement
                 BPList.SubItems.Add(Yes) ' Favorite
             End If
 
-            If readerBP.GetInt32(26) = 0 Then
+            If readerBP.GetInt32(25) = 0 Then
                 BPList.SubItems.Add(No) ' Ignored
             Else
                 BPList.SubItems.Add(Yes) ' Ignored
@@ -731,9 +731,9 @@ Public Class frmBlueprintManagement
             ' If they don't own it, look it up, else use the API data
             If CInt(readerBP.GetValue(14)) = 0 Then
                 ' Set runs for bpcs, or unlimited for bpo
-                If (readerBP.GetInt32(16) = BPType.Copy Or readerBP.GetInt32(16) = BPType.InventedBPC Or readerBP.GetInt32(16) = BPType.NotOwned) And readerBP.GetInt32(27) <> 1 Then
+                If (readerBP.GetInt32(16) = BPType.Copy Or readerBP.GetInt32(16) = BPType.InventedBPC Or readerBP.GetInt32(16) = BPType.NotOwned) And readerBP.GetInt32(26) <> 1 Then
                     ' If T2/T3 invented - look up base runs for the bpc assuming no decryptors, else get the value stored
-                    If readerBP.GetInt32(27) = 2 Then
+                    If readerBP.GetInt32(26) = 2 Then
                         SQL = "SELECT quantity FROM INDUSTRY_ACTIVITY_PRODUCTS WHERE productTypeID = " & CStr(readerBP.GetInt64(0)) & " AND activityID = 8"
                     Else ' T3
                         Dim BPIDLookup As Long

@@ -869,6 +869,7 @@ Public Class Blueprint
         If Not IsNothing(ReprocessingFacility) Then
             If ReprocessingFacility.ConvertToOre Then
                 Dim ReplaceMinerals As New ConvertToOre(ReprocessingFacility, UserConversiontoOreSettings)
+                ' TODO - check speed of this function
                 RawMaterials = ReplaceMinerals.GetOresfromMinerals(RawMaterials, ReturnedExcess, ReprocessingUsage)
                 ' Add the excess minerals to the main excess function
                 Call ExcessMaterials.InsertMaterialList(ReturnedExcess.GetMaterialList)
@@ -2134,13 +2135,21 @@ SkipProcessing:
         '11441  Plasma Physics
         '11455  Quantum Physics
         '11449  Rocket Science
+        '3400   Outpost Construction
+
+        '81050  Upwell Starship Engineering
+
+        ' For reducing time to things that take genetic mutation inhibitors
+        '81896  Mutagenic Stablization
 
         ' Read through all the skills and if the ID is in the list, then sum up the levels
         For i = 0 To BuildSkills.NumSkills - 1
             Select Case BuildSkills.GetSkillList(i).TypeID
-                Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449
+                Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449, 81050, 3400
                     ' each skill is mulitplied by 1% then normalized percentage, then mulitiplied to any others to get the bonus
                     BonusSum = BonusSum * (1 - 0.01 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
+                Case 81896 ' genetic mutation skill - 2% reduction
+                    BonusSum = BonusSum * (1 - 0.02 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
             End Select
         Next
 

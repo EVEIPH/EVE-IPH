@@ -1916,7 +1916,7 @@ Public Class frmUpwellStructureFitting
                     Case "EngineeringRigs"
                         SQL = "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
                         SQL &= "INDUSTRY_ACTIVITIES.activityName AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value / 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
@@ -1939,7 +1939,7 @@ Public Class frmUpwellStructureFitting
                         SQL &= "UNION "
                         SQL &= "SELECT CASE WHEN groupName IS NULL THEN categoryName ELSE groupname END AS BONUS_APPLIES_TO, "
                         SQL &= "INDUSTRY_ACTIVITIES.activityName AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, ENGINEERING_RIG_BONUSES AS ERB, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
@@ -1954,7 +1954,7 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Combat' AS BONUS_APPLIES_TO, "
                         SQL &= "'Combat' AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
@@ -1966,7 +1966,7 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Refining' AS BONUS_APPLIES_TO, "
                         SQL &= "'Refining' AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value* " & CStr(SystemSecurityBonus) & " AS BONUS, " ' Data is stored as a decimal but others it's a full number
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
@@ -1978,7 +1978,7 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Reactions' AS BONUS_APPLIES_TO, "
                         SQL &= "'Reactions' AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "
@@ -1990,7 +1990,7 @@ Public Class frmUpwellStructureFitting
 
                         SQL = "SELECT 'Moon Mining' AS BONUS_APPLIES_TO, "
                         SQL &= "'Moon Mining' AS ACTIVITY, "
-                        SQL &= "AT.displayNameID AS BONUS_NAME, "
+                        SQL &= "AT.displayName AS BONUS_NAME, "
                         SQL &= "value/ 100 * " & CStr(SystemSecurityBonus) & " AS BONUS, "
                         SQL &= "typeName AS BONUS_SOURCE "
                         SQL &= "FROM TYPE_ATTRIBUTES AS TA, INVENTORY_TYPES AS IT, ATTRIBUTE_TYPES AS AT "

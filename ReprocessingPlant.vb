@@ -90,10 +90,10 @@ Class ReprocessingPlant
         ' Add the base material
         If MintoOreFormat Then
 
-            ' Get all the materials that could come from refining ores, even if zero, and add them to the list
+            ' Get all the materials that could come from refining the selected ore, even if zero, and add them to the list
             SQL = "SELECT typeID, typeName, groupName, volume, CASE WHEN REFINED_MATERIAL_QUANTITY IS NULL THEN 0 ELSE REFINED_MATERIAL_QUANTITY END AS QUANTITY, PRICE "
             SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, ITEM_PRICES LEFT JOIN REPROCESSING ON REPROCESSING.REFINED_MATERIAL_ID = INVENTORY_TYPES.typeID "
-            SQL &= "AND REPROCESSING.ITEM_ID = " & ItemID & " WHERE INVENTORY_TYPES.groupID IN (18,423) AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
+            SQL &= "AND REPROCESSING.ITEM_ID = " & ItemID & " WHERE INVENTORY_TYPES.groupID IN (18,423,427) AND INVENTORY_TYPES.typeID = ITEM_PRICES.ITEM_ID "
             SQL &= "AND typeID NOT IN (27029,48927) AND INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID ORDER BY typeID"
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)

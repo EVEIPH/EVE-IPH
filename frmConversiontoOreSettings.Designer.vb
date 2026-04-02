@@ -258,6 +258,16 @@ Partial Class frmConversiontoOreSettings
         Me.lblOre26 = New System.Windows.Forms.Label()
         Me.lblOre28 = New System.Windows.Forms.Label()
         Me.tabPageOres = New System.Windows.Forms.TabPage()
+        Me.chkOre83 = New System.Windows.Forms.CheckBox()
+        Me.lblOre83 = New System.Windows.Forms.Label()
+        Me.chkOre80 = New System.Windows.Forms.CheckBox()
+        Me.chkOre81 = New System.Windows.Forms.CheckBox()
+        Me.chkOre82 = New System.Windows.Forms.CheckBox()
+        Me.lblOre81 = New System.Windows.Forms.Label()
+        Me.lblOre80 = New System.Windows.Forms.Label()
+        Me.lblOre82 = New System.Windows.Forms.Label()
+        Me.chkOre79 = New System.Windows.Forms.CheckBox()
+        Me.lblOre79 = New System.Windows.Forms.Label()
         Me.chkOre17 = New System.Windows.Forms.CheckBox()
         Me.chkOre18 = New System.Windows.Forms.CheckBox()
         Me.chkOre19 = New System.Windows.Forms.CheckBox()
@@ -351,15 +361,16 @@ Partial Class frmConversiontoOreSettings
         Me.chkConversionGas.Text = "Compressed Gas"
         Me.chkConversionGas.ThreeState = True
         Me.chkConversionGas.UseVisualStyleBackColor = True
+        Me.chkConversionGas.Visible = False
         '
         'chkConversionMoonOre
         '
         Me.chkConversionMoonOre.AutoSize = True
         Me.chkConversionMoonOre.Location = New System.Drawing.Point(119, 19)
         Me.chkConversionMoonOre.Name = "chkConversionMoonOre"
-        Me.chkConversionMoonOre.Size = New System.Drawing.Size(134, 17)
+        Me.chkConversionMoonOre.Size = New System.Drawing.Size(73, 17)
         Me.chkConversionMoonOre.TabIndex = 8
-        Me.chkConversionMoonOre.Text = "Compressed Moon Ore"
+        Me.chkConversionMoonOre.Text = "Moon Ore"
         Me.chkConversionMoonOre.ThreeState = True
         Me.chkConversionMoonOre.UseVisualStyleBackColor = True
         '
@@ -368,9 +379,9 @@ Partial Class frmConversiontoOreSettings
         Me.chkConversionIce.AutoSize = True
         Me.chkConversionIce.Location = New System.Drawing.Point(9, 42)
         Me.chkConversionIce.Name = "chkConversionIce"
-        Me.chkConversionIce.Size = New System.Drawing.Size(102, 17)
+        Me.chkConversionIce.Size = New System.Drawing.Size(41, 17)
         Me.chkConversionIce.TabIndex = 7
-        Me.chkConversionIce.Text = "Compressed Ice"
+        Me.chkConversionIce.Text = "Ice"
         Me.chkConversionIce.ThreeState = True
         Me.chkConversionIce.UseVisualStyleBackColor = True
         '
@@ -379,9 +390,9 @@ Partial Class frmConversiontoOreSettings
         Me.chkConversionOre.AutoSize = True
         Me.chkConversionOre.Location = New System.Drawing.Point(9, 19)
         Me.chkConversionOre.Name = "chkConversionOre"
-        Me.chkConversionOre.Size = New System.Drawing.Size(104, 17)
+        Me.chkConversionOre.Size = New System.Drawing.Size(43, 17)
         Me.chkConversionOre.TabIndex = 6
-        Me.chkConversionOre.Text = "Compressed Ore"
+        Me.chkConversionOre.Text = "Ore"
         Me.chkConversionOre.ThreeState = True
         Me.chkConversionOre.UseVisualStyleBackColor = True
         '
@@ -2588,6 +2599,16 @@ Partial Class frmConversiontoOreSettings
         '
         'tabPageOres
         '
+        Me.tabPageOres.Controls.Add(Me.chkOre83)
+        Me.tabPageOres.Controls.Add(Me.lblOre83)
+        Me.tabPageOres.Controls.Add(Me.chkOre80)
+        Me.tabPageOres.Controls.Add(Me.chkOre81)
+        Me.tabPageOres.Controls.Add(Me.chkOre82)
+        Me.tabPageOres.Controls.Add(Me.lblOre81)
+        Me.tabPageOres.Controls.Add(Me.lblOre80)
+        Me.tabPageOres.Controls.Add(Me.lblOre82)
+        Me.tabPageOres.Controls.Add(Me.chkOre79)
+        Me.tabPageOres.Controls.Add(Me.lblOre79)
         Me.tabPageOres.Controls.Add(Me.chkOre17)
         Me.tabPageOres.Controls.Add(Me.chkOre18)
         Me.tabPageOres.Controls.Add(Me.chkOre19)
@@ -2634,10 +2655,95 @@ Partial Class frmConversiontoOreSettings
         Me.tabPageOres.Text = "Ore"
         Me.tabPageOres.UseVisualStyleBackColor = True
         '
+        'chkOre83
+        '
+        Me.chkOre83.AutoSize = True
+        Me.chkOre83.Location = New System.Drawing.Point(273, 101)
+        Me.chkOre83.Name = "chkOre83"
+        Me.chkOre83.Size = New System.Drawing.Size(15, 14)
+        Me.chkOre83.TabIndex = 46
+        Me.chkOre83.UseVisualStyleBackColor = True
+        '
+        'lblOre83
+        '
+        Me.lblOre83.Location = New System.Drawing.Point(292, 101)
+        Me.lblOre83.Name = "lblOre83"
+        Me.lblOre83.Size = New System.Drawing.Size(63, 13)
+        Me.lblOre83.TabIndex = 47
+        Me.lblOre83.Text = "Ueganite"
+        '
+        'chkOre80
+        '
+        Me.chkOre80.AutoSize = True
+        Me.chkOre80.Location = New System.Drawing.Point(9, 101)
+        Me.chkOre80.Name = "chkOre80"
+        Me.chkOre80.Size = New System.Drawing.Size(15, 14)
+        Me.chkOre80.TabIndex = 40
+        Me.chkOre80.UseVisualStyleBackColor = True
+        '
+        'chkOre81
+        '
+        Me.chkOre81.AutoSize = True
+        Me.chkOre81.Location = New System.Drawing.Point(97, 101)
+        Me.chkOre81.Name = "chkOre81"
+        Me.chkOre81.Size = New System.Drawing.Size(15, 14)
+        Me.chkOre81.TabIndex = 42
+        Me.chkOre81.UseVisualStyleBackColor = True
+        '
+        'chkOre82
+        '
+        Me.chkOre82.AutoSize = True
+        Me.chkOre82.Location = New System.Drawing.Point(185, 101)
+        Me.chkOre82.Name = "chkOre82"
+        Me.chkOre82.Size = New System.Drawing.Size(15, 14)
+        Me.chkOre82.TabIndex = 44
+        Me.chkOre82.UseVisualStyleBackColor = True
+        '
+        'lblOre81
+        '
+        Me.lblOre81.Location = New System.Drawing.Point(116, 101)
+        Me.lblOre81.Name = "lblOre81"
+        Me.lblOre81.Size = New System.Drawing.Size(63, 13)
+        Me.lblOre81.TabIndex = 43
+        Me.lblOre81.Text = "Kylixium"
+        '
+        'lblOre80
+        '
+        Me.lblOre80.Location = New System.Drawing.Point(28, 101)
+        Me.lblOre80.Name = "lblOre80"
+        Me.lblOre80.Size = New System.Drawing.Size(63, 13)
+        Me.lblOre80.TabIndex = 41
+        Me.lblOre80.Text = "Hezorime"
+        '
+        'lblOre82
+        '
+        Me.lblOre82.Location = New System.Drawing.Point(204, 101)
+        Me.lblOre82.Name = "lblOre82"
+        Me.lblOre82.Size = New System.Drawing.Size(63, 13)
+        Me.lblOre82.TabIndex = 45
+        Me.lblOre82.Text = "Nocxite"
+        '
+        'chkOre79
+        '
+        Me.chkOre79.AutoSize = True
+        Me.chkOre79.Location = New System.Drawing.Point(273, 83)
+        Me.chkOre79.Name = "chkOre79"
+        Me.chkOre79.Size = New System.Drawing.Size(15, 14)
+        Me.chkOre79.TabIndex = 38
+        Me.chkOre79.UseVisualStyleBackColor = True
+        '
+        'lblOre79
+        '
+        Me.lblOre79.Location = New System.Drawing.Point(292, 83)
+        Me.lblOre79.Name = "lblOre79"
+        Me.lblOre79.Size = New System.Drawing.Size(63, 13)
+        Me.lblOre79.TabIndex = 39
+        Me.lblOre79.Text = "Griemeer"
+        '
         'chkOre17
         '
         Me.chkOre17.AutoSize = True
-        Me.chkOre17.Location = New System.Drawing.Point(9, 88)
+        Me.chkOre17.Location = New System.Drawing.Point(9, 83)
         Me.chkOre17.Name = "chkOre17"
         Me.chkOre17.Size = New System.Drawing.Size(15, 14)
         Me.chkOre17.TabIndex = 8
@@ -2646,7 +2752,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre18
         '
         Me.chkOre18.AutoSize = True
-        Me.chkOre18.Location = New System.Drawing.Point(97, 88)
+        Me.chkOre18.Location = New System.Drawing.Point(97, 83)
         Me.chkOre18.Name = "chkOre18"
         Me.chkOre18.Size = New System.Drawing.Size(15, 14)
         Me.chkOre18.TabIndex = 18
@@ -2655,7 +2761,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre19
         '
         Me.chkOre19.AutoSize = True
-        Me.chkOre19.Location = New System.Drawing.Point(185, 88)
+        Me.chkOre19.Location = New System.Drawing.Point(185, 83)
         Me.chkOre19.Name = "chkOre19"
         Me.chkOre19.Size = New System.Drawing.Size(15, 14)
         Me.chkOre19.TabIndex = 28
@@ -2672,7 +2778,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre7
         '
         Me.chkOre7.AutoSize = True
-        Me.chkOre7.Location = New System.Drawing.Point(97, 68)
+        Me.chkOre7.Location = New System.Drawing.Point(97, 65)
         Me.chkOre7.Name = "chkOre7"
         Me.chkOre7.Size = New System.Drawing.Size(15, 14)
         Me.chkOre7.TabIndex = 16
@@ -2681,7 +2787,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre8
         '
         Me.chkOre8.AutoSize = True
-        Me.chkOre8.Location = New System.Drawing.Point(185, 68)
+        Me.chkOre8.Location = New System.Drawing.Point(185, 65)
         Me.chkOre8.Name = "chkOre8"
         Me.chkOre8.Size = New System.Drawing.Size(15, 14)
         Me.chkOre8.TabIndex = 26
@@ -2690,7 +2796,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre5
         '
         Me.chkOre5.AutoSize = True
-        Me.chkOre5.Location = New System.Drawing.Point(185, 49)
+        Me.chkOre5.Location = New System.Drawing.Point(185, 47)
         Me.chkOre5.Name = "chkOre5"
         Me.chkOre5.Size = New System.Drawing.Size(15, 14)
         Me.chkOre5.TabIndex = 24
@@ -2698,7 +2804,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre8
         '
-        Me.lblOre8.Location = New System.Drawing.Point(204, 69)
+        Me.lblOre8.Location = New System.Drawing.Point(204, 65)
         Me.lblOre8.Name = "lblOre8"
         Me.lblOre8.Size = New System.Drawing.Size(63, 13)
         Me.lblOre8.TabIndex = 27
@@ -2707,7 +2813,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre4
         '
         Me.chkOre4.AutoSize = True
-        Me.chkOre4.Location = New System.Drawing.Point(185, 30)
+        Me.chkOre4.Location = New System.Drawing.Point(185, 29)
         Me.chkOre4.Name = "chkOre4"
         Me.chkOre4.Size = New System.Drawing.Size(15, 14)
         Me.chkOre4.TabIndex = 22
@@ -2716,7 +2822,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre3
         '
         Me.chkOre3.AutoSize = True
-        Me.chkOre3.Location = New System.Drawing.Point(9, 30)
+        Me.chkOre3.Location = New System.Drawing.Point(9, 29)
         Me.chkOre3.Name = "chkOre3"
         Me.chkOre3.Size = New System.Drawing.Size(15, 14)
         Me.chkOre3.TabIndex = 2
@@ -2724,7 +2830,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre7
         '
-        Me.lblOre7.Location = New System.Drawing.Point(116, 69)
+        Me.lblOre7.Location = New System.Drawing.Point(116, 65)
         Me.lblOre7.Name = "lblOre7"
         Me.lblOre7.Size = New System.Drawing.Size(63, 13)
         Me.lblOre7.TabIndex = 17
@@ -2733,7 +2839,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre16
         '
         Me.chkOre16.AutoSize = True
-        Me.chkOre16.Location = New System.Drawing.Point(273, 68)
+        Me.chkOre16.Location = New System.Drawing.Point(273, 65)
         Me.chkOre16.Name = "chkOre16"
         Me.chkOre16.Size = New System.Drawing.Size(15, 14)
         Me.chkOre16.TabIndex = 36
@@ -2750,7 +2856,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre3
         '
-        Me.lblOre3.Location = New System.Drawing.Point(28, 30)
+        Me.lblOre3.Location = New System.Drawing.Point(28, 29)
         Me.lblOre3.Name = "lblOre3"
         Me.lblOre3.Size = New System.Drawing.Size(63, 13)
         Me.lblOre3.TabIndex = 3
@@ -2758,7 +2864,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre6
         '
-        Me.lblOre6.Location = New System.Drawing.Point(292, 30)
+        Me.lblOre6.Location = New System.Drawing.Point(292, 29)
         Me.lblOre6.Name = "lblOre6"
         Me.lblOre6.Size = New System.Drawing.Size(63, 13)
         Me.lblOre6.TabIndex = 33
@@ -2767,7 +2873,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre15
         '
         Me.chkOre15.AutoSize = True
-        Me.chkOre15.Location = New System.Drawing.Point(9, 68)
+        Me.chkOre15.Location = New System.Drawing.Point(9, 65)
         Me.chkOre15.Name = "chkOre15"
         Me.chkOre15.Size = New System.Drawing.Size(15, 14)
         Me.chkOre15.TabIndex = 6
@@ -2776,7 +2882,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre6
         '
         Me.chkOre6.AutoSize = True
-        Me.chkOre6.Location = New System.Drawing.Point(273, 30)
+        Me.chkOre6.Location = New System.Drawing.Point(273, 29)
         Me.chkOre6.Name = "chkOre6"
         Me.chkOre6.Size = New System.Drawing.Size(15, 14)
         Me.chkOre6.TabIndex = 32
@@ -2785,7 +2891,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre14
         '
         Me.chkOre14.AutoSize = True
-        Me.chkOre14.Location = New System.Drawing.Point(273, 49)
+        Me.chkOre14.Location = New System.Drawing.Point(273, 47)
         Me.chkOre14.Name = "chkOre14"
         Me.chkOre14.Size = New System.Drawing.Size(15, 14)
         Me.chkOre14.TabIndex = 34
@@ -2793,7 +2899,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre5
         '
-        Me.lblOre5.Location = New System.Drawing.Point(204, 49)
+        Me.lblOre5.Location = New System.Drawing.Point(204, 47)
         Me.lblOre5.Name = "lblOre5"
         Me.lblOre5.Size = New System.Drawing.Size(63, 13)
         Me.lblOre5.TabIndex = 25
@@ -2809,7 +2915,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre4
         '
-        Me.lblOre4.Location = New System.Drawing.Point(204, 30)
+        Me.lblOre4.Location = New System.Drawing.Point(204, 29)
         Me.lblOre4.Name = "lblOre4"
         Me.lblOre4.Size = New System.Drawing.Size(63, 13)
         Me.lblOre4.TabIndex = 23
@@ -2818,7 +2924,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre13
         '
         Me.chkOre13.AutoSize = True
-        Me.chkOre13.Location = New System.Drawing.Point(97, 49)
+        Me.chkOre13.Location = New System.Drawing.Point(97, 47)
         Me.chkOre13.Name = "chkOre13"
         Me.chkOre13.Size = New System.Drawing.Size(15, 14)
         Me.chkOre13.TabIndex = 14
@@ -2836,7 +2942,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre12
         '
         Me.chkOre12.AutoSize = True
-        Me.chkOre12.Location = New System.Drawing.Point(9, 49)
+        Me.chkOre12.Location = New System.Drawing.Point(9, 47)
         Me.chkOre12.Name = "chkOre12"
         Me.chkOre12.Size = New System.Drawing.Size(15, 14)
         Me.chkOre12.TabIndex = 4
@@ -2845,7 +2951,7 @@ Partial Class frmConversiontoOreSettings
         'chkOre11
         '
         Me.chkOre11.AutoSize = True
-        Me.chkOre11.Location = New System.Drawing.Point(97, 30)
+        Me.chkOre11.Location = New System.Drawing.Point(97, 29)
         Me.chkOre11.Name = "chkOre11"
         Me.chkOre11.Size = New System.Drawing.Size(15, 14)
         Me.chkOre11.TabIndex = 12
@@ -2853,7 +2959,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre12
         '
-        Me.lblOre12.Location = New System.Drawing.Point(28, 49)
+        Me.lblOre12.Location = New System.Drawing.Point(28, 47)
         Me.lblOre12.Name = "lblOre12"
         Me.lblOre12.Size = New System.Drawing.Size(63, 13)
         Me.lblOre12.TabIndex = 5
@@ -2861,7 +2967,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre13
         '
-        Me.lblOre13.Location = New System.Drawing.Point(116, 49)
+        Me.lblOre13.Location = New System.Drawing.Point(116, 47)
         Me.lblOre13.Name = "lblOre13"
         Me.lblOre13.Size = New System.Drawing.Size(63, 13)
         Me.lblOre13.TabIndex = 15
@@ -2869,7 +2975,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre14
         '
-        Me.lblOre14.Location = New System.Drawing.Point(292, 49)
+        Me.lblOre14.Location = New System.Drawing.Point(292, 47)
         Me.lblOre14.Name = "lblOre14"
         Me.lblOre14.Size = New System.Drawing.Size(63, 13)
         Me.lblOre14.TabIndex = 35
@@ -2877,7 +2983,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre15
         '
-        Me.lblOre15.Location = New System.Drawing.Point(28, 69)
+        Me.lblOre15.Location = New System.Drawing.Point(28, 65)
         Me.lblOre15.Name = "lblOre15"
         Me.lblOre15.Size = New System.Drawing.Size(63, 13)
         Me.lblOre15.TabIndex = 7
@@ -2885,7 +2991,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre16
         '
-        Me.lblOre16.Location = New System.Drawing.Point(292, 69)
+        Me.lblOre16.Location = New System.Drawing.Point(292, 65)
         Me.lblOre16.Name = "lblOre16"
         Me.lblOre16.Size = New System.Drawing.Size(63, 13)
         Me.lblOre16.TabIndex = 37
@@ -2902,7 +3008,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre11
         '
-        Me.lblOre11.Location = New System.Drawing.Point(116, 30)
+        Me.lblOre11.Location = New System.Drawing.Point(116, 29)
         Me.lblOre11.Name = "lblOre11"
         Me.lblOre11.Size = New System.Drawing.Size(63, 13)
         Me.lblOre11.TabIndex = 13
@@ -2935,7 +3041,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre18
         '
-        Me.lblOre18.Location = New System.Drawing.Point(116, 89)
+        Me.lblOre18.Location = New System.Drawing.Point(116, 83)
         Me.lblOre18.Name = "lblOre18"
         Me.lblOre18.Size = New System.Drawing.Size(63, 13)
         Me.lblOre18.TabIndex = 19
@@ -2943,7 +3049,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre17
         '
-        Me.lblOre17.Location = New System.Drawing.Point(28, 89)
+        Me.lblOre17.Location = New System.Drawing.Point(28, 83)
         Me.lblOre17.Name = "lblOre17"
         Me.lblOre17.Size = New System.Drawing.Size(63, 13)
         Me.lblOre17.TabIndex = 9
@@ -2951,7 +3057,7 @@ Partial Class frmConversiontoOreSettings
         '
         'lblOre19
         '
-        Me.lblOre19.Location = New System.Drawing.Point(204, 89)
+        Me.lblOre19.Location = New System.Drawing.Point(204, 83)
         Me.lblOre19.Name = "lblOre19"
         Me.lblOre19.Size = New System.Drawing.Size(63, 13)
         Me.lblOre19.TabIndex = 29
@@ -3302,4 +3408,14 @@ Partial Class frmConversiontoOreSettings
     Friend WithEvents lblOre17 As Label
     Friend WithEvents lblOre19 As Label
     Friend WithEvents tabSetSelectItems As TabControl
+    Friend WithEvents chkOre79 As CheckBox
+    Friend WithEvents lblOre79 As Label
+    Friend WithEvents chkOre83 As CheckBox
+    Friend WithEvents lblOre83 As Label
+    Friend WithEvents chkOre80 As CheckBox
+    Friend WithEvents chkOre81 As CheckBox
+    Friend WithEvents chkOre82 As CheckBox
+    Friend WithEvents lblOre81 As Label
+    Friend WithEvents lblOre80 As Label
+    Friend WithEvents lblOre82 As Label
 End Class
