@@ -43,9 +43,7 @@ Partial Class frmShoppingList
         Me.lblTotalBuiltVolume1 = New System.Windows.Forms.Label()
         Me.ttMain = New System.Windows.Forms.ToolTip(Me.components)
         Me.btnUpdateListwithAssets = New System.Windows.Forms.Button()
-        Me.btnMineThis = New System.Windows.Forms.Button()
         Me.chkUpdateAssetsWhenUsed = New System.Windows.Forms.CheckBox()
-        Me.txtListEdit = New System.Windows.Forms.TextBox()
         Me.DeleteMaterialStrip = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DeleteMaterial = New System.Windows.Forms.ToolStripMenuItem()
         Me.btnSaveListToFile = New System.Windows.Forms.Button()
@@ -84,6 +82,7 @@ Partial Class frmShoppingList
         Me.lstBuy = New EVE_Isk_per_Hour.MyListView()
         Me.lstItems = New EVE_Isk_per_Hour.MyListView()
         Me.lstBuild = New EVE_Isk_per_Hour.MyListView()
+        Me.txtListEdit = New System.Windows.Forms.TextBox()
         Me.DeleteBuildStrip.SuspendLayout()
         Me.DeleteItemStrip.SuspendLayout()
         Me.DeleteMaterialStrip.SuspendLayout()
@@ -251,17 +250,6 @@ Partial Class frmShoppingList
         Me.btnUpdateListwithAssets.Text = "Update with Selected Assets"
         Me.btnUpdateListwithAssets.UseVisualStyleBackColor = True
         '
-        'btnMineThis
-        '
-        Me.btnMineThis.ForeColor = System.Drawing.Color.Red
-        Me.btnMineThis.Location = New System.Drawing.Point(107, 577)
-        Me.btnMineThis.Name = "btnMineThis"
-        Me.btnMineThis.Size = New System.Drawing.Size(94, 32)
-        Me.btnMineThis.TabIndex = 1
-        Me.btnMineThis.Text = "Mine This!"
-        Me.btnMineThis.UseVisualStyleBackColor = True
-        Me.btnMineThis.Visible = False
-        '
         'chkUpdateAssetsWhenUsed
         '
         Me.chkUpdateAssetsWhenUsed.AutoSize = True
@@ -273,15 +261,6 @@ Partial Class frmShoppingList
         Me.chkUpdateAssetsWhenUsed.TabIndex = 10
         Me.chkUpdateAssetsWhenUsed.Text = "Update Assets When Used"
         Me.chkUpdateAssetsWhenUsed.UseVisualStyleBackColor = True
-        '
-        'txtListEdit
-        '
-        Me.txtListEdit.Location = New System.Drawing.Point(792, 295)
-        Me.txtListEdit.Name = "txtListEdit"
-        Me.txtListEdit.Size = New System.Drawing.Size(48, 20)
-        Me.txtListEdit.TabIndex = 40
-        Me.txtListEdit.TabStop = False
-        Me.txtListEdit.Visible = False
         '
         'DeleteMaterialStrip
         '
@@ -669,12 +648,23 @@ Partial Class frmShoppingList
         Me.lstBuild.UseCompatibleStateImageBehavior = False
         Me.lstBuild.View = System.Windows.Forms.View.Details
         '
+        'txtListEdit
+        '
+        Me.txtListEdit.Location = New System.Drawing.Point(731, 573)
+        Me.txtListEdit.Name = "txtListEdit"
+        Me.txtListEdit.Size = New System.Drawing.Size(60, 20)
+        Me.txtListEdit.TabIndex = 80
+        Me.txtListEdit.TabStop = False
+        Me.txtListEdit.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
+        Me.txtListEdit.Visible = False
+        '
         'frmShoppingList
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(1094, 682)
+        Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.chkRebuildItemsfromList)
         Me.Controls.Add(Me.lblTotalItemsInList)
         Me.Controls.Add(Me.lblTCC)
@@ -682,7 +672,6 @@ Partial Class frmShoppingList
         Me.Controls.Add(Me.lblTotalCopyCost)
         Me.Controls.Add(Me.lblTotalInventionCost)
         Me.Controls.Add(Me.gbUpdateList)
-        Me.Controls.Add(Me.txtListEdit)
         Me.Controls.Add(Me.lblItemstoBuild)
         Me.Controls.Add(Me.lblItemstoBuy)
         Me.Controls.Add(Me.lstBuy)
@@ -699,7 +688,6 @@ Partial Class frmShoppingList
         Me.Controls.Add(Me.btnClose)
         Me.Controls.Add(Me.lblTC)
         Me.Controls.Add(Me.lblTotalProfit)
-        Me.Controls.Add(Me.btnMineThis)
         Me.Controls.Add(Me.lblTotalProfit1)
         Me.Controls.Add(Me.lblAvgIPH1)
         Me.Controls.Add(Me.btnClear)
@@ -742,9 +730,7 @@ End Sub
     Friend WithEvents btnShowAssets As System.Windows.Forms.Button
     Friend WithEvents ttMain As System.Windows.Forms.ToolTip
     Friend WithEvents btnUpdateListwithAssets As System.Windows.Forms.Button
-    Friend WithEvents btnMineThis As System.Windows.Forms.Button
     Friend WithEvents chkUpdateAssetsWhenUsed As System.Windows.Forms.CheckBox
-    Friend WithEvents txtListEdit As System.Windows.Forms.TextBox
     Friend WithEvents DeleteItemStrip As System.Windows.Forms.ContextMenuStrip
     Friend WithEvents DeleteItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents DeleteMaterialStrip As System.Windows.Forms.ContextMenuStrip
@@ -786,4 +772,5 @@ End Sub
     Friend WithEvents rbtnExportMulitBuy As RadioButton
     Friend WithEvents txtBrokerFeeRate As TextBox
     Friend WithEvents lblFeeRate As Label
+    Friend WithEvents txtListEdit As TextBox
 End Class

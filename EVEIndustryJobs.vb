@@ -4,15 +4,16 @@ Imports System.Data.SQLite
 Public Class EVEIndustryJobs
 
     Private JobList As List(Of IndustryJob)
+    Private JobType As ScanType
 
-    Public Sub New()
+    Public Sub New(Optional ByVal InitalJobType As ScanType = ScanType.Personal)
 
         JobList = New List(Of IndustryJob)
-
+        JobType = InitalJobType
     End Sub
 
     ' Loads all the Industry Assets from the DB for the ID sent - I'm not using this locally so don't load anything
-    Public Sub LoadIndustryJobs(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByVal JobType As ScanType)
+    Public Sub LoadIndustryJobs(ByVal ID As Long, ByVal TokenData As SavedTokenData)
         'Dim SQL As String
         'Dim readerJobs As SQLiteDataReader
         'Dim TempJob As IndustryJob

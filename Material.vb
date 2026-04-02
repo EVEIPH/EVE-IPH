@@ -23,6 +23,7 @@ Public Class Material
 
     Private ItemType As Integer ' My item type value
 
+    ' Quantity is a long in this constructor
     Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Long,
                    ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String,
                    Optional ByVal isBuiltItem As Boolean = False, Optional ByVal SentItemType As Integer = 0)
@@ -57,6 +58,7 @@ Public Class Material
 
     End Sub
 
+    ' Quantity is a double in this constructor
     Public Sub New(ByVal SentTypeID As Long, ByVal SentTypeName As String, ByVal SentGroupName As String, ByVal SentQuantity As Double,
                    ByVal SentVolume As Double, ByVal SentPrice As Double, ByVal SentItemME As String, ByVal SentItemTE As String,
                    Optional ByVal isBuiltItem As Boolean = False, Optional ByVal SentItemType As Integer = 0)

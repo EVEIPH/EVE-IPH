@@ -21,6 +21,7 @@ Public Class Blueprint
     Private ItemType As Integer
     Private BlueprintRace As Integer
     Private ItemVolume As Double ' Volume of produced item (1 item only)
+    Private BuiltNotEnoughBuyItemsOnMarket As Boolean ' If there are enough items of this on the market, then we set this to true - always assume yes
 
     ' If we compare the components for building or buying
     Private BuildBuy As Boolean
@@ -174,6 +175,8 @@ Public Class Blueprint
 
     Private OreConversionSettings As ConversionToOreSettings
 
+    Private UsesReactions As Boolean
+
     ' This is to save the entire chain of blueprints on each line we have used and runs for each one
     Private ProductionChain As List(Of List(Of Integer))
 
@@ -270,8 +273,11 @@ Public Class Blueprint
         InventionDecryptor = NoDecryptor
         Relic = ""
         TotalInventedRuns = 0
-
         NumInventionJobs = 0
+
+        BuiltNotEnoughBuyItemsOnMarket = False ' Assume they have enough items on market to compare price/build and not force build if selected in settings
+
+        UsesReactions = False
 
         ' Do build/buy 
         BuildBuy = BPBuildBuy
@@ -416,7 +422,8 @@ Public Class Blueprint
     End Sub
 
     Public Function InventBlueprint(ByVal NumLaboratoryLines As Integer, ByVal BPDecryptor As Decryptor,
-                ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility, ByVal InventionItemTypeID As Long) As Integer
+                                    ByVal BPInventionFacility As IndustryFacility, ByVal BPCopyFacility As IndustryFacility,
+                                    ByVal InventionItemTypeID As Long) As Integer
 
         ' 3406 laboratory operation and 24624 is adv laboratory operation
         NumberofLaboratoryLines = NumLaboratoryLines
@@ -499,7 +506,7 @@ Public Class Blueprint
 
     ' Base build function that takes a look at the number of blueprints the user wants to use and then builts each blueprint batch
     Public Sub BuildItems(ByVal SetTaxes As Boolean, ByVal BrokerFeeData As BrokerFeeInfo, ByVal SetProductionCosts As Boolean,
-                        ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
+                          ByVal IgnoreMinerals As Boolean, ByVal IgnoreT1Item As Boolean)
 
         ' Need to check for the number of BPs sent and run multiple Sessions if necessary. Also, look at the number of lines per batch
         If NumberofBlueprints = 1 Then
@@ -767,11 +774,6 @@ Public Class Blueprint
                     ' Reset the component's material list for shopping list functionality
                     .BuildMaterials = CType(ComponentBlueprint.RawMaterials, Materials)
 
-                    ' Add any built components to the list as well
-                    For Each BI In ComponentBlueprint.BuiltComponentList.GetBuiltItemList
-                        Call BuiltComponentList.AddBuiltItem(BI)
-                    Next
-
                     ' Set the variables
                     .ManufacturingFacility = ComponentBlueprint.MainManufacturingFacility
                     .IncludeActivityCost = ComponentBlueprint.MainManufacturingFacility.IncludeActivityCost
@@ -810,6 +812,12 @@ Public Class Blueprint
                     ' Add the built material to the component list now - this way we only add one blueprint produced material - use saved component quantity
                     Dim TempMat As New Material(.ItemTypeID, .ItemName, ComponentBlueprint.GetItemData.GroupName, .ItemQuantity, .ItemVolume, ItemPrice, CStr(.BuildME), CStr(.BuildTE), BuildFlag)
                     ComponentMaterials.InsertMaterial(TempMat)
+
+                    ' Add any built components to the list as well
+                    For Each BI In ComponentBlueprint.BuiltComponentList.GetBuiltItemList
+                        BI.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
+                        Call BuiltComponentList.AddBuiltItem(BI)
+                    Next
 
                     ' Building, so add the raw materials to the raw mats list
                     Call RawMaterials.InsertMaterialList(ComponentBlueprint.GetRawMaterials.GetMaterialList)
@@ -861,6 +869,7 @@ Public Class Blueprint
         If Not IsNothing(ReprocessingFacility) Then
             If ReprocessingFacility.ConvertToOre Then
                 Dim ReplaceMinerals As New ConvertToOre(ReprocessingFacility, UserConversiontoOreSettings)
+                ' TODO - check speed of this function
                 RawMaterials = ReplaceMinerals.GetOresfromMinerals(RawMaterials, ReturnedExcess, ReprocessingUsage)
                 ' Add the excess minerals to the main excess function
                 Call ExcessMaterials.InsertMaterialList(ReturnedExcess.GetMaterialList)
@@ -916,8 +925,6 @@ Public Class Blueprint
         Dim AdjCurrentMatQuantity As Long = 0
         Dim ExtraMaterial As Material = Nothing
         Dim RefUsedMat As Material = Nothing
-
-        Dim UsesReactions As Boolean = False
         Dim IgnoreBuild As Boolean = False
 
         ' Select all materials to buid this BP
@@ -1190,7 +1197,9 @@ Public Class Blueprint
                         Call ComponentProductionTimes.Add(ComponentBlueprint.GetTotalProductionTime)
 
                         ' Get the skills for BP to build it and add them to the list
-                        TempSkills = ComponentBlueprint.GetReqBPSkills
+                        TempSkills.InsertSkills(ComponentBlueprint.GetReqBPSkills, False)
+                        ' Add any skills on the component if not already in list
+                        TempSkills.InsertSkills(ComponentBlueprint.ReqBuildComponentSkills, False)
 
                         ' Get the component usage
                         Select Case ComponentBlueprint.GetItemGroupID
@@ -1216,7 +1225,9 @@ Public Class Blueprint
                         ' If this item has buildable components, add those to this main list too so it nests up
                         If Not IsNothing(ExcessBuildMaterials) Then
                             For i = 0 To ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count - 1
-                                BuiltComponentList.AddBuiltItem(CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem))
+                                Dim TempBuiltItem As BuiltItem = CType(ComponentBlueprint.BuiltComponentList.GetBuiltItemList(i).Clone, BuiltItem)
+                                TempBuiltItem.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
+                                BuiltComponentList.AddBuiltItem(TempBuiltItem)
                             Next
                         End If
 
@@ -1240,6 +1251,7 @@ Public Class Blueprint
                                                     TempME, TempTE, ComponentBlueprint, BuildQuantity, SetTaxes, BrokerFeeData)
 
                             TempBuiltItem.BuildMaterials = ComponentBlueprint.GetComponentMaterials
+                            TempBuiltItem.BuiltNotEnoughBuyItemsOnMarket = ComponentBlueprint.BuiltNotEnoughBuyItemsOnMarket
 
                             If ComponentBlueprint.BuiltComponentList.GetBuiltItemList.Count <> 0 Then
                                 ' Add any buildable components to this item list
@@ -1346,7 +1358,7 @@ Public Class Blueprint
 
 SkipProcessing:
 
-                End If
+            End If
 
         End While
 
@@ -2037,10 +2049,10 @@ SkipProcessing:
                 End If
 
                 If SkillFound Then
-                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) <RequiredSkills.GetSkillList(i).Level Then
+                    If EVESkillList.GetSkillLevel(RequiredSkills.GetSkillList(i).TypeID) < RequiredSkills.GetSkillList(i).Level Then
                         ' They have this skill but it isn't the correct level
-                                                                                                 ' They don't have this, so just leave
-                                                                                                 Return False
+                        ' They don't have this, so just leave
+                        Return False
                     End If
                 Else
                     ' Skill not found, just leave
@@ -2123,13 +2135,21 @@ SkipProcessing:
         '11441  Plasma Physics
         '11455  Quantum Physics
         '11449  Rocket Science
+        '3400   Outpost Construction
+
+        '81050  Upwell Starship Engineering
+
+        ' For reducing time to things that take genetic mutation inhibitors
+        '81896  Mutagenic Stablization
 
         ' Read through all the skills and if the ID is in the list, then sum up the levels
         For i = 0 To BuildSkills.NumSkills - 1
             Select Case BuildSkills.GetSkillList(i).TypeID
-                Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449
+                Case 3398, 3397, 3395, 11444, 11454, 11448, 11453, 11450, 11446, 11433, 11443, 11447, 11452, 11445, 11529, 11451, 11441, 11455, 11449, 81050, 3400
                     ' each skill is mulitplied by 1% then normalized percentage, then mulitiplied to any others to get the bonus
                     BonusSum = BonusSum * (1 - 0.01 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
+                Case 81896 ' genetic mutation skill - 2% reduction
+                    BonusSum = BonusSum * (1 - 0.02 * BPCharacter.Skills.GetSkillLevel(BuildSkills.GetSkillList(i).TypeID))
             End Select
         Next
 
@@ -2138,7 +2158,7 @@ SkipProcessing:
     End Function
 
     ' Determines if the item we are building should be bought or built for the main bp
-    Private Function GetBuildFlag(ByVal ItemBlueprint As Blueprint, ByVal OneItemMarketCost As Double, ByVal Runs As Long,
+    Private Function GetBuildFlag(ByRef ItemBlueprint As Blueprint, ByVal OneItemMarketCost As Double, ByVal Runs As Long,
                                   ByVal OwnedBP As Boolean, ByVal SetTaxes As Boolean, ByVal BFData As BrokerFeeInfo) As Boolean
         Dim CheapertoBuild As Boolean = False
         Dim ExcessAmount As Double = 0
@@ -2170,12 +2190,62 @@ SkipProcessing:
         ' First time you run the bp, just use the base check 
         If NewBPRequest Then
             BuildItem = (OneItemMarketCost = 0) Or (CheapertoBuild And ((BPUserSettings.SuggestBuildBPNotOwned) Or (OwnedBP And Not BPUserSettings.SuggestBuildBPNotOwned)))
+            ' even on a new request, override this if they set it
+            If UserApplicationSettings.BuildWhenNotEnoughItemsonMarket Then
+                ' Look up the items on the market if they want to force build if there isn't enough of the item on the market (note only works with CCP data)
+                BuildItem = BuildifNotEnoughItemsonMarket(ItemBlueprint, Runs, BuildItem)
+            End If
         Else
-            ' Look up the override value and if not found, use the default
-            BuildItem = ManualBuildBuyValue(ItemBlueprint.ItemID, CheapertoBuild)
+            ' First look for this, then allow them to override with check box
+            If UserApplicationSettings.BuildWhenNotEnoughItemsonMarket Then
+                ' Look up the items on the market if they want to force build if there isn't enough of the item on the market (note only works with CCP data)
+                BuildItem = BuildifNotEnoughItemsonMarket(ItemBlueprint, Runs, BuildItem)
+            End If
+            ' Look up the override value and if not found, use the default already set
+            BuildItem = ManualBuildBuyValue(ItemBlueprint.ItemID, BuildItem)
         End If
 
         Return BuildItem
+
+    End Function
+
+    ' If the item has a price from CCP market data, and that data shows enough of the items we need on market, then return the default build setting
+    ' that was calculated earlier (meaning there is enough to buy if that comes up) else, true to build
+    Private Function BuildifNotEnoughItemsonMarket(ByRef ItemBlueprint As Blueprint, NeededQuantity As Long, DefaultBuildSetting As Boolean) As Boolean
+        Dim rsData As SQLiteDataReader
+        Dim SQL As String
+
+        ' See if the item price they have loaded is from CCP data, if not then just work normally
+        SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_ID = {0} AND PRICE_SOURCE = 0"
+        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ItemBlueprint.ItemID)), EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader()
+        rsData.Read()
+
+        ' They don't have the CCP data prices downloaded so just exit and treat normally
+        If Not rsData.HasRows Then
+            rsData.Close()
+            Return DefaultBuildSetting
+        End If
+
+        SQL = "SELECT SUM(VOLUME_REMAINING) FROM MARKET_ORDERS, ITEM_PRICES WHERE ITEM_ID ={0} AND ITEM_ID = TYPE_ID AND MARKET_ORDERS.PRICE = ITEM_PRICES.PRICE "
+        SQL &= "AND MARKET_ORDERS.IS_BUY_ORDER = 0 AND (ITEM_PRICES.REGIONORSYSTEM = REGION_ID OR ITEM_PRICES.REGIONORSYSTEM = SOLAR_SYSTEM_ID) AND PRICE_SOURCE = 0 "
+        SQL &= "GROUP BY ITEM_PRICES.PRICE" ' Just in case there is more than one
+
+        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ItemBlueprint.ItemID)), EVEDB.DBREf)
+        rsData = DBCommand.ExecuteReader()
+
+        ' Get the volume to do the check
+        While rsData.Read
+            If rsData.GetInt64(0) < NeededQuantity Then
+                ' Not enough, so need to build - need to mark the item so it gets set to blue later
+                ItemBlueprint.BuiltNotEnoughBuyItemsOnMarket = True
+                rsData.Close()
+                Return True
+            End If
+        End While
+
+        ' If it didn't return anything, or they have enough to start
+        Return DefaultBuildSetting
 
     End Function
 
@@ -2476,15 +2546,14 @@ SkipProcessing:
 
     ' Sets the cost of doing the number of invention jobs sent
     Private Function GetInventionUsage(InventionJobs As Double) As Double
-        'jobFee = baseJobCost * systemCostIndex * 0.02
-        BaseInventionJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
-        Dim InventionJobFee As Double = BaseInventionJobCost * InventionFacility.CostIndex * 0.02 * InventionJobs
+        ' 2% of EIV * System Cost Index - FW bonus - Structure Role Bonus
+        Dim JobGrossCost As Double = (EIV * 0.02) * InventionFacility.CostIndex * FWInventionCostBonus * InventionFacility.CostMultiplier
 
-        ' facilityUsage = (jobFee) * taxRate
-        Dim InventionFacilityTax As Double = InventionJobFee * InventionFacility.TaxRate
+        ' FacilityTax = JobGrossCost * taxRate
+        Dim InventionFacilityTax As Double = JobGrossCost * InventionFacility.TaxRate
 
-        ' totalInstallationCost = jobFee + facilityTax * bonus for FW and invention facility
-        Return (InventionJobFee + InventionFacilityTax) * FWInventionCostBonus * InventionFacility.CostMultiplier
+        ' totalInstallationCost = (JobGrossCost + FacilityTax) * number of jobs
+        Return (JobGrossCost + InventionFacilityTax) * InventionJobs
 
     End Function
 
@@ -2522,15 +2591,14 @@ SkipProcessing:
 
     ' Sets and returns the copy cost for the number of copies sent
     Private Function GetCopyUsage(NumberofCopies As Integer) As Double
-        ' jobFee = baseJobCost * systemCostIndex * 0.02 * runs * runsPerCopy (just use the total number of copies here)
-        BaseCopyJobCost = GetBaseJobCostforBPC(InventionBPCTypeID)
-        Dim CopyJobFee As Double = BaseCopyJobCost * CopyFacility.CostIndex * 0.02 * NumberofCopies
+        ' 2% of EIV (of T1 item) * System Cost Index - FW bonus - Structure Role Bonus
+        Dim JobGrossCost As Double = (EIV * 0.02) * CopyFacility.CostIndex * FWCopyingCostBonus * CopyFacility.CostMultiplier
 
-        ' facilityUsage = jobFee * taxRate
-        Dim CopyFacilityTax As Double = CopyJobFee * CopyFacility.TaxRate
+        ' FacilityTax = JobGrossCost * taxRate
+        Dim CopyFacilityTax As Double = JobGrossCost * CopyFacility.TaxRate
 
-        ' totalInstallationCost = jobFee +  facilityTax * bonus for FW and copy facility
-        Return (CopyJobFee + CopyFacilityTax) * FWCopyingCostBonus * CopyFacility.CostMultiplier
+        ' totalInstallationCost = (JobGrossCost + FacilityTax) * number of jobs
+        Return (JobGrossCost + CopyFacilityTax) * NumberofCopies
 
     End Function
 
@@ -2604,30 +2672,6 @@ SkipProcessing:
         readerItems.Close()
 
     End Sub
-
-    ' Gets the job fee for the BPC and not the current T2/T3 bp
-    Private Function GetBaseJobCostforBPC(ByVal BPCTypeID As Long) As Double
-        Dim SQL As String
-        Dim readerLookup As SQLiteDataReader
-        Dim BaseJobCost As Double = 0
-
-        ' Look up the sum of the quantity from the sent BPC ID 
-        SQL = "SELECT QUANTITY, ADJUSTED_PRICE FROM ALL_BLUEPRINT_MATERIALS_FACT "
-        SQL &= "LEFT OUTER JOIN ITEM_PRICES_FACT ON ALL_BLUEPRINT_MATERIALS_FACT.MATERIAL_ID = ITEM_PRICES_FACT.ITEM_ID "
-        SQL &= "WHERE BLUEPRINT_ID =" & InventionBPCTypeID & " AND ACTIVITY IN (1,11) "
-
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        readerLookup = DBCommand.ExecuteReader
-
-        While readerLookup.Read
-            BaseJobCost += readerLookup.GetInt64(0) * If(IsDBNull(readerLookup.GetValue(1)), 0, readerLookup.GetDouble(1))
-        End While
-
-        readerLookup.Close()
-
-        Return BaseJobCost
-
-    End Function
 
 #End Region
 
@@ -2866,6 +2910,11 @@ SkipProcessing:
     ' Returns the Race ID of the item built by this BP
     Public Function GetRaceID() As Integer
         Return BlueprintRace
+    End Function
+
+    ' Returns a boolean whether this blueprint uses reactions
+    Public Function GetReactionFlag() As Boolean
+        Return UsesReactions
     End Function
 
     ' Returns the category id for the item this BP builds

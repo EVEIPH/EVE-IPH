@@ -1,4 +1,3 @@
-﻿
 Imports System.Data.SQLite
 
 Public Class ShoppingList
@@ -362,7 +361,7 @@ Public Class ShoppingList
                         Dim OldMatQuantity As Long = CLng(Math.Max(SentItem.BPRuns, Math.Ceiling(Math.Round(SentItem.BPRuns * rsMatCheck.GetInt64(0) * MEBonus, 2))))
 
                         ' Remove what was in the list prior (old mat quantity)
-                        UpdatedQuantity = ListMatQuantity - OldMatQuantity
+                        UpdatedQuantity = ListmatQuantity - OldMatQuantity
 
                         If UpdatedQuantity < 0 Then
                             UpdatedQuantity = 0
@@ -426,7 +425,7 @@ Public Class ShoppingList
 
         If Not IsNothing(TotalBuyList) Then
             If Not IsNothing(TotalBuyList.GetMaterialList) Then
-
+                BuyListDataChange = True ' Flag that something changed in the buy list for EVEPraisal link creation
                 If Quantity <= 0 Then
                     ' We just delete the item (all quantity) from the total materials list
                     Call TotalBuyList.RemoveMaterial(TotalBuyList.SearchListbyName(SentItemName))
@@ -499,7 +498,8 @@ Public Class ShoppingList
     ' ShoppingItem = flag if it's a built item (uses quantity) or a main shopping item from the list (uses runs for quantity)
     Private Function GetUpdatedQuantity(ByVal ProcessingType As String, ByVal CurrentItem As ShoppingListItem,
                                         ByVal NewMaterialQuantity As Long, ByVal UpdateMaterial As Material,
-                                        ByVal ShoppingItem As Boolean, Optional ByVal UpdateMaterialPortionSize As Long = 1,
+                                        ByVal ShoppingItem As Boolean,
+                                        Optional ByVal UpdateMaterialPortionSize As Long = 1,
                                         Optional ByRef RefMatQuantity As Long = 0) As Long
         Dim UpdatedQuantity As Long = 0
         Dim OnHandMats As Long
@@ -875,6 +875,7 @@ Public Class ShoppingList
             If Not IsNothing(SentBuyList.GetMaterialList) Then
                 TotalBuyList.InsertMaterialList(SentBuyList.GetMaterialList)
             End If
+            BuyListDataChange = True
         End If
 
         ' Total Build - Need to rebuild every component as if we are only using one bp to get the numbers exact
@@ -903,7 +904,7 @@ Public Class ShoppingList
                             BFI.IncludeFee = CType(UserBPTabSettings.IncludeFees, BrokerFeeType)
                             BFI.FixedRate = UserBPTabSettings.BrokerFeeRate
 
-                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, bfi, True,
+                            Call TempBP.BuildItems(UserBPTabSettings.IncludeTaxes, BFI, True,
                                                    UserBPTabSettings.IgnoreMinerals, UserBPTabSettings.IgnoreT1Item)
 
                             Dim InsertBuildItem As New BuiltItem
@@ -1839,6 +1840,8 @@ Public Class BuiltItem
     Public TotalBuildCost As Double
     Public TotalExcessSellBuildCost As Double
 
+    Public BuiltNotEnoughBuyItemsOnMarket As Boolean ' If we forced to build this item because there weren't enough items on the market to buy
+
     Public Sub New()
         ItemTypeID = 0
         ItemName = ""
@@ -1859,6 +1862,8 @@ Public Class BuiltItem
 
         TotalBuildCost = 0
         TotalExcessSellBuildCost = 0
+
+        BuiltNotEnoughBuyItemsOnMarket = False
 
     End Sub
 
@@ -1882,6 +1887,7 @@ Public Class BuiltItem
         CopyOfMe.IncludeActivityCost = Me.IncludeActivityCost
         CopyOfMe.TotalBuildCost = Me.TotalBuildCost
         CopyOfMe.TotalExcessSellBuildCost = Me.TotalExcessSellBuildCost
+        CopyOfMe.BuiltNotEnoughBuyItemsOnMarket = Me.BuiltNotEnoughBuyItemsOnMarket
         CopyOfMe.ComponentBuildList = New List(Of BuiltItem)
         ' Clone each built item in the list
         For Each BI In Me.ComponentBuildList

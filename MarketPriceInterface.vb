@@ -95,7 +95,9 @@ Public Class MarketPriceInterface
                     End If
                 Next
                 ' Whatever is left will be in the temp set
-                PairSets.Add(TempSet)
+                If TempSet.Count > 0 Then
+                    PairSets.Add(TempSet)
+                End If
 
                 ' Run each pair set and wait for 1 minute before doing again
                 For Each PairSet In PairSets

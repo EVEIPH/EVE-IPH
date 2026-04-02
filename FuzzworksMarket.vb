@@ -45,6 +45,7 @@ Public Class FuzzworksMarket
         Dim StationHeader As String = "station="
         Dim PriceLocationUsed As String = ""
         Dim PriceLocationHeaderUsed As String = ""
+        Dim PriceUpdateDown As Boolean = False
 
         ' Set up for each region/system and item combos to be queried
         For Each Item In TypeIDList

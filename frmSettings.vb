@@ -215,53 +215,12 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
+    Private Sub chkSaveBPCCostperBP_CheckedChanged(sender As Object, e As EventArgs) Handles chkSaveBPCCostperBP.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
     Private Sub chkBuyRAMs_CheckedChanged(sender As Object, e As EventArgs) Handles chkAlwaysBuyRAMs.CheckedChanged
         btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnBuildT2T3AdvancedMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnBuildT2ProcessedMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub rbtnBuildT2T3RawMats_CheckedChanged(sender As Object, e As EventArgs)
-        btnSave.Text = "Save"
-    End Sub
-
-    Private Sub cmbSVRAvgPriceDuration_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRAvgPriceDuration.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedRunschars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            End If
-        End If
-    End Sub
-
-    Private Sub txtSVRThreshold_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtSVRThreshold.KeyPress
-        ' Only allow numbers or backspace
-        If e.KeyChar <> ControlChars.Back Then
-            If allowedDecimalChars.IndexOf(e.KeyChar) = -1 Then
-                ' Invalid Character
-                e.Handled = True
-            Else
-                btnSave.Text = "Save"
-            End If
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_DropDown(sender As System.Object, e As System.EventArgs) Handles cmbSVRRegion.DropDown
-        If Not SVRComboLoaded Then
-            Call LoadRegionCombo(cmbSVRRegion, UserApplicationSettings.SVRAveragePriceRegion)
-            SVRComboLoaded = True
-        End If
-    End Sub
-
-    Private Sub cmbSVRRegion_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbSVRRegion.KeyPress
-        e.Handled = True
     End Sub
 
     Private Sub txtDefaultME_KeyPress(sender As System.Object, e As System.Windows.Forms.KeyPressEventArgs) Handles txtDefaultME.KeyPress
@@ -338,11 +297,9 @@ Public Class frmSettings
                 .SetToolTip(chkRefreshPublicStructureDataonStartup, "When checked, IPH will refresh data on public structures (if cache date has past) for use in price updates")
                 .SetToolTip(chkSupressESImsgs, "When checked, supresses messages if there are ESI Status errors.")
 
-                ' SVR Settings
-                .SetToolTip(lblSVRThreshold, "When set, this will be the default threshold for Sales to Volume Ratio on the BP and Manufacturing tabs")
-                .SetToolTip(lblSVRAvgPrice, "When set, this will be the default days the Sales to Volume Ratio will be averaged over for the BP and Manufacturing tabs")
-                .SetToolTip(lblSVRRegion, "When set, this will be the default region for Sales to Volume Ratio calcuations on the BP and Manufacturing tabs")
-                .SetToolTip(chkAutoUpdateSVRBPTab, "When set, the Sales to Volume Ratio will be updated on the BP tab when a Blueprint is selected")
+                ' Price Settings
+                .SetToolTip(chkManualPriceOverride, "When set, any prices the user inputs manually into IPH will not be overriden when doing an update to prices.")
+                .SetToolTip(chkAutoUpdateSVRBPTab, "When set, the Sales to Volume Ratio will be updated on the BP tab when a Blueprint is selected.")
 
                 ' Export Data
                 .SetToolTip(rbtnExportSSV, "Exports data in SemiColon Separated Values with commas for decimals")
@@ -364,6 +321,12 @@ Public Class frmSettings
 
                 .SetToolTip(chkAlwaysBuyFuelBlocks, "When selected, IPH will always force buying of fuel blocks as components in Build/Buy calculations")
                 .SetToolTip(chkAlwaysBuyRAMs, "When selected, IPH will always force buying of R.A.M.s as components in Build/Buy calculations")
+                .SetToolTip(chkSaveBPCCostperBP, "When selected and users check BPC Cost on the BP Tab and then Save BP, IPH will save the option to include the BPC cost only for this blueprint. ")
+
+                .SetToolTip(chkSuggestBuildwhenBPnotOwned, "When selected, IPH will always Build the item if the BP is not owned")
+                .SetToolTip(chkBuildWhenNotEnoughItemsonMarket, "When selected, IPH will build items if suggesting buy components without enough components on market to buy")
+                .SetToolTip(chkManualPriceOverride, "When selected, IPH will not update prices that have had a price set manually")
+
             End With
         End If
 
@@ -474,9 +437,12 @@ Public Class frmSettings
             ' For Build/Buy
             chkBuildBuyDefault.Checked = .CheckBuildBuy
             chkSuggestBuildwhenBPnotOwned.Checked = .SuggestBuildBPNotOwned
+            chkBuildWhenNotEnoughItemsonMarket.Checked = .BuildWhenNotEnoughItemsonMarket
+            chkManualPriceOverride.Checked = .ManualPriceOverride
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
             chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
             chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
+            chkSaveBPCCostperBP.Checked = .SaveBPCCostperBP
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
@@ -522,9 +488,6 @@ Public Class frmSettings
                 txtFuzzworksMarketInterval.Text = CStr(Defaults.DefaultUpdatePricesRefreshInterval)
             End If
 
-            cmbSVRRegion.Text = .SVRAveragePriceRegion
-            cmbSVRAvgPriceDuration.Text = .SVRAveragePriceDuration
-            txtSVRThreshold.Text = CStr(.IgnoreSVRThresholdValue)
             chkAutoUpdateSVRBPTab.Checked = .AutoUpdateSVRonBPTab
 
             txtProxyAddress.Text = .ProxyAddress
@@ -607,8 +570,8 @@ Public Class frmSettings
 
                     ' Same with blueprints
                     If UserApplicationSettings.LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, ScanType.Personal, True)
-                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, ScanType.Corporation, True)
+                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
                     End If
                 End If
 
@@ -647,7 +610,7 @@ Public Class frmSettings
                                 .TokenExpiration = CDate(rsChar.GetString(3))
                                 .RefreshToken = rsChar.GetString(4)
                                 .Scopes = rsChar.GetString(5)
-                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, ScanType.Personal, True)
+                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, True)
                             End With
                         End While
                         rsChar.Close()
@@ -675,10 +638,13 @@ Public Class frmSettings
                 .ShareSavedFacilities = chkShareFacilities.Checked
 
                 .SuggestBuildBPNotOwned = chkSuggestBuildwhenBPnotOwned.Checked
+                .BuildWhenNotEnoughItemsonMarket = chkBuildWhenNotEnoughItemsonMarket.Checked
+                .ManualPriceOverride = chkManualPriceOverride.Checked
                 .SaveBPRelicsDecryptors = chkSaveBPRelicsDecryptors.Checked
 
                 .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked
                 .AlwaysBuyRAMs = chkAlwaysBuyRAMs.Checked
+                .SaveBPCCostperBP = chkSaveBPCCostperBP.Checked
 
                 .AlphaAccount = chkAlphaAccount.Checked
                 .UseActiveSkillLevels = chkUseActiveSkills.Checked
@@ -692,9 +658,6 @@ Public Class frmSettings
                 .IncludeInGameLinksinCopyText = chkLinksInCopyText.Checked
 
                 ' SVR
-                .IgnoreSVRThresholdValue = CDbl(txtSVRThreshold.Text)
-                .SVRAveragePriceRegion = cmbSVRRegion.Text
-                .SVRAveragePriceDuration = cmbSVRAvgPriceDuration.Text
                 .AutoUpdateSVRonBPTab = chkAutoUpdateSVRBPTab.Checked
 
                 ' Save the editable rates - these are set on the other screen
@@ -870,11 +833,21 @@ InvalidData:
         Else
             chkUseActiveSkills.Enabled = True
         End If
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub chkUseActiveSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkUseActiveSkills.CheckedChanged
         ' They changed active skills, so reload character skills on exit
         ReloadSkills = True
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkSuggestBuildwhenBPnotOwned_CheckedChanged(sender As Object, e As EventArgs) Handles chkSuggestBuildwhenBPnotOwned.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkBuildWhenNotEnoughItemsonMarket_CheckedChanged(sender As Object, e As EventArgs) Handles chkBuildWhenNotEnoughItemsonMarket.CheckedChanged
+        btnSave.Text = "Save"
     End Sub
 
     Private Sub btnOpenRates_Click(sender As Object, e As EventArgs) Handles btnOpenRates.Click
@@ -882,4 +855,51 @@ InvalidData:
         f1.ShowDialog()
     End Sub
 
+    Private Sub chkManualPriceOverride_CheckedChanged(sender As Object, e As EventArgs) Handles chkManualPriceOverride.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkAutoUpdateSVRBPTab_CheckedChanged(sender As Object, e As EventArgs) Handles chkAutoUpdateSVRBPTab.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkSupressESImsgs_CheckedChanged(sender As Object, e As EventArgs) Handles chkSupressESImsgs.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshPublicStructureDataonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshPublicStructureDataonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshBPsonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshBPsonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkRefreshAssetsonStartup_CheckedChanged(sender As Object, e As EventArgs) Handles chkRefreshAssetsonStartup.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkDisableTracking_CheckedChanged(sender As Object, e As EventArgs) Handles chkDisableTracking.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkShareFacilities_CheckedChanged(sender As Object, e As EventArgs) Handles chkShareFacilities.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkLinksInCopyText_CheckedChanged(sender As Object, e As EventArgs) Handles chkLinksInCopyText.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkIncludeShopListInventMats_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeShopListInventMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkIncludeShopListCopyMats_CheckedChanged(sender As Object, e As EventArgs) Handles chkIncludeShopListCopyMats.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
+
+    Private Sub chkLoadMaxAlphaSkills_CheckedChanged(sender As Object, e As EventArgs) Handles chkLoadMaxAlphaSkills.CheckedChanged
+        btnSave.Text = "Save"
+    End Sub
 End Class

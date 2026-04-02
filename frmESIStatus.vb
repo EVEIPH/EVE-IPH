@@ -33,7 +33,7 @@ Public Class frmESIStatus
         ScopesSQL = ScopesSQL.Substring(0, Len(ScopesSQL) - 3)
 
         SQL &= "AND scope IN ('" & ScopesSQL & "') "
-        SQL &= "ORDER BY tag1"
+        SQL &= "ORDER BY route"
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsStatus = DBCommand.ExecuteReader

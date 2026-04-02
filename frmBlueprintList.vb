@@ -198,8 +198,8 @@ Public Class frmBlueprintList
             Case "ITEM_CATEGORY"
                 Return "ITEM_GROUP"
             Case "ITEM_GROUP"
-                Return "MARKET_GROUP"
-            Case "MARKET_GROUP"
+                Return "ITEM_MARKET_GROUP"
+            Case "MARKET_GROUP", "ITEM_MARKET_GROUP"
                 Return "BLUEPRINT_NAME"
             Case Else
                 Throw New ArgumentOutOfRangeException($"Value of {NameOf(parentLevel)} is invalid: {parentLevel}")
@@ -271,7 +271,7 @@ Public Class frmBlueprintList
             JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
             JOIN INVENTORY_TYPES i2 ON b.BLUEPRINT_ID = i2.typeID
             {GetOwnedJoin()}
-            WHERE MARKET_GROUP IS NOT NULL
+            WHERE BP_MARKET_GROUP IS NOT NULL
             {ItemGroupFilter}
             {GetSizeGroupFilter()}
             {GetItemTypesFilter()}
@@ -316,7 +316,7 @@ Public Class frmBlueprintList
         If rbtnBPOwnedBlueprints.Checked Then
             ownedJoin = $"{baseJoin} {ownedFilter}"
         ElseIf rbtnBPFavoriteBlueprints.Checked Then
-            ownedJoin = $"{baseJoin} {ownedFilter} AND o.FAVORITE = 1"
+            ownedJoin = $"{baseJoin} {ownedFilter} AND b.FAVORITE = 1"
         End If
 
         Return ownedJoin

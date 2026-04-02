@@ -8,19 +8,16 @@ Public Class EVEAssets
     Private AssetType As ScanType
     Private CacheDate As Date
     Private ItemIDToFind As Long
-
+    Private ChildNode As TreeEntry
     Protected LocationToFind As LocationInfo
 
     Private LocationNames As List(Of LocationName)
-    Private AddedNodes As List(Of String)
+    Private Const UnknownLocation As String = "Unknown Location"
     Private UnknownLocationCounter As Integer
     Private LocationIDToFind As Long
-
-    Private Const IgnoreFlag As String = None
-    Private Const ShipHangar As String = "Ship Hangar"
-    Private Const UnknownLocation As String = "Unknown Location"
     Private Const QuantitySpacer As String = " - "
-    Private Const CorpDelivery As String = "Corporation Market Deliveries / Returns"
+
+    Private ParentNodeID As Long
 
     Public Class LocationName
         Public ID As Long
@@ -38,8 +35,9 @@ Public Class EVEAssets
         Dim SQL As String
         Dim readerAssets As SQLiteDataReader
         Dim readerData As SQLiteDataReader
-        Dim TempAsset As New EVEAsset
+        Dim Asset As New EVEAsset
         Dim Assets As New List(Of EVEAsset)
+        Dim FoundLocationID As Long = 0
 
         ' Update asset data first
         Call UpdateAssets(ID, CharacterTokenData, AssetType, RefreshAssets)
@@ -67,32 +65,38 @@ Public Class EVEAssets
         UnknownLocationCounter = 0
 
         ' Load the assets - corp or personal
-        SQL = "SELECT ID, ItemID, LocationID, TypeID, Assets.Quantity, Flag, IsSingleton, "
-        SQL &= "CASE WHEN BP_TYPE Is NULL THEN 0 ELSE BP_TYPE END AS BPType FROM ASSETS "
-        SQL &= "LEFT JOIN ALL_OWNED_BLUEPRINTS ON ID = OWNER_ID And ItemID = ITEM_ID "
+        SQL = "SELECT ID, ItemID, LocationID, TypeID, Assets.Quantity, Flag, IsSingleton, IsBPCopy, ItemName FROM ASSETS "
         SQL &= "WHERE ID = " & ID
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerAssets = DBCommand.ExecuteReader
 
         While readerAssets.Read
-            TempAsset = New EVEAsset
-            TempAsset.ItemID = readerAssets.GetInt64(1)
-            TempAsset.LocationID = readerAssets.GetInt64(2)
-            TempAsset.TypeID = readerAssets.GetInt64(3)
-            TempAsset.Quantity = readerAssets.GetInt64(4)
-            TempAsset.FlagID = readerAssets.GetInt32(5)
-            TempAsset.IsSingleton = CBool(readerAssets.GetInt32(6))
-            TempAsset.BPType = CType(readerAssets.GetInt32(7), BPType)
+            Asset = New EVEAsset
+            Asset.ItemID = readerAssets.GetInt64(1)
+            Asset.LocationID = readerAssets.GetInt64(2)
+            Asset.TypeID = readerAssets.GetInt64(3)
+            Asset.Quantity = readerAssets.GetInt64(4)
+            Asset.FlagID = readerAssets.GetInt32(5)
+            Asset.IsSingleton = CBool(readerAssets.GetInt32(6))
+            If readerAssets.GetInt32(7) = -1 Then
+                Asset.BPType = BPType.Copy ' this is a bp copy as sent by assets pull
+            Else
+                Asset.BPType = BPType.Original ' BPO
+            End If
 
-            ' Get the location name, update flagID (ref) and set flag text (ref)
-            TempAsset.LocationName = GetAssetLocationAndFlagInfo(TempAsset.LocationID, TempAsset.FlagID, TempAsset.FlagText, CharacterTokenData)
+            ' If there is nothing in ItemName, then just set to empty string
+            If IsDBNull(readerAssets.GetValue(8)) Then
+                Asset.ItemName = ""
+            Else
+                Asset.ItemName = readerAssets.GetString(8)
+            End If
+
+            ' Get the location name, update flagID (ref), set flag text (ref), container (ref), Flagsort (ref)
+            Asset.LocationName = GetAssetLocationAndFlagInfo(Asset.LocationID, Asset.FlagID, Asset.FlagText, Asset.Container, Asset.FlagSort, CharacterTokenData)
 
             ' Look up the type name
-            SQL = "SELECT typeName, groupName, categoryName "
-            SQL &= "FROM INVENTORY_TYPES, INVENTORY_GROUPS, INVENTORY_CATEGORIES WHERE typeID = " & TempAsset.TypeID & " "
-            SQL &= "And INVENTORY_TYPES.groupID = INVENTORY_GROUPS.groupID "
-            SQL &= "And INVENTORY_GROUPS.categoryID = INVENTORY_CATEGORIES.categoryID"
+            SQL = "SELECT typeName, groupName, categoryName FROM ITEM_LOOKUP WHERE typeID = " & Asset.TypeID & " "
 
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             readerData = DBCommand.ExecuteReader
@@ -101,39 +105,44 @@ Public Class EVEAssets
                 If readerData.Read Then
                     ' Found it
                     If Not IsDBNull(readerData.GetValue(0)) Then
-                        TempAsset.TypeName = readerData.GetString(0)
+                        Asset.TypeName = readerData.GetString(0)
                     Else
-                        TempAsset.TypeName = "Unknown Item"
+                        Asset.TypeName = "Unknown Item"
                     End If
 
                     If Not IsDBNull(readerData.GetValue(1)) Then
-                        TempAsset.TypeGroup = readerData.GetString(1)
+                        Asset.TypeGroup = readerData.GetString(1)
                     Else
-                        TempAsset.TypeGroup = "Unknown Group"
+                        Asset.TypeGroup = "Unknown Group"
                     End If
 
                     If Not IsDBNull(readerData.GetValue(2)) Then
-                        TempAsset.TypeCategory = readerData.GetString(2)
+                        Asset.TypeCategory = readerData.GetString(2)
                     Else
-                        TempAsset.TypeCategory = "Unknown Category"
+                        Asset.TypeCategory = "Unknown Category"
                     End If
                 Else
-                    TempAsset.TypeName = "Unknown Item"
-                    TempAsset.TypeGroup = "Unknown Group"
-                    TempAsset.TypeCategory = "Unknown Category"
+                    Asset.TypeName = "Unknown Item"
+                    Asset.TypeGroup = "Unknown Group"
+                    Asset.TypeCategory = "Unknown Category"
                 End If
             Catch ex As Exception
 
-                TempAsset.TypeName = "Unknown Item"
-                TempAsset.TypeGroup = "Unknown Group"
-                TempAsset.TypeCategory = "Unknown Category"
+                Asset.TypeName = "Unknown Item"
+                Asset.TypeGroup = "Unknown Group"
+                Asset.TypeCategory = "Unknown Category"
 
             End Try
+
+            ' Add the location name to the item name if it's set
+            If Asset.ItemName <> "" Then
+                Asset.TypeName = Asset.ItemName & " (" & Asset.TypeName & ")"
+            End If
 
             readerData.Close()
 
             ' Insert asset
-            Assets.Add(TempAsset)
+            Assets.Add(Asset)
 
         End While
 
@@ -147,6 +156,10 @@ Public Class EVEAssets
                             ByVal AssetType As ScanType, ByVal UpdateAssets As Boolean)
         Dim Assets As New List(Of ESIAsset)
         Dim AssetIDs As New List(Of Double) ' For getting names
+        Dim UnknownAssetIDs As New List(Of Double) ' For single lookups of names without connecting locations
+        Dim AssetItemNames As New List(Of ESICharacterAssetName)
+        Dim ItemNamesCacheDate As Date
+        Dim rsLookup As SQLiteDataReader
         Dim SQL As String = ""
 
         Dim ESIData As New ESI
@@ -174,7 +187,6 @@ Public Class EVEAssets
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                     Dim FlagID As Integer = 0
-                    Dim rsLookup As SQLiteDataReader
 
                     For i = 0 To Assets.Count - 1
                         ' Get the flagID for this location
@@ -187,15 +199,33 @@ Public Class EVEAssets
                         End If
                         rsLookup.Close()
 
+                        ' Get the category of the item - if it's a ship and flag = 4, then it's in a ships hangar, so switch to 90 (Ships Hangar)
+                        DBCommand = New SQLiteCommand("SELECT categoryID FROM ITEM_LOOKUP WHERE typeID = " & Assets(i).type_id, EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        If rsLookup.Read Then
+                            If rsLookup.GetInt32(0) = 6 And Assets(i).location_flag = "Hangar" Then
+                                FlagID = 90
+                            End If
+                        End If
+                        rsLookup.Close()
+
+                        Dim LocationType As String
+                        If Math.Abs(FlagID) = 90 And Assets(i).location_type = "item" And Assets(i).location_id > 70000000 Then
+                            ' It's a structure
+                            LocationType = "structure"
+                        Else
+                            ' Use what was sent
+                            LocationType = Assets(i).location_type
+                        End If
+
                         ' Insert it
                         If Assets(i).location_id <> ID Then ' Don't add assets that are on the character
-                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, TypeID, Quantity, Flag, IsSingleton) VALUES "
-                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ","
+                            SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, LocationType, TypeID, Quantity, Flag, IsSingleton, IsBPCopy) VALUES "
+                            SQL &= "(" & CStr(ID) & "," & CStr(Assets(i).item_id) & "," & CStr(Assets(i).location_id) & ",'" & LocationType & "',"
                             SQL &= CStr(Assets(i).type_id) & "," & CStr(Assets(i).quantity) & "," & CStr(FlagID) & ","
-                            SQL &= CInt(Assets(i).is_singleton) & ")"
+                            SQL &= CInt(Assets(i).is_singleton) & "," & CInt(Assets(i).blueprintcopy) & ")"
 
                             Call EVEDB.ExecuteNonQuerySQL(SQL)
-
                         End If
 
                         ' Save the ID for looking up the names
@@ -203,27 +233,151 @@ Public Class EVEAssets
 
                     Next
 
-                    ' Update all the asset flags to negative values if they are base nodes
-                    SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE -2 END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
+                    ' Update all the asset flags to negative values if they are base nodes - meaning they are not contained in any other node/asset value
+                    SQL = String.Format("UPDATE ASSETS SET Flag = CASE WHEN Flag > 0 THEN (Flag * -1) ELSE Flag END WHERE ID = {0} AND LocationID NOT IN (SELECT ItemID FROM ASSETS WHERE ID = {0})", ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
-                    '' Finally, get all the names and update the Assets table
-                    'Dim AssetItemNames As New List(Of ESICharacterAssetName)
-                    'AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, CacheDate)
+                    ' Special processing for corporation data to get division names
+                    If AssetType = ScanType.Corporation Then
+                        Dim DivisionsCacheDate As Date
+                        ' Get the corp division names first
+                        If CB.DataUpdateable(CacheDateType.CorporateDivisions, ID) Then
+                            Dim DivisionNames As ESICorporationDivisions = ESIData.GetDivisionNames(ID, CharacterTokenData, DivisionsCacheDate, False)
 
-                    '' Update the names in the asset table for each itemID
-                    'For Each item In AssetItemNames
-                    '    If item.name <> None Then
-                    '        Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE ItemID=" & CStr(item.item_id))
-                    '    End If
-                    'Next
+                            ' Clear data first then add to the table
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM ESI_CORPORATION_DIVISIONS")
 
-                    'Update cache date since it's all set now
-                    Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+                            For Each item In DivisionNames.hangar
+                                Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_CORPORATION_DIVISIONS VALUES (" & CStr(ID) & ",'HANGAR'," & CStr(item.division) & ",'" & FormatDBString(item.name) & "')")
+                            Next
+                            For Each item In DivisionNames.wallet
+                                Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ESI_CORPORATION_DIVISIONS VALUES (" & CStr(ID) & ",'WALLET'," & CStr(item.division) & ",'" & FormatDBString(item.name) & "')")
+                            Next
+                            ' Update cache date too
+                            Call CB.UpdateCacheDate(CacheDateType.CorporateDivisions, DivisionsCacheDate, ID)
+                        End If
 
-                    Call EVEDB.CommitSQLiteTransaction()
-                    DBCommand = Nothing
+                        ' If we are looking up corporation asset names, we need to limit it to just those that will come up in the call
+                        ' since it's not the same as personal asset where you can query all IDs
+                        ' Only send itemids that singleton is true, the locationid is an item (i.e., container not station), and the item is in the list of location ids
+                        AssetIDs = New List(Of Double)
+                        SQL = "SELECT ItemID FROM ASSETS WHERE ID = {0} "
+                        SQL &= "AND ItemID IN (SELECT LocationID FROM ASSETS WHERE ID = {0}) "
+                        SQL &= "AND LocationID > 90000000 AND IsSingleton= -1"
+                        DBCommand = New SQLiteCommand(String.Format(SQL, CStr(ID)), EVEDB.DBREf)
+                        rsLookup = DBCommand.ExecuteReader
+                        While rsLookup.Read
+                            AssetIDs.Add(rsLookup.GetDouble(0))
+                        End While
+                        rsLookup.Close()
+                    End If
+
+                    ' Get all the names and update the Assets table - use the same cache date for assets
+                    AssetItemNames = ESIData.GetAssetNames(AssetIDs, ID, CharacterTokenData, AssetType, ItemNamesCacheDate)
+
+                    ' Update the names in the asset table for each itemID
+                    If Not IsNothing(AssetItemNames) Then
+                        For Each item In AssetItemNames
+                            If item.name <> None Then
+                                Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(item.name) & "' WHERE ItemID=" & CStr(item.item_id))
+                            End If
+                        Next
+                    End If
+
+                    ' Find the current ship they are in and connect to assets record
+                    If CharacterTokenData.Scopes.Contains(ESI.ESICharacterShipScope) And AssetType = ScanType.Personal Then
+                        Dim CurrentShipData As ESI.ShipLocation
+                        Dim LocationsCacheDate As Date
+                        CurrentShipData = ESIData.GetCharacterShipLocation(ID, CharacterTokenData, LocationsCacheDate)
+                        ' Insert the current ship data the character is in
+                        If Not IsNothing(CurrentShipData.ShipData) Then
+                            Dim Location As Long
+                            Dim LocationType As String
+                            Dim Flag As Integer
+                            With CurrentShipData
+                                If .ShipLocation.structure_id <> 0 Then
+                                    Location = .ShipLocation.structure_id
+                                    LocationType = "structure"
+                                    Flag = -4
+                                ElseIf .ShipLocation.station_id <> 0 Then
+                                    Location = .ShipLocation.station_id
+                                    LocationType = "station"
+                                    Flag = -4
+                                Else
+                                    Location = .ShipLocation.solar_system_id
+                                    LocationType = "solarsystem"
+                                    Flag = -505
+                                End If
+
+                                DBCommand = New SQLiteCommand("SELECT * FROM ASSETS WHERE ItemID = " & CurrentShipData.ShipData.ship_item_id, EVEDB.DBREf)
+                                rsLookup = DBCommand.ExecuteReader
+
+                                If Not rsLookup.Read Then
+                                    Call EVEDB.ExecuteNonQuerySQL("INSERT INTO ASSETS VALUES (" & CStr(ID) & "," & CStr(.ShipData.ship_item_id) & "," & CStr(Location) & ",'" &
+                                    LocationType & "'," & CStr(.ShipData.ship_type_id) & ",1," & CStr(Flag) & ",-1,'" & FormatDBString(.ShipData.ship_name) & " (Current Ship)',0)")
+
+                                    ' Update any items located on or in this ship by setting the flag value to -1
+                                    Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET Flag = Flag * -1 WHERE LocationID=" & CStr(.ShipData.ship_item_id) & " AND Flag < 0")
+                                Else
+                                    ' update current data
+                                    Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET  LocationID = " & CStr(Location) &
+                                                                  ", LocationType = '" & LocationType & "', TypeID = " & CStr(.ShipData.ship_type_id) & ", Quantity = 1" &
+                                                                  ", Flag = " & CStr(Flag) & ", IsSingleton = -1" &
+                                                                  ", ItemName = '" & "Current Ship - " & FormatDBString(.ShipData.ship_name) & "'" &
+                                                                  ", IsBPCopy = 0 WHERE ID = " & CStr(ID) & " AND ItemID = " & .ShipData.ship_item_id)
+                                End If
+                            End With
+                            rsLookup.Close()
+                        End If
+                    End If
                 End If
+
+                ' Add any BPs in an industry job
+                Dim TempID As Double
+                Dim JT As Integer
+                If AssetType = ScanType.Corporation Then
+                    TempID = CharacterTokenData.CharacterID
+                    JT = 1
+                Else ' personal
+                    TempID = ID
+                    JT = 0
+                End If
+
+                SQL = "SELECT blueprintID, blueprintLocationID, 'industry', blueprintTypeID, activityID, -506, -1 FROM INDUSTRY_JOBS WHERE installerID = {0} and JobType = {1} AND status = 'active'"
+                DBCommand = New SQLiteCommand(String.Format(SQL, CStr(TempID), CStr(JT)), EVEDB.DBREf)
+                rsLookup = DBCommand.ExecuteReader
+
+                While rsLookup.Read
+                    With rsLookup
+                        SQL = "INSERT INTO ASSETS (ID, ItemID, LocationID, LocationType, TypeID, Quantity, Flag, IsSingleton, IsBPCopy) VALUES "
+                        SQL &= "(" & CStr(ID) & "," & CStr(.GetDouble(0)) & "," & CStr(.GetDouble(1)) & ",'" & .GetString(2) & "',"
+                        SQL &= CStr(.GetInt64(3)) & "," & CStr(.GetInt32(4)) & "," & CStr(.GetInt32(5)) & "," & CStr(.GetInt32(6)) & ",0)"
+                    End With
+                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                End While
+                rsLookup.Close()
+
+                ' Finally, load up all the names for items that might be in space or without a valid lookup individually
+                Dim TempList As New List(Of Double)
+                Dim NamesCacheDate As Date
+                AssetItemNames = New List(Of ESICharacterAssetName)
+
+                For Each itemID In UnknownAssetIDs
+                    TempList = New List(Of Double)
+                    TempList.Add(itemID)
+                    AssetItemNames = ESIData.GetAssetNames(TempList, ID, CharacterTokenData, AssetType, NamesCacheDate)
+                    If Not IsNothing(AssetItemNames) Then
+                        If AssetItemNames(0).name <> None Then
+                            Call EVEDB.ExecuteNonQuerySQL("UPDATE ASSETS SET ItemName='" & FormatDBString(AssetItemNames(0).name) & "' WHERE ItemID=" & CStr(AssetItemNames(0).item_id))
+                        End If
+                    End If
+                Next
+
+                'Update Asset cache date since it's all set now
+                Call CB.UpdateCacheDate(CDType, CacheDate, ID)
+
+                Call EVEDB.CommitSQLiteTransaction()
+                DBCommand = Nothing
             End If
         End If
 
@@ -233,7 +387,8 @@ Public Class EVEAssets
         Return AssetList
     End Function
 
-    Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String, ByVal CharacterTokenData As SavedTokenData) As String
+    Private Function GetAssetLocationAndFlagInfo(ByVal LocationID As Long, ByRef FlagID As Integer, ByRef FlagText As String,
+                                                 ByRef Container As Boolean, ByRef FlagSortNumber As Integer, ByVal CharacterTokenData As SavedTokenData) As String
         Dim SQL As String
         Dim readerData As SQLiteDataReader
         Dim LocationName As String = ""
@@ -287,7 +442,7 @@ Public Class EVEAssets
 
                 If readerData.HasRows Then
                     ' Call this function again to get the location name
-                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, CharacterTokenData)
+                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, Container, FlagSortNumber, CharacterTokenData)
                     readerData.Close()
                 Else
                     ' See if it's a upwell structure that they have access to
@@ -327,7 +482,7 @@ Public Class EVEAssets
         End If
 
         ' Look up the flag text
-        SQL = "SELECT FlagText FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(FlagID)) ' FlagID can be negative
+        SQL = "SELECT FlagText, container, sort_order FROM INVENTORY_FLAGS WHERE FlagID = " & CStr(Math.Abs(FlagID)) ' FlagID can be negative
 
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         readerData = DBCommand.ExecuteReader
@@ -335,8 +490,12 @@ Public Class EVEAssets
         If readerData.Read Then
             ' Found it
             FlagText = CStr(readerData.GetValue(0))
+            Container = CBool(readerData.GetValue(1))
+            FlagSortNumber = CInt(readerData.GetValue(2))
         Else
             FlagText = "Unknown"
+            Container = False
+            FlagSortNumber = -1
         End If
 
         readerData.Close()
@@ -349,258 +508,304 @@ Public Class EVEAssets
 
     End Function
 
-    ' Gets the Tree base node for all assets - the list of checked nodes passed
-    Public Function GetAssetTreeAnchorNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
-                                           SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean) As TreeNode
+    Private Function SetLocationInfo(ByVal LocationID As Long, ByVal AccountID As Long, ByVal FlagID As Integer) As LocationInfo
+        Dim TempLocationInfo As LocationInfo = New LocationInfo
+
+        TempLocationInfo.LocationID = LocationID
+        TempLocationInfo.AccountID = AccountID
+        TempLocationInfo.FlagID = FlagID
+
+        Return TempLocationInfo
+
+    End Function
+
+    Private Structure TreeEntry
+        Dim Node As TreeNode
+        Dim FlagID As Integer
+        Dim FlagSort As Integer
+        Dim Container As Boolean
+        Dim DisplayText As String
+        Dim Name As String
+        Dim Tag As Object
+        Dim IsSingleton As Boolean
+        Dim Quantity As Long ' only store if IsSingleton is false
+    End Structure
+
+    Public Class TagInfo
+        Public TagValue As Long
+        Public FlagValue As Integer
+
+        Public Sub New(_Tag As Long, _Flag As Integer)
+            If Not IsNumeric(_Tag) Then
+                TagValue = 0
+            Else
+                TagValue = _Tag
+            End If
+            If Not IsNumeric(_Flag) Then
+                FlagValue = 0
+            Else
+                FlagValue = _Flag
+            End If
+        End Sub
+
+    End Class
+
+    ' Gets the Tree base node for all assets - the list of checked nodes passed 
+    Public Function GetAssetTreeReturnNode(SortOption As SortType, SearchItemList As List(Of Long), NodeName As String, AccountID As Long,
+                                           SavedLocations As List(Of LocationInfo), ByRef OnlyBPCs As Boolean,
+                                           Optional ByVal TokenData As SavedTokenData = Nothing) As TreeNode
         Dim Tree As New TreeView
-        Dim AnchorNode As New TreeNode
-        Dim BaseLocationNode As New TreeNode
-        Dim SubNode As New TreeNode
-        Dim FlagSubNode As New TreeNode
-        Dim TempNode As New TreeNode
-        Dim TempNodeName As String
-
-        Dim SelectedItems As Boolean
-        Dim TempLocationInfo As LocationInfo
-
-        Dim TempAsset As New EVEAsset
+        Dim ReturnNode As TreeNode
+        ' For building asset list tree views
+        Dim AssetTreeViewNodes As New List(Of TreeEntry)
+        Dim TempNode As TreeNode
+        Dim TempTreeEntry As TreeEntry
+        Dim FoundTreeEntry As TreeEntry
+        Dim ContainerLocationID As Long
+        Dim InContainer As Boolean
+        Dim BaseNodeAdded As Boolean
+        Dim Asset As EVEAsset
         Dim BaseAssets As New List(Of EVEAsset)
-        Dim LocationList As New List(Of String)
 
+        'Dim ESIData As New ESI
+        'Dim AssetItemNames As New List(Of ESICharacterAssetName)
+        'Dim NumLookup As List(Of Double)
+
+        Tree.SuspendLayout()
         Tree.Update()
         Tree.Nodes.Clear()
 
         ' If no assets, just update and leave
         If AssetList.Count = 0 Then
-            AnchorNode = Tree.Nodes.Add("No " & NodeName & " Loaded")
+            ReturnNode = Tree.Nodes.Add(NodeName & " - No Assets Loaded")
+            ReturnNode.Name = CStr(AccountID)
             Tree.EndUpdate()
-            Return AnchorNode
+            Return ReturnNode
         End If
-        AddedNodes = New List(Of String)
-        ' Add the base node
-        AnchorNode = Tree.Nodes.Add(NodeName)
-        AddedNodes.Add(NodeName)
-        TempLocationInfo = New LocationInfo
-        TempLocationInfo.AccountID = AccountID
-        TempLocationInfo.LocationID = -1
-        TempLocationInfo.FlagID = 0
-        AnchorNode.Tag = TempLocationInfo ' Base node
+
+        ' Add the base node to the return variable
+        ReturnNode = Tree.Nodes.Add(NodeName)
+        'TempLocationInfo = SetLocationInfo(AccountID, -1, 0)
+        ReturnNode.Name = CStr(AccountID)
+        ReturnNode.Tag = New TagInfo(-1, 0) ' Base node
 
         Tree.CheckBoxes = True
 
         ' Only build this if we are looking for Build mat types
         If SearchItemList.Count <> 0 Then
-            SelectedItems = True
-
             ' Build the asset list based only on these mats - Need to take the list of mats we have, then search all
             ' assets to find those item ID's that we want only
-            ' Search built asset list for only base assets
-            SelectedAssetList = New List(Of EVEAsset)
-            SelectedAssetList = BuildMaterialAssetList(SearchItemList, OnlyBPCs)
-            ' Get the base assets that have items we want somewhere down the tree
-            BaseAssets = SelectedAssetList.FindAll(AddressOf FindBaseAsset)
-
-        Else ' Get all items
-            SelectedItems = False
-            ' Get just base assets
-            BaseAssets = AssetList.FindAll(AddressOf FindBaseAsset)
+            BaseAssets = BuildMaterialAssetList(SearchItemList, OnlyBPCs)
+        Else
+            ' Get all items
+            BaseAssets = AssetList
         End If
 
         ' Loop through each node and add all the items in it
-        For Each TempAsset In BaseAssets
+        For Each Asset In BaseAssets
+            InContainer = False
+            BaseNodeAdded = False
+            ' All nodes will have 
+            ' - .Text = Display name
+            ' - .Name = ItemID
+            ' - .Tag = ParentNodeID and use -1 for base node
+            ' When storing, it will use the item ID for the item, and location ID for the others
 
-            ' If we know the location and the node is a base node, then process
-            If TempAsset.LocationName <> UnknownLocation And TempAsset.FlagID <= 0 Then
+            ' If the node is a base node (flag less than 0), then add this first
+            If Asset.FlagID <= 0 Then
+                ' Add base node (locationID)
+                TempNode = New TreeNode
+                TempNode.Name = CStr(Asset.LocationID)
+                TempNode.Text = Asset.LocationName
+                TempNode.Tag = New TagInfo(-1, Asset.FlagID) ' Base node so no parents
 
-                ' See if we have added the location
-                If Not LocationList.Contains(TempAsset.LocationName) Then
+                TempNode.Checked = GetNodeCheckValue(SavedLocations, SetLocationInfo(Asset.LocationID, AccountID, Asset.FlagID))
 
-                    ' Add the base location to the list
-                    LocationList.Add(TempAsset.LocationName)
-                    BaseLocationNode = AnchorNode.Nodes.Add(TempAsset.LocationName)
-                    AddedNodes.Add(TempAsset.LocationName)
-                    BaseLocationNode.Name = TempAsset.LocationName
+                BaseNodeAdded = True
 
-                    ' Also save the LocationID in the tag of the node for use searching later
-                    TempLocationInfo = New LocationInfo
-                    TempLocationInfo.AccountID = AccountID
-                    TempLocationInfo.LocationID = TempAsset.LocationID
-                    TempLocationInfo.FlagID = TempAsset.FlagID
-                    BaseLocationNode.Tag = TempLocationInfo
+                TempTreeEntry = New TreeEntry
+                TempTreeEntry.Node = TempNode
 
-                    BaseLocationNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
+                TempTreeEntry.Name = TempNode.Name
+                TempTreeEntry.DisplayText = TempNode.Text
+                TempTreeEntry.Tag = TempNode.Tag
 
-                End If
+                TempTreeEntry.FlagID = Asset.FlagID
+                TempTreeEntry.FlagSort = -1
+                TempTreeEntry.Container = True
+                TempTreeEntry.IsSingleton = True
+                TempTreeEntry.Quantity = 0
 
-                ' Find the first node that is the same as the location added above - make sure we are adding to the right node
-                BaseLocationNode = AnchorNode.Nodes.Find(TempAsset.LocationName, True)(0)
+                ' For base nodes, the lookup will be the locationid
+                Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
 
-                ' Add the subnode to the tree without the name yet, wait for the search for children before marking
-                If (TempAsset.TypeCategory = "Ship" And AssetType = ScanType.Corporation And TempAsset.FlagText <> "Ship Offline") Or TempAsset.FlagText = CorpDelivery Then
+            End If
 
-                    ' Check corp deliveries first since a ship could be a delivery
-                    If TempAsset.FlagText = CorpDelivery Then
-                        TempNodeName = CorpDelivery
-                    Else
-                        TempNodeName = ShipHangar
-                    End If
+            ' Add a subnode to the list if the flag indicates it can have things within the location (e.g., bays and holds)
 
-                    ' Add a new sub node if not in the tree
-                    If BaseLocationNode.Nodes.Find(TempNodeName, True).Count = 0 Then
-                        TempNode = BaseLocationNode.Nodes.Add(TempNodeName)
-                        AddedNodes.Add(TempNodeName)
-                        TempNode.Name = TempNodeName
-                        ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
-                        ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
-                        TempLocationInfo = New LocationInfo
-                        TempLocationInfo.AccountID = AccountID
-                        TempLocationInfo.LocationID = -1 * TempAsset.LocationID
-                        TempLocationInfo.FlagID = TempAsset.FlagID
-                        TempNode.Tag = TempLocationInfo
-                        TempNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-                    End If
-
-                    ' Find the corp delivery or ship hanger node to add to
-                    TempNode = BaseLocationNode.Nodes.Find(TempNodeName, True)(0)
-                    SubNode = TempNode.Nodes.Add("")
-
+            ' Since I add a ship hanger (for personal assets) or a corp delivery hanger (corp assets) need to set the location id's in the tree
+            ' to compensate. So store the negative of the location. Ie, it'll be a station for these so store the negative of the station ID
+            If Asset.Container And Asset.LocationName <> "Unknown Structure" Then
+                If BaseNodeAdded Then
+                    ContainerLocationID = -1 * Asset.LocationID ' Store negative locationID so it is unique for Parent ID to search 
                 Else
-                    SubNode = BaseLocationNode.Nodes.Add("")
+                    ' For just items in containers, (not item/shiphangar/station) container location is the negative of the id
+                    ContainerLocationID = -1 * Asset.ItemID
                 End If
 
-                ' The location of the subnode is in the asset we are looking at
-                TempLocationInfo = New LocationInfo
-                TempLocationInfo.AccountID = AccountID
-                TempLocationInfo.LocationID = TempAsset.ItemID
-                TempLocationInfo.FlagID = TempAsset.FlagID
-                SubNode.Tag = TempLocationInfo
-                SubNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-                SubNode.ImageIndex = Math.Abs(TempAsset.FlagID)
-
-                ' See if the node has children and add
-                Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
-
-                ' Update the Node Text
-                If SubNode.GetNodeCount(True) <> 0 Then
-                    ' Has children so don't display the quantity
-                    SubNode.Text = GetItemNodeText(TempAsset, True)
+                TempNode = New TreeNode
+                TempNode.Name = CStr(ContainerLocationID)
+                If Asset.FlagText.Contains("Corp Hangar") And AssetType = ScanType.Corporation Then
+                    ' See if they have division names set and use that
+                    TempNode.Text = GetCorpDivisionName(Asset.FlagText, AccountID)
                 Else
-                    SubNode.Text = GetItemNodeText(TempAsset, False)
+                    TempNode.Text = Asset.FlagText
                 End If
-                AddedNodes.Add(SubNode.Text)
+                TempNode.Tag = New TagInfo(Asset.LocationID, Asset.FlagID) ' Parent is base node above so use it's ID or location ID if we didn't add a base, same number
+
+                TempNode.Checked = GetNodeCheckValue(SavedLocations, SetLocationInfo(ContainerLocationID, AccountID, Asset.FlagID))
+
+                TempTreeEntry = New TreeEntry
+                TempTreeEntry.Node = TempNode
+                TempTreeEntry.DisplayText = TempNode.Text
+                TempTreeEntry.Name = TempNode.Name
+                TempTreeEntry.Tag = TempNode.Tag
+                TempTreeEntry.FlagID = Asset.FlagID
+                TempTreeEntry.FlagSort = Asset.FlagSort
+                TempTreeEntry.Container = True
+                TempTreeEntry.IsSingleton = True
+                TempTreeEntry.Quantity = 0
+
+                ' See if this container is already in the list with this FlagID and Location, and if so, update the tag to match that ItemID
+                ChildNode = TempTreeEntry
+                FoundTreeEntry = AssetTreeViewNodes.Find(AddressOf FindContainerEntry)
+
+                If Not IsNothing(FoundTreeEntry.Node) Then
+                    ' If it's in the list, just save the container location id for the item below
+                    ContainerLocationID = CLng(FoundTreeEntry.Name)
+                Else
+                    ' Location node for the hanger is still in station location, just negative
+                    Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
+                End If
+
+                InContainer = True
+            End If
+
+            ' The location of the subnode is in the asset we are looking at
+            TempNode = New TreeNode
+            TempNode.Name = CStr(Asset.ItemID)
+            TempNode.Text = GetItemNodeText(Asset, False)
+            If InContainer Then
+                ' The parent is the ContainerLocationID set above
+                TempNode.Tag = New TagInfo(ContainerLocationID, Asset.FlagID)
+            Else
+                TempNode.Tag = New TagInfo(Asset.LocationID, Asset.FlagID) ' Just where it's located (can, office, or main hanger)
+            End If
+
+            ' This is potentially cargo (container) within a ship
+            TempNode.Checked = GetNodeCheckValue(SavedLocations, SetLocationInfo(Asset.ItemID, AccountID, Asset.FlagID))
+
+            TempTreeEntry = New TreeEntry
+            TempTreeEntry.Node = TempNode
+            TempTreeEntry.DisplayText = TempNode.Text
+            TempTreeEntry.Name = TempNode.Name
+            TempTreeEntry.Tag = TempNode.Tag
+            TempTreeEntry.FlagID = Asset.FlagID
+            TempTreeEntry.FlagSort = Asset.FlagSort
+            TempTreeEntry.IsSingleton = Asset.IsSingleton
+            If Not Asset.IsSingleton Then
+                TempTreeEntry.Quantity = Asset.Quantity
+            Else
+                TempTreeEntry.Quantity = 0
+            End If
+
+            ' Special case to mark containers for sorting, if the group contains 'Container' and the category is Celestial, then mark the container flag
+            If Asset.TypeGroup.Contains("Container") And Asset.TypeCategory = "Celestial" Then
+                TempTreeEntry.Container = True
+            Else
+                TempTreeEntry.Container = False
+            End If
+
+            ' Now store the item with ItemID
+            Call AddAssetTreeNode(AssetTreeViewNodes, TempTreeEntry)
+        Next
+
+        ' Now sort the list
+        If SortOption = SortType.Name Then
+            AssetTreeViewNodes.Sort(New TreeEntryNameSorter)
+        Else
+            AssetTreeViewNodes.Sort(New TreeEntryQuantitySorter)
+        End If
+
+        ' Populate tree
+        For Each Item In AssetTreeViewNodes
+            If CType(Item.Node.Tag, TagInfo).TagValue <> -1 Then
+                ' Find Parent and add node to it
+                Dim ParentNode As New TreeNode
+                ChildNode = Item ' Find based on Parent ID
+                ParentNode = AssetTreeViewNodes.Find(AddressOf FindParentNode).Node ' At some point add a check here so it doesn't error if not found
+
+                ParentNode.Nodes.Add(Item.Node)
+            Else
+                ReturnNode.Nodes.Add(Item.Node)
             End If
         Next
 
-        ' Finally sort the tree
-        If SortOption = SortType.Name Then
-            Tree.TreeViewNodeSorter = New NodeNameSorter
-        ElseIf SortOption = SortType.Quantity Then
-            Tree.TreeViewNodeSorter = New NodeQuantitySorter
-        Else
-            Tree.TreeViewNodeSorter = New NodeNameSorter
-        End If
-
         Tree.EndUpdate()
+        Tree.ResumeLayout()
 
-        Return AnchorNode
+        Return ReturnNode
 
     End Function
 
-    ' Gets subnodes of the Parent ID
-    Private Sub SetSubTreeNode(ByRef BaseNode As TreeNode, ParentAsset As EVEAsset, SortOption As SortType, SelectedItems As Boolean, AccountID As Long,
-                               SavedLocations As List(Of LocationInfo))
-        Dim CategoryNode As New TreeNode
-        Dim SubNode As New TreeNode
-
-        Dim TempNode As New TreeNode
-        Dim CategoryFlagName As String
-        Dim FlagIDList As New List(Of Long)
-
-        Dim TempAsset As New EVEAsset
-        Dim FoundAssets As New List(Of EVEAsset)
-        Dim TempLocationInfo As LocationInfo
-
-        ' Search for each item sent, may not be in list
-        ItemIDToFind = ParentAsset.ItemID
-        If Not SelectedItems Then
-            FoundAssets = AssetList.FindAll(AddressOf FindAsset)
-        Else ' just selected assets
-            FoundAssets = SelectedAssetList.FindAll(AddressOf FindAsset)
+    ' Adds a tree node to the Tree list sent
+    Private Sub AddAssetTreeNode(ByRef NodeList As List(Of TreeEntry), ByVal TreeItem As TreeEntry)
+        Dim FoundNode As TreeEntry = Nothing
+        ChildNode = TreeItem
+        FoundNode = NodeList.Find(AddressOf FindAssetNode)
+        If IsNothing(FoundNode.Node) Then
+            Call NodeList.Add(TreeItem)
         End If
-
-        If FoundAssets.Count <> 0 Then
-
-            ' Loop through all assets and add the nodes
-            For Each TempAsset In FoundAssets
-
-                ' Get flag name first - this is the category we are adding
-                If TempAsset.FlagText = "Hangar" Then
-                    ' First corp hanger flag is called hanger, not Access Group, so change it
-                    CategoryFlagName = "Corp Hangar 1"
-                Else
-                    CategoryFlagName = TempAsset.FlagText
-                End If
-
-                If CategoryFlagName <> IgnoreFlag Then
-                    ' If we haven't added it yet
-                    If Not FlagIDList.Contains(TempAsset.FlagID) Then
-                        ' Add the flag to the list
-                        FlagIDList.Add(TempAsset.FlagID)
-
-                        ' Add the flag as a base node
-                        CategoryNode = BaseNode.Nodes.Add(CategoryFlagName)
-                        AddedNodes.Add(CategoryFlagName)
-                        CategoryNode.Name = CategoryFlagName
-                        ' Save the location this node is part
-                        TempLocationInfo = New LocationInfo
-                        TempLocationInfo.AccountID = AccountID
-                        TempLocationInfo.LocationID = ParentAsset.ItemID
-                        TempLocationInfo.FlagID = TempAsset.FlagID
-                        CategoryNode.Tag = TempLocationInfo
-                        CategoryNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-                    End If
-
-                    ' Find the first node that is the same as the location added above - make sure we are adding to the right node
-                    CategoryNode = BaseNode.Nodes.Find(CategoryFlagName, True)(0)
-
-                    ' Add the subnode without text
-                    SubNode = CategoryNode.Nodes.Add("")
-
-                    ' Check for sub nodes of the found asset
-                    Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
-
-                    ' Add the item at this base location (ie mineral in hanger)
-                    If CategoryFlagName.Contains("power slot") Then
-                        ' If the parent node is a slot, then the item will be the only one in it - leave off quantity
-                        SubNode.Text = GetItemNodeText(TempAsset, True)
-                    ElseIf SubNode.Nodes.Count <> 0 Then
-                        ' This has items under it so just show the name
-                        SubNode.Text = GetItemNodeText(TempAsset, True)
-                    Else
-                        ' Base items
-                        SubNode.Text = GetItemNodeText(TempAsset, False)
-                    End If
-                    AddedNodes.Add(SubNode.Text)
-                Else
-
-                    ' Add the item at this base location (ie mineral in hanger)
-                    SubNode = BaseNode.Nodes.Add(GetItemNodeText(TempAsset, False))
-                    AddedNodes.Add(GetItemNodeText(TempAsset, False))
-                    ' Check for sub nodes of the found asset
-                    Call SetSubTreeNode(SubNode, TempAsset, SortOption, SelectedItems, AccountID, SavedLocations)
-                End If
-
-                ' Location of the subnode is under the category node
-                TempLocationInfo = New LocationInfo
-                TempLocationInfo.AccountID = AccountID
-                TempLocationInfo.LocationID = TempAsset.ItemID
-                TempLocationInfo.FlagID = TempAsset.FlagID
-                SubNode.Tag = TempLocationInfo
-                SubNode.Checked = GetNodeCheckValue(SavedLocations, TempLocationInfo)
-            Next
-        End If
-
     End Sub
+
+    ' Predicate for finding the asset with the set itemid
+    Private Function FindAssetNode(ByVal SearchItem As TreeEntry) As Boolean
+
+        If SearchItem.Node.Name = CStr(ChildNode.Node.Name) Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    ' Predicate for finding the container with the same info
+    Private Function FindContainerEntry(ByVal SearchItem As TreeEntry) As Boolean
+
+        ' Find the same container name and FlagID?
+        If SearchItem.Node.Text = CStr(ChildNode.Node.Text) And CType(SearchItem.Node.Tag, TagInfo).TagValue = CType(ChildNode.Node.Tag, TagInfo).TagValue Then
+            Return True
+        Else
+            Return False
+        End If
+
+    End Function
+
+    ' Predicate for finding the parent node Tree Entry
+    Private Function FindParentNode(ByVal SearchItem As TreeEntry) As Boolean
+
+        If SearchItem.FlagID = ChildNode.FlagID And SearchItem.Node.Name = CStr(CType(ChildNode.Node.Tag, TagInfo).TagValue) Then
+            Return True
+        Else
+            ' Flags aren't the same, so just look for the tag matching the name
+            If SearchItem.Node.Name = CStr(CType(ChildNode.Node.Tag, TagInfo).TagValue) Then
+                Return True
+            Else
+                Return False
+            End If
+        End If
+
+    End Function
 
     ' Searches the set of settings for the location pair passed to see if it is in the location or not
     Private Function GetNodeCheckValue(ByRef SavedLocations As List(Of LocationInfo), ByVal SearchLocationInfo As LocationInfo) As Boolean
@@ -619,6 +824,22 @@ Public Class EVEAssets
 
     End Function
 
+    Private Function GetCorpDivisionName(AssetText As String, CorpID As Long) As String
+        Dim rsLookup As SQLiteDataReader
+        Dim DivisionName As String = ""
+        Dim SQL As String = "SELECT NAME FROM ESI_CORPORATION_DIVISIONS WHERE CORPORATION_ID = " & CorpID
+        SQL &= " AND DIVISION_TYPE = 'HANGAR' AND DIVISION_NUMBER = " & Trim(AssetText.Substring(Len(AssetText) - 1))
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        rsLookup = DBCommand.ExecuteReader
+
+        If rsLookup.Read Then
+            DivisionName = rsLookup.GetString(0)
+        End If
+
+        Return DivisionName
+
+    End Function
+
     ' Searches the item and if a blueprint, formats the name else returns the name
     Private Function GetItemNodeText(SentAsset As EVEAsset, ParentNode As Boolean) As String
         Dim ItemName As String = ""
@@ -634,8 +855,22 @@ Public Class EVEAssets
             ItemName = SentAsset.TypeName
         End If
 
-        ' Add the quantity if it's not a parent node with children
-        If Not ParentNode Then
+        If Math.Abs(SentAsset.FlagID) = 506 Then
+            ' This is a BP in industry, so mark the text - Quantity contains the job type based on INDUSTRY_ACTIVITIES
+            Dim rsLookup As SQLiteDataReader
+            DBCommand = New SQLiteCommand("SELECT activityName from INDUSTRY_ACTIVITIES WHERE activityID = " & SentAsset.Quantity, EVEDB.DBREf)
+            rsLookup = DBCommand.ExecuteReader
+
+            If rsLookup.Read() Then
+                ItemName &= " - " & rsLookup.GetString(0) & " Job"
+            Else
+                ItemName &= " - Industry Job"
+            End If
+            rsLookup.Close()
+        End If
+
+        ' Add the quantity if it's not a parent node with children or it's not a singleton (unpackaged)
+        If Not ParentNode And SentAsset.IsSingleton = False Then
             Return ItemName & QuantitySpacer & FormatNumber(SentAsset.Quantity, 0)
         Else
             Return ItemName
@@ -717,7 +952,7 @@ Public Class EVEAssets
             For Each Asset In FindAssets
                 If Not FoundAssets.Contains(Asset) Then
                     ' If it's a blueprint, see if we are only looking at BPCs
-                    If (Asset.TypeCategory = "Blueprint" And Asset.BPType = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint" Then
+                    If ((Asset.TypeCategory = "Blueprint" And Asset.BPType = BPType.Copy And OnlyBPCs) Or Not OnlyBPCs Or Asset.TypeCategory <> "Blueprint") Then
                         FoundAssets.Add(Asset)
                     End If
                 End If
@@ -777,132 +1012,7 @@ Public Class EVEAssets
 
     End Function
 
-    Private Class NodeNameSorter
-        Implements IComparer
-
-        ' Compare the length of the strings, or the strings 
-        ' themselves, if they are the same length. 
-        Public Function Compare(ByVal x As Object, ByVal y As Object) As Integer Implements IComparer.Compare
-            Dim tx As TreeNode = CType(x, TreeNode)
-            Dim ty As TreeNode = CType(y, TreeNode)
-            Dim Qx As Long
-            Dim Qy As Long
-
-            ' Get the quantity for the nodes
-            Qx = GetNodeQuantity(tx)
-            Qy = GetNodeQuantity(ty)
-
-            If tx.Text.Contains("R.Db") Or ty.Text.Contains("R.Db") Then
-                Application.DoEvents()
-            End If
-
-            If Qx = 0 And Qy = 0 Then
-                ' Sort by name
-                Return String.Compare(tx.Text, ty.Text)
-            ElseIf Qx = 0 Or Qy = 0 Then
-                ' Sort assending, since a zero quantity is a base item and should go to the top
-                Return Qx.CompareTo(Qy)
-            Else
-                Return String.Compare(tx.Text, ty.Text)
-            End If
-
-        End Function
-
-    End Class
-
-    Private Class NodeQuantitySorter
-        Implements IComparer
-
-        ' Compare the length of the strings, or the strings 
-        ' themselves, if they are the same length. 
-        Public Function Compare(ByVal x As Object, ByVal y As Object) As Integer Implements IComparer.Compare
-            Dim tx As TreeNode = CType(x, TreeNode)
-            Dim ty As TreeNode = CType(y, TreeNode)
-            Dim Qx As Long
-            Dim Qy As Long
-
-            ' Get the quantity for the nodes
-            Qx = GetNodeQuantity(tx)
-            Qy = GetNodeQuantity(ty)
-
-            If Qx = 0 And Qy = 0 Then
-                ' Sort by name!
-                Return String.Compare(tx.Text, ty.Text)
-            ElseIf Qx = 0 Or Qy = 0 Then
-                ' Sort assending, since a zero quanity is a base item and should go to the top
-                Return Qx.CompareTo(Qy)
-            Else
-                ' Sort descending
-                Return Qy.CompareTo(Qx)
-            End If
-
-        End Function
-
-    End Class
-
-    Private Shared Function GetNodeQuantity(ByRef SentTreeNode As TreeNode) As Long
-        Dim NodeQuantity As Long = 0
-
-        ' Get the quantity from the first string
-        If InStr(SentTreeNode.Text, QuantitySpacer) <> 0 Then
-            ' We can get the quantity - only find the last spacer at the end since the name can have dashes too
-            If IsNumeric(SentTreeNode.Text.Substring(SentTreeNode.Text.LastIndexOf(QuantitySpacer) + Len(QuantitySpacer) - 1)) Then
-                NodeQuantity = CLng(SentTreeNode.Text.Substring(SentTreeNode.Text.LastIndexOf(QuantitySpacer) + Len(QuantitySpacer) - 1))
-            End If
-        End If
-
-        Return NodeQuantity
-
-    End Function
-
-    ' For sorting assets by name
-    Public Class AssetNameComparer
-
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by name alphabetically
-            Return p1.TypeName.CompareTo(p2.TypeName)
-        End Function
-
-    End Class
-
-    ' For sorting assets by quantity
-    Public Class AssetQuantityComparer
-
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by quantity decending
-            Return p2.Quantity.CompareTo(p1.Quantity)
-        End Function
-
-    End Class
-
-    ' For sorting assets by item group
-    Public Class AssetGroupComparer
-
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by group name alphabetically
-            Return p1.TypeGroup.CompareTo(p2.TypeGroup)
-        End Function
-
-    End Class
-
-    ' For sorting assets by flag id
-    Public Class AssetFlagComparer
-
-        Implements System.Collections.Generic.IComparer(Of EVEAsset)
-
-        Public Function Compare(ByVal p1 As EVEAsset, ByVal p2 As EVEAsset) As Integer Implements IComparer(Of EVEAsset).Compare
-            ' Sort by flagid
-            Return p1.FlagID.CompareTo(p2.FlagID)
-        End Function
-
-    End Class
-
+    ' Returns count of assets in this object
     Public Function GetAssetCount() As Long
         Return AssetList.Count
     End Function
@@ -945,11 +1055,96 @@ Public Class EVEAssets
 
     End Function
 
+    ' Gets the Cache date of these assets for updating
     ReadOnly Property CachedUntil() As Date
         Get
             Return CacheDate
         End Get
     End Property
+
+    Private Class TreeEntryNameSorter
+        Implements IComparer(Of TreeEntry)
+
+        ' Compare the length of the strings, or the strings themselves, if they are the same length. 
+        Public Function Compare(ByVal x As TreeEntry, ByVal y As TreeEntry) As Integer Implements IComparer(Of TreeEntry).Compare
+
+            ' If container and has children then will go to the top but always use flag sort for order
+            If x.Container And y.Container And x.IsSingleton And y.IsSingleton Then
+                ' Do sort order, else compare the name if flagsort equal
+                If x.FlagSort < y.FlagSort Then
+                    ' y comes after x 
+                    Return -1
+                ElseIf x.FlagSort > y.FlagSort Then
+                    ' x comes after y
+                    Return 1
+                Else
+                    Return String.Compare(x.DisplayText, y.DisplayText)
+                End If
+            ElseIf (x.Container And x.IsSingleton) Or (y.Container And y.IsSingleton) Then ' One is a container so prioritize that
+                If x.Container Then ' y comes after x container
+                    Return -1
+                Else ' y is a container and x comes after it
+                    Return 1
+                End If
+            ElseIf (Not x.Container And x.IsSingleton) And (Not y.Container And y.IsSingleton) Then
+                ' Unpackaged items not containers, just compare names
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            ElseIf x.IsSingleton Or y.IsSingleton Then
+                ' Singleton items go above stacked items
+                If x.IsSingleton Then ' y comes after x unpackaged item
+                    Return -1
+                Else ' y is unpackaged and x comes after it
+                    Return 1
+                End If
+            Else
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            End If
+
+        End Function
+
+    End Class
+
+    Private Class TreeEntryQuantitySorter
+        Implements IComparer(Of TreeEntry)
+
+        ' Compare the length of the strings, or the strings themselves, if they are the same length. 
+        Public Function Compare(ByVal x As TreeEntry, ByVal y As TreeEntry) As Integer Implements IComparer(Of TreeEntry).Compare
+
+            ' If container and has children then will go to the top but always use flag sort for order
+            If x.Container And y.Container And x.IsSingleton And y.IsSingleton Then
+                ' Do sort order, else compare the name if flagsort equal
+                If x.FlagSort < y.FlagSort Then
+                    ' y comes after x 
+                    Return -1
+                ElseIf x.FlagSort > y.FlagSort Then
+                    ' x comes after y
+                    Return 1
+                Else
+                    Return String.Compare(x.DisplayText, y.DisplayText)
+                End If
+            ElseIf (x.Container And x.IsSingleton) Or (y.Container And y.IsSingleton) Then ' One is a container so prioritize that
+                If x.Container Then ' y comes after x container
+                    Return -1
+                Else ' y is a container and x comes after it
+                    Return 1
+                End If
+            ElseIf (Not x.Container And x.IsSingleton) And (Not y.Container And y.IsSingleton) Then
+                ' Unpackaged items not containers, just compare names
+                Return String.Compare(x.DisplayText, y.DisplayText)
+            ElseIf x.IsSingleton Or y.IsSingleton Then
+                ' Singleton items go above stacked items
+                If x.IsSingleton Then ' y comes after x unpackaged item
+                    Return -1
+                Else ' y is unpackaged and x comes after it
+                    Return 1
+                End If
+            Else
+                Return y.Quantity.CompareTo(x.Quantity)
+            End If
+
+        End Function
+
+    End Class
 
 End Class
 
@@ -957,18 +1152,22 @@ Public Class EVEAsset
     Public LocationID As Long ' Can be a station, system, or another item id
     Public LocationName As String ' Station or system name
     Public ItemID As Long
+    Public ItemName As String ' This is the in-game user name given to the item/location - e.g. can name
     Public TypeID As Long
     Public TypeName As String
     Public TypeGroup As String
     Public TypeCategory As String
     Public Quantity As Long
     Public FlagID As Integer
+    Public FlagSort As Integer ' How we sort this flag in relation to others
     Public FlagText As String ' Name of flag
+    Public Container As Boolean ' if the item is in a container based on the flag
     Public IsSingleton As Boolean ' True is unpacked (not stackable), False is packed (stackable)
     Public BPType As BPType ' if it's a blueprint, then will look up the data for the character for all blueprints and set
 
     Public Sub New()
         ItemID = 0
+        ItemName = ""
         LocationID = 0
         LocationName = ""
         TypeID = 0
@@ -976,7 +1175,9 @@ Public Class EVEAsset
         TypeGroup = ""
         Quantity = 0
         FlagID = 0
+        FlagSort = -1
         FlagText = ""
+        Container = False
         IsSingleton = True
         BPType = 0
     End Sub

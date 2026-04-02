@@ -126,6 +126,7 @@ Public Class ManufacturingFacility
         txtFacilityManualTax.Visible = False
         lblFacilityManualTax.Visible = False
         btnFacilitySave.Visible = False
+        'btnStructureDelete.Visible = False
         txtFacilityManualTE.Visible = False
         txtFacilityManualME.Visible = False
         lblFacilityManualTE.Visible = False
@@ -141,16 +142,10 @@ Public Class ManufacturingFacility
         lblFacilityLocation.Visible = False
         lblFacilityType.Visible = False
         cmbFacilityType.Visible = False
-        cmbLargeShips.Visible = False
-        lblLargeShips.Visible = False
-        cmbFuelBlocks.Visible = False
-        lblFuelBlocks.Visible = False
-        cmbModules.Visible = False
-        lblModules.Visible = False
 
         UpdatingManualBoxes = False
 
-        ' For checking facilities later - will remove if we can get locations from ESI
+        ' For checking facilities later
         FactionCitadelList.Add(47512) ' Moreau Fortizar
         FactionCitadelList.Add(47513) ' Draccous Fortizar
         FactionCitadelList.Add(47514) ' Horizion Fortizar
@@ -234,12 +229,20 @@ Public Class ManufacturingFacility
                 cmbFacilityRegion.Width = RegionWidthBP
                 cmbFacilityRegion.Text = InitialRegionComboText
                 cmbFacilityRegion.Visible = True
+                lstFacilityRegion.Width = RegionWidthBP
+                lstFacilityRegion.Left = cmbFacilityRegion.Left
+                lstFacilityRegion.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 2
+                lstFacilityRegion.Visible = False
 
                 cmbFacilitySystem.Top = cmbFacilityRegion.Top
                 cmbFacilitySystem.Left = cmbFacilityRegion.Left + cmbFacilityRegion.Width + 2
                 cmbFacilitySystem.Width = SolarSystemWidthBP
                 cmbFacilitySystem.Text = InitialSolarSystemComboText
                 cmbFacilitySystem.Visible = True
+                lstFacilitySystem.Width = SolarSystemWidthBP
+                lstFacilitySystem.Left = cmbFacilitySystem.Left
+                lstFacilitySystem.Top = cmbFacilitySystem.Top + cmbFacilitySystem.Height + 2
+                lstFacilitySystem.Visible = False
 
                 cmbFacility.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 1
                 cmbFacility.Left = LeftObjectLocation
@@ -256,6 +259,11 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Left = btnFacilitySave.Left - (btnFacilityFitting.Width + 2)
                 btnFacilityFitting.Visible = False
                 btnFacilityFitting.Enabled = False
+
+                'btnStructureDelete.Top = btnFacilityFitting.Top
+                'btnStructureDelete.Left = btnFacilityFitting.Left - (btnStructureDelete.Width + 2)
+                'btnStructureDelete.Visible = True
+                'btnStructureDelete.Enabled = True
 
                 Call LoadManualBoxes(InitialProductionType, FormLocation)
 
@@ -338,12 +346,20 @@ Public Class ManufacturingFacility
                 cmbFacilityRegion.Text = InitialRegionComboText
                 cmbFacilityRegion.Width = RegionWidthCalc
                 cmbFacilityRegion.Visible = True
+                lstFacilityRegion.Width = RegionWidthCalc
+                lstFacilityRegion.Left = cmbFacilityRegion.Left
+                lstFacilityRegion.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 2
+                lstFacilityRegion.Visible = False
 
                 cmbFacilitySystem.Top = cmbFacilityRegion.Top
                 cmbFacilitySystem.Left = chkFacilityIncludeUsage.Left
                 cmbFacilitySystem.Width = SolarSystemWidthCalc
                 cmbFacilitySystem.Text = InitialSolarSystemComboText
                 cmbFacilitySystem.Visible = True
+                lstFacilitySystem.Width = SolarSystemWidthBP
+                lstFacilitySystem.Left = cmbFacilitySystem.Left
+                lstFacilitySystem.Top = cmbFacilitySystem.Top + cmbFacilitySystem.Height + 2
+                lstFacilitySystem.Visible = False
 
                 cmbFacility.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 1
                 cmbFacility.Left = LeftObjectLocation
@@ -367,32 +383,6 @@ Public Class ManufacturingFacility
                 btnFacilityFitting.Enabled = False
 
                 Call LoadManualBoxes(InitialProductionType, FormLocation)
-
-                ' Position these but they will be shown later
-                lblModules.Top = cmbFacility.Top
-                lblModules.Left = 0
-                lblModules.Visible = False
-                Call lblModules.SendToBack()
-
-                cmbModules.Top = lblModules.Top + lblModules.Height - 3
-                cmbModules.Left = cmbFacilityRegion.Left
-                cmbModules.Visible = False
-
-                cmbFuelBlocks.Top = cmbModules.Top
-                cmbFuelBlocks.Left = cmbModules.Left + cmbModules.Width + 2
-                cmbFuelBlocks.Visible = False
-
-                cmbLargeShips.Top = cmbModules.Top + cmbModules.Height + 1
-                cmbLargeShips.Left = cmbModules.Left + cmbModules.Width + 2
-                cmbLargeShips.Visible = False
-
-                lblFuelBlocks.Top = cmbFuelBlocks.Top - lblFuelBlocks.Height - 1
-                lblFuelBlocks.Left = cmbFuelBlocks.Left - 2
-                lblFuelBlocks.Visible = False
-
-                lblLargeShips.Left = lblModules.Left
-                lblLargeShips.Top = lblFacilityFWUpgrade.Top
-                lblLargeShips.Visible = False
 
                 ' Set the initial group/category IDs
                 ' also set the activity combo text to show what type of activity this facility is, even if not visible
@@ -439,12 +429,20 @@ Public Class ManufacturingFacility
                 cmbFacilityRegion.Text = InitialRegionComboText
                 cmbFacilityRegion.Width = RegionWidthCalc
                 cmbFacilityRegion.Visible = True
+                lstFacilityRegion.Width = RegionWidthCalc
+                lstFacilityRegion.Left = cmbFacilityRegion.Left
+                lstFacilityRegion.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 2
+                lstFacilityRegion.Visible = False
 
                 cmbFacilitySystem.Top = cmbFacilityRegion.Top
                 cmbFacilitySystem.Left = chkFacilityIncludeUsage.Left
                 cmbFacilitySystem.Width = SolarSystemWidthCalc
                 cmbFacilitySystem.Text = InitialSolarSystemComboText
                 cmbFacilitySystem.Visible = True
+                lstFacilitySystem.Width = SolarSystemWidthBP
+                lstFacilitySystem.Left = cmbFacilitySystem.Left
+                lstFacilitySystem.Top = cmbFacilitySystem.Top + cmbFacilitySystem.Height + 2
+                lstFacilitySystem.Visible = False
 
                 cmbFacility.Top = cmbFacilityRegion.Top + cmbFacilityRegion.Height + 1
                 cmbFacility.Left = LeftObjectLocation
@@ -476,12 +474,6 @@ Public Class ManufacturingFacility
                 lblFacilityManualTE.Visible = False
                 cmbFacilityFWUpgrade.Visible = False
                 lblFacilityFWUpgrade.Visible = False
-                lblModules.Visible = False
-                cmbModules.Visible = False
-                cmbFuelBlocks.Visible = False
-                cmbLargeShips.Visible = False
-                lblFuelBlocks.Visible = False
-                lblLargeShips.Visible = False
 
                 ' Set the initial group/category IDs
                 ' also set the activity combo text to show what type of activity this facility is, even if not visible
@@ -716,16 +708,20 @@ Public Class ManufacturingFacility
         End If
 
         ' Region name Combo
-        LoadingRegions = True
         cmbFacilityRegion.Enabled = True
+        ' pre-load the regions
+        RemoveHandler cmbFacilityRegion.TextChanged, AddressOf cmbFacilityRegion_TextChanged
+        Call LoadFacilityRegions(ItemGroupID, ItemCategoryID, False, PreviousActivity)
         cmbFacilityRegion.Text = SelectedFacility.RegionName
-        LoadingRegions = False
+        AddHandler cmbFacilityRegion.TextChanged, AddressOf cmbFacilityRegion_TextChanged
 
         ' Systems combo
-        LoadingSystems = True
         cmbFacilitySystem.Enabled = True
+        ' pre-load the systems
+        RemoveHandler cmbFacilitySystem.TextChanged, AddressOf cmbFacilitySystem_TextChanged
+        Call LoadFacilitySystems(ItemGroupID, ItemCategoryID, False, PreviousActivity)
         cmbFacilitySystem.Text = SelectedFacility.SolarSystemName
-        LoadingSystems = False
+        AddHandler cmbFacilitySystem.TextChanged, AddressOf cmbFacilitySystem_TextChanged
 
         ' Facility/Array combo
         LoadingFacilities = True
@@ -787,27 +783,27 @@ Public Class ManufacturingFacility
         lblFacilityManualME.Top = btnFacilitySave.Top + 4
         lblFacilityManualME.Left = LeftLabelLocation
         txtFacilityManualME.Top = btnFacilitySave.Top + 1
-        txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width
+        txtFacilityManualME.Left = lblFacilityManualME.Left + lblFacilityManualME.Width - 1
 
         lblFacilityManualCost.Top = lblFacilityManualME.Top + lblFacilityManualME.Height + 8
         lblFacilityManualCost.Left = LeftLabelLocation
         lblFacilityManualCost.Text = "Cost:"
         txtFacilityManualCost.Top = txtFacilityManualME.Top + txtFacilityManualME.Height + 2
-        txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width
+        txtFacilityManualCost.Left = lblFacilityManualCost.Left + lblFacilityManualCost.Width - 1
 
         ' Reset manual ME so it aligns with cost box
         txtFacilityManualME.Left = txtFacilityManualCost.Left
 
         lblFacilityManualTE.Top = lblFacilityManualME.Top
-        lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width + 3
+        lblFacilityManualTE.Left = txtFacilityManualME.Left + txtFacilityManualME.Width
         txtFacilityManualTE.Top = txtFacilityManualME.Top
-        txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width
+        txtFacilityManualTE.Left = lblFacilityManualTE.Left + lblFacilityManualTE.Width - 2
 
         lblFacilityManualTax.Top = lblFacilityManualCost.Top
-        lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width + 3
+        lblFacilityManualTax.Left = txtFacilityManualCost.Left + txtFacilityManualCost.Width
         lblFacilityManualTax.Text = "Tax:"
         txtFacilityManualTax.Top = txtFacilityManualCost.Top
-        txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width
+        txtFacilityManualTax.Left = lblFacilityManualTax.Left + lblFacilityManualTax.Width - 2
         txtFacilityManualTE.Left = txtFacilityManualTax.Left
 
         ' FW Boxes - visible is set if the system is FW system - doesn't affect reprocessing so don't load for those
@@ -815,7 +811,7 @@ Public Class ManufacturingFacility
         cmbFacilityFWUpgrade.Left = (cmbFacility.Left + cmbFacility.Width) - cmbFacilityFWUpgrade.Width
         cmbFacilityFWUpgrade.Visible = False
 
-        lblFacilityFWUpgrade.Top = cmbFacilityFWUpgrade.Top + 2
+        lblFacilityFWUpgrade.Top = lblFacilityManualCost.Top
         lblFacilityFWUpgrade.Left = cmbFacilityFWUpgrade.Left - lblFacilityFWUpgrade.Width + 2
         lblFacilityFWUpgrade.Visible = False
         Call lblFacilityFWUpgrade.SendToBack()
@@ -892,7 +888,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility activity combo - checks group and category ID's if it has components to set component activities
-    Public Sub LoadFacilityActivities(BPGroupID As Integer, BPCategoryID As Integer, BlueprintTech As Integer, BPID As Integer,
+    Private Sub LoadFacilityActivities(BPGroupID As Integer, BPCategoryID As Integer, BlueprintTech As Integer, BPID As Integer,
                                       BuildMatTypeSelection As BuildMatType)
 
         LoadingActivities = True
@@ -966,8 +962,7 @@ Public Class ManufacturingFacility
                     End If
                 Case Else
                     ' If it's not a T2 component, then load the component manufacturing activity else it will get a reaction load below - boosters only do reactions as components
-                    If Not (BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And BPCategoryID <> ItemIDs.BoosterImplantCategoryID Then
-                        ' Just regular
+                    If Not (BPCategoryID = ItemIDs.ComponentCategoryID Or BPGroupID = ItemIDs.AdvCapitalComponentGroupID) And BPCategoryID <> ItemIDs.BoosterImplantCategoryID Then                        ' Just regular
                         cmbFacilityActivities.Items.Add(ActivityComponentManufacturing)
                     End If
             End Select
@@ -1015,13 +1010,6 @@ Public Class ManufacturingFacility
                 PreviousSystem = cmbFacilitySystem.Text
             End If
 
-            If cmbFacilityActivities.Text = ActivityReprocessing And SelectedLocation = ProgramLocation.BlueprintTab Then
-                ' Show the combos for mineral conversion
-
-            Else
-
-            End If
-
             ' Make sure the usage is updated
             Call frmMain.UpdateBPPriceLabels()
 
@@ -1043,7 +1031,7 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Loads the facility types in the sent combo
-    Public Sub LoadFacilityTypes(FacilityProductionType As ProductionType, FacilityActivity As String)
+    Private Sub LoadFacilityTypes(FacilityProductionType As ProductionType, FacilityActivity As String)
         Dim Station As String = GetFacilityNamefromCode(FacilityTypes.Station)
         Dim UpwellStructure As String = GetFacilityNamefromCode(FacilityTypes.UpwellStructure)
         Dim NoneFacility As String = GetFacilityNamefromCode(FacilityTypes.None)
@@ -1185,14 +1173,20 @@ Public Class ManufacturingFacility
     End Sub
 
     ' Based on the selections, load the region combo
-    Public Sub LoadFacilityRegions(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
+    Private RegionComboMenuDown As Boolean
+    Private RegionMouseWheelSelection As Boolean
+    Private RegionComboBoxArrowKeys As Boolean
+    Private RegionSelected As Boolean
+    Private RegionComboKeyDown As Boolean
+    Private Sub LoadSystemsonEvent()
+        Call LoadFacilitySystems(SelectedBPGroupID, SelectedBPCategoryID, True, cmbFacilityActivities.Text)
+        Call SetFacilityBonusBoxes(False)
+        SelectedFacility.FullyLoaded = False
+        PreviousRegion = cmbFacilityRegion.Text
+        Call cmbFacilitySystem.Focus()
+    End Sub
+    Private Function GetRegionsSQL(ItemGroupID As Integer, ItemCategoryID As Integer, ByRef FacilityActivity As String, Optional SearchString As String = "") As String
         Dim SQL As String = ""
-
-        LoadingRegions = True
-        LoadingSystems = True
-        LoadingFacilities = True
-
-        cmbFacilityRegion.Items.Clear()
 
         ' Load regions from the facilities table - only load regions for our activity type and item group/category
         Select Case cmbFacilityType.Text
@@ -1203,7 +1197,7 @@ Public Class ManufacturingFacility
                 SQL = "SELECT DISTINCT regionName AS REGION_NAME FROM STATIONS, STATION_SERVICES, REGIONS "
                 SQL &= "WHERE STATIONS.STATION_ID = STATION_SERVICES.STATION_ID "
                 SQL &= "AND STATIONS.REGION_ID = REGIONS.regionID "
-                SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
+                SQL &= "AND " & RegionFilterString
 
                 Select Case FacilityActivity
                     Case ActivityManufacturing, ActivityComponentManufacturing, ActivityCapComponentManufacturing
@@ -1220,7 +1214,7 @@ Public Class ManufacturingFacility
                 SQL &= "FROM REGIONS, SOLAR_SYSTEMS "
                 SQL &= "WHERE SOLAR_SYSTEMS.regionID = REGIONS.regionID "
                 SQL &= "AND (factionID <> 500005 OR factionID IS NULL) "
-                SQL &= "AND regionName NOT IN ('A821-A','J7HZ-F','PR-01','UUA-F4') AND regionName NOT LIKE 'ADR%' "
+                SQL &= "AND " & RegionFilterString
 
                 ' Make sure the region listed has at least one system not in the disallowed anchoring lists
                 ' Upwell Structures can be anchored almost anywhere except starter systems, trade hubs, and shattered wormholes (including Thera)
@@ -1238,11 +1232,25 @@ Public Class ManufacturingFacility
 
         End Select
 
+        If SearchString <> "" Then
+            SQL &= " AND regionName LIKE '%" & SearchString & "%'"
+        End If
+
         SQL &= " GROUP BY REGION_NAME "
+
+        Return SQL
+
+    End Function
+    Private Sub LoadFacilityRegions(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
+        LoadingRegions = True
+        LoadingSystems = True
+        LoadingFacilities = True
+
+        cmbFacilityRegion.Items.Clear()
 
         Dim rsLoader As SQLiteDataReader
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(GetRegionsSQL(ItemGroupID, ItemCategoryID, FacilityActivity), EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
@@ -1277,7 +1285,7 @@ Public Class ManufacturingFacility
 
         ' Only reset the region if the current selected region is not in list, also if it is in list, enable solarsystem
         If Not cmbFacilityRegion.Items.Contains(cmbFacilityRegion.Text) Then
-            cmbFacilityRegion.Text = "Select Region"
+            cmbFacilityRegion.Text = InitialRegionComboText
         Else
             cmbFacilitySystem.Enabled = True
         End If
@@ -1290,65 +1298,212 @@ Public Class ManufacturingFacility
 
     End Sub
     Private Sub cmbFacilityRegion_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacilityRegion.SelectedIndexChanged
-        If Not LoadingRegions And Not FirstLoad And PreviousRegion <> cmbFacilityRegion.Text Then
-            Call LoadFacilitySystems(SelectedBPGroupID, SelectedBPCategoryID, True, cmbFacilityActivities.Text)
-            Call cmbFacilitySystem.Focus()
-            Call SetFacilityBonusBoxes(False)
-            SelectedFacility.FullyLoaded = False
-            PreviousRegion = cmbFacilityRegion.Text
+
+        If Not LoadingRegions And Not FirstLoad And PreviousRegion <> cmbFacilityRegion.Text And Not RegionComboBoxArrowKeys Then
+            Call LoadSystemsonEvent()
         End If
 
         Call SetResetRefresh()
 
     End Sub
     Private Sub cmbFacilityRegion_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilityRegion.DropDown
-        ' If you drop down, don't show the text window
-        cmbFacilityRegion.AutoCompleteMode = AutoCompleteMode.None
 
         If Not FirstLoad And Not FacilityRegionsLoaded Then
             PreviousRegion = cmbFacilityRegion.Text
             ' Save the current
             PreviousRegion = cmbFacilityRegion.Text
-
             Call LoadFacilityRegions(SelectedBPGroupID, SelectedBPCategoryID, False, cmbFacilityActivities.Text)
+        End If
 
+        lstFacilityRegion.Visible = False
+        SystemComboMenuDown = True
+        ' if we drop down, we aren't using the arrow keys
+        SystemComboBoxArrowKeys = False
+        SystemComboKeyDown = False
+
+    End Sub
+    Private Sub cmbFacilityRegion_DropDownClosed(sender As Object, e As EventArgs) Handles cmbFacilityRegion.DropDownClosed
+        RegionComboMenuDown = False
+        lstFacilityRegion.Visible = False ' This could show up if people type into the list when combo down
+    End Sub
+    Private Sub cmbFacilityRegion_MouseWheel(sender As Object, e As MouseEventArgs) Handles cmbFacilityRegion.MouseWheel
+        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
+        If RegionComboMenuDown Then
+            RegionMouseWheelSelection = False
+        Else
+            RegionMouseWheelSelection = True
+        End If
+    End Sub
+    Private Sub cmbFacilityRegion_DoubleClick(sender As Object, e As EventArgs) Handles cmbFacilityRegion.DoubleClick
+        cmbFacilityRegion.SelectAll()
+    End Sub
+    Private Sub cmbFacilityRegion_SelectionChangeCommitted(sender As Object, e As EventArgs) Handles cmbFacilityRegion.SelectionChangeCommitted
+        If Not RegionMouseWheelSelection And Not RegionComboBoxArrowKeys Then
+            lstFacilityRegion.Visible = False ' We are loading the region, so hide this
+        End If
+        RegionSelected = False
+    End Sub
+    Private Sub cmbFacilityRegion_TextChanged(sender As Object, e As EventArgs) Handles cmbFacilityRegion.TextChanged
+        If Not FirstLoad And Not RegionSelected And Trim(cmbFacilityRegion.Text) <> InitialRegionComboText And RegionComboKeyDown Then
+            If RegionComboBoxArrowKeys = False Then
+                If (cmbFacilityRegion.Text <> "") Then
+                    ' Populate the Facility region list
+                    Dim rsRegions As SQLiteDataReader
+
+                    lstFacilityRegion.Items.Clear()
+
+                    DBCommand = New SQLiteCommand(GetRegionsSQL(SelectedBPGroupID, SelectedBPCategoryID, cmbFacilityActivities.Text, cmbFacilityRegion.Text), EVEDB.DBREf)
+                    rsRegions = DBCommand.ExecuteReader
+                    lstFacilityRegion.BeginUpdate()
+
+                    While rsRegions.Read()
+                        lstFacilityRegion.Items.Add(rsRegions.GetString(0))
+                        Application.DoEvents()
+                    End While
+
+                    rsRegions.Close()
+                    rsRegions = Nothing
+                    lstFacilityRegion.EndUpdate()
+                    lstFacilityRegion.Visible = True
+                    Application.UseWaitCursor = False
+
+                End If
+                If (String.IsNullOrEmpty(cmbFacilityRegion.Text)) Then
+                    lstFacilityRegion.Items.Clear()
+                    lstFacilityRegion.Visible = False
+                End If
+            End If
+        End If
+    End Sub
+    Private Sub cmbFacilityRegion_KeyDown(sender As Object, e As KeyEventArgs) Handles cmbFacilityRegion.KeyDown
+        If cmbFacilityRegion.DroppedDown = False Then
+            RegionComboKeyDown = True
+        Else
+            RegionComboKeyDown = False
+        End If
+
+        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
+            RegionComboBoxArrowKeys = True
+        Else
+            RegionComboBoxArrowKeys = False
+        End If
+
+        ' They have the list down, so process up and down keys to work with selecting in the list
+        If lstFacilityRegion.Visible Then
+            Select Case (e.KeyCode)
+                Case Keys.Down
+                    If (lstFacilityRegion.SelectedIndex < lstFacilityRegion.Items.Count - 1) Then
+                        lstFacilityRegion.SelectedIndex = lstFacilityRegion.SelectedIndex + 1
+                    End If
+                Case Keys.Up
+                    If (lstFacilityRegion.SelectedIndex > 0) Then
+                        lstFacilityRegion.SelectedIndex = lstFacilityRegion.SelectedIndex - 1
+                    End If
+                Case Keys.Escape
+                    lstFacilityRegion.Visible = False
+            End Select
+            e.Handled = True ' Don't process up and down in the combo when the list shown
+        End If
+
+        ' Don't play sounds for tab
+        If e.KeyCode = Keys.Tab Then
+            e.SuppressKeyPress = True
+        End If
+    End Sub
+    Private Sub cmbFacilityRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbFacilityRegion.KeyPress
+        ' Process when Enter is pressed here so it doesn't ding (e.Handled = True)
+        If lstFacilityRegion.Visible = False Then
+            ' If they select enter, then load the BP that is selected in the combo
+            If e.KeyChar = ControlChars.Cr Then
+                ' Move to system combo
+                e.Handled = True
+                Call LoadSystemsonEvent()
+            End If
+        Else ' Only use what was selected in list
+            If e.KeyChar = ControlChars.Cr Then
+                If (lstFacilityRegion.SelectedIndex > -1) Then
+                    e.Handled = True
+                    cmbFacilityRegion.Text = CStr(lstFacilityRegion.SelectedItem)
+                    lstFacilityRegion.Visible = False
+                    RegionSelected = True
+                    Call LoadSystemsonEvent()
+                    RegionSelected = False
+                End If
+            End If
+        End If
+    End Sub
+    Private Sub cmbFacilityRegion_PreviewKeyDown(sender As Object, e As PreviewKeyDownEventArgs) Handles cmbFacilityRegion.PreviewKeyDown
+        If e.KeyCode = Keys.Tab Then
+            If lstFacilityRegion.Visible = False Then
+                ' Can only select what is in combo so no need to check text
+                If cmbFacilityRegion.Text <> PreviousRegion Then
+                    Call LoadSystemsonEvent()
+                Else
+                    cmbFacilitySystem.Focus()
+                End If
+            Else
+                ' They entered text, so we need to verify it's in the list of items
+                If lstFacilityRegion.SelectedIndex = -1 Then
+                    lstFacilityRegion.Visible = False ' hide this since they tabbed without selecting something
+                    ' Load up the previous region
+                    RemoveHandler cmbFacilityRegion.TextChanged, AddressOf cmbFacilityRegion_TextChanged
+                    cmbFacilityRegion.Text = PreviousRegion
+                    AddHandler cmbFacilityRegion.TextChanged, AddressOf cmbFacilityRegion_TextChanged
+                Else
+                    Call LoadSystemsonEvent()
+                End If
+            End If
+            e.IsInputKey = True
         End If
     End Sub
     Private Sub cmbFacilityRegion_GotFocus(sender As Object, e As EventArgs) Handles cmbFacilityRegion.GotFocus
         Call cmbFacilityRegion.SelectAll()
     End Sub
     Private Sub cmbFacilityRegion_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilityRegion.LostFocus
-        cmbFacilitySystem.SelectionLength = 0
-        If Trim(cmbFacilityRegion.Text) = "" Then
-            cmbFacilityRegion.Text = PreviousRegion
-        End If
-        ' Look up entered item to make sure it's in the list, if not, then auto select
-        'If Not cmbFacilityRegion.Items.Contains(cmbFacilityRegion.Text) Then
-        '    If SelectedFacility.RegionName <> InitialRegionComboText Then
-        '        cmbFacilityRegion.Text = SelectedFacility.RegionName
-        '    Else
-        '        ' Select the first thing 
-        '        cmbFacilityRegion.Text = cmbFacilityRegion.Items(0).ToString
-        '    End If
-        'Else
-        '    If Not LoadingRegions And Not FirstLoad And PreviousRegion <> cmbFacilityRegion.Text Then
-        '        ' Need to load up the rest of the combos
-        '        Call LoadFacilitySystems(SelectedBPGroupID, SelectedBPCategoryID, True, cmbFacilityActivities.Text)
-        '    End If
-        'End If
+        lstFacilityRegion.Visible = False
+        cmbFacilitySystem.SelectionLength = 0 ' Select all in system combo
+        cmbFacilitySystem.Focus()
     End Sub
-    Private Sub cmbFacilityRegion_KeyPress(sender As Object, e As KeyPressEventArgs) Handles cmbFacilityRegion.KeyPress
-        e.Handled = True
+    Private Sub lstFacilityRegion_SelectedValueChanged(sender As Object, e As EventArgs) Handles lstFacilityRegion.SelectedValueChanged
+        ' Process up down arrows in bp list
+        If Not IsNothing(lstFacilityRegion.SelectedItem) Then
+            cmbFacilityRegion.Text = lstFacilityRegion.SelectedItem.ToString
+            cmbFacilityRegion.SelectAll()
+        End If
+    End Sub
+    Private Sub lstFacilityRegion_MouseDown(sender As Object, e As MouseEventArgs) Handles lstFacilityRegion.MouseDown
+        ' Loads the item by clicking on the item selected
+        If lstFacilityRegion.SelectedItems.Count <> 0 Then
+            cmbFacilityRegion.Text = lstFacilityRegion.SelectedItem.ToString()
+            lstFacilityRegion.Visible = False
+            Call LoadSystemsonEvent()
+        End If
+    End Sub
+    Private Sub lstFacilityRegion_MouseMove(sender As Object, e As MouseEventArgs) Handles lstFacilityRegion.MouseMove
+        Dim Index As Integer = lstFacilityRegion.IndexFromPoint(e.X, e.Y)
+
+        RemoveHandler lstFacilityRegion.SelectedValueChanged, AddressOf lstFacilityRegion_SelectedValueChanged
+        lstFacilityRegion.SelectedIndex = Index
+        AddHandler lstFacilityRegion.SelectedValueChanged, AddressOf lstFacilityRegion_SelectedValueChanged
+    End Sub
+    Private Sub lstFacilityRegion_LostFocus(sender As Object, e As EventArgs) Handles lstFacilityRegion.LostFocus
+        ' hide when losing focus
+        Call lstFacilityRegion.Hide()
+        Call cmbFacilityRegion.SelectAll()
     End Sub
 
     ' Based on the selections, load the systems combo
-    Public Sub LoadFacilitySystems(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
+    Private SystemComboMenuDown As Boolean
+    Private SystemMouseWheelSelection As Boolean
+    Private SystemComboBoxArrowKeys As Boolean
+    Private SystemComboKeyDown As Boolean
+    Private Sub LoadFacilitiesonEvent()
+        Call LoadFacilities(False, cmbFacilityActivities.Text, False, "")
+        PreviousSystem = cmbFacilitySystem.Text
+        Call cmbFacility.Focus()
+    End Sub
+    Private Function GetSystemsSQL(ItemGroupID As Integer, ItemCategoryID As Integer, ByRef FacilityActivity As String, Optional SearchString As String = "") As String
         Dim SQL As String = ""
-
-        LoadingSystems = True
-        LoadingFacilities = True
-
-        cmbFacilitySystem.Items.Clear()
 
         Select Case cmbFacilityType.Text
 
@@ -1435,10 +1590,23 @@ Public Class ManufacturingFacility
 
         End Select
 
+        If SearchString <> "" Then
+            SQL &= " AND solarSystemName LIKE '%" & SearchString & "%'"
+        End If
+
         SQL &= " GROUP BY SSN, CI"
 
+        Return SQL
+
+    End Function
+    Public Sub LoadFacilitySystems(ItemGroupID As Integer, ItemCategoryID As Integer, NewFacility As Boolean, ByRef FacilityActivity As String)
+        LoadingSystems = True
+        LoadingFacilities = True
+
+        cmbFacilitySystem.Items.Clear()
+
         Dim rsLoader As SQLiteDataReader
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(GetSystemsSQL(ItemGroupID, ItemCategoryID, FacilityActivity), EVEDB.DBREf)
         rsLoader = DBCommand.ExecuteReader
 
         While rsLoader.Read
@@ -1501,13 +1669,10 @@ Public Class ManufacturingFacility
                 SelectedFacility.FullyLoaded = True
                 ' Facility is loaded, so save it to default and dynamic variable
                 Call SetFacility(SelectedFacility, SelectedProductionType, False, False)
-                Call UpdateBlueprint()
             Else
                 Call SetFacilityBonusBoxes(False)
                 SelectedFacility.FullyLoaded = False
             End If
-
-            Call cmbFacility.Focus()
 
             PreviousSystem = cmbFacilitySystem.Text
         End If
@@ -1516,25 +1681,189 @@ Public Class ManufacturingFacility
 
     End Sub
     Private Sub cmbFacilitySystem_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacilitySystem.DropDown
-        ' If you drop down, don't show the text window
-        cmbFacilitySystem.AutoCompleteMode = AutoCompleteMode.None
-
         If Not FacilitySystemsLoaded And Not FirstLoad Then
             PreviousSystem = cmbFacilitySystem.Text
             Call LoadFacilitySystems(SelectedBPGroupID, SelectedBPCategoryID, False, cmbFacilityActivities.Text)
+        End If
+
+        lstFacilityRegion.Visible = False
+        SystemComboMenuDown = True
+        ' if we drop down, we aren't using the arrow keys
+        SystemComboBoxArrowKeys = False
+        SystemComboKeyDown = False
+
+    End Sub
+    Private Sub cmbFacilitySystem_DropDownClosed(sender As Object, e As EventArgs) Handles cmbFacilitySystem.DropDownClosed
+        SystemComboMenuDown = False
+        lstFacilitySystem.Visible = False ' This could show up if people type into the list when combo down
+    End Sub
+    Private Sub cmbFacilitySystem_MouseWheel(sender As Object, e As MouseEventArgs) Handles cmbFacilitySystem.MouseWheel
+        ' Only set mouse boolean when the combo isn't dropped down since users might want to use the wheel and click to select
+        If SystemComboMenuDown Then
+            SystemMouseWheelSelection = False
+        Else
+            SystemMouseWheelSelection = True
+        End If
+    End Sub
+    Private Sub cmbFacilitySystem_DoubleClick(sender As Object, e As EventArgs) Handles cmbFacilitySystem.DoubleClick
+        cmbFacilityRegion.SelectAll()
+    End Sub
+    Private Sub cmbFacilitySystem_SelectionChangeCommitted(sender As Object, e As EventArgs) Handles cmbFacilitySystem.SelectionChangeCommitted
+        If Not SystemMouseWheelSelection And Not SystemComboBoxArrowKeys Then
+            lstFacilitySystem.Visible = False ' We are loading the bp, so hide this
+        End If
+    End Sub
+    Public Sub cmbFacilitySystem_TextChanged(sender As Object, e As EventArgs) Handles cmbFacilitySystem.TextChanged
+        If Not FirstLoad And Trim(cmbFacilitySystem.Text) <> InitialSolarSystemComboText And SystemComboKeyDown And Not LoadingActivities Then ' Loading activities is set in default label double click so just let load
+            If SystemComboBoxArrowKeys = False Then
+                If (cmbFacilitySystem.Text <> "") Then
+                    ' Populate the Facility system list
+                    Dim rsSystems As SQLiteDataReader
+
+                    lstFacilitySystem.Items.Clear()
+
+                    DBCommand = New SQLiteCommand(GetSystemsSQL(SelectedBPGroupID, SelectedBPCategoryID, cmbFacilityActivities.Text, cmbFacilitySystem.Text), EVEDB.DBREf)
+                    rsSystems = DBCommand.ExecuteReader
+                    lstFacilitySystem.BeginUpdate()
+
+                    While rsSystems.Read()
+                        If cmbFacilityActivities.Text <> ActivityReprocessing Then
+                            lstFacilitySystem.Items.Add(rsSystems.GetString(0) & " (" & FormatNumber(rsSystems.GetDouble(1), 3) & ")")
+                        Else
+                            lstFacilitySystem.Items.Add(rsSystems.GetString(0))
+                        End If
+                        Application.DoEvents()
+                    End While
+
+                    rsSystems.Close()
+                    rsSystems = Nothing
+                    lstFacilitySystem.EndUpdate()
+                    lstFacilitySystem.Visible = True
+                    Application.UseWaitCursor = False
+
+                End If
+                If (String.IsNullOrEmpty(cmbFacilitySystem.Text)) Then
+                    lstFacilitySystem.Items.Clear()
+                    lstFacilitySystem.Visible = False
+                End If
+            End If
+        Else
+            'PreviousSystem = cmbFacilitySystem.Text
+        End If
+    End Sub
+    Private Sub cmbFacilitySystem_KeyDown(sender As Object, e As KeyEventArgs) Handles cmbFacilitySystem.KeyDown
+        If cmbFacilitySystem.DroppedDown Then
+            SystemComboKeyDown = False
+        Else
+            SystemComboKeyDown = True
+        End If
+
+        If e.KeyValue = Keys.Up Or e.KeyValue = Keys.Down Then
+            SystemComboBoxArrowKeys = True
+        Else
+            SystemComboBoxArrowKeys = False
+        End If
+
+        ' They have the list down, so process up and down keys to work with selecting in the list
+        If lstFacilitySystem.Visible Then
+            Select Case (e.KeyCode)
+                Case Keys.Down
+                    If (lstFacilitySystem.SelectedIndex < lstFacilitySystem.Items.Count - 1) Then
+                        lstFacilitySystem.SelectedIndex = lstFacilitySystem.SelectedIndex + 1
+                    End If
+                Case Keys.Up
+                    If (lstFacilitySystem.SelectedIndex > 0) Then
+                        lstFacilitySystem.SelectedIndex = lstFacilitySystem.SelectedIndex - 1
+                    End If
+                Case Keys.Escape
+                    lstFacilitySystem.Visible = False
+            End Select
+            e.Handled = True ' Don't process up and down in the combo when the list shown
+        End If
+
+        ' Don't play sounds for tab
+        If e.KeyCode = Keys.Tab Then
+            e.SuppressKeyPress = True
+        End If
+    End Sub
+    Private Sub cmbFacilitySystem_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilitySystem.KeyPress
+        ' Process when Enter is pressed here so it doesn't ding (e.Handled = True)
+        If lstFacilitySystem.Visible Then
+            ' Only use what was selected in list
+            If e.KeyChar = ControlChars.Cr Then
+                If (lstFacilitySystem.SelectedIndex > -1) Then
+                    e.Handled = True
+                    cmbFacilitySystem.Text = CStr(lstFacilitySystem.SelectedItem)
+                    lstFacilitySystem.Visible = False
+                    Call LoadFacilitiesonEvent()
+                End If
+            End If
+        Else
+            ' If they select enter, then load the BP that is selected in the combo
+            If e.KeyChar = ControlChars.Cr Then
+                ' Move to system combo
+                e.Handled = True
+                Call LoadFacilitiesonEvent()
+            End If
+        End If
+    End Sub
+    Private Sub cmbFacilitySystem_PreviewKeyDown(sender As Object, e As PreviewKeyDownEventArgs) Handles cmbFacilitySystem.PreviewKeyDown
+        If e.KeyCode = Keys.Tab And e.Modifiers <> Keys.Shift Then
+            If lstFacilitySystem.Visible Then
+                ' They entered text, so we need to verify it's in the list of items
+                If lstFacilitySystem.SelectedIndex = -1 Then
+                    lstFacilitySystem.Visible = False ' hide this since they tabbed without selecting something
+                    ' Load up the previous system
+                    RemoveHandler cmbFacilitySystem.TextChanged, AddressOf cmbFacilitySystem_TextChanged
+                    cmbFacilitySystem.Text = PreviousSystem
+                    AddHandler cmbFacilitySystem.TextChanged, AddressOf cmbFacilitySystem_TextChanged
+                Else
+                    Call LoadFacilitiesonEvent()
+                End If
+            Else
+                ' Can only select what is in combo so no need to check text
+                If cmbFacilitySystem.Text <> PreviousSystem And Not SystemComboKeyDown Then
+                    '  Call LoadFacilitiesonEvent()
+                Else
+                    cmbFacility.Focus()
+                End If
+            End If
+            e.IsInputKey = True
         End If
     End Sub
     Private Sub cmbFacilitySystem_GotFocus(sender As Object, e As EventArgs) Handles cmbFacilitySystem.GotFocus
         Call cmbFacilitySystem.SelectAll()
     End Sub
     Private Sub cmbFacilitySystem_LostFocus(sender As Object, e As EventArgs) Handles cmbFacilitySystem.LostFocus
+        lstFacilitySystem.Visible = False
         cmbFacilitySystem.SelectionLength = 0
-        If Trim(cmbFacilitySystem.Text) = "" Then
-            cmbFacilitySystem.Text = PreviousSystem
+    End Sub
+    Private Sub lstFacilitySystem_SelectedValueChanged(sender As Object, e As EventArgs) Handles lstFacilitySystem.SelectedValueChanged
+        ' Process up down arrows in bp list
+        If Not IsNothing(lstFacilitySystem.SelectedItem) Then
+            cmbFacilitySystem.Text = lstFacilitySystem.SelectedItem.ToString
+            cmbFacilitySystem.SelectAll()
         End If
     End Sub
-    Private Sub cmbFacilitySystem_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacilitySystem.KeyPress
-        e.Handled = True
+    Private Sub lstFacilitySystem_MouseDown(sender As Object, e As MouseEventArgs) Handles lstFacilitySystem.MouseDown
+        ' Loads the item by clicking on the item selected
+        If lstFacilitySystem.SelectedItems.Count <> 0 Then
+            cmbFacilitySystem.Text = lstFacilitySystem.SelectedItem.ToString()
+            lstFacilitySystem.Visible = False
+            Call LoadFacilitiesonEvent()
+        End If
+    End Sub
+    Private Sub lstFacilitySystem_MouseMove(sender As Object, e As MouseEventArgs) Handles lstFacilitySystem.MouseMove
+        Dim Index As Integer = lstFacilitySystem.IndexFromPoint(e.X, e.Y)
+
+        RemoveHandler lstFacilitySystem.SelectedValueChanged, AddressOf lstFacilitySystem_SelectedValueChanged
+        lstFacilitySystem.SelectedIndex = Index
+        AddHandler lstFacilitySystem.SelectedValueChanged, AddressOf lstFacilitySystem_SelectedValueChanged
+    End Sub
+    Private Sub lstFacilitySystem_LostFocus(sender As Object, e As EventArgs) Handles lstFacilitySystem.LostFocus
+        ' hide when losing focus
+        Call lstFacilitySystem.Hide()
+        Call cmbFacility.SelectAll()
     End Sub
 
     ' Based on the selections, load the facilities/arrays combo - an itemcategory or itemgroup id of -1 means to ignore it when filling arrays
@@ -1608,7 +1937,7 @@ Public Class ManufacturingFacility
                         SQL = String.Format(SQL, CInt(Services.StandupCompositeReactor))
                     Case ProductionType.Reprocessing
                         SQL = String.Format(SQL, CInt(Services.StandupReprocessingFaclity))
-                    Case Else ' All others get manufacturing (including boosters)
+                    Case Else ' All others get manufacturing (including Boosters)
                         SQL = String.Format(SQL, CInt(Services.StandupManufacturingPlant))
                 End Select
 
@@ -1719,7 +2048,7 @@ Public Class ManufacturingFacility
         DBCommand = Nothing
 
     End Sub
-    Private Sub cmbFacilityorArray_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacility.SelectedIndexChanged
+    Private Sub cmbFacility_SelectedIndexChanged(sender As System.Object, e As System.EventArgs) Handles cmbFacility.SelectedIndexChanged
 
         If Not LoadingFacilities And Not FirstLoad And PreviousEquipment <> cmbFacility.Text Then
             Call DisplayFacilityBonus(SelectedProductionType, SelectedBPGroupID, SelectedBPCategoryID, cmbFacilityActivities.Text,
@@ -1732,25 +2061,29 @@ Public Class ManufacturingFacility
         Call SetResetRefresh()
 
     End Sub
-    Private Sub cmbFacilityorArray_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacility.DropDown
-        ' If you drop down, don't show the text window
-        cmbFacility.AutoCompleteMode = AutoCompleteMode.None
-
+    Private Sub cmbFacility_DropDown(sender As Object, e As System.EventArgs) Handles cmbFacility.DropDown
         If Not FacilityLoaded And Not FirstLoad Then
             PreviousEquipment = cmbFacility.Text
             Call LoadFacilities(False, cmbFacilityActivities.Text, False, "")
         End If
+
+        lstFacilityRegion.Visible = False
+        SystemComboMenuDown = True
+        ' if we drop down, we aren't using the arrow keys
+        SystemComboBoxArrowKeys = False
+        SystemComboKeyDown = False
+
     End Sub
-    Private Sub cmbFacilityorArray_GotFocus(sender As Object, e As EventArgs) Handles cmbFacility.GotFocus
+    Private Sub cmbFacility_GotFocus(sender As Object, e As EventArgs) Handles cmbFacility.GotFocus
         Call cmbFacility.SelectAll()
     End Sub
-    Private Sub cmbFacilityorArray_LostFocus(sender As Object, e As EventArgs) Handles cmbFacility.LostFocus
+    Private Sub cmbFacility_LostFocus(sender As Object, e As EventArgs) Handles cmbFacility.LostFocus
         cmbFacility.SelectionLength = 0
         If Trim(cmbFacility.Text) = "" Then
             cmbFacility.Text = PreviousEquipment
         End If
     End Sub
-    Private Sub cmbFacilityorArray_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacility.KeyPress
+    Private Sub cmbFacility_KeyPress(sender As Object, e As System.Windows.Forms.KeyPressEventArgs) Handles cmbFacility.KeyPress
         e.Handled = True
     End Sub
     Private Sub lblFacilityDefault_DoubleClick(sender As Object, e As EventArgs) Handles lblFacilityDefault.DoubleClick
@@ -1765,6 +2098,9 @@ Public Class ManufacturingFacility
             Dim TechLevel As Integer = 0
             Dim Activity As String = ""
             Dim OriginalProductionType As ProductionType = SelectedProductionType
+
+            lstFacilityRegion.Visible = False
+            lstFacilitySystem.Visible = False
 
             SelectedFacility = SelectFacility(OriginalProductionType, True)
 
@@ -1801,7 +2137,7 @@ Public Class ManufacturingFacility
     Private Sub DisplayFacilityBonus(BuildType As ProductionType, ItemGroupID As Integer, ItemCategoryID As Integer, Activity As String,
                                     FacilityType As FacilityTypes, FacilityName As String)
         Dim SQL As String = ""
-        Dim rsLoader As SQLiteDataReader
+        Dim rsLoader As SQLiteDataReader = Nothing
 
         Dim FacilityID As Long
         Dim DFMaterialMultiplier As Double = 0
@@ -1821,26 +2157,36 @@ Public Class ManufacturingFacility
         Dim MMText As String
         Dim TMText As String
 
-        ' Get the facility ID first
-        ' Not in there for either character or default, so use the defaults
-        If FacilityType = FacilityTypes.Station Then
-            ' Load the Stations in system for the activity we are doing
-            SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
-        ElseIf FacilityType = FacilityTypes.UpwellStructure Then
-            SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+        ' If this is a cap component or component build, then we need to load the bonuses for the components in display since the original IDs won't be found to show bonuses
+        If BuildType = ProductionType.ComponentManufacturing Then
+            ItemGroupID = ItemIDs.ConstructionComponentsGroupID
+            ItemCategoryID = ItemIDs.ComponentCategoryID
+        ElseIf BuildType = ProductionType.CapitalComponentManufacturing Then
+            ItemGroupID = ItemIDs.CapitalComponentGroupID
+            ItemCategoryID = ItemIDs.CapitalComponentCategoryID
         End If
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
-        rsLoader.Read()
+        ' Get the facility ID
+        ' Not in there for either character or default, so use the defaults
+        If FacilityType <> FacilityTypes.None Then
+            If FacilityType = FacilityTypes.Station Then
+                ' Load the Stations in system for the activity we are doing
+                SQL = "SELECT STATION_ID FROM STATIONS WHERE STATION_NAME ='" & FormatDBString(FacilityName) & "' "
+            ElseIf FacilityType = FacilityTypes.UpwellStructure Then
+                SQL = "SELECT UPWELL_STRUCTURE_TYPE_ID FROM UPWELL_STRUCTURES WHERE UPWELL_STRUCTURE_NAME = '" & FormatDBString(FacilityName) & "' "
+            End If
+
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsLoader = DBCommand.ExecuteReader
+            rsLoader.Read()
+        End If
 
         If rsLoader.HasRows Then
             FacilityID = rsLoader.GetInt64(0)
+            rsLoader.Close()
         Else
             FacilityID = -1
         End If
-
-        rsLoader.Close()
 
         Dim CharID As String = ""
 
@@ -1913,7 +2259,7 @@ Public Class ManufacturingFacility
                     Case FacilityTypes.Station
                         If BuildType = ProductionType.Reprocessing Then
                             ' Get Refine rate and tax for station
-                            SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacterID, FacilityID, SelectedFacility.BaseME)
+                            SelectedFacility.BaseTax = SelectedFacility.CalculateStationReprocessingTaxRate(SelectedCharacter.ID, FacilityID, SelectedFacility.BaseME)
                         Else
                             SelectedFacility.BaseTax = UserApplicationSettings.StationTaxRate
                             SelectedFacility.BaseCost = 1
@@ -1928,6 +2274,7 @@ Public Class ManufacturingFacility
                                 SelectedFacility.BaseME = 1
                                 SelectedFacility.BaseTE = 1
                             End If
+
                         End If
 
                     Case FacilityTypes.UpwellStructure
@@ -2142,14 +2489,17 @@ Public Class ManufacturingFacility
             ' Enable fitting
             btnFacilityFitting.Enabled = True
             btnFacilityFitting.Visible = True
+            'btnStructureDelete.Visible = True
+            ' if this isn't one of the default names, then enable the button
+            'btnStructureDelete.Enabled = False
         Else
             btnFacilityFitting.Enabled = False
             btnFacilityFitting.Visible = False
+            'btnStructureDelete.Visible = False
         End If
 
         ' Enable the FW settings 
         Call SetFWUpgradeControls(SelectedFacility.SolarSystemName)
-
         If SelectedLocation = ProgramLocation.BlueprintTab Then
             Call CostIndexUpdateText()
         End If
@@ -2435,13 +2785,11 @@ Public Class ManufacturingFacility
             Call LoadFacility(SelectedBPID, SelectedBPGroupID, SelectedBPCategoryID, SelectedBPTech)
         End If
 
-        If StructureViewer.ResetManualEntries Then
-            With SelectedFacility
-                .ManualCost = False
-                .ManualME = False
-                .ManualTax = False
-                .ManualTE = False
-            End With
+        If StructureViewer.SavedFacility Then
+            ' Reset any manual settings
+            Call SelectedFacility.ResetManualToggles()
+            ' Save it here too but don't show the dialog
+            Call SaveSelectedFacility(True)
         End If
 
         Call SetResetRefresh()
@@ -2740,7 +3088,7 @@ Public Class ManufacturingFacility
     ' Sets all the combos to unenabled and base text to show no facility for stuff like Invention, Copy and RE where they might buy the item
     Private Sub SetNoFacility()
         cmbFacilityRegion.Items.Clear()
-        cmbFacilityRegion.Text = "Select Region"
+        cmbFacilityRegion.Text = InitialRegionComboText
         cmbFacilityRegion.Enabled = False
         cmbFacilitySystem.Items.Clear()
         cmbFacilitySystem.Text = InitialSolarSystemComboText
@@ -3082,12 +3430,10 @@ Public Class ManufacturingFacility
             DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
             rsFW = DBCommand.ExecuteReader
 
-            Dim Warzone As Boolean
+            Dim Warzone As Boolean = False
             If rsFW.Read Then
                 Warzone = CBool(rsFW.GetInt32(0))
                 SSID = rsFW.GetInt64(1)
-            Else
-                Warzone = False
             End If
 
             rsFW.Close()
@@ -3127,7 +3473,6 @@ Public Class ManufacturingFacility
         ' Load the faction warfare upgrade
         Dim rsFW As SQLiteDataReader
         Dim SSID As Long
-        Dim Warzone As Boolean = False
 
         ' Format system name
         If SolarSystemName.Contains("(") Then
@@ -3138,6 +3483,7 @@ Public Class ManufacturingFacility
         DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
         rsFW = DBCommand.ExecuteReader
 
+        Dim Warzone As Boolean
         If rsFW.Read Then
             Warzone = CBool(rsFW.GetInt32(0))
             SSID = rsFW.GetInt64(1)
@@ -3712,7 +4058,7 @@ Public Class ManufacturingFacility
 
     End Function
 
-    Private Sub POSCombos_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmbModules.SelectedIndexChanged, cmbFuelBlocks.SelectedIndexChanged, cmbLargeShips.SelectedIndexChanged
+    Private Sub POSCombos_SelectedIndexChanged(sender As Object, e As EventArgs)
 
         Call SetResetRefresh()
 
@@ -4016,14 +4362,16 @@ Public Class IndustryFacility
         ' Load these for later use
         ThukkerRigIDs = New List(Of Integer)
 
-        DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
-        rsLoader = DBCommand.ExecuteReader
+        If InitialProductionType = ProductionType.CapitalComponentManufacturing Or InitialProductionType = ProductionType.ComponentManufacturing Then
+            DBCommand = New SQLiteCommand("SELECT typeID FROM INVENTORY_TYPES WHERE typeName LIKE 'Standup %Thukker%' AND groupID <> 1708", EVEDB.DBREf)
+            rsLoader = DBCommand.ExecuteReader
 
-        While rsLoader.Read
-            ThukkerRigIDs.Add(rsLoader.GetInt32(0))
-        End While
+            While rsLoader.Read
+                ThukkerRigIDs.Add(rsLoader.GetInt32(0))
+            End While
 
-        rsLoader.Close()
+            rsLoader.Close()
+        End If
 
         ' Save the reference to the program location
         ControlLocation = FacilityLocation
@@ -4051,7 +4399,7 @@ Public Class IndustryFacility
         Dim SQLCharID As String = "AND CHARACTER_ID = {0}"
         Dim CharID As String = ""
 
-        ' See what type of character ID
+        ' See what type of character ID - reprocessing needs to use the selected character standings for tax rates
         If UserApplicationSettings.SaveFacilitiesbyChar Then
             CharID = CStr(SelectedCharacter.ID)
         Else
@@ -4181,8 +4529,8 @@ Public Class IndustryFacility
                         ElseIf TaxRate = -1 Then
                             ' Nothing from saved facilties, so use what is in SDE unless it's 
                             If InitialProductionType = ProductionType.Reprocessing And FacilityType = FacilityTypes.Station Then
-                                ' Calculate it for reprocessing in stations - structures are always 0 unless saved otherwise
-                                TaxRate = CalculateStationReprocessingTaxRate(CLng(CharID), FacilityID, Nothing)
+                                ' Calculate it for reprocessing in stations - structures are always 0 unless saved otherwise. Also, always use the character for standings and not common.
+                                TaxRate = CalculateStationReprocessingTaxRate(CLng(SelectedCharacter.ID), FacilityID, Nothing)
                             Else
                                 TaxRate = .GetDouble(1)
                             End If
@@ -4221,11 +4569,12 @@ ExitBlock:
         Dim CalcTax As Double = 0
         Dim UnadjustedCorpStanding As Double = 0
 
-        Dim SQL As String = ""
+        Dim SQL As String
         Dim rsStats As SQLiteDataReader
 
         SQL = "SELECT REPROCESSING_TAX_RATE, CASE WHEN STANDING IS NULL THEN 0 ELSE STANDING END, REPROCESSING_EFFICIENCY FROM STATIONS "
-        SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID And CHARACTER_STANDINGS.CHARACTER_ID = {0} WHERE STATION_ID = {1}"
+        SQL &= "LEFT JOIN CHARACTER_STANDINGS ON STATIONS.CORPORATION_ID = CHARACTER_STANDINGS.NPC_TYPE_ID "
+        SQL &= "AND CHARACTER_STANDINGS.CHARACTER_ID = {0} WHERE STATION_ID = {1}"
 
         DBCommand = New SQLiteCommand(String.Format(SQL, CharacterID, SentFacilityID), EVEDB.DBREf)
         rsStats = DBCommand.ExecuteReader
@@ -4294,7 +4643,6 @@ ExitBlock:
                     TempSQL &= "INCLUDE_ACTIVITY_TIME = {6}, "
                     TempSQL &= "INCLUDE_ACTIVITY_USAGE = {7}, "
                     TempSQL &= "CONVERT_TO_ORE = {8},"
-                    TempSQL &= "FACILITY_TYPE_ID = {11},"
 
                     If FacilityType = FacilityTypes.UpwellStructure Then
                         ' if what they have now is different from what they started with, then they made a change
@@ -4336,8 +4684,7 @@ ExitBlock:
                     TempSQL &= "AND FACILITY_VIEW = " & CStr(LID)
 
                     SQL = String.Format(TempSQL, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
-                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType),
-                    CharacterID, CStr(FacilityType))
+                    CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), ConvertToOre, CInt(FacilityProductionType), CharacterID)
 
                 Else
                     Dim MEValue As String = "NULL"
@@ -4369,8 +4716,8 @@ ExitBlock:
                     End If
 
                     ' Insert
-                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16});",
-                                        CharacterID, CInt(FacilityProductionType), LID, FacilityID, CStr(FacilityType), CStr(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
+                    SQL = String.Format("INSERT INTO SAVED_FACILITIES VALUES ({0},{1},{2},{3},{4},NULL,{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15});",
+                                        CharacterID, CInt(FacilityProductionType), LID, FacilityID, CInt(FacilityType), RegionID, SolarSystemID, ActivityCostPerSecond,
                                         CInt(IncludeActivityCost), CInt(IncludeActivityTime), CInt(IncludeActivityUsage), TaxValue, MEValue, TEValue, CostValue, ConvertToOre)
 
                 End If
@@ -4413,7 +4760,7 @@ ExitBlock:
                 Dim InstalledModules As New List(Of Integer)
                 ' Look up all the installed modules for the location sent
                 SQL = String.Format("SELECT INSTALLED_MODULE_ID FROM UPWELL_STRUCTURES_INSTALLED_MODULES WHERE PRODUCTION_TYPE = {0} AND FACILITY_VIEW = {1} AND CHARACTER_ID = {2} AND FACILITY_ID = {3} AND SOLAR_SYSTEM_ID = {4}",
-                                    CInt(FacilityProductionType), CStr(Location), CharacterID, FacilityID, SolarSystemID)
+                                CInt(FacilityProductionType), CStr(Location), CharacterID, FacilityID, SolarSystemID)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsCheck = DBCommand.ExecuteReader
 
@@ -4433,7 +4780,7 @@ ExitBlock:
                     For Each ModID In InstalledModules
                         For Each LID In LocationList
                             SQL = String.Format("INSERT INTO UPWELL_STRUCTURES_INSTALLED_MODULES VALUES({0},{1},{2},{3},{4},{5})",
-                                    CharacterID, CStr(FacilityProductionType), SolarSystemID, CStr(LID), FacilityID, ModID)
+                                CharacterID, CStr(FacilityProductionType), SolarSystemID, CStr(LID), FacilityID, ModID)
                             EVEDB.ExecuteNonQuerySQL(SQL)
                         Next
                     Next

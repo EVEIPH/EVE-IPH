@@ -51,10 +51,11 @@ Public Class frmReprocessingPlant
         lstItemstoRefine.Columns.Add("Total Cost", 100, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Rate", 43, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Refined Value", 100, HorizontalAlignment.Right)
-        lstItemstoRefine.Columns.Add("% Return", 55, HorizontalAlignment.Right)
+        lstItemstoRefine.Columns.Add("Return", 55, HorizontalAlignment.Right)
         lstItemstoRefine.Columns.Add("Material Group", 0, HorizontalAlignment.Right) ' Hidden
-        lstItemstoRefine.Columns.Add("Item ID", 0, HorizontalAlignment.Right) ' Hidden
+        lstItemstoRefine.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
 
+        lstRefineOutput.Columns.Add("TypeID", 0, HorizontalAlignment.Left) ' Hidden
         lstRefineOutput.Columns.Add("Material", 200, HorizontalAlignment.Left)
         lstRefineOutput.Columns.Add("Quantity", 90, HorizontalAlignment.Right)
         lstRefineOutput.Columns.Add("Cost Per Item", 77, HorizontalAlignment.Right)
@@ -108,9 +109,9 @@ Public Class frmReprocessingPlant
         Call RefreshRefiningRates()
 
         ItemsColumnClicked = 1
-        ItemsColumnSortType = SortOrder.Ascending
-        OutputColumnClicked = 1
-        OutputColumnSortType = SortOrder.Ascending
+        ItemsColumnSortType = SortOrder.Descending
+        OutputColumnClicked = 2
+        OutputColumnSortType = SortOrder.Descending
 
     End Sub
 
@@ -303,11 +304,11 @@ Public Class frmReprocessingPlant
         ' Make sure it's not disposed
         If IsNothing(frmRefineryAssets) Then
             ' Make new form
-            frmRefineryAssets = New frmAssetsViewer(AssetWindow.Refinery)
+            frmRefineryAssets = New frmAssetsViewer(AssetWindow.ReprocessingPlant)
         Else
             If frmRefineryAssets.IsDisposed Then
                 ' Make new form
-                frmRefineryAssets = New frmAssetsViewer(AssetWindow.Refinery)
+                frmRefineryAssets = New frmAssetsViewer(AssetWindow.ReprocessingPlant)
             End If
         End If
 
@@ -348,7 +349,7 @@ Public Class frmReprocessingPlant
         Call Reprocess()
     End Sub
 
-    Private Sub Reprocess()
+    Public Sub Reprocess()
         Dim ReprocessedMaterials As New Materials
         Dim ReprocessedCost As Double
         Dim ReprocessingUsage As Double
@@ -356,6 +357,8 @@ Public Class frmReprocessingPlant
         Dim ItemCost As Double
         Dim ItemlstViewRow As ListViewItem
         Dim TotalItemListValue As Double = 0
+        Dim ReprocessingYield As Double
+        Dim fnt_font As Font
 
         If lstItemstoRefine.CheckedItems.Count = 0 Then
             MsgBox("No items selected to refine.", vbExclamation, Application.ProductName)
@@ -371,8 +374,7 @@ Public Class frmReprocessingPlant
         For Each Item As ListViewItem In Me.lstItemstoRefine.Items
             If Item.Checked Then
 
-                Dim ReprocessingYield As Double = 0
-
+                ReprocessingYield = 0
                 TotalItemListValue += CDbl(Item.SubItems.Item(2).Text)
                 Dim ItemGroup As String = Item.SubItems.Item(6).Text
 
@@ -381,7 +383,6 @@ Public Class frmReprocessingPlant
                     Call ReprocessMaterial(CInt(.Item(7).Text), .Item(0).Text, CInt(.Item(1).Text), .Item(6).Text, chkRecursiveRefine.Checked,
                                                              ReprocessedMaterials, ReprocessingYield, ReprocessingUsage)
                 End With
-
                 ' Save the processing cost
                 TotalReprocessingUsage += ReprocessingUsage
 
@@ -390,37 +391,51 @@ Public Class frmReprocessingPlant
                 ReprocessedCost = ReprocessedMaterials.GetTotalMaterialsCost
                 Item.SubItems.Item(4).Text = FormatNumber(ReprocessedCost, 2)
                 ItemCost = CDbl(Item.SubItems.Item(2).Text)
+                Item.UseItemStyleForSubItems = False
+                fnt_font = New Font(Item.SubItems.Item(5).Font.SystemFontName, Item.SubItems.Item(5).Font.Size, FontStyle.Bold)
+                Item.SubItems.Item(5).Font = fnt_font
                 If ItemCost = 0 Then
                     Item.SubItems.Item(5).Text = FormatPercent(1, 1)
+                    Item.SubItems.Item(5).ForeColor = Color.DarkGreen
                 Else
                     Item.SubItems.Item(5).Text = FormatPercent(ReprocessedCost / ItemCost, 1)
+                    If ReprocessedCost / ItemCost >= 1 Then
+                        Item.SubItems.Item(5).ForeColor = Color.DarkGreen
+                    Else
+                        Item.SubItems.Item(5).ForeColor = Color.DarkRed
+                    End If
                 End If
 
                 ' Add the materials to the main material list
                 Call MaterialOutput.InsertMaterialList(ReprocessedMaterials.GetMaterialList)
-                Application.DoEvents()
+
             Else
                 ' Clear the output data 
                 Item.SubItems.Item(3).Text = ""
                 Item.SubItems.Item(4).Text = ""
                 Item.SubItems.Item(5).Text = ""
             End If
+            Application.DoEvents()
         Next
         lstItemstoRefine.EndUpdate()
 
         ' Update the total usage for doing this refining
         ReprocessingFacility.GetSelectedFacility.FacilityUsage = TotalReprocessingUsage
+        lblTotalReprocessingCost.Text = FormatNumber(TotalReprocessingUsage, 2)
 
         ' Now update the main output list
         lstRefineOutput.Items.Clear()
         lstRefineOutput.BeginUpdate()
         For Each mat In MaterialOutput.GetMaterialList
-            ItemlstViewRow = New ListViewItem(mat.GetMaterialName)
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetQuantity, 0))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetCostPerItem, 2))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalCost, 2))
-            ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalVolume, 2))
-            Call lstRefineOutput.Items.Add(ItemlstViewRow)
+            If mat.GetQuantity > 0 Then
+                ItemlstViewRow = New ListViewItem(CStr(mat.GetMaterialTypeID))
+                ItemlstViewRow.SubItems.Add(mat.GetMaterialName)
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetQuantity, 0))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetCostPerItem, 2))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalCost, 2))
+                ItemlstViewRow.SubItems.Add(FormatNumber(mat.GetTotalVolume, 2))
+                Call lstRefineOutput.Items.Add(ItemlstViewRow)
+            End If
         Next
         lstRefineOutput.EndUpdate()
 
@@ -431,8 +446,13 @@ Public Class frmReprocessingPlant
         lblReprocessingValueOutput.Text = FormatNumber(TotalValue, 2) ' Total value of stuff reprocessed minus usage
         lblReprocessingVolumeOutput.Text = FormatNumber(MaterialOutput.GetTotalVolume, 2) ' Total volume of output stuff
 
+        ' Whenever reprocess is pushed and the sort column is quantity, just sort ascending
+        'If OutputColumnClicked = 2 Then
+        '    OutputColumnSortType = SortOrder.Ascending
+        'End If
+
         ' Sort the  list
-        Call ListViewColumnSorter(OutputColumnClicked, CType(lstRefineOutput, ListView), OutputColumnClicked, OutputColumnSortType)
+        Call ListViewColumnSorter(OutputColumnClicked, CType(lstRefineOutput, ListView), OutputColumnClicked, OutputColumnSortType, True)
 
         Application.DoEvents()
 
@@ -526,70 +546,62 @@ Public Class frmReprocessingPlant
             PasteMaterialList = ImportCopyPasteText(CopyPasteRefineryMaterialText)
         End If
 
-        Dim IDString As String = ""
-
         If IsNothing(PasteMaterialList) Then
-            ' Read all the assets into the list as selected
-            ' Set the ID string we will use to update
-            If UserAssetWindowRefinerySettings.AssetType = "Both" Then
-                IDString = CStr(SelectedCharacter.ID) & "," & CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-            ElseIf UserAssetWindowRefinerySettings.AssetType = "Personal" Then
-                IDString = CStr(SelectedCharacter.ID)
-            ElseIf UserAssetWindowRefinerySettings.AssetType = "Corporation" Then
-                IDString = CStr(SelectedCharacter.CharacterCorporation.CorporationID)
-            End If
-
+            Dim IDString As String = GetAssetIDString(UserAssetWindowRefinerySettings)
             ' Build the where clause to look up data
             Dim AssetLocationFlagList As String = ""
-            ' First look up the location and flagID pairs - unique ID of asset locations
-            SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.Refinery) & " AND ID IN (" & IDString & ")"
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerItems = DBCommand.ExecuteReader
 
-            While readerItems.Read
-                If (readerItems.GetInt32(1) = -4 Or readerItems.GetInt64(0) > 1000000000000) Then
-                    ' If the flag is the base location, then we want all items at the location id
-                    AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & ") OR "
-                Else
-                    AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
-                End If
-            End While
+            If IDString <> "" Then
+                ' First look up the location and flagID pairs - unique ID of asset locations
+                SQL = "SELECT LocationID, FlagID FROM ASSET_LOCATIONS WHERE EnumAssetType = " & CStr(AssetWindow.ReprocessingPlant) & " AND ID IN (" & IDString & ")"
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerItems = DBCommand.ExecuteReader
 
-            readerItems.Close()
+                While readerItems.Read ' Update that if we are looking at -4, then only select stuff that is marked as -4 or in the Hangar and not ships (drones - 87 flag, cargo - 5 flag)
+                    If ((readerItems.GetInt32(1) = -90 Or readerItems.GetInt32(1) = -4) And readerItems.GetInt64(0) > 1000000000000) Then
+                        ' If the flag is the base location, then we want all items at the location id
+                        AssetLocationFlagList &= "(LocationID = " & CStr(readerItems.GetInt64(0)) & ") OR "
+                    Else
+                        AssetLocationFlagList &= "(LocationID = " & CStr(Math.Abs(readerItems.GetInt64(0))) & " AND Flag = " & CStr(readerItems.GetInt32(1)) & ") OR "
+                    End If
+                End While
 
-            If AssetLocationFlagList = "" Then
-                MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
-                Application.UseWaitCursor = False
-                Me.Cursor = Cursors.Default
-                Application.DoEvents()
-                Exit Sub
-            Else
-                ' Strip the last OR
-                AssetLocationFlagList = AssetLocationFlagList.Substring(0, Len(AssetLocationFlagList) - 4)
+                readerItems.Close()
             End If
 
-            ' Now get all the assets from the checked locations
-            SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
-            SQL &= "ASSETS, INVENTORY_TYPES AS IT "
-            SQL &= "WHERE (" & AssetLocationFlagList & ") "
-            SQL &= "AND IT.typeID = ASSETS.TypeID "
-            SQL &= "AND ID IN (" & IDString & ") "
-            SQL &= "GROUP BY IT.typeID, IT.typeName, IT.volume "
+            If AssetLocationFlagList = "" Then
+                    MsgBox("You do not have an asset location selected", vbInformation, Application.ProductName)
+                    Application.UseWaitCursor = False
+                    Me.Cursor = Cursors.Default
+                    Application.DoEvents()
+                    Exit Sub
+                Else
+                    ' Strip the last OR
+                    AssetLocationFlagList = AssetLocationFlagList.Substring(0, Len(AssetLocationFlagList) - 4)
+                End If
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            readerItems = DBCommand.ExecuteReader
+                ' Now get all the assets from the checked locations
+                SQL = "SELECT IT.typeID, IT.typeName, SUM(Quantity), CASE WHEN IT.volume IS NULL THEN 1 ELSE IT.volume END FROM "
+                SQL &= "ASSETS, INVENTORY_TYPES AS IT "
+                SQL &= "WHERE IT.typeID = ASSETS.TypeID "
+                SQL &= "AND ID IN (" & IDString & ") "
+                SQL &= " AND (" & AssetLocationFlagList & ") "
+                SQL &= "GROUP BY IT.typeID, IT.typeName, IT.volume "
 
-            While readerItems.Read
-                ' Add each material to the temp list
-                With readerItems
-                    TempMaterial = New Material(.GetInt64(0), .GetString(1), "", .GetInt64(2), .GetDouble(3), 0, "", "")
-                End With
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                readerItems = DBCommand.ExecuteReader
 
-                Call TempMaterialList.InsertMaterial(TempMaterial)
+                While readerItems.Read
+                    ' Add each material to the temp list
+                    With readerItems
+                        TempMaterial = New Material(.GetInt64(0), .GetString(1), "", .GetInt64(2), .GetDouble(3), 0, "", "")
+                    End With
 
-            End While
-        Else
-            TempMaterialList = PasteMaterialList
+                    Call TempMaterialList.InsertMaterial(TempMaterial)
+
+                End While
+            Else
+                TempMaterialList = PasteMaterialList
         End If
 
         ' First, only add items to the list that we can refine - filter out all the other junk
@@ -639,8 +651,6 @@ Public Class frmReprocessingPlant
 
         Application.UseWaitCursor = False
         Me.Cursor = Cursors.Default
-        ' Play notification sound
-        Call PlayNotifySound()
         Application.DoEvents()
 
     End Sub
@@ -692,6 +702,8 @@ Public Class frmReprocessingPlant
         lblReturnRatePercentOutput.Text = "-"
         lblReprocessingValueOutput.Text = "-"
         lblReprocessingVolumeOutput.Text = "-"
+
+        lblTotalReprocessingCost.Text = "0.00"
 
     End Sub
 

@@ -54,6 +54,7 @@ Partial Class frmReprocessingPlant
         Me.btnCopyOutput = New System.Windows.Forms.Button()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.cmbBeanCounterRefining = New System.Windows.Forms.ComboBox()
+        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.tabpSkills = New System.Windows.Forms.TabPage()
         Me.tabMiningProcessingSkills = New System.Windows.Forms.TabControl()
         Me.tabPageOres = New System.Windows.Forms.TabPage()
@@ -108,9 +109,10 @@ Partial Class frmReprocessingPlant
         Me.lblReturnRatePercentOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingValueOutput = New System.Windows.Forms.Label()
         Me.lblReprocessingVolumeOutput = New System.Windows.Forms.Label()
-        Me.ReprocessingFacility = New EVE_Isk_per_Hour.ManufacturingFacility()
         Me.lstItemstoRefine = New EVE_Isk_per_Hour.MyListView()
         Me.lstRefineOutput = New EVE_Isk_per_Hour.MyListView()
+        Me.lblTotalReprocessingCost = New System.Windows.Forms.Label()
+        Me.lblTotalReprocessing = New System.Windows.Forms.Label()
         Me.gbRefineYields.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.tabRefinery.SuspendLayout()
@@ -124,7 +126,7 @@ Partial Class frmReprocessingPlant
         '
         'btnReprocess
         '
-        Me.btnReprocess.Location = New System.Drawing.Point(259, 128)
+        Me.btnReprocess.Location = New System.Drawing.Point(259, 143)
         Me.btnReprocess.Name = "btnReprocess"
         Me.btnReprocess.Size = New System.Drawing.Size(74, 30)
         Me.btnReprocess.TabIndex = 36
@@ -134,7 +136,7 @@ Partial Class frmReprocessingPlant
         'btnClose
         '
         Me.btnClose.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.btnClose.Location = New System.Drawing.Point(481, 128)
+        Me.btnClose.Location = New System.Drawing.Point(481, 143)
         Me.btnClose.Name = "btnClose"
         Me.btnClose.Size = New System.Drawing.Size(74, 30)
         Me.btnClose.TabIndex = 38
@@ -374,6 +376,8 @@ Partial Class frmReprocessingPlant
         '
         'tabpMain
         '
+        Me.tabpMain.Controls.Add(Me.lblTotalReprocessingCost)
+        Me.tabpMain.Controls.Add(Me.lblTotalReprocessing)
         Me.tabpMain.Controls.Add(Me.chkRecursiveRefine)
         Me.tabpMain.Controls.Add(Me.btnClear)
         Me.tabpMain.Controls.Add(Me.btnCopyOutput)
@@ -398,7 +402,7 @@ Partial Class frmReprocessingPlant
         'chkRecursiveRefine
         '
         Me.chkRecursiveRefine.AutoSize = True
-        Me.chkRecursiveRefine.Location = New System.Drawing.Point(62, 157)
+        Me.chkRecursiveRefine.Location = New System.Drawing.Point(6, 117)
         Me.chkRecursiveRefine.Name = "chkRecursiveRefine"
         Me.chkRecursiveRefine.Size = New System.Drawing.Size(128, 17)
         Me.chkRecursiveRefine.TabIndex = 132
@@ -407,7 +411,7 @@ Partial Class frmReprocessingPlant
         '
         'btnClear
         '
-        Me.btnClear.Location = New System.Drawing.Point(333, 128)
+        Me.btnClear.Location = New System.Drawing.Point(333, 143)
         Me.btnClear.Name = "btnClear"
         Me.btnClear.Size = New System.Drawing.Size(74, 30)
         Me.btnClear.TabIndex = 133
@@ -416,7 +420,7 @@ Partial Class frmReprocessingPlant
         '
         'btnCopyOutput
         '
-        Me.btnCopyOutput.Location = New System.Drawing.Point(407, 128)
+        Me.btnCopyOutput.Location = New System.Drawing.Point(407, 143)
         Me.btnCopyOutput.Name = "btnCopyOutput"
         Me.btnCopyOutput.Size = New System.Drawing.Size(74, 30)
         Me.btnCopyOutput.TabIndex = 132
@@ -426,7 +430,7 @@ Partial Class frmReprocessingPlant
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(6, 114)
+        Me.Label1.Location = New System.Drawing.Point(3, 136)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(176, 13)
         Me.Label1.TabIndex = 131
@@ -438,10 +442,18 @@ Partial Class frmReprocessingPlant
         Me.cmbBeanCounterRefining.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.cmbBeanCounterRefining.FormattingEnabled = True
         Me.cmbBeanCounterRefining.Items.AddRange(New Object() {"None", "Zainou 'Beancounter' Reprocessing RX-801", "Zainou 'Beancounter' Reprocessing RX-802", "Zainou 'Beancounter' Reprocessing RX-804"})
-        Me.cmbBeanCounterRefining.Location = New System.Drawing.Point(9, 130)
+        Me.cmbBeanCounterRefining.Location = New System.Drawing.Point(6, 151)
         Me.cmbBeanCounterRefining.Name = "cmbBeanCounterRefining"
-        Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(235, 21)
+        Me.cmbBeanCounterRefining.Size = New System.Drawing.Size(247, 21)
         Me.cmbBeanCounterRefining.TabIndex = 130
+        '
+        'ReprocessingFacility
+        '
+        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
+        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
+        Me.ReprocessingFacility.Name = "ReprocessingFacility"
+        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
+        Me.ReprocessingFacility.TabIndex = 43
         '
         'tabpSkills
         '
@@ -975,14 +987,6 @@ Partial Class frmReprocessingPlant
         Me.lblReprocessingVolumeOutput.Text = "-"
         Me.lblReprocessingVolumeOutput.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'ReprocessingFacility
-        '
-        Me.ReprocessingFacility.BackColor = System.Drawing.Color.Transparent
-        Me.ReprocessingFacility.Location = New System.Drawing.Point(6, 6)
-        Me.ReprocessingFacility.Name = "ReprocessingFacility"
-        Me.ReprocessingFacility.Size = New System.Drawing.Size(303, 105)
-        Me.ReprocessingFacility.TabIndex = 43
-        '
         'lstItemstoRefine
         '
         Me.lstItemstoRefine.CheckBoxes = True
@@ -1011,6 +1015,26 @@ Partial Class frmReprocessingPlant
         Me.lstRefineOutput.TabStop = False
         Me.lstRefineOutput.UseCompatibleStateImageBehavior = False
         Me.lstRefineOutput.View = System.Windows.Forms.View.Details
+        '
+        'lblTotalReprocessingCost
+        '
+        Me.lblTotalReprocessingCost.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.lblTotalReprocessingCost.Location = New System.Drawing.Point(434, 118)
+        Me.lblTotalReprocessingCost.Name = "lblTotalReprocessingCost"
+        Me.lblTotalReprocessingCost.Size = New System.Drawing.Size(121, 18)
+        Me.lblTotalReprocessingCost.TabIndex = 144
+        Me.lblTotalReprocessingCost.Text = "0.00"
+        Me.lblTotalReprocessingCost.TextAlign = System.Drawing.ContentAlignment.MiddleRight
+        '
+        'lblTotalReprocessing
+        '
+        Me.lblTotalReprocessing.AutoSize = True
+        Me.lblTotalReprocessing.Location = New System.Drawing.Point(302, 121)
+        Me.lblTotalReprocessing.Name = "lblTotalReprocessing"
+        Me.lblTotalReprocessing.Size = New System.Drawing.Size(126, 13)
+        Me.lblTotalReprocessing.TabIndex = 143
+        Me.lblTotalReprocessing.Text = "Total Reprocessing Cost:"
+        Me.lblTotalReprocessing.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'frmReprocessingPlant
         '
@@ -1146,4 +1170,6 @@ Partial Class frmReprocessingPlant
     Friend WithEvents cmbOreProcessing12 As ComboBox
     Friend WithEvents lblOreProcessing12 As Label
     Friend WithEvents chkOreProcessing12 As CheckBox
+    Friend WithEvents lblTotalReprocessingCost As Label
+    Friend WithEvents lblTotalReprocessing As Label
 End Class

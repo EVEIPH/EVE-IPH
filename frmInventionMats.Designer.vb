@@ -25,12 +25,12 @@ Partial Class frmInventionMats
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmInventionMats))
         Me.btnOK = New System.Windows.Forms.Button()
         Me.btnCopyMats = New System.Windows.Forms.Button()
-        Me.lstMats = New EVE_Isk_per_Hour.MyListView()
+        Me.lstInventionMats = New EVE_Isk_per_Hour.MyListView()
         Me.gbExportOptions = New System.Windows.Forms.GroupBox()
+        Me.rbtnExportSimple = New System.Windows.Forms.RadioButton()
         Me.rbtnExportSSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportCSV = New System.Windows.Forms.RadioButton()
         Me.rbtnExportDefault = New System.Windows.Forms.RadioButton()
-        Me.rbtnExportSimple = New System.Windows.Forms.RadioButton()
         Me.gbExportOptions.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -52,18 +52,18 @@ Partial Class frmInventionMats
         Me.btnCopyMats.Text = "Copy List"
         Me.btnCopyMats.UseVisualStyleBackColor = True
         '
-        'lstMats
+        'lstInventionMats
         '
-        Me.lstMats.FullRowSelect = True
-        Me.lstMats.GridLines = True
-        Me.lstMats.Location = New System.Drawing.Point(12, 9)
-        Me.lstMats.Name = "lstMats"
-        Me.lstMats.Size = New System.Drawing.Size(539, 130)
-        Me.lstMats.TabIndex = 40
-        Me.lstMats.TabStop = False
-        Me.lstMats.Tag = "20"
-        Me.lstMats.UseCompatibleStateImageBehavior = False
-        Me.lstMats.View = System.Windows.Forms.View.Details
+        Me.lstInventionMats.FullRowSelect = True
+        Me.lstInventionMats.GridLines = True
+        Me.lstInventionMats.Location = New System.Drawing.Point(12, 9)
+        Me.lstInventionMats.Name = "lstInventionMats"
+        Me.lstInventionMats.Size = New System.Drawing.Size(539, 130)
+        Me.lstInventionMats.TabIndex = 40
+        Me.lstInventionMats.TabStop = False
+        Me.lstInventionMats.Tag = "20"
+        Me.lstInventionMats.UseCompatibleStateImageBehavior = False
+        Me.lstInventionMats.View = System.Windows.Forms.View.Details
         '
         'gbExportOptions
         '
@@ -77,6 +77,17 @@ Partial Class frmInventionMats
         Me.gbExportOptions.TabIndex = 75
         Me.gbExportOptions.TabStop = False
         Me.gbExportOptions.Text = "Export Data in:"
+        '
+        'rbtnExportSimple
+        '
+        Me.rbtnExportSimple.AutoSize = True
+        Me.rbtnExportSimple.Location = New System.Drawing.Point(184, 17)
+        Me.rbtnExportSimple.Name = "rbtnExportSimple"
+        Me.rbtnExportSimple.Size = New System.Drawing.Size(56, 17)
+        Me.rbtnExportSimple.TabIndex = 3
+        Me.rbtnExportSimple.TabStop = True
+        Me.rbtnExportSimple.Text = "Simple"
+        Me.rbtnExportSimple.UseVisualStyleBackColor = True
         '
         'rbtnExportSSV
         '
@@ -111,17 +122,6 @@ Partial Class frmInventionMats
         Me.rbtnExportDefault.Text = "Default"
         Me.rbtnExportDefault.UseVisualStyleBackColor = True
         '
-        'rbtnExportSimple
-        '
-        Me.rbtnExportSimple.AutoSize = True
-        Me.rbtnExportSimple.Location = New System.Drawing.Point(184, 17)
-        Me.rbtnExportSimple.Name = "rbtnExportSimple"
-        Me.rbtnExportSimple.Size = New System.Drawing.Size(56, 17)
-        Me.rbtnExportSimple.TabIndex = 3
-        Me.rbtnExportSimple.TabStop = True
-        Me.rbtnExportSimple.Text = "Simple"
-        Me.rbtnExportSimple.UseVisualStyleBackColor = True
-        '
         'frmInventionMats
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
@@ -129,7 +129,7 @@ Partial Class frmInventionMats
         Me.AutoSize = True
         Me.ClientSize = New System.Drawing.Size(564, 230)
         Me.Controls.Add(Me.gbExportOptions)
-        Me.Controls.Add(Me.lstMats)
+        Me.Controls.Add(Me.lstInventionMats)
         Me.Controls.Add(Me.btnCopyMats)
         Me.Controls.Add(Me.btnOK)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
@@ -146,7 +146,7 @@ Partial Class frmInventionMats
     End Sub
     Friend WithEvents btnOK As System.Windows.Forms.Button
     Friend WithEvents btnCopyMats As System.Windows.Forms.Button
-    Friend WithEvents lstMats As EVE_Isk_per_Hour.MyListView
+    Friend WithEvents lstInventionMats As EVE_Isk_per_Hour.MyListView
     Friend WithEvents gbExportOptions As System.Windows.Forms.GroupBox
     Friend WithEvents rbtnExportSSV As System.Windows.Forms.RadioButton
     Friend WithEvents rbtnExportCSV As System.Windows.Forms.RadioButton

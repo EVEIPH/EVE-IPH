@@ -7,6 +7,8 @@ Imports System.Collections.Specialized
 Imports System.Threading
 Imports System.Security.Cryptography
 Imports Newtonsoft.Json
+Imports System.Security.Policy
+Imports Newtonsoft.Json.Linq
 
 Public Module ESIGlobals
     Public ESICharacterSkillsScope As String = "esi-skills.read_skills" ' only required scope to use IPH
@@ -16,7 +18,7 @@ Public Class ESI
     Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/v2/oauth/authorize"
     Private Const ESITokenURL As String = "https://login.eveonline.com/v2/oauth/token"
     Private Const ESIURL As String = "https://esi.evetech.net/latest/"
-    Private Const ESIStatusURL As String = "https://esi.evetech.net/status.json?version=latest"
+    Private Const ESIStatusURL As String = "https://esi.evetech.net/meta/status/?compatibility_date=2025-11-06"
     Private Const TranquilityDataSource As String = "?datasource=tranquility"
 
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
@@ -26,17 +28,26 @@ Public Class ESI
     Private AuthorizationToken As String ' Token returned by ESI on initial authorization - good for 5 minutes
     Private CodeVerifier As String ' For PKCE - generated code we send to ESI for access codes after sending the hashed version of this for authorization code
 
+    ' Character scopes
+    Public Const ESICharacterSkillsScope As String = "esi-skills.read_skill"
     Public Const ESICharacterAssetScope As String = "esi-assets.read_assets"
     Public Const ESICharacterResearchAgentsScope As String = "esi-characters.read_agents_research"
     Public Const ESICharacterBlueprintsScope As String = "esi-characters.read_blueprints"
     Public Const ESICharacterStandingsScope As String = "esi-characters.read_standings"
     Public Const ESICharacterIndustryJobsScope As String = "esi-industry.read_character_jobs"
-    Public Const ESICharacterSkillsScope As String = "esi-skills.read_skill"
+    Public Const ESICharacterMarketOrdersScope As String = "esi-markets.read_character_orders"
+    Public Const ESICharacterWalletScope As String = "esi-wallet.read_character_wallet"
+    Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty.v1"
+    Public Const ESICharacterShipScope As String = "esi-location.read_ship_type"
 
+    ' Corporation scopes
     Public Const ESICorporationAssetScope As String = "esi-assets.read_corporation_assets"
     Public Const ESICorporationBlueprintsScope As String = "esi-corporations.read_blueprints"
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
+    Public Const ESICorporationDivisions As String = "esi-corporations.read_divisions"
+    Public Const ESICorporationMarketOrders As String = "esi-markets.read_corporation_orders"
+    Public Const ESICorporationWalletScope As String = "esi-wallet.read_corporation_wallet"
 
     Public Const ESIUniverseStructuresScope As String = "esi-universe.read_structures"
     Public Const ESIStructureMarketsScope As String = "esi-markets.structure_markets"
@@ -76,6 +87,8 @@ Public Class ESI
     ' esi-assets.read_corporation_assets.v1: Allows reading of a character's corporation's assets, if the character has roles to do so.
     ' esi-corporations.read_blueprints.v1: Allows reading a corporation's blueprints
     ' esi-industry.read_corporation_jobs.v1: Allows reading of a character's corporation's industry jobs, if the character has roles to do so.
+    ' esi-corporations.read_corporation_membership.v1: Shows all the roles of a corporation for things like factory manager and division director
+    ' esi-corporations.read_divisions.v1: names of corporation hangers and wallet divisions
     '
     ' esi-universe.read_structure.v1: Allows reading of all public structures in the universe
     ' esi-markets.structure_markets.v1: Allows reading of markets for structures the character can use
@@ -295,19 +308,23 @@ Public Class ESI
             TokenHeader = JsonConvert.DeserializeObject(Of ESIJWTHeader)(Encoding.UTF8.GetString(Convert.FromBase64String(Header)))
             TokenPayload = JsonConvert.DeserializeObject(Of ESIJWTPayload)(Encoding.UTF8.GetString(Convert.FromBase64String(Payload)))
 
-            ' TODO - Valiate signature and token
+            ' Now validate the EVE SSO JWT Token
+            If ValidateToken(TokenHeader, TokenPayload, Signature) Then
 
-            ' Get the character ID from the JWT
-            Dim SubjectInfo As String() = TokenPayload.Subject.Split(":"c)
-            TokenCharacterID = CLng(SubjectInfo(2))
+                ' Get the character ID from the JWT
+                Dim SubjectInfo As String() = TokenPayload.Subject.Split(":"c)
+                TokenCharacterID = CLng(SubjectInfo(2))
 
-            'Return the scopes as well
-            For Each entry In TokenPayload.Scopes
-                TokenScopes &= entry & " "
-            Next
-            TokenScopes = Trim(TokenScopes)
+                'Return the scopes as well
+                For Each entry In TokenPayload.Scopes
+                    TokenScopes &= entry & " "
+                Next
+                TokenScopes = Trim(TokenScopes)
 
-            Success = True
+                Success = True
+            Else
+                Success = False
+            End If
 
         Catch ex As WebException
 
@@ -343,27 +360,6 @@ Public Class ESI
         output = output.Replace("/"c, "_"c)
         Return output
     End Function
-    Public Class ESIJWTHeader
-        <JsonProperty("alg")> Public Algorithm As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("typ")> Public TokenType As String
-    End Class
-    Public Class ESIJWTPayload
-        <JsonProperty("scp")> Public Scopes As List(Of String)
-        <JsonProperty("jti")> Public JWTID As String
-        <JsonProperty("kid")> Public KeyID As String
-        <JsonProperty("sub")> Public Subject As String
-        <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
-        <JsonProperty("tenant")> Public Tenant As String
-        <JsonProperty("tier")> Public Tier As String
-        <JsonProperty("region")> Public DataRegion As String
-        <JsonProperty("aud")> Public Audience As List(Of String)
-        <JsonProperty("name")> Public Name As String
-        <JsonProperty("owner")> Public Owner As String
-        <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
-        <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
-        <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
-    End Class
 
     ' Adds spacers (=) to the JWT string portion to be converted to Base 64
     Private Function FormatJWTStringLength(JWTStringPortion As String) As String
@@ -377,6 +373,80 @@ Public Class ESI
         Loop
 
         Return CorrectedString
+
+    End Function
+
+    ''' <summary>
+    ''' Validates the EVE SSO JWT Token for added security, before trusting the access_token and refresh_token
+    ''' We should validate the access token to make sure it has not been tampered with in transit from the SSO to the application.
+    ''' </summary>
+    ''' <returns></returns>
+    Private Function ValidateToken(Header As ESIJWTHeader, Payload As ESIJWTPayload, Signature As String) As Boolean
+        Const SSO_META_DATA_URL As String = "https://login.eveonline.com/.well-known/oauth-authorization-server" ' for getting the JWKS_URI
+        Const JWK_AUDIENCE As String = "EVE Online"
+
+        Dim WC As New WebClient
+        Dim METAData As WellKnownData
+        Dim JWKS_URI_Data As JWKS
+        Dim KeyObject As New JWKSData
+
+        Try
+            ' First, validate the signature
+            ' TODO
+
+            ' Get the JWKS URI from the SSO_META_DATA_URL - returns JSON
+            METAData = JsonConvert.DeserializeObject(Of WellKnownData)(WC.DownloadString(SSO_META_DATA_URL))
+            ' Get the JWKs from the endpoint uri
+            JWKS_URI_Data = JsonConvert.DeserializeObject(Of JWKS)(WC.DownloadString(METAData.jwks_uri), New JWKSConverter)
+
+            ' Get the object based on the algorithim used
+            For Each item In JWKS_URI_Data.keys
+                If CType(item, JWKSData).alg = Header.Algorithm Then
+                    KeyObject = item
+                    Exit For
+                End If
+            Next
+
+            ' If this is empty, we couldn't find the object with the algorithim above, then can't verify anything else
+            If IsNothing(KeyObject.alg) Then
+                Throw New Exception("Invalid SSO Algorithm")
+            End If
+
+            ' Do standard validation checks
+            With Payload
+                Dim audienceFound As Boolean = False
+                For i = 0 To .Audience.Count - 1
+                    If .Audience(i) = JWK_AUDIENCE Then
+                        audienceFound = True
+                        Exit For
+                    End If
+                Next
+                If Not audienceFound Then
+                    Throw New Exception("Invalid Audience")
+                End If
+
+                If .KeyID.ToString <> KeyObject.kid.ToString Then
+                    Throw New Exception("Invalid Key ID")
+                End If
+
+                If .Issuer <> METAData.issuer Then
+                    Throw New Exception("Invalid Issuer")
+                End If
+
+                ' Issue date should be before expiration date
+                If .IssuedAt > .ExpirationTime Then
+                    Throw New Exception("Invalid Token Expiration Date")
+                End If
+
+            End With
+
+        Catch ex As Exception
+            ' Throw this error for now
+            MsgBox("The token validation failed - " & ex.Message, vbInformation, Application.ProductName)
+            Return False
+        End Try
+
+        Return True
 
     End Function
 
@@ -469,53 +539,16 @@ Public Class ESI
     ''' authorization token and update the sent variable and DB data if expired.
     ''' </summary>
     ''' <returns>Returns data response as a string</returns>
-    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByVal TokenData As ESITokenData,
+    Private Function GetPrivateAuthorizedData(ByVal URL As String, ByVal SentTokenData As ESITokenData,
                                               ByVal TokenExpiration As Date, ByRef CacheDate As Date,
                                               ByVal CharacterID As Long, Optional ByVal SupressErrorMsgs As Boolean = False,
                                               Optional SinglePage As Boolean = False) As String
         Dim WC As New WebClient
         Dim Response As String = ""
-        Dim TokenExpireDate As Date
 
         Try
-            ' See if we update the token data first
-            If TokenExpiration <= DateTime.UtcNow Then
-
-                ' Update the token
-                TokenData = GetAccessToken(TokenData.refresh_token, True, Nothing, Nothing)
-
-                If IsNothing(TokenData) Then
-                    Return Nothing
-                End If
-
-                ' Update the token data in the DB for this character
-                Dim SQL As String = ""
-                ' Update data - only stuff that could (reasonably) change
-                SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-                SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
-
-                With TokenData
-                    TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
-                    SQL = String.Format(SQL, FormatDBString(.access_token),
-                    Format(TokenExpireDate, SQLiteDateFormat),
-                    FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
-                End With
-
-                ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
-                If EVEDB.TransactionActive Then
-                    EVEDB.CommitSQLiteTransaction()
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                    EVEDB.BeginSQLiteTransaction()
-                Else
-                    EVEDB.ExecuteNonQuerySQL(SQL)
-                End If
-
-                ' Now update the copy used in IPH so we don't re-query
-                SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
-                SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
-                SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
-
-            End If
+            ' Update the token data first
+            SentTokenData = UpdateTokenData(SentTokenData, TokenExpiration, CharacterID)
 
             ' See if we are in an error limited state
             If ESIErrorHandler.ErrorLimitReached Then
@@ -523,7 +556,7 @@ Public Class ESI
                 Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
             End If
 
-            Dim Auth_header As String = $"Bearer {TokenData.access_token}"
+            Dim Auth_header As String = $"Bearer {SentTokenData.access_token}"
 
             WC.Proxy = GetProxyData()
             WC.Headers(HttpRequestHeader.Authorization) = Auth_header
@@ -566,7 +599,7 @@ Public Class ESI
                 ESIErrorHandler.RetriedCall = True
                 ' Try this call again after waiting a second
                 Thread.Sleep(1000)
-                Return GetPrivateAuthorizedData(URL, TokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
+                Return GetPrivateAuthorizedData(URL, SentTokenData, TokenExpiration, CacheDate, CharacterID, SupressErrorMsgs)
             End If
 
         Catch ex As Exception
@@ -586,7 +619,7 @@ Public Class ESI
     ''' </summary>
     ''' <param name="TokenData">SavedTokenData object</param>
     ''' <returns>the ESITokenData object</returns>
-    Private Function FormatTokenData(ByVal TokenData As SavedTokenData) As ESITokenData
+    Private Function FormatESITokenData(ByVal TokenData As SavedTokenData) As ESITokenData
         Dim TempTokenData As New ESITokenData
 
         TempTokenData.access_token = TokenData.AccessToken
@@ -595,6 +628,21 @@ Public Class ESI
 
         Return TempTokenData
 
+    End Function
+
+    ''' <summary>
+    ''' Formats a ESITokenData object to SavedTokenData
+    ''' </summary>
+    ''' <param name="TokenData">ESITokenData object</param>
+    ''' <returns>the SavedTokenData object</returns>
+    Private Function FormatSavedtokenData(ByVal TokenData As ESITokenData) As SavedTokenData
+        Dim TempTokenData As New SavedTokenData
+
+        TempTokenData.AccessToken = TokenData.access_token
+        TempTokenData.RefreshToken = TokenData.refresh_token
+        TempTokenData.TokenType = TokenData.token_type
+
+        Return TempTokenData
     End Function
 
     ''' <summary>
@@ -798,7 +846,7 @@ Public Class ESI
         Dim TempSkill As New EVESkill
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/skills/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, SkillsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, SkillsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             SkillData = JsonConvert.DeserializeObject(Of ESICharacterSkillsBase)(ReturnData)
@@ -827,7 +875,7 @@ Public Class ESI
         Dim StandingType As String = ""
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/standings/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StandingsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, StandingsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             StandingsData = JsonConvert.DeserializeObject(Of List(Of ESICharacterStandingsData))(ReturnData)
@@ -855,13 +903,58 @@ Public Class ESI
         Dim ReturnData As String
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/agents_research/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESIResearchAgent))(ReturnData)
         Else
             Return Nothing
         End If
+
+    End Function
+
+    Public Function GetCharacterLoyaltyPoints(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef AgentsCacheDate As Date) As List(Of ESILoyaltyPoints)
+        Dim ReturnData As String
+
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/loyalty/points/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of List(Of ESILoyaltyPoints))(ReturnData)
+        Else
+            Return Nothing
+        End If
+
+    End Function
+
+    Public Structure ShipLocation
+        Dim ShipData As ESICurrentShip
+        Dim ShipLocation As ESICurrentShipLocation
+    End Structure
+
+    Public Function GetCharacterShipLocation(ByVal CharacterID As Long, ByVal TokenData As SavedTokenData, ByRef AgentsCacheDate As Date) As ShipLocation
+        Dim ReturnString As String
+        Dim ReturnData As ShipLocation
+
+        ReturnString = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/ship/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnString) Then
+            ReturnData.ShipData = JsonConvert.DeserializeObject(Of ESICurrentShip)(ReturnString)
+        Else
+            ReturnData.ShipData = Nothing
+        End If
+
+        ReturnString = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(CharacterID) & "/location/" & TranquilityDataSource,
+                                      FormatESITokenData(TokenData), TokenData.TokenExpiration, AgentsCacheDate, CharacterID)
+
+        If Not IsNothing(ReturnString) Then
+            ReturnData.ShipLocation = JsonConvert.DeserializeObject(Of ESICurrentShipLocation)(ReturnString)
+        Else
+            ReturnData.ShipLocation = Nothing
+        End If
+
+        Return ReturnData
 
     End Function
 
@@ -875,10 +968,10 @@ Public Class ESI
         ' Set up query string
         If ScanType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/blueprints/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, BPCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -899,16 +992,6 @@ Public Class ESI
                 rsLookup.Close()
 
                 TempBlueprint.LocationID = BP.location_id
-                ' Get the flag id for this location
-                DBCommand = New SQLiteCommand("SELECT flagID FROM INVENTORY_FLAGS WHERE flagName = '" & BP.location_flag & "'", EVEDB.DBREf)
-                rsLookup = DBCommand.ExecuteReader
-                If rsLookup.Read Then
-                    TempBlueprint.FlagID = rsLookup.GetInt32(0)
-                Else
-                    TempBlueprint.FlagID = 0
-                End If
-                rsLookup.Close()
-
                 TempBlueprint.Quantity = BP.quantity
                 TempBlueprint.MaterialEfficiency = BP.material_efficiency
                 TempBlueprint.TimeEfficiency = BP.time_efficiency
@@ -952,7 +1035,7 @@ Public Class ESI
         End If
 
         ReturnData = GetPrivateAuthorizedData(ESIURL & URLType & CStr(ID) & "/industry/jobs/" & TranquilityDataSource & "&include_completed=true",
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, JobsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, JobsCacheDate, ID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESIIndustryJob))(ReturnData)
@@ -968,10 +1051,10 @@ Public Class ESI
         ' Set up query string
         If JobType = ScanType.Personal Then
             ReturnData = GetPrivateAuthorizedData(ESIURL & "characters/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
         Else ' Corp
             ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/assets/" & TranquilityDataSource,
-                                                  FormatTokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
+                                                  FormatESITokenData(TokenData), TokenData.TokenExpiration, AssetsCacheDate, ID)
         End If
 
         If Not IsNothing(ReturnData) Then
@@ -987,119 +1070,88 @@ Public Class ESI
         Dim AssetName As String
     End Structure
 
-    'Public Function GetAssetNames(ByVal ItemIDs As List(Of Double), ByVal ID As Long, ByVal TokenData As SavedTokenData,
-    '                              ByVal JobType As ScanType, ByRef AssetNamesCacheDate As Date) As List(Of ESICharacterAssetName)
-    '    Dim Output As New List(Of ESICharacterAssetName)
-    '    Dim TempOutput As New List(Of ESICharacterAssetName)
-    '    Dim Success As Boolean = False
-    '    Dim Data As String = ""
-    '    Dim Token As ESITokenData = FormatTokenData(TokenData)
+    Public Function GetAssetNames(ByVal ItemIDs As List(Of Double), ByVal ID As Long, ByVal TokenData As SavedTokenData,
+                                  ByVal JobType As ScanType, ByRef AssetNamesCacheDate As Date) As List(Of ESICharacterAssetName)
+        Dim Output As New List(Of ESICharacterAssetName)
+        Dim TempOutput As New List(Of ESICharacterAssetName)
+        Dim Success As Boolean = False
+        Dim Data As String = ""
 
-    '    Dim WC As New WebClient
-    '    Dim Address As String = ""
-    '    Dim PostParameters As New NameValueCollection
-    '    Dim IDList As String = ""
+        Dim WC As New WebClient
+        Dim Address As String = ""
+        Dim PostParameters As New NameValueCollection
+        Dim IDList As String = ""
 
-    '    Try
+        Try
 
-    '        '' See if we update the token data first
-    '        'If TokenData.TokenExpiration <= DateTime.UtcNow Then
+            ' See if we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
 
-    '        '    ' Update the token
-    '        '    Token = GetAccessToken(Token.refresh_token, True, Nothing, Nothing)
+            ' Update the token data first
+            TokenData = FormatSavedtokenData(UpdateTokenData(FormatESITokenData(TokenData), TokenData.TokenExpiration, ID))
 
-    '        '    If IsNothing(TokenData) Then
-    '        '        Return Nothing
-    '        '    End If
+            'See If we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
 
-    '        '    ' Update the token data in the DB for this character/corporation
-    '        '    Dim SQL As String = ""
-    '        '    ' Update data - only stuff that could (reasonably) change
-    '        '    SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
-    '        '    SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+            ' See if we are in an error limited state
+            If ESIErrorHandler.ErrorLimitReached Then
+                ' Need to wait until we are ready to continue
+                Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
+            End If
 
-    '        '    With Token
-    '        '        TokenData.TokenExpiration = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
-    '        '        SQL = String.Format(SQL, FormatDBString(.access_token),
-    '        '        Format(TokenData.TokenExpiration, SQLiteDateFormat),
-    '        '        FormatDBString(.token_type), FormatDBString(.refresh_token), ID)
-    '        '    End With
+            If JobType = ScanType.Corporation Then
+                Address = ESIURL & "corporations/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
+            Else
+                Address = ESIURL & "characters/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
+            End If
 
-    '        '    ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
-    '        '    If EVEDB.TransactionActive Then
-    '        '        EVEDB.CommitSQLiteTransaction()
-    '        '        EVEDB.ExecuteNonQuerySQL(SQL)
-    '        '        EVEDB.BeginSQLiteTransaction()
-    '        '    Else
-    '        '        EVEDB.ExecuteNonQuerySQL(SQL)
-    '        '    End If
+            WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {TokenData.AccessToken}"
+            Dim counter As Integer = 0
 
-    '        '    ' Now update the copy used in IPH so we don't re-query
-    '        '    SelectedCharacter.CharacterTokenData.AccessToken = Token.access_token
-    '        '    SelectedCharacter.CharacterTokenData.RefreshToken = Token.refresh_token
-    '        '    SelectedCharacter.CharacterTokenData.TokenExpiration = TokenData.TokenExpiration
+            For Each item In ItemIDs
+                IDList &= CStr(item) & ","
+                counter += 1
 
-    '        'End If
+                ' Run every 1000
+                If counter = 1000 Then
+                    ' Post data and get response, and parse the data to the class
+                    TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+                    Call Output.AddRange(TempOutput)
+                    IDList = ""
+                    counter = 0
+                End If
+            Next
 
-    '        ' See if we are in an error limited state
-    '        'If ESIErrorHandler.ErrorLimitReached Then
-    '        '    ' Need to wait until we are ready to continue
-    '        '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-    '        'End If
+            ' Add the remainder of items
+            TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
+            Call Output.AddRange(TempOutput)
 
-    '        '' See if we are in an error limited state
-    '        'If ESIErrorHandler.ErrorLimitReached Then
-    '        '    ' Need to wait until we are ready to continue
-    '        '    Call Thread.Sleep(ESIErrorHandler.msErrorTimer)
-    '        'End If
+            Success = True
 
-    '        If JobType = ScanType.Corporation Then
-    '            Address = ESIURL & "corporations/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
-    '        Else
-    '            Address = ESIURL & "characters/" & CStr(ID) & "/assets/names/" & TranquilityDataSource
-    '        End If
+        Catch ex As WebException
+            Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, True, "")
+        Catch ex As Exception
+            Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
+        End Try
 
-    '        WC.Headers(HttpRequestHeader.Authorization) = $"Bearer {Token.access_token}"
-    '        Dim counter As Integer = 0
+        If Success Then
+            Return Output
+        Else
+            Return Nothing
+        End If
 
-    '        For Each item In ItemIDs
-    '            IDList &= CStr(item) & ","
-    '            counter += 1
-
-    '            ' Run every 1000
-    '            If counter = 1000 Then
-    '                ' Post data and get response, and parse the data to the class
-    '                TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
-    '                Call Output.AddRange(TempOutput)
-    '                IDList = ""
-    '                counter = 0
-    '            End If
-    '        Next
-
-    '        ' Add the remainder of items
-    '        TempOutput = JsonConvert.DeserializeObject(Of List(Of ESICharacterAssetName))(WC.UploadString(Address, "POST", "[" & IDList.Substring(0, Len(IDList) - 1) & "]"))
-    '        Call Output.AddRange(TempOutput)
-
-    '        Success = True
-
-    '    Catch ex As WebException
-    '        Call ESIErrorHandler.ProcessWebException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False, "")
-    '    Catch ex As Exception
-    '        Call ESIErrorHandler.ProcessException(ex, ESIErrorProcessor.ESIErrorLocation.AccessToken, False)
-    '    End Try
-
-    '    If Success Then
-    '        Return Output
-    '    Else
-    '        Return Nothing
-    '    End If
-
-    'End Function
+    End Function
 
     Public Function GetCorporationRoles(ByVal CharacterID As Long, ByVal CorporationID As Long, ByVal TokenData As SavedTokenData, ByRef RolesCacheDate As Date) As List(Of ESICorporationRoles)
         Dim ReturnData As String
 
-        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(CorporationID) & "/roles/" & TranquilityDataSource, FormatTokenData(TokenData), TokenData.TokenExpiration, RolesCacheDate, CharacterID)
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(CorporationID) & "/roles/" & TranquilityDataSource, FormatESITokenData(TokenData), TokenData.TokenExpiration, RolesCacheDate, CharacterID)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of List(Of ESICorporationRoles))(ReturnData)
@@ -1172,7 +1224,7 @@ Public Class ESI
                         SQL &= BuildInsertFieldString(.description) & ","
                         SQL &= BuildInsertFieldString(.date_founded) & ","
                         SQL &= BuildInsertFieldString(.url) & ","
-                        SQL &= "NULL,NULL,NULL,NULL,NULL)"
+                        SQL &= "NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL)"
                     End With
 
                 End If
@@ -1191,10 +1243,25 @@ Public Class ESI
 
         ' Set up query string - choose a suppress error message setting since this will probably have the most issues
         ReturnData = GetPrivateAuthorizedData(ESIURL & "universe/structures/" & CStr(ID) & "/" & TranquilityDataSource,
-                                              FormatTokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, SuppressErrors)
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, StructureCacheDate, TokenData.CharacterID, SuppressErrors)
 
         If Not IsNothing(ReturnData) Then
             Return JsonConvert.DeserializeObject(Of ESIUniverseStructure)(ReturnData)
+        Else
+            Return Nothing
+        End If
+
+    End Function
+
+    Public Function GetDivisionNames(ByVal ID As Long, ByVal TokenData As SavedTokenData, ByRef DivisionDataCacheDate As Date, ByVal SuppressErrors As Boolean) As ESICorporationDivisions
+        Dim ReturnData As String = ""
+
+        ' Set up query string - choose a suppress error message setting since this will probably have the most issues
+        ReturnData = GetPrivateAuthorizedData(ESIURL & "corporations/" & CStr(ID) & "/divisions/" & TranquilityDataSource,
+                                              FormatESITokenData(TokenData), TokenData.TokenExpiration, DivisionDataCacheDate, TokenData.CharacterID, SuppressErrors)
+
+        If Not IsNothing(ReturnData) Then
+            Return JsonConvert.DeserializeObject(Of ESICorporationDivisions)(ReturnData)
         Else
             Return Nothing
         End If
@@ -1292,7 +1359,7 @@ Public Class ESI
                 While Not Threads.Complete
                     ' Update the progress bar with current count every time we check (only if we finished at least one run)
                     If StructureCount > PrevCount Then
-                        Call IncrementToolStripProgressBar(StructureCount, refPG)
+                        Call IncrementToolStripProgressBarCounter(StructureCount, refPG)
                     End If
                     PrevCount = StructureCount
                     Application.DoEvents()
@@ -1333,7 +1400,7 @@ Public Class ESI
     End Structure
 
     ' Updates the class referenced toolbar 
-    Private Sub IncrementToolStripProgressBar(inValue As Integer, ByRef PG As ToolStripProgressBar)
+    Private Sub IncrementToolStripProgressBarCounter(inValue As Integer, ByRef PG As ToolStripProgressBar)
 
         If IsNothing(PG) Then
             Exit Sub
@@ -1378,7 +1445,7 @@ Public Class ESI
 
                 ' Get the data from ESI 
                 OrderData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(.StructureID) & "/" & TranquilityDataSource,
-                                                FormatTokenData(.TokenData), .TokenData.TokenExpiration, CacheDate, .TokenData.CharacterID, QueryInfo.SupressMessages)
+                                                FormatESITokenData(.TokenData), .TokenData.TokenExpiration, CacheDate, .TokenData.CharacterID, QueryInfo.SupressMessages)
 
                 If Not IsNothing(OrderData) Then
                     MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(OrderData)
@@ -1446,7 +1513,7 @@ Public Class ESI
         Dim PriceData As String = ""
 
         PriceData = GetPrivateAuthorizedData(ESIURL & "markets/structures/" & CStr(StructureID) & "/" & TranquilityDataSource,
-                                                     FormatTokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors, True)
+                                                     FormatESITokenData(TokenData), TokenData.TokenExpiration, Nothing, SelectedCharacter.ID, SupressErrors, True)
 
         If Not IsNothing(PriceData) Then
             Return True
@@ -1470,10 +1537,7 @@ Public Class ESI
             Dim CB As New CacheBox
             Dim CacheDate As Date
             Dim ESIData As New ESI
-            Dim StatusItems As New List(Of ESIStatusItem)
-            Dim tag1 As String
-            Dim tag2 As String
-            Dim tag3 As String
+            Dim StatusItems As New ESIStatusItems
 
             Dim rsUpdate As SQLiteDataReader
             Dim SQL As String
@@ -1498,45 +1562,27 @@ Public Class ESI
                 RawData = ESIData.GetPublicData(ESIStatusURL, CacheDate)
 
                 If Not IsNothing(RawData) Then
-                    StatusItems = JsonConvert.DeserializeObject(Of List(Of ESIStatusItem))(RawData)
+                    StatusItems = JsonConvert.DeserializeObject(Of ESIStatusItems)(RawData)
                     EVEDB.BeginSQLiteTransaction()
 
                     ' Set all to red first - if one goes down or is removed from the list (e.g., assets) then we will see it as down
-                    EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET status = 'red'"))
+                    EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET status = 'Unknown'"))
 
                     ' Add all to status table incase we use one in the future that's not used now
-                    For Each item In StatusItems
-                        With item
-                            tag1 = ""
-                            tag2 = ""
-                            tag3 = ""
-                            Select Case .tags.Count
-                                Case 1
-                                    tag1 = .tags(0)
-                                Case 2
-                                    tag1 = .tags(0)
-                                    tag2 = .tags(1)
-                                Case 3
-                                    tag1 = .tags(0)
-                                    tag2 = .tags(1)
-                                    tag3 = .tags(2)
-                            End Select
+                    For Each route In StatusItems.Routes
+                        ' Look up each entry and if not in there, insert, if there, update
+                        SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & route.Path & "'"
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        rsUpdate = DBCommand.ExecuteReader
+                        rsUpdate.Read()
 
-                            ' Look up each entry and if not in there, insert, if there, update
-                            SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & item.route & "'"
-                            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                            rsUpdate = DBCommand.ExecuteReader
-                            rsUpdate.Read()
-
-                            If rsUpdate.HasRows Then
-                                ' just update the values
-                                EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET endpoint='{0}', method='{1}', status='{2}', tag1='{3}',tag2='{4}',tag3='{5}' WHERE route = '{6}'", .endpoint, .method, .status, tag1, tag2, tag3, .route))
-                            Else
-                                EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')", .endpoint, .method, .route, .status, tag1, tag2, tag3))
-                            End If
-                            rsUpdate.Close()
-
-                        End With
+                        If rsUpdate.HasRows Then
+                            ' just update the values
+                            EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE ESI_STATUS_ITEMS SET method='{0}', status='{1}' WHERE route = '{2}'", route.Method, route.Status, route.Path))
+                        Else
+                            EVEDB.ExecuteNonQuerySQL(String.Format("INSERT INTO ESI_STATUS_ITEMS VALUES ('{0}','{1}','{2}')", route.Method, route.Path, route.Status))
+                        End If
+                        rsUpdate.Close()
                     Next
 
                     EVEDB.CommitSQLiteTransaction()
@@ -2031,9 +2077,261 @@ Public Class ESI
 
     End Function
 
+    ' Downloads all public contracts for the Region ID sent
+    Public Function UpdatePublicContracts(ByVal RegionID As String, Optional ByRef SP As ToolStripStatusLabel = Nothing, Optional ByRef PB As ToolStripProgressBar = Nothing) As Boolean
+        Dim TempPB As ToolStripProgressBar
+        Dim TempLabel As ToolStripStatusLabel
+
+        Dim PublicData As String
+        Dim ContractData As New List(Of ESIContract)
+        Dim CB As New CacheBox
+        Dim CacheDate As Date
+        Dim SQL As String
+
+        Dim Threads As New ThreadingArray
+
+        If IsNothing(SP) Then
+            TempLabel = New ToolStripStatusLabel
+        Else
+            TempLabel = SP
+        End If
+
+        If IsNothing(PB) Then
+            TempPB = New ToolStripProgressBar
+        Else
+            TempPB = PB
+        End If
+
+        Try
+            If CB.DataUpdateable(CacheDateType.PublicContracts) Then
+
+                TempLabel.Text = "Downloading Public Contracts..."
+                Application.DoEvents()
+
+                ' Get all the contracts for the selected region
+                PublicData = GetPublicData(ESIURL & "contracts/public/" & CStr(RegionID) & "/" & TranquilityDataSource, CacheDate)
+
+                If Not IsNothing(PublicData) Then
+                    ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContract))(PublicData)
+
+                    If Not IsNothing(ContractData) Then
+                        If ContractData.Count > 0 Then
+
+                            Call EVEDB.BeginSQLiteTransaction()
+
+                            ' Reset the data
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACTS")
+
+                            ' Set the labels and progress bar if needed
+                            TempLabel.Text = "Saving Public Contracts..."
+                            TempPB.Minimum = 0
+                            TempPB.Maximum = ContractData.Count - 1
+                            TempPB.Visible = True
+
+                            ' Save all the contracts
+                            For Each contract In ContractData
+                                If CancelUpdatePrices Then
+                                    Exit For
+                                Else
+                                    Application.DoEvents()
+                                End If
+
+                                ' Insert the new record
+                                With contract
+                                    ' Only add item exchange - auction prices are in the bids esi (if any) and not final, and couriers aren't helpful for prices
+                                    ' Also, only items with 0 reward and greater than 0 price, meaning these are not want_to_buy orders - only sell, which won't give money back (alternately we could look at is_included)
+                                    ' on the items data, but this is the best for now with just the base contract order
+                                    If .contract_type = "item_exchange" And .reward = 0 And .price > 0 Then
+                                        SQL = "INSERT INTO PUBLIC_CONTRACTS VALUES (" & CStr(.contract_id) & "," & CStr(.collateral) & ",'" & FormatESIDate(.date_expired) & "','"
+                                        SQL &= FormatESIDate(.date_issued) & "'," & CStr(.days_to_complete) & "," & CStr(.end_location_id) & "," & CStr(.issuer_corporation_id) & ","
+                                        SQL &= CStr(.issuer_id) & "," & CStr(.price) & "," & CStr(.reward) & "," & CStr(.start_location_id) & ",'" & FormatDBString(.title) & "','"
+                                        SQL &= .contract_type & "'," & CStr(.volume) & "," & CStr(RegionID) & ")"
+
+                                        Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                    End If
+                                End With
+                                Call IncrementToolStripProgressBar(TempPB)
+                            Next
+                            TempPB.Visible = False
+                            TempLabel.Text = ""
+
+                            ' Reset the data
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACT_ITEMS")
+
+                            ' Set the label and progress bar
+                            TempLabel.Text = "Saving Public Contract Data..."
+                            TempPB.Minimum = 0
+                            TempPB.Value = 0
+                            TempPB.Visible = True
+                            Application.DoEvents()
+
+                            For Each contract In ContractData
+                                ' Launch each item update as a thread
+                                Dim UPCI As New Thread(AddressOf UpdatePublicContractItems)
+                                UPCI.Start(contract.contract_id)
+
+                                ' Save the thread 
+                                Threads.AddThread(UPCI)
+                                Call IncrementToolStripProgressBar(TempPB)
+                            Next
+
+                            ' Wait until all threads are done
+                            While Not Threads.Complete
+                                Application.DoEvents()
+                            End While
+
+                            ' Make sure all threads are not running
+                            Call Threads.StopAllThreads()
+                            ' Reset the error handler
+                            ESIErrorHandler = New ESIErrorProcessor
+                            TempPB.Visible = False
+                            TempLabel.Text = ""
+
+                            ' Now, clean up all the data and only leave BPC's since I'm only using it for BPCs for now and this will speed up price updates
+                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM CONTRACT_BPC_PRICES")
+
+                            SQL = "INSERT INTO CONTRACT_BPC_PRICES SELECT TYPE_ID, REGION_ID, PC.CONTRACT_ID, PRICE/SUM(QUANTITY), SUM(QUANTITY) "
+                            SQL &= "FROM PUBLIC_CONTRACTS AS PC, PUBLIC_CONTRACT_ITEMS WHERE PC.CONTRACT_ID = PUBLIC_CONTRACT_ITEMS.CONTRACT_ID "
+                            SQL &= "AND PC.CONTRACT_ID IN (SELECT DISTINCT CONTRACT_ID FROM PUBLIC_CONTRACT_ITEMS WHERE IS_BLUEPRINT_COPY = 1 "
+                            SQL &= "GROUP BY CONTRACT_ID HAVING COUNT(DISTINCT TYPE_ID) = 1) GROUP BY PC.CONTRACT_ID, TYPE_ID, REGION_ID"
+                            Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                            ' Done updating 
+                            Call EVEDB.CommitSQLiteTransaction()
+
+                            ' All set, update cache date before leaving
+                            Call CB.UpdateCacheDate(CacheDateType.PublicContracts, CacheDate)
+
+                            Return True
+
+                        End If
+                    End If
+                End If
+
+                ' Data didn't download
+                TempPB.Visible = False
+                TempLabel.Text = ""
+                Return False
+            End If
+
+            Return True
+
+        Catch ex As Exception
+            MsgBox("Failed to update public contract data: " & ex.Message, vbInformation, Application.ProductName)
+            Call EVEDB.RollbackSQLiteTransaction()
+
+            TempPB.Visible = False
+            TempLabel.Text = ""
+            Return False
+
+        End Try
+
+    End Function
+
+    ' Downloads all items on the contract ID sent (Public contract)
+    Private Function UpdatePublicContractItems(ByVal SentContractID As Object) As Boolean
+
+        Try
+            Dim PublicData As String
+            Dim ContractData As New List(Of ESIContractItem)
+            Dim Threads As New ThreadingArray
+            Dim CB As New CacheBox
+            Dim CacheDate As Date
+            Dim SQL As String
+
+            PublicData = GetPublicData(ESIURL & "contracts/public/items/" & CStr(SentContractID) & "/" & TranquilityDataSource, CacheDate)
+
+            If Not IsNothing(PublicData) Then
+                ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContractItem))(PublicData)
+
+                If Not IsNothing(ContractData) Then
+                    If ContractData.Count > 0 Then
+
+                        ' Save all the contract items for this contract
+                        For Each contract In ContractData
+                            If CancelUpdatePrices Then
+                                Exit For
+                            Else
+                                Application.DoEvents()
+                            End If
+
+                            ' Insert the new record
+                            With contract
+                                SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & CStr(SentContractID) & "," & CStr(.is_included) & "," & CStr(.item_id) & ","
+                                SQL &= CStr(.quantity) & "," & CStr(.record_id) & "," & CStr(.type_id) & "," & CStr(.is_blueprint_copy) & "," & CStr(.material_efficiency) & ","
+                                SQL &= CStr(.time_efficiency) & "," & CStr(.runs) & ")"
+
+                                Call EVEDB.ExecuteNonQuerySQL(SQL)
+
+                            End With
+                        Next
+
+                        ' Done
+                        Return True
+
+                    End If
+                End If
+            End If
+
+            Return False
+
+        Catch ex As Exception
+            ' Ignore errors
+            Return False
+        End Try
+
+    End Function
+
+
 #End Region
 
 #Region "Supporting Functions"
+
+    Private Function UpdateTokenData(ByVal TokenData As ESITokenData, ByVal TokenExpiration As Date, ByVal CharacterID As Long) As ESITokenData
+
+        If TokenExpiration <= DateTime.UtcNow Then
+
+            Dim TokenExpireDate As Date
+
+            ' Update the token
+            TokenData = GetAccessToken(TokenData.refresh_token, True, Nothing, Nothing)
+
+            If IsNothing(TokenData) Then
+                Return Nothing
+            End If
+
+            ' Update the token data in the DB for this character
+            Dim SQL As String = ""
+            ' Update data - only stuff that could (reasonably) change
+            SQL = "UPDATE ESI_CHARACTER_DATA SET ACCESS_TOKEN = '{0}', ACCESS_TOKEN_EXPIRE_DATE_TIME = '{1}', "
+            SQL &= "TOKEN_TYPE = '{2}', REFRESH_TOKEN = '{3}' WHERE CHARACTER_ID = {4}"
+
+            With TokenData
+                TokenExpireDate = DateAdd(DateInterval.Second, .expires_in, DateTime.UtcNow)
+                SQL = String.Format(SQL, FormatDBString(.access_token),
+                    Format(TokenExpireDate, SQLiteDateFormat),
+                    FormatDBString(.token_type), FormatDBString(.refresh_token), CharacterID)
+            End With
+
+            ' If we are in a transaction, we want to commit this so it's up to date, so close and reopen
+            If EVEDB.TransactionActive Then
+                EVEDB.CommitSQLiteTransaction()
+                EVEDB.ExecuteNonQuerySQL(SQL)
+                EVEDB.BeginSQLiteTransaction()
+            Else
+                EVEDB.ExecuteNonQuerySQL(SQL)
+            End If
+
+            ' Now update the copy used in IPH so we don't re-query
+            SelectedCharacter.CharacterTokenData.AccessToken = TokenData.access_token
+            SelectedCharacter.CharacterTokenData.RefreshToken = TokenData.refresh_token
+            SelectedCharacter.CharacterTokenData.TokenExpiration = TokenExpireDate
+
+        End If
+
+        Return TokenData
+
+    End Function
 
     Public Function GetFactionData() As List(Of ESIFactionData)
         Dim PublicData As String
@@ -2182,7 +2480,11 @@ Public Class ESIErrorProcessor
             Exit Sub
         End If
 
-        If ErrorCode = 404 And ErrorResponse = "Type not found!" Then
+        If ErrorCode = 404 And ErrorResponse = "Type not found!" Or ErrorResponse = "Contract not found" Then
+            Exit Sub
+        End If
+
+        If ErrorCode = 400 And ErrorResponse = "Contract is not an item exchange or auction" Then
             Exit Sub
         End If
 
@@ -2360,6 +2662,45 @@ Public Class ESIStatusItem
     <JsonProperty("tags")> Public tags As List(Of String)
 End Class
 
+Public Class ESIStatusItems
+    <JsonProperty("routes")> Public Property Routes As List(Of RouteInfo)
+End Class
+
+Public Class RouteInfo
+    <JsonProperty("method")> Public Property Method As String
+    <JsonProperty("path")> Public Property Path As String
+    <JsonProperty("status")> Public Property Status As String
+End Class
+
+Public Class ESIContract
+    <JsonProperty("collateral")> Public collateral As Double
+    <JsonProperty("contract_id")> Public contract_id As Long
+    <JsonProperty("date_expired")> Public date_expired As String
+    <JsonProperty("date_issued")> Public date_issued As String
+    <JsonProperty("days_to_complete")> Public days_to_complete As Integer
+    <JsonProperty("end_location_id")> Public end_location_id As Long
+    <JsonProperty("issuer_corporation_id")> Public issuer_corporation_id As Long
+    <JsonProperty("issuer_id")> Public issuer_id As Long
+    <JsonProperty("price")> Public price As Double
+    <JsonProperty("reward")> Public reward As Double
+    <JsonProperty("start_location_id")> Public start_location_id As Long
+    <JsonProperty("title")> Public title As String
+    <JsonProperty("type")> Public contract_type As String
+    <JsonProperty("volume")> Public volume As Double
+End Class
+
+Public Class ESIContractItem
+    <JsonProperty("is_included")> Public is_included As Boolean
+    <JsonProperty("item_id")> Public item_id As Double
+    <JsonProperty("quantity")> Public quantity As Long
+    <JsonProperty("record_id")> Public record_id As Long
+    <JsonProperty("type_id")> Public type_id As Long
+    <JsonProperty("is_blueprint_copy")> Public is_blueprint_copy As Boolean
+    <JsonProperty("material_efficiency")> Public material_efficiency As Integer
+    <JsonProperty("runs")> Public runs As Integer
+    <JsonProperty("time_efficiency")> Public time_efficiency As Integer
+End Class
+
 Public Class ESIError
     <JsonProperty("error")> Public ErrorText As String
     <JsonProperty("error_description")> Public ErrorDescription As String
@@ -2493,6 +2834,100 @@ Public Class ESITokenData
     <JsonProperty("refresh_token")> Public refresh_token As String
 End Class
 
+Public Class WellKnownData
+    <JsonProperty("issuer")> Public issuer As String
+    <JsonProperty("token_endpoint")> Public token_endpoint As String
+    <JsonProperty("response_types_supported")> Public response_types_supported As List(Of String)
+    <JsonProperty("jwks_uri")> Public jwks_uri As String
+    <JsonProperty("revocation_endpoint")> Public revocation_endpoint As String
+    <JsonProperty("revocation_endpoint_auth_methods_supported")> Public revocation_endpoint_auth_methods_supported As List(Of String)
+    <JsonProperty("token_endpoint_auth_methods_supported")> Public token_endpoint_auth_methods_supported As List(Of String)
+    <JsonProperty("token_endpoint_auth_signing_alg_values_supported")> Public token_endpoint_auth_signing_alg_values_supported As List(Of String)
+    <JsonProperty("code_challenge_methods_supported")> Public code_challenge_methods_supported As List(Of String)
+End Class
+
+Public Class JWKS
+    <JsonProperty("keys")> Public keys As List(Of JWKSData)
+    <JsonProperty("SkipUnresolvedJsonWebKeys")> Public SkipUnresolvedJsonWebKeys As Boolean
+End Class
+
+Public Class JWKSData
+    <JsonProperty("alg")> Public alg As String
+    <JsonProperty("kid")> Public kid As String
+    <JsonProperty("kty")> Public kty As String
+    <JsonProperty("use")> Public use As String
+End Class
+
+Public Class JWKSData0
+    Inherits JWKSData
+    <JsonProperty("e")> Public e As String
+    <JsonProperty("n")> Public n As String
+End Class
+
+Public Class JWKSData1
+    Inherits JWKSData
+    <JsonProperty("crv")> Public e As String
+    <JsonProperty("x")> Public x As String
+    <JsonProperty("y")> Public y As String
+End Class
+
+Public Class ESIJWTHeader
+    <JsonProperty("alg")> Public Algorithm As String
+    <JsonProperty("kid")> Public KeyID As String
+    <JsonProperty("typ")> Public TokenType As String
+End Class
+
+Public Class ESIJWTPayload
+    <JsonProperty("scp")> Public Scopes As List(Of String)
+    <JsonProperty("jti")> Public JWTID As String
+    <JsonProperty("kid")> Public KeyID As String
+    <JsonProperty("sub")> Public Subject As String
+    <JsonProperty("azp")> Public AuthParty As String ' EVEIPH ClientID
+    <JsonProperty("tenant")> Public Tenant As String
+    <JsonProperty("tier")> Public Tier As String
+    <JsonProperty("region")> Public DataRegion As String
+    <JsonProperty("aud")> Public Audience As List(Of String)
+    <JsonProperty("name")> Public Name As String
+    <JsonProperty("owner")> Public Owner As String
+    <JsonProperty("exp")> Public ExpirationTime As Long ' Unix time stamp
+    <JsonProperty("iat")> Public IssuedAt As Long ' Unix time stamp
+    <JsonProperty("iss")> Public Issuer As String ' Who created and signed token
+End Class
+
+Public Class JWKSConverter
+    Inherits JsonConverter
+
+    Public Overrides Function CanConvert(ByVal objectType As Type) As Boolean
+        Return GetType(JWKSData).IsAssignableFrom(objectType)
+    End Function
+
+    Public Overrides Function ReadJson(ByVal reader As JsonReader, ByVal objectType As Type, ByVal existingValue As Object, ByVal serializer As JsonSerializer) As Object
+        Dim jo As Linq.JObject = Linq.JObject.Load(reader)
+        Dim evalue As String = CType(jo("e"), String)
+        Dim item As JWKSData
+
+        If evalue <> "" Then
+            item = New JWKSData0()
+        Else
+            item = New JWKSData1()
+        End If
+
+        serializer.Populate(jo.CreateReader(), item)
+        Return item
+    End Function
+
+    Public Overrides ReadOnly Property CanWrite As Boolean
+        Get
+            Return False
+        End Get
+    End Property
+
+    Public Overrides Sub WriteJson(ByVal writer As JsonWriter, ByVal value As Object, ByVal serializer As JsonSerializer)
+        Throw New NotImplementedException()
+    End Sub
+
+End Class
+
 Public Class ESICharacterVerificationData
     <JsonProperty("CharacterID")> Public CharacterID As String
     <JsonProperty("CharacterName")> Public CharacterName As String
@@ -2546,6 +2981,23 @@ Public Class ESIResearchAgent
     <JsonProperty("started_at")> Public started_at As String
     <JsonProperty("points_per_day")> Public points_per_day As Double
     <JsonProperty("remainder_points")> Public remainder_points As Double
+End Class
+
+Public Class ESICurrentShipLocation
+    <JsonProperty("solar_system_id")> Public solar_system_id As Long
+    <JsonProperty("station_id")> Public station_id As Long
+    <JsonProperty("structure_id")> Public structure_id As Long
+End Class
+
+Public Class ESICurrentShip
+    <JsonProperty("ship_item_id")> Public ship_item_id As Double
+    <JsonProperty("ship_name")> Public ship_name As String
+    <JsonProperty("ship_type_id")> Public ship_type_id As Long
+End Class
+
+Public Class ESILoyaltyPoints
+    <JsonProperty("corporation_id")> Public corporation_id As Long
+    <JsonProperty("loyalty_points")> Public loyalty_points As Long
 End Class
 
 Public Class ESICorporationRoles
@@ -2605,6 +3057,7 @@ Public Class ESIAsset
     <JsonProperty("item_id")> Public item_id As Double
     <JsonProperty("location_type")> Public location_type As String
     <JsonProperty("quantity")> Public quantity As Integer
+    <JsonProperty("is_blueprint_copy")> Public blueprintcopy As Boolean
 End Class
 
 Public Class ESICorporation
@@ -2629,6 +3082,16 @@ Public Class ESIUniverseStructure
     <JsonProperty("position")> Public position As ESIPosition
     <JsonProperty("solar_system_id")> Public solar_system_id As Integer
     <JsonProperty("type_id")> Public type_id As Integer
+End Class
+
+Public Class ESICorporationDivisions
+    <JsonProperty("hangar")> Public hangar As List(Of ESIHangerWalletNames)
+    <JsonProperty("wallet")> Public wallet As List(Of ESIHangerWalletNames)
+End Class
+
+Public Class ESIHangerWalletNames
+    <JsonProperty("division")> Public division As Integer
+    <JsonProperty("name")> Public name As String
 End Class
 
 Public Class ESIPostion

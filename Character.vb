@@ -34,6 +34,15 @@ Public Class Character
     ' Blueprints
     Public BlueprintsAccess As Boolean
     Public Blueprints As EVEBlueprints
+    ' Loyalty points
+    Public LoyaltyPointAccess As Boolean
+    Public LoyaltyPoints As EVELoyaltyPoints
+    ' Wallet
+    'Public WalletAccess As Boolean
+    'Public Wallet As EVEWallet
+    '' Market Orders
+    'Public MarketOrdersAccess As Boolean
+    'Public MarketOrders As EVEMarketOrder
     ' Structures
     Public PublicStructuresAccess As Boolean
     Public StructureMarketsAccess As Boolean
@@ -67,9 +76,11 @@ Public Class Character
 
         Skills = New EVESkillList(UserApplicationSettings.UseActiveSkillLevels)
         Standings = New EVENPCStandings
-        Jobs = New EVEIndustryJobs
+        Jobs = New EVEIndustryJobs(ScanType.Personal)
+        Blueprints = New EVEBlueprints(ScanType.Personal)
         DatacoreAgents = New EVEResearchAgents
-        Assets = New EVEAssets
+        Assets = New EVEAssets(ScanType.Personal)
+        LoyaltyPoints = New EVELoyaltyPoints
 
         ' Corporation Data for this character
         CharacterCorporation = New Corporation
@@ -122,8 +133,11 @@ Public Class Character
 
                 If Not rsCheck.HasRows Then
                     With CharacterTokenData
-                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}',{22})"
-                        SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton, .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
+                        SQL = "INSERT INTO ESI_CHARACTER_DATA VALUES ({0},'{1}',{2},'{3}','{4}',{5},{6},{7},'{8}','{9}','{10}','{11}','{12}','{13}',{14},'{15}','{16}','{17}','{18}','{19}','{20}','{21}','{22}','{23}','{24}','{25}',{26})"
+                        SQL = String.Format(SQL, ID, Name, DummyCorporationID, Format(DOB, SQLiteDateFormat), Gender, RaceID, BloodLineID, AncestryLineID, Descripton,
+                                            .AccessToken, Format(.TokenExpiration, SQLiteDateFormat), .TokenType, .RefreshToken, .Scopes, 0,
+                                            NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate, NoExpireDate,
+                                            NoExpireDate, NoExpireDate, DefaultCharacterCode) ' Dummy is default
                     End With
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
                 End If
@@ -163,8 +177,6 @@ Public Class Character
             End If
         End If
 
-
-
         Return TriState.UseDefault
 
     End Function
@@ -198,7 +210,7 @@ Public Class Character
 
     ' Load the latest data for the character sent or the default if no character sent from the DB - users may not want to load bps or assets 
     Public Function LoadCharacterData(ByRef TokenData As SavedTokenData, ByVal LoadBPs As Boolean, ByVal LoadAssets As Boolean,
-                                      Optional IndustryJobsUpdate As Boolean = False) As Boolean
+                                      Optional IndustryJobsUpdate As Boolean = False, Optional ResetCorporationData As Boolean = True) As Boolean
         Dim readerCharacter As SQLiteDataReader
         Dim SQL As String
 
@@ -213,10 +225,10 @@ Public Class Character
 
         If readerCharacter.Read Then
             ' Initialize the different character data classes
-            Jobs = New EVEIndustryJobs()
+            Jobs = New EVEIndustryJobs(ScanType.Personal)
             Standings = New EVENPCStandings()
             DatacoreAgents = New EVEResearchAgents()
-            Blueprints = New EVEBlueprints()
+            Blueprints = New EVEBlueprints(ScanType.Personal)
             Assets = New EVEAssets(ScanType.Personal)
 
             ' Query the character data and store
@@ -252,7 +264,7 @@ Public Class Character
                         ' Check the error that caused this not to update
                         If ESIErrorHandler.ErrorResponse.Contains("Token missing/expired") Then
                             ' The refresh token expired - 30 days of no use
-                            MsgBox("Your refresh token has expired. To use updated account information you must update your tokens through re-authorizing them in Manage Accounts under the File Menu.", vbInformation, Application.ProductName)
+                            MsgBox("Your refresh token has expired. To use updated account information you must update your tokens through re-authorizing them in Manage Accounts under the File Menu.", vbExclamation, Application.ProductName)
                         ElseIf ESIErrorHandler.ErrorResponse.Contains("token") Then
                             ' They have some issue with their token or log
                             MsgBox("IPH is unable to refresh your character data - " & ESIErrorHandler.ErrorResponse & vbCrLf & vbCrLf & "Please recheck your registration information and try again.", vbInformation, Application.ProductName)
@@ -260,7 +272,7 @@ Public Class Character
                         ' Now leave since everything below will fail
                         Return True
                     End If
-                    End If
+                End If
 
             End With
 
@@ -305,7 +317,7 @@ Public Class Character
             If CharacterTokenData.Scopes.Contains(ESI.ESICharacterBlueprintsScope) Then
                 BlueprintsAccess = True
                 If LoadBPs Then
-                    Call Blueprints.LoadBlueprints(ID, CharacterTokenData, ScanType.Personal, LoadBPs)
+                    Call Blueprints.LoadBlueprints(ID, CharacterTokenData, LoadBPs)
                 End If
             End If
 
@@ -315,6 +327,12 @@ Public Class Character
                 If LoadAssets Then
                     Call Assets.LoadAssets(ID, CharacterTokenData, LoadAssets)
                 End If
+            End If
+
+            ' Load the character's loyalty points for corporations
+            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPointsScope) Then
+                LoyaltyPointAccess = True
+                Call LoyaltyPoints.LoadLoyaltyPoints(ID, CharacterTokenData)
             End If
 
             ' Set the two structure tags
