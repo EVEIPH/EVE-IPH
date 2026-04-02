@@ -1288,12 +1288,9 @@ RevertToOldFileVersions:
                 SQL &= BuildInsertFieldString(readerUpdate.Item(1)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(2)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(3)) & ","
-                SQL &= BuildInsertFieldString(0) & "," ' FactionID
                 SQL &= BuildInsertFieldString(readerUpdate.Item(4)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(5)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(6)) & ","
-                SQL &= BuildInsertFieldString(0) & "," ' Home_Station_id
-                SQL &= BuildInsertFieldString(0) & "," ' Shares
                 SQL &= BuildInsertFieldString(readerUpdate.Item(7)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(8)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(9)) & ","
@@ -1302,7 +1299,10 @@ RevertToOldFileVersions:
                 SQL &= BuildInsertFieldString(readerUpdate.Item(12)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(13)) & ","
                 SQL &= BuildInsertFieldString(readerUpdate.Item(14)) & ","
-                SQL &= BuildInsertFieldString(readerUpdate.Item(15)) & "," ' Roles cache date
+                SQL &= BuildInsertFieldString(readerUpdate.Item(15)) & ","
+                SQL &= BuildInsertFieldString(readerUpdate.Item(16)) & ","
+                SQL &= BuildInsertFieldString(readerUpdate.Item(17)) & ","
+                SQL &= BuildInsertFieldString(readerUpdate.Item(18)) & "," ' Roles cache date
                 SQL &= "NULL,NULL,NULL)"
             Else
                 SQL = "INSERT INTO ESI_CORPORATION_DATA VALUES ("

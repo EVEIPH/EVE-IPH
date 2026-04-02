@@ -34,3 +34,4 @@ C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVEIPH SQLite DLL Upd
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVEIPH SQLite DLL Updater\obj\Debug\EVEIPH SQLite DLL Updater.xml
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVEIPH SQLite DLL Updater\obj\Debug\EVEIPH SQLite DLL Updater.pdb
 C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVEIPH SQLite DLL Updater\obj\Debug\EVEIPH SQLite DLL Updater.vbproj.CopyComplete
+C:\Users\brian\OneDrive\EVE Stuff\EVE IPH Projects\EVE-IPH\EVEIPH SQLite DLL Updater\obj\Debug\EVEIPH SQLite DLL Updater.vbproj.AssemblyReference.cache
