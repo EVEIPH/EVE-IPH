@@ -16,6 +16,7 @@ Public Class frmRefreshMarketHistory
 
         ' Add any initialization after the InitializeComponent() call.
         MarketHistoryPG.Visible = False
+        MainThread = New Thread(AddressOf UpdateHistory)
 
         RegionComboLoaded = False
         CancelHistoryImport = False
