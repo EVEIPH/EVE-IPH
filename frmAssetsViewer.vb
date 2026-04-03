@@ -624,8 +624,7 @@ Public Class frmAssetsViewer
                                                               chkRAM, chkRawMaterials, chkRawMoonMats, chkRDb, chkRigs, chkSalvage, chkShips,
                                                               chkStructureComponents, chkStructureModules, chkStructureRigs, chkStructures,
                                                               chkSubsystemComponents, chkSubsystems, cmbPriceChargeTypes, cmbPriceShipTypes,
-                                                              chkItemsT1, PriceCheckT1Enabled, chkItemsT2, PriceCheckT2Enabled, chkItemsT3, PriceCheckT3Enabled,
-                                                              chkItemsT4, PriceCheckT4Enabled, chkItemsT5, PriceCheckT5Enabled, chkItemsT6, PriceCheckT6Enabled, chkNobuild)
+                                                              chkItemsT1, chkItemsT2, chkItemsT3, chkItemsT4, chkItemsT5, chkItemsT6, chkNobuild)
 
             ' Leave function if no items checked
             If GroupSQL <> "" Then

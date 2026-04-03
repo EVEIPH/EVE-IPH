@@ -1614,13 +1614,8 @@ SkipItem:
                                              RawMaterials As CheckBox, RawMoonMats As CheckBox, RDb As CheckBox, Rigs As CheckBox, Salvage As CheckBox,
                                              Ships As CheckBox, StructureComponents As CheckBox, StructureModules As CheckBox, StructureRigs As CheckBox,
                                              Structures As CheckBox, SubsystemComponents As CheckBox, Subsystems As CheckBox,
-                                             ChargeTypes As ComboBox, ShipTypes As ComboBox,
-                                             PricesT1 As CheckBox, PriceCheckT1Enabled As Boolean,
-                                             PricesT2 As CheckBox, PriceCheckT2Enabled As Boolean,
-                                             PricesT3 As CheckBox, PriceCheckT3Enabled As Boolean,
-                                             PricesT4 As CheckBox, PriceCheckT4Enabled As Boolean,
-                                             PricesT5 As CheckBox, PriceCheckT5Enabled As Boolean,
-                                             PricesT6 As CheckBox, PriceCheckT6Enabled As Boolean, NoBuildItems As CheckBox) As String
+                                             ChargeTypes As ComboBox, ShipTypes As ComboBox, PricesT1 As CheckBox, PricesT2 As CheckBox,
+                                             PricesT3 As CheckBox, PricesT4 As CheckBox, PricesT5 As CheckBox, PricesT6 As CheckBox, NoBuildItems As CheckBox) As String
 
         Dim SQL As String = ""
         Dim TechSQL As String = ""
@@ -1791,7 +1786,7 @@ SkipItem:
         If Ships.Checked Or Modules.Checked Or Drones.Checked Or Rigs.Checked Or Subsystems.Checked Or Structures.Checked Or Charges.Checked Or StructureRigs.Checked Then
 
             ' If they choose a tech level, then build this part of the SQL query
-            If PriceCheckT1Enabled Then
+            If PricesT1.Enabled Then
                 If PricesT1.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 1 OR "
@@ -1799,7 +1794,7 @@ SkipItem:
                 End If
             End If
 
-            If PriceCheckT2Enabled Then
+            If PricesT2.Enabled Then
                 If PricesT2.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 2 OR "
@@ -1807,7 +1802,7 @@ SkipItem:
                 End If
             End If
 
-            If PriceCheckT3Enabled Then
+            If PricesT3.Enabled Then
                 If PricesT3.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 14 OR "
@@ -1817,7 +1812,7 @@ SkipItem:
 
             ' Add the Pirate, Storyline, Navy search string
             ' Storyline
-            If PriceCheckT4Enabled Then
+            If PricesT4.Enabled Then
                 If PricesT4.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 3 OR "
@@ -1826,7 +1821,7 @@ SkipItem:
             End If
 
             ' Navy
-            If PriceCheckT5Enabled Then
+            If PricesT5.Enabled Then
                 If PricesT5.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 16 OR "
@@ -1835,7 +1830,7 @@ SkipItem:
             End If
 
             ' Pirate
-            If PriceCheckT6Enabled Then
+            If PricesT6.Enabled Then
                 If PricesT6.Checked Then
                     ' Add to SQL query for tech level
                     TechSQL = TechSQL & "ITEM_TYPE = 15 OR "
@@ -1868,7 +1863,7 @@ SkipItem:
                 SQL &= "(ITEM_CATEGORY = 'Module' AND ITEM_GROUP NOT LIKE 'Rig%' AND " & TechSQL & ") OR "
             End If
             If Ships.Checked Then
-                SQL &= "(ITEM_CATEGORY = 'Ship' " & TechSQL
+                SQL &= "(ITEM_CATEGORY = 'Ship' AND " & TechSQL
                 If ShipTypes.Text <> "All Ship Types" Then
                     SQL &= " AND ITEM_GROUP = '" & ShipTypes.Text & "'"
                 End If

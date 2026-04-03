@@ -241,7 +241,7 @@ Public Class EVEAssets
                     If AssetType = ScanType.Corporation Then
                         Dim DivisionsCacheDate As Date
                         ' Get the corp division names first
-                        If CB.DataUpdateable(CacheDateType.CorporateDivisions, ID) Then
+                        If CB.DataUpdateable(CacheDateType.CorporateDivisions, ID) And CharacterTokenData.Scopes.Contains(ESI.ESICorporationDivisions) Then
                             Dim DivisionNames As ESICorporationDivisions = ESIData.GetDivisionNames(ID, CharacterTokenData, DivisionsCacheDate, False)
 
                             ' Clear data first then add to the table
@@ -259,7 +259,7 @@ Public Class EVEAssets
 
                         ' If we are looking up corporation asset names, we need to limit it to just those that will come up in the call
                         ' since it's not the same as personal asset where you can query all IDs
-                        ' Only send itemids that singleton is true, the locationid is an item (i.e., container not station), and the item is in the list of location ids
+                        ' Only send item ids that singleton is true, the locationid is an item (i.e., container not station), and the item is in the list of location ids
                         AssetIDs = New List(Of Double)
                         SQL = "SELECT ItemID FROM ASSETS WHERE ID = {0} "
                         SQL &= "AND ItemID IN (SELECT LocationID FROM ASSETS WHERE ID = {0}) "
@@ -834,6 +834,8 @@ Public Class EVEAssets
 
         If rsLookup.Read Then
             DivisionName = rsLookup.GetString(0)
+        Else
+            DivisionName = Unknown
         End If
 
         Return DivisionName

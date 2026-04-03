@@ -37,7 +37,7 @@ Public Class ESI
     Public Const ESICharacterIndustryJobsScope As String = "esi-industry.read_character_jobs"
     Public Const ESICharacterMarketOrdersScope As String = "esi-markets.read_character_orders"
     Public Const ESICharacterWalletScope As String = "esi-wallet.read_character_wallet"
-    Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty.v1"
+    Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty"
     Public Const ESICharacterShipScope As String = "esi-location.read_ship_type"
 
     ' Corporation scopes

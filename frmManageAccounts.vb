@@ -174,6 +174,7 @@ Public Class frmManageAccounts
 
         If lstAccounts.SelectedItems.Count > 0 Then
             Dim CharacterID As Integer = CInt(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
+            Dim CorporationID As Integer = CInt(lstAccounts.SelectedItems.Item(0).SubItems(9).Text)
 
             Call EVEDB.BeginSQLiteTransaction()
 
@@ -194,6 +195,19 @@ Public Class frmManageAccounts
 
             SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CStr(CharacterID)
             EVEDB.ExecuteNonQuerySQL(SQL)
+
+            ' Delete the corporation if there are no characters other than this one with the data loaded
+            SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CORPORATION_ID = " & CStr(CorporationID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+
+            If CInt(DBCommand.ExecuteScalar()) = 1 Then
+                ' No other characters with this ID
+                SQL = "DELETE FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CStr(CorporationID)
+                EVEDB.ExecuteNonQuerySQL(SQL)
+                ' Get rid of divisions too
+                SQL = "DELETE FROM ESI_CORPORATION_DIVISIONS WHERE CORPORATION_ID = " & CStr(CorporationID)
+                EVEDB.ExecuteNonQuerySQL(SQL)
+            End If
 
             SQL = "DELETE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterID)
             EVEDB.ExecuteNonQuerySQL(SQL)
@@ -216,8 +230,8 @@ Public Class frmManageAccounts
 
         End If
 
-        ' Reload accounts
-        Call LoadAccountGrid()
+            ' Reload accounts
+            Call LoadAccountGrid()
 
         Me.Cursor = Cursors.Default
 
