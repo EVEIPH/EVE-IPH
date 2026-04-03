@@ -35,9 +35,9 @@ Public Class ESI
     Public Const ESICharacterBlueprintsScope As String = "esi-characters.read_blueprints"
     Public Const ESICharacterStandingsScope As String = "esi-characters.read_standings"
     Public Const ESICharacterIndustryJobsScope As String = "esi-industry.read_character_jobs"
-    Public Const ESICharacterMarketOrdersScope As String = "esi-markets.read_character_orders"
-    Public Const ESICharacterWalletScope As String = "esi-wallet.read_character_wallet"
-    Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty"
+    'Public Const ESICharacterMarketOrdersScope As String = "esi-markets.read_character_orders"
+    'Public Const ESICharacterWalletScope As String = "esi-wallet.read_character_wallet"
+    'Public Const ESICharacterLoyaltyPointsScope As String = "esi-characters.read_loyalty"
     Public Const ESICharacterShipScope As String = "esi-location.read_ship_type"
 
     ' Corporation scopes
@@ -46,8 +46,8 @@ Public Class ESI
     Public Const ESICorporationIndustryJobsScope As String = "esi-industry.read_corporation_jobs"
     Public Const ESICorporationMembership As String = "esi-corporations.read_corporation_membership"
     Public Const ESICorporationDivisions As String = "esi-corporations.read_divisions"
-    Public Const ESICorporationMarketOrders As String = "esi-markets.read_corporation_orders"
-    Public Const ESICorporationWalletScope As String = "esi-wallet.read_corporation_wallet"
+    'Public Const ESICorporationMarketOrders As String = "esi-markets.read_corporation_orders"
+    'Public Const ESICorporationWalletScope As String = "esi-wallet.read_corporation_wallet"
 
     Public Const ESIUniverseStructuresScope As String = "esi-universe.read_structures"
     Public Const ESIStructureMarketsScope As String = "esi-markets.structure_markets"

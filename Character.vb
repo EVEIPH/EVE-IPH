@@ -329,11 +329,11 @@ Public Class Character
                 End If
             End If
 
-            ' Load the character's loyalty points for corporations
-            If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPointsScope) Then
-                LoyaltyPointAccess = True
-                Call LoyaltyPoints.LoadLoyaltyPoints(ID, CharacterTokenData)
-            End If
+            '' Load the character's loyalty points for corporations
+            'If CharacterTokenData.Scopes.Contains(ESI.ESICharacterLoyaltyPointsScope) Then
+            '    LoyaltyPointAccess = True
+            '    Call LoyaltyPoints.LoadLoyaltyPoints(ID, CharacterTokenData)
+            'End If
 
             ' Set the two structure tags
             If CharacterTokenData.Scopes.Contains(ESI.ESIUniverseStructuresScope) Then

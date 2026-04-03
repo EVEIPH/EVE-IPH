@@ -122,7 +122,7 @@ Partial Class frmAddCharacter
         'chkReadCharacterAgentsResearch
         '
         Me.chkReadCharacterAgentsResearch.AutoSize = True
-        Me.chkReadCharacterAgentsResearch.Location = New System.Drawing.Point(11, 66)
+        Me.chkReadCharacterAgentsResearch.Location = New System.Drawing.Point(11, 43)
         Me.chkReadCharacterAgentsResearch.Name = "chkReadCharacterAgentsResearch"
         Me.chkReadCharacterAgentsResearch.Size = New System.Drawing.Size(108, 17)
         Me.chkReadCharacterAgentsResearch.TabIndex = 4
@@ -133,7 +133,7 @@ Partial Class frmAddCharacter
         'chkReadCharacterAssets
         '
         Me.chkReadCharacterAssets.AutoSize = True
-        Me.chkReadCharacterAssets.Location = New System.Drawing.Point(11, 89)
+        Me.chkReadCharacterAssets.Location = New System.Drawing.Point(11, 66)
         Me.chkReadCharacterAssets.Name = "chkReadCharacterAssets"
         Me.chkReadCharacterAssets.Size = New System.Drawing.Size(57, 17)
         Me.chkReadCharacterAssets.TabIndex = 6
@@ -155,13 +155,14 @@ Partial Class frmAddCharacter
         'chkReadCharacterPlanetary
         '
         Me.chkReadCharacterPlanetary.AutoSize = True
-        Me.chkReadCharacterPlanetary.Location = New System.Drawing.Point(11, 112)
+        Me.chkReadCharacterPlanetary.Location = New System.Drawing.Point(139, 112)
         Me.chkReadCharacterPlanetary.Name = "chkReadCharacterPlanetary"
         Me.chkReadCharacterPlanetary.Size = New System.Drawing.Size(123, 17)
         Me.chkReadCharacterPlanetary.TabIndex = 8
         Me.chkReadCharacterPlanetary.Tag = "esi-planets.manage_planets.v1"
         Me.chkReadCharacterPlanetary.Text = "Planetary Interaction"
         Me.chkReadCharacterPlanetary.UseVisualStyleBackColor = True
+        Me.chkReadCharacterPlanetary.Visible = False
         '
         'chkReadCorporationMembership
         '
@@ -233,6 +234,7 @@ Partial Class frmAddCharacter
         Me.chkReadCorporationWallet.Tag = "esi-wallet.read_corporation_wallets.v1"
         Me.chkReadCorporationWallet.Text = "Wallet"
         Me.chkReadCorporationWallet.UseVisualStyleBackColor = True
+        Me.chkReadCorporationWallet.Visible = False
         '
         'chkReadCorporationOrders
         '
@@ -244,6 +246,7 @@ Partial Class frmAddCharacter
         Me.chkReadCorporationOrders.Tag = "esi-markets.read_corporation_orders.v1"
         Me.chkReadCorporationOrders.Text = "Market Orders"
         Me.chkReadCorporationOrders.UseVisualStyleBackColor = True
+        Me.chkReadCorporationOrders.Visible = False
         '
         'chkReadCorporationDivisions
         '
@@ -278,7 +281,7 @@ Partial Class frmAddCharacter
         'chkReadCharacterShipLocation
         '
         Me.chkReadCharacterShipLocation.AutoSize = True
-        Me.chkReadCharacterShipLocation.Location = New System.Drawing.Point(139, 112)
+        Me.chkReadCharacterShipLocation.Location = New System.Drawing.Point(11, 89)
         Me.chkReadCharacterShipLocation.Name = "chkReadCharacterShipLocation"
         Me.chkReadCharacterShipLocation.Size = New System.Drawing.Size(100, 17)
         Me.chkReadCharacterShipLocation.TabIndex = 9
@@ -289,13 +292,14 @@ Partial Class frmAddCharacter
         'chkReadCharacterLoyalty
         '
         Me.chkReadCharacterLoyalty.AutoSize = True
-        Me.chkReadCharacterLoyalty.Location = New System.Drawing.Point(11, 43)
+        Me.chkReadCharacterLoyalty.Location = New System.Drawing.Point(11, 112)
         Me.chkReadCharacterLoyalty.Name = "chkReadCharacterLoyalty"
         Me.chkReadCharacterLoyalty.Size = New System.Drawing.Size(91, 17)
         Me.chkReadCharacterLoyalty.TabIndex = 2
         Me.chkReadCharacterLoyalty.Tag = "esi-characters.read_loyalty.v1"
         Me.chkReadCharacterLoyalty.Text = "Loyalty Points"
         Me.chkReadCharacterLoyalty.UseVisualStyleBackColor = True
+        Me.chkReadCharacterLoyalty.Visible = False
         '
         'chkReadCharacterWallet
         '
@@ -307,6 +311,7 @@ Partial Class frmAddCharacter
         Me.chkReadCharacterWallet.Tag = "esi-wallet.read_character_wallet.v1"
         Me.chkReadCharacterWallet.Text = "Wallet"
         Me.chkReadCharacterWallet.UseVisualStyleBackColor = True
+        Me.chkReadCharacterWallet.Visible = False
         '
         'chkReadCharacterOrders
         '
@@ -318,6 +323,7 @@ Partial Class frmAddCharacter
         Me.chkReadCharacterOrders.Tag = "esi-markets.read_character_orders.v1"
         Me.chkReadCharacterOrders.Text = "Market Orders"
         Me.chkReadCharacterOrders.UseVisualStyleBackColor = True
+        Me.chkReadCharacterOrders.Visible = False
         '
         'gbStructures
         '
