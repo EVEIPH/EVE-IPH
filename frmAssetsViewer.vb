@@ -685,12 +685,7 @@ Public Class frmAssetsViewer
     Private Sub ScanForAssets(ByVal BPScanType As ScanType)
 
         ' New scan, so run update and reload assets
-        If BPScanType = ScanType.Personal Then
-            SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
-        Else
-            SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                        SelectedCharacter.CharacterTokenData, True)
-        End If
+        Call CharacterDataService.RefreshAssets(SelectedCharacter, BPScanType, True)
 
         ' Reload the tree
         Call RefreshTree()

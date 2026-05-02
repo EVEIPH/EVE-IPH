@@ -171,6 +171,11 @@
     <Compile Include="BuildBuyItems.vb" />
     <Compile Include="CacheBox.vb" />
     <Compile Include="Character.vb" />
+    <Compile Include="Services\CharacterDataService.vb" />
+    <Compile Include="Services\CharacterMenuService.vb" />
+    <Compile Include="ViewModels\CharacterMenuViewModel.vb" />
+    <Compile Include="Services\CharacterSelectionService.vb" />
+    <Compile Include="ViewModels\CharacterSelectionViewModel.vb" />
     <Compile Include="ESI.vb" />
     <Compile Include="EVEAttributes.vb" />
     <Compile Include="EVELoyaltyPoints.vb" />
@@ -422,6 +427,8 @@
     <Compile Include="frmMain.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Services\ManageAccountsService.vb" />
+    <Compile Include="ViewModels\ManageAccountsViewModel.vb" />
     <Compile Include="frmManageAccounts.Designer.vb">
       <DependentUpon>frmManageAccounts.vb</DependentUpon>
     </Compile>
@@ -434,12 +441,14 @@
     <Compile Include="frmPatchNotes.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Services\ResearchAgentsService.vb" />
     <Compile Include="frmResearchAgents.Designer.vb">
       <DependentUpon>frmResearchAgents.vb</DependentUpon>
     </Compile>
     <Compile Include="frmResearchAgents.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ViewModels\ResearchAgentsViewModel.vb" />
     <Compile Include="frmSelectIndustryJobColumns.Designer.vb">
       <DependentUpon>frmSelectIndustryJobColumns.vb</DependentUpon>
     </Compile>

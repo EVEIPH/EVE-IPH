@@ -1341,7 +1341,7 @@ Public Class frmBlueprintManagement
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
-            Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
+            Call CharacterDataService.RefreshBlueprints(SelectedCharacter, ScanType.Personal, True)
             MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
             rbtnScannedPersonalBPs.Checked = True ' Auto load
             Cursor = Cursors.Default
@@ -1361,7 +1361,7 @@ Public Class frmBlueprintManagement
             Application.UseWaitCursor = True
             Application.DoEvents()
             Me.Cursor = Cursors.WaitCursor
-            Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
+            Call CharacterDataService.RefreshBlueprints(SelectedCharacter, ScanType.Corporation, True)
             MsgBox("Blueprints Loaded", vbInformation, Application.ProductName)
             rbtnScannedCorpBPs.Checked = True ' Auto load
             Me.Cursor = Cursors.Default

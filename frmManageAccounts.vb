@@ -1,9 +1,8 @@
-﻿Imports System.Data.SQLite
-
 Public Class frmManageAccounts
 
     Private ListColumnClicked As Integer
     Private ListColumnSortOrder As SortOrder
+    Private CurrentViewModel As ManageAccountsViewModel
 
     Public Sub New()
 
@@ -27,211 +26,140 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub frmManageAccounts_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
-        Call LoadAccountGrid()
+        Call ReloadAccountGrid()
     End Sub
 
-    Private Sub LoadAccountGrid()
-        Dim rsAccounts As SQLiteDataReader
-        Dim SQL As String
-        Dim lstViewRow As ListViewItem
-        Dim CharList As String = ""
-
-        ' Until there is a key able to set a default to, don't enable the select default button
-        btnSelectDefaultChar.Enabled = False
-
+    Private Sub ReloadAccountGrid()
         Application.UseWaitCursor = True
+        CurrentViewModel = ManageAccountsService.LoadAccounts()
+        Call RenderAccountGrid(CurrentViewModel)
+        Application.UseWaitCursor = False
+    End Sub
 
-        SQL = "SELECT CHARACTER_ID, CHARACTER_NAME, CORPORATION_NAME, IS_DEFAULT, SCOPES, ACCESS_TOKEN, ACCESS_TOKEN_EXPIRE_DATE_TIME, TOKEN_TYPE, REFRESH_TOKEN, ECHD.CORPORATION_ID "
-        SQL &= "FROM ESI_CHARACTER_DATA AS ECHD, ESI_CORPORATION_DATA AS ECRPD "
-        SQL &= "WHERE ECHD.CORPORATION_ID = ECRPD.CORPORATION_ID "
-        SQL &= "AND CHARACTER_ID <> " & CStr(DummyCharacterID)
+    Private Sub RenderAccountGrid(ByVal viewModel As ManageAccountsViewModel)
+        Dim lstViewRow As ListViewItem
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsAccounts = DBCommand.ExecuteReader
+        btnSelectDefaultChar.Enabled = viewModel.CanSelectDefaultCharacter
 
         lstAccounts.Items.Clear()
         lstAccounts.BeginUpdate()
 
-        While rsAccounts.Read
+        For Each account In viewModel.Accounts
+            lstViewRow = New ListViewItem(CStr(account.CharacterID)) ' CHAR ID (Hidden)
+            lstViewRow.SubItems.Add(account.CharacterName) ' NAME
+            lstViewRow.SubItems.Add(account.CorporationName) ' CORP NAME
 
-            ' Insert into table
-            lstViewRow = New ListViewItem(CStr(rsAccounts.GetInt32(0))) ' CHAR ID (Hidden)
-            'The remaining columns are subitems  
-            lstViewRow.SubItems.Add(rsAccounts.GetString(1)) ' NAME
-            lstViewRow.SubItems.Add(rsAccounts.GetString(2)) ' CORP NAME
-
-            If rsAccounts.GetInt32(3) <> 0 Then
+            If account.IsDefault Then
                 lstViewRow.SubItems.Add("True")
             Else
                 lstViewRow.SubItems.Add("False")
             End If
 
-            lstViewRow.SubItems.Add(rsAccounts.GetString(4)) ' SCOPES (Hidden)
-            lstViewRow.SubItems.Add(rsAccounts.GetString(5)) ' Access Token (Hidden)
-            lstViewRow.SubItems.Add(rsAccounts.GetString(8)) ' Refresh Token (Hidden)
-            lstViewRow.SubItems.Add(Convert.ToDateTime(rsAccounts.GetString(6)).ToString) ' Access Token expire date (Hidden)
-            lstViewRow.SubItems.Add(rsAccounts.GetString(7)) ' Token type
-            lstViewRow.SubItems.Add(CStr(rsAccounts.GetInt64(9))) ' Corporation ID
-
+            lstViewRow.Tag = account
             Call lstAccounts.Items.Add(lstViewRow)
-
-            CharList = ""
-
-        End While
-
-        rsAccounts.Close()
+        Next
 
         lstAccounts.EndUpdate()
+        Call ClearSelectedAccountDetails()
+    End Sub
 
-        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA"
+    Private ReadOnly Property SelectedAccount As ManageAccountItemViewModel
+        Get
+            If lstAccounts.SelectedItems.Count = 0 Then
+                Return Nothing
+            End If
 
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsAccounts = DBCommand.ExecuteReader
+            Return TryCast(lstAccounts.SelectedItems.Item(0).Tag, ManageAccountItemViewModel)
+        End Get
+    End Property
 
-        rsAccounts.Read()
-
-        ' Don't enable default setting if there aren't any new api keys
-        If CInt(rsAccounts.GetValue(0)) = 0 Then
-            btnSelectDefaultChar.Enabled = False
-        Else
-            btnSelectDefaultChar.Enabled = True
+    Private Sub RenderSelectedAccount(ByVal account As ManageAccountItemViewModel)
+        If IsNothing(account) Then
+            Call ClearSelectedAccountDetails()
+            Return
         End If
 
-        Application.UseWaitCursor = False
+        Call LoadScopes(account.Scopes)
 
+        txtAccessToken.Text = account.AccessToken
+        txtAccessTokenExpDate.Text = account.AccessTokenExpiration.ToString()
+        txtRefreshToken.Text = account.RefreshToken
+        txtCharacterID.Text = CStr(account.CharacterID)
+        txtCorpID.Text = CStr(account.CorporationID)
+        chkDirector.Checked = account.IsDirector
+        chkFactoryManager.Checked = account.IsFactoryManager
+        btnRefreshToken.Enabled = True
+        btnDeleteCharacter.Enabled = True
+        btnCopyAll.Enabled = True
+    End Sub
+
+    Private Sub ClearSelectedAccountDetails()
+        chkDirector.Checked = False
+        chkFactoryManager.Checked = False
+        lstScopes.Items.Clear()
+        txtAccessToken.Text = ""
+        txtRefreshToken.Text = ""
+        txtCharacterID.Text = ""
+        txtCorpID.Text = ""
+        txtAccessTokenExpDate.Text = ""
+        btnRefreshToken.Enabled = False
+        btnDeleteCharacter.Enabled = False
+        btnCopyAll.Enabled = False
+    End Sub
+
+    Private Sub SelectAccountByCharacterID(ByVal characterID As Long)
+        For Each item As ListViewItem In lstAccounts.Items
+            Dim account = TryCast(item.Tag, ManageAccountItemViewModel)
+
+            If Not IsNothing(account) AndAlso account.CharacterID = characterID Then
+                item.Selected = True
+                item.Focused = True
+                item.EnsureVisible()
+                Exit For
+            End If
+        Next
     End Sub
 
     Private Sub lstAccounts_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As EventArgs) Handles lstAccounts.SelectedIndexChanged
-        chkDirector.Checked = False
-        chkFactoryManager.Checked = False
-
-        If lstAccounts.SelectedItems.Count > 0 Then
-            ' Load the scopes for the character (hidden in the list of the account)
-            Dim ScopeList As String = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
-
-            Call LoadScopes(ScopeList)
-
-            txtAccessToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
-            txtAccessTokenExpDate.Text = lstAccounts.SelectedItems.Item(0).SubItems(7).Text
-            txtRefreshToken.Text = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
-            txtCharacterID.Text = lstAccounts.SelectedItems.Item(0).SubItems(0).Text
-            txtCorpID.Text = lstAccounts.SelectedItems.Item(0).SubItems(9).Text
-            btnRefreshToken.Enabled = True
-            btnDeleteCharacter.Enabled = True
-            btnCopyAll.Enabled = True
-
-            ' Get Director and Factory Manager roles.
-            Dim rsRoles As SQLiteDataReader
-            Dim SQL As String = String.Format("SELECT ROLE FROM ESI_CORPORATION_ROLES WHERE CHARACTER_ID = {0} AND CORPORATION_ID = {1} AND ROLE IN ('Director','Factory_Manager')", CLng(txtCharacterID.Text), CLng(txtCorpID.Text))
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-            rsRoles = DBCommand.ExecuteReader
-
-            While rsRoles.Read
-                Select Case rsRoles.GetString(0)
-                    Case "Director"
-                        chkDirector.Checked = True
-                    Case "Factory_Manager"
-                        chkFactoryManager.Checked = True
-                End Select
-            End While
-
-            rsRoles.Close()
-
-        Else
-            lstScopes.Items.Clear()
-            txtAccessToken.Text = ""
-            txtCharacterID.Text = ""
-            txtAccessTokenExpDate.Text = ""
-            txtAccessTokenExpDate.Text = ""
-            btnRefreshToken.Enabled = False
-            btnDeleteCharacter.Enabled = False
-            btnCopyAll.Enabled = False
-        End If
+        Call RenderSelectedAccount(SelectedAccount)
     End Sub
 
-    Private Sub LoadScopes(ScopeList As String)
-        ' Parse it for entry
-        Dim ParsedScopes As String()
+    Private Sub LoadScopes(ByVal scopeList As String)
+        Dim parsedScopes As String()
 
-        ParsedScopes = ScopeList.Split(New Char() {" "c}, StringSplitOptions.RemoveEmptyEntries)
+        parsedScopes = scopeList.Split(New Char() {" "c}, StringSplitOptions.RemoveEmptyEntries)
 
-        ' Clear the list
         lstScopes.Items.Clear()
 
-        For Each Scope In ParsedScopes
-            lstScopes.Items.Add(Scope)
+        For Each scope In parsedScopes
+            lstScopes.Items.Add(scope)
         Next
 
     End Sub
 
     Private Sub btnDeleteKey_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDeleteCharacter.Click
-        ' Make sure they want to delete
         If MessageBox.Show("Are you sure you want to delete this account?", "Check", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.No Then
             Exit Sub
         End If
 
-        Dim SQL As String
+        Dim account = SelectedAccount
 
-        If lstAccounts.SelectedItems.Count > 0 Then
-            Dim CharacterID As Integer = CInt(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
-            Dim CorporationID As Integer = CInt(lstAccounts.SelectedItems.Item(0).SubItems(9).Text)
+        If Not IsNothing(account) Then
+            Dim deleteResult = ManageAccountsService.DeleteCharacter(account,
+                                                                     UserApplicationSettings.LoadAssetsonStartup,
+                                                                     UserApplicationSettings.LoadBPsonStartup)
 
-            Call EVEDB.BeginSQLiteTransaction()
+            Call frmMain.LoadCharacterNamesinMenu()
 
-            ' Delete all the information associated with this key FIX (SKILLS, STANDINGS, ASSETS, JOBS, AGENTS)
-            SQL = "DELETE FROM CHARACTER_SKILLS WHERE CHARACTER_ID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM CHARACTER_STANDINGS WHERE CHARACTER_ID = " & CStr(CharacterID)
-
-            SQL = "DELETE FROM CURRENT_RESEARCH_AGENTS WHERE CHARACTER_ID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM ASSETS WHERE ID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM INDUSTRY_JOBS WHERE installerID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            SQL = "DELETE FROM OWNED_BLUEPRINTS WHERE USER_ID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Delete the corporation if there are no characters other than this one with the data loaded
-            SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CORPORATION_ID = " & CStr(CorporationID)
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-
-            If CInt(DBCommand.ExecuteScalar()) = 1 Then
-                ' No other characters with this ID
-                SQL = "DELETE FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & CStr(CorporationID)
-                EVEDB.ExecuteNonQuerySQL(SQL)
-                ' Get rid of divisions too
-                SQL = "DELETE FROM ESI_CORPORATION_DIVISIONS WHERE CORPORATION_ID = " & CStr(CorporationID)
-                EVEDB.ExecuteNonQuerySQL(SQL)
+            If deleteResult.RequiresDefaultCharacterSelection Then
+                Dim defaultCharacterForm As New frmSetCharacterDefault
+                defaultCharacterForm.ShowDialog()
             End If
-
-            SQL = "DELETE FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterID)
-            EVEDB.ExecuteNonQuerySQL(SQL)
-
-            ' Finally see if we have more accounts that are not the dummy - if only the dummy exists, set it to default and load it
-            SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID)
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-
-            If CInt(DBCommand.ExecuteScalar()) = 0 Then
-                ' Only the dummy is loaded, so set it to default
-                EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_ID = " & CStr(DummyCharacterID))
-            End If
-
-            Call EVEDB.CommitSQLiteTransaction()
-
-            ' Reload the characters - this will do the default selection, etc
-            Call LoadCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
 
             MsgBox("Character Deleted", vbInformation, Application.ProductName)
-
         End If
 
-            ' Reload accounts
-            Call LoadAccountGrid()
+        Call ReloadAccountGrid()
 
         Me.Cursor = Cursors.Default
 
@@ -244,9 +172,7 @@ Public Class frmManageAccounts
         lstAccounts.Items.Clear()
 
         Call frmMain.LoadCharacterNamesinMenu()
-
-        ' Reload accounts
-        Call LoadAccountGrid()
+        Call ReloadAccountGrid()
 
     End Sub
 
@@ -255,7 +181,7 @@ Public Class frmManageAccounts
 
         fDefault.ShowDialog()
 
-        Call LoadAccountGrid()
+        Call ReloadAccountGrid()
 
     End Sub
 
@@ -267,27 +193,15 @@ Public Class frmManageAccounts
         End If
     End Sub
 
-    ' For the selected character, refresh the token data again without regard to the cache date
     Private Sub btnRefreshToken_Click(sender As Object, e As EventArgs) Handles btnRefreshToken.Click
-        If lstAccounts.SelectedItems.Count > 0 Then
-            ' Get the token data from the grid since they can't edit them anyway
-            Dim CharacterTokenData As New SavedTokenData
-            Dim ESIData As New ESI
+        Dim account = SelectedAccount
 
+        If Not IsNothing(account) Then
             Me.Cursor = Cursors.WaitCursor
             Application.DoEvents()
 
-            CharacterTokenData.CharacterID = CLng(lstAccounts.SelectedItems.Item(0).SubItems(0).Text)
-            CharacterTokenData.Scopes = lstAccounts.SelectedItems.Item(0).SubItems(4).Text
-            CharacterTokenData.AccessToken = lstAccounts.SelectedItems.Item(0).SubItems(5).Text
-            CharacterTokenData.TokenExpiration = CDate(lstAccounts.SelectedItems.Item(0).SubItems(7).Text)
-            CharacterTokenData.TokenType = lstAccounts.SelectedItems.Item(0).SubItems(8).Text
-            CharacterTokenData.RefreshToken = lstAccounts.SelectedItems.Item(0).SubItems(6).Text
-
-            If ESIData.SetCharacterData(True, CharacterTokenData, "", True) Then
-                ' Need to reload the data and set access flags based on scopes
+            If ManageAccountsService.RefreshCharacterToken(account) Then
                 Application.UseWaitCursor = True
-                Dim SelectedIndex As Integer = lstAccounts.SelectedIndices(0)
                 Call lstAccounts.SelectedIndices.Clear()
                 txtAccessToken.Text = ""
                 txtRefreshToken.Text = ""
@@ -296,13 +210,12 @@ Public Class frmManageAccounts
                 lstAccounts.Enabled = False
                 lstScopes.Enabled = False
                 Application.DoEvents()
-                Call SelectedCharacter.LoadCharacterData(CharacterTokenData, False, False)
-                Call LoadAccountGrid()
+                Call ReloadAccountGrid()
                 MsgBox("Token Data updated.", vbInformation, Application.ProductName)
                 Application.UseWaitCursor = False
                 lstAccounts.Enabled = True
                 lstScopes.Enabled = True
-                lstAccounts.Items(SelectedIndex).Selected = True
+                Call SelectAccountByCharacterID(account.CharacterID)
                 Me.Cursor = Cursors.Default
                 Application.DoEvents()
             Else
@@ -315,32 +228,32 @@ Public Class frmManageAccounts
     End Sub
 
     Private Sub btnCopyAll_Click(sender As Object, e As EventArgs) Handles btnCopyAll.Click
-        Dim ClipboardData = New DataObject
-        Dim OutputText As String = ""
+        Dim outputText As String = ""
+        Dim account = SelectedAccount
 
-        OutputText = "Token Data for " & lstAccounts.SelectedItems.Item(0).SubItems(1).Text & vbCrLf
-        OutputText &= "Access Token: " & lstAccounts.SelectedItems.Item(0).SubItems(5).Text & vbCrLf
-        OutputText &= "Refresh Token: " & lstAccounts.SelectedItems.Item(0).SubItems(6).Text & vbCrLf
-        OutputText &= "Access Token Expires: " & lstAccounts.SelectedItems.Item(0).SubItems(7).Text & vbCrLf & vbCrLf
-        OutputText &= "Selected Scopes: " & lstAccounts.SelectedItems.Item(0).SubItems(4).Text.Replace(" ", " " & vbCrLf)
+        If IsNothing(account) Then
+            Exit Sub
+        End If
 
-        ' Paste to clipboard
-        Call CopyTextToClipboard(OutputText)
+        outputText = "Token Data for " & account.CharacterName & vbCrLf
+        outputText &= "Access Token: " & account.AccessToken & vbCrLf
+        outputText &= "Refresh Token: " & account.RefreshToken & vbCrLf
+        outputText &= "Access Token Expires: " & account.AccessTokenExpiration.ToString() & vbCrLf & vbCrLf
+        outputText &= "Selected Scopes: " & account.Scopes.Replace(" ", " " & vbCrLf)
+
+        Call CopyTextToClipboard(outputText)
 
     End Sub
 
     Private Sub btnCopyCharacterID_Click(sender As Object, e As EventArgs) Handles btnCopyCharacterID.Click
-        ' Paste to clipboard
         Call CopyTextToClipboard(txtCharacterID.Text)
     End Sub
 
     Private Sub btnCopyCorpID_Click(sender As Object, e As EventArgs) Handles btnCopyCorpID.Click
-        ' Paste to clipboard
         Call CopyTextToClipboard(txtCorpID.Text)
     End Sub
 
     Private Sub btnCopyAccesToken_Click(sender As Object, e As EventArgs) Handles btnCopyAccesToken.Click
-        ' Paste to clipboard
         Call CopyTextToClipboard(txtAccessToken.Text)
     End Sub
 
