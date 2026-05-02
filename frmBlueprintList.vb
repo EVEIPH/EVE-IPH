@@ -271,7 +271,7 @@ Public Class frmBlueprintList
             JOIN INVENTORY_TYPES i ON b.ITEM_ID = i.typeID {GetExtraJoinFilter()}
             JOIN INVENTORY_TYPES i2 ON b.BLUEPRINT_ID = i2.typeID
             {GetOwnedJoin()}
-            WHERE BP_MARKET_GROUP IS NOT NULL
+            WHERE ITEM_MARKET_GROUP IS NOT NULL
             {ItemGroupFilter}
             {GetSizeGroupFilter()}
             {GetItemTypesFilter()}

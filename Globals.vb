@@ -1225,9 +1225,13 @@ SkipItem:
 
         ' Read the character IDs selected and get locations for each
         If Not IsNothing(AssetSettings.SelectedCharacterIDs) Then
-            IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
+            If Trim(AssetSettings.SelectedCharacterIDs) <> "" Then
+                IDs = AssetSettings.SelectedCharacterIDs.Split(","c)
+            Else
+                Return ""
+            End If
         Else
-            Return ""
+                Return ""
         End If
 
         ' Get the characterIDs
@@ -1510,10 +1514,10 @@ SkipItem:
         End If
 
         ' Reload the prices on the reprocessing plant if open
-        If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
-            frmRepoPlant.RefreshMaterialList()
-            frmRepoPlant.Reprocess()
-        End If
+        'If Application.OpenForms().OfType(Of frmReprocessingPlant).Any Then
+        '    frmRepoPlant.RefreshMaterialList()
+        '    frmRepoPlant.Reprocess()
+        'End If
 
         ' Reload the prices on the reprocessing plant if open
         If Application.OpenForms().OfType(Of frmInventionMats).Any Then
