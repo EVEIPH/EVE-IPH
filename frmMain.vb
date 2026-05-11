@@ -5976,15 +5976,14 @@ Public Class frmMain
         SelectedBlueprint = RunBlueprint(BPID, SelectedRuns, BPME, BPTE, AdditionalCosts, BuildFacility, ComponentFacility, CapitalComponentManufacturingFacility,
                                          ReactionFacility, BPBuildBuyPref, ReprocessingFacility, BPTech, InventionFacility, CopyFacility, RelicName)
 
-        'SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-        '                                  UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
-        '                                  ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-        '                                  UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
-
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
-            ' Invent this bp
-            txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
+            ' Invent this bp separately
+            Dim TempBP As Blueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
+                                      UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
+                                      ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+                                      UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
+            txtBPNumBPs.Text = CStr(TempBP.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
                                   InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
         End If
 
