@@ -121,6 +121,8 @@ Public Class StructureProcessor
         Dim EVEStructure As New ESIUniverseStructure
         Dim CacheDate As Date
         Dim ManuallyAddedCode As Integer
+        Dim SolarSystemSecurity As Double
+        Dim RegionID As Long
 
         If Not IgnoreCacheDate Then
             ' Get the cache date of the facility ID
@@ -166,35 +168,54 @@ Public Class StructureProcessor
 
             rsData.Close()
 
-            ' Delete the record, if there, then add new data
-            EVEDB.ExecuteNonQuerySQL("DELETE FROM STATIONS WHERE STATION_ID = " & CStr(StructureID))
-
             If Not IsNothing(EVEStructure) Then
                 ' Lookup the data for the upwell structure from static tables
-                SQL = "SELECT solarSystemID, security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(EVEStructure.solar_system_id)
+                SQL = "SELECT security, regionID FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(EVEStructure.solar_system_id)
                 DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
                 rsData = DBCommand.ExecuteReader
                 rsData.Read()
 
                 If rsData.HasRows Then
-                    SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
-                    With EVEStructure
-                        EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .type_id, rsData.GetInt32(0), rsData.GetDouble(1),
-                                                        rsData.GetInt32(2), .owner_id, Format(CacheDate, SQLiteDateFormat), ManuallyAddedCode))
-                    End With
-
+                    SolarSystemSecurity = rsData.GetDouble(0)
+                    RegionID = rsData.GetInt64(1)
+                Else
+                    SolarSystemSecurity = 0
+                    RegionID = 0
                 End If
                 rsData.Close()
-
             Else
-                ' Insert it as unknown so we don't look it up again for a day
-                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},{6},0,0,'{7}',{8})"
-                With EVEStructure
-                    ' Check the structure each day - set cache to now + 1
-                    EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, "Unknown Structure", 0, 0, 0, 0, 0, Format(DateAdd(DateInterval.Day,
-                                                    1, Date.UtcNow), SQLiteDateFormat), ManuallyAddedCode))
-                End With
+                SolarSystemSecurity = 0
+                RegionID = 0
+                EVEStructure = New ESIUniverseStructure
+                EVEStructure.owner_id = 0
+                EVEStructure.type_id = 0
+                EVEStructure.solar_system_id = 0
+                EVEStructure.name = "Unknown Structure"
+                CacheDate = DateTime.UtcNow
             End If
+
+            ' See if in table first, then update or insert
+            SQL = "SELECT 'x' FROM STATIONS WHERE STATION_ID = " & CStr(StructureID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            rsData = DBCommand.ExecuteReader
+
+            If rsData.Read Then
+                ' Need to update if we have it - since it could have been set to unknown
+                SQL = "UPDATE STATIONS SET STATION_NAME='{1}', CORPORATION_ID={2}, SOLAR_SYSTEM_ID={3}, SOLAR_SYSTEM_SECURITY={4},"
+                SQL &= "REGION_ID={5},REPROCESSING_EFFICIENCY=0,REPROCESSING_TAX_RATE=0,OPERATION_ID={6},CACHE_DATE='{7}',MANUAL_ENTRY={8} "
+                SQL &= "WHERE STATION_ID={0}"
+            Else
+                ' Insert 
+                SQL = "INSERT INTO STATIONS VALUES ({0},'{1}',{2},{3},{4},{5},0,0,{6},'{7}',{8})"
+            End If
+
+            ' Execute
+            With EVEStructure
+                EVEDB.ExecuteNonQuerySQL(String.Format(SQL, StructureID, FormatDBString(.name), .owner_id, .solar_system_id, SolarSystemSecurity,
+                                                    RegionID, .type_id, Format(CacheDate, SQLiteDateFormat), ManuallyAddedCode))
+            End With
+
+            rsData.Close()
 
         Catch X As ThreadAbortException
             ' Just continue as normal

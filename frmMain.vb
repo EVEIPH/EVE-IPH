@@ -454,7 +454,7 @@ Public Class frmMain
                 Items.Add(TempItem)
             End While
 
-            Call LoadPrices(Items, New List(Of PriceItem), "")
+            Call LoadPrices(Items, New List(Of PriceItem))
 
         End If
 
@@ -5864,15 +5864,14 @@ Public Class frmMain
         SelectedBlueprint = RunBlueprint(BPID, SelectedRuns, BPME, BPTE, AdditionalCosts, BuildFacility, ComponentFacility, CapitalComponentManufacturingFacility,
                                          ReactionFacility, BPBuildBuyPref, ReprocessingFacility, BPTech, InventionFacility, CopyFacility, RelicName)
 
-        'SelectedBlueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
-        '                                  UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
-        '                                  ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
-        '                                  UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
-
         ' Set the T2 and T3 inputs if necessary
         If BPTech <> BPTechLevel.T1 And chkBPIgnoreInvention.Checked = False Then
-            ' Invent this bp
-            txtBPNumBPs.Text = CStr(SelectedBlueprint.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
+            ' Invent this bp separately
+            Dim TempBP As Blueprint = New Blueprint(BPID, SelectedRuns, BPME, BPTE, CInt(txtBPNumBPs.Text), CInt(txtBPLines.Text), SelectedCharacter,
+                                      UserApplicationSettings, chkBPBuildBuy.Checked, AdditionalCosts, BuildFacility,
+                                      ComponentFacility, CapitalComponentManufacturingFacility, ReactionFacility, chkBPSellExcessItems.Checked,
+                                      UserBPTabSettings.BuildT2T3Materials, True, BPBuildBuyPref, ReprocessingFacility, UserConversiontoOreSettings)
+            txtBPNumBPs.Text = CStr(TempBP.InventBlueprint(CInt(txtBPInventionLines.Text), SelectedDecryptor,
                                   InventionFacility, CopyFacility, GetInventItemTypeID(BPID, RelicName)))
         End If
 
@@ -8289,7 +8288,6 @@ ExitForm:
         Dim TempItem As PriceItem
         Dim SearchRegion As String = ""
         Dim SearchSystem As String = ""
-        Dim BPCRegion As String = "" ' Region to use for BPC Contract price updates
         Dim NumSystems As Integer = 0
         Dim BPRegionID As String = ""
 
@@ -8298,56 +8296,62 @@ ExitForm:
 
         Dim DataErrors As Boolean = True
 
+        Dim BlueprintORReaction As Boolean = False
+
         ' Progress Bar Init
         pnlProgressBar.Value = 0
 
         Dim RegionSelectedCount As Integer = 0
         Dim JitaPerimeterChecked As Boolean = False
 
-        ' Check region
-        If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
-            RegionSelected = True
-        End If
+        ' Do error checks unless they are using the price profiles
+        If rbtnPriceSettingSingleSelect.Checked Then
 
-        ' Check systems too
-        For i = 1 To SystemCheckBoxes.Length - 1
-            If SystemCheckBoxes(i).Checked = True Then
-                ' Save the checked system (can only be one)
-                SearchSystem = SystemCheckBoxes(i).Text
-                SystemSelected = True
-                Exit For
+            ' Check region
+            If cmbPriceRegions.Text <> DefaultRegionPriceCombo Then
+                RegionSelected = True
             End If
-        Next
 
-        If (chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked) Or cmbPriceSystems.Text = JitaPerimeter Then
-            ' Need to run for both for non-price profile 
-            JitaPerimeterChecked = True
-        End If
+            ' Check systems too
+            For i = 1 To SystemCheckBoxes.Length - 1
+                If SystemCheckBoxes(i).Checked = True Then
+                    ' Save the checked system (can only be one)
+                    SearchSystem = SystemCheckBoxes(i).Text
+                    SystemSelected = True
+                    Exit For
+                End If
+            Next
 
-        ' Finally check system combo
-        If Not SystemSelected And cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
-            SystemSelected = True
-            SearchSystem = cmbPriceSystems.Text
-        End If
+            If (chkSystems1.Checked And chkSystems6.Checked And rbtnPriceSettingSingleSelect.Checked) Or cmbPriceSystems.Text = JitaPerimeter Then
+                ' Need to run for both for non-price profile 
+                JitaPerimeterChecked = True
+            End If
 
-        If Not RegionSelected And Not SystemSelected And Not rbtnPriceSettingPriceProfile.Checked Then
-            MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
-            GoTo ExitSub
-        End If
+            ' Finally check system combo
+            If Not SystemSelected And cmbPriceSystems.Text <> DefaultSystemPriceCombo And cmbPriceSystems.Text <> AllSystems Then
+                SystemSelected = True
+                SearchSystem = cmbPriceSystems.Text
+            End If
 
-        If (Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo)) And rbtnPriceSettingSingleSelect.Checked And cmbPriceSystems.Enabled Then
-            MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
-            GoTo ExitSub
-        End If
+            If Not RegionSelected And Not SystemSelected And Not rbtnPriceSettingPriceProfile.Checked Then
+                MsgBox("Must Choose a Region or System", MsgBoxStyle.Exclamation, Me.Name)
+                GoTo ExitSub
+            End If
 
-        If Not ItemsSelected() Then
-            MsgBox("Must Choose at least one Item type", MsgBoxStyle.Exclamation, Me.Name)
-            GoTo ExitSub
-        End If
+            If (Trim(cmbPriceSystems.Text) = "" Or (Not cmbPriceSystems.Items.Contains(cmbPriceSystems.Text) And cmbPriceSystems.Text <> DefaultSystemPriceCombo)) And rbtnPriceSettingSingleSelect.Checked And cmbPriceSystems.Enabled Then
+                MsgBox("Invalid Solar System Name", vbCritical, Application.ProductName)
+                GoTo ExitSub
+            End If
 
-        If rbtnPriceSourceCCPData.Checked And RegionSelectedCount > 1 Then
-            MsgBox("You cannot choose more than one region when downloading CCP Data", MsgBoxStyle.Exclamation, Me.Name)
-            GoTo ExitSub
+            If Not ItemsSelected() Then
+                MsgBox("Must Choose at least one Item type", MsgBoxStyle.Exclamation, Me.Name)
+                GoTo ExitSub
+            End If
+
+            If rbtnPriceSourceCCPData.Checked And RegionSelectedCount > 1 Then
+                MsgBox("You cannot choose more than one region when downloading CCP Data", MsgBoxStyle.Exclamation, Me.Name)
+                GoTo ExitSub
+            End If
         End If
 
         DataErrors = False
@@ -8421,8 +8425,6 @@ ExitForm:
             End If
         End If
 
-        BPCRegion = SearchRegion
-
         ' Build the list of types we want to update and include the type, region/system
         For i = 0 To lstPricesView.Items.Count - 1
             ' Only include items that are in the market (Market ID not null in Inventory Types) or blueprints/reactions
@@ -8430,6 +8432,12 @@ ExitForm:
                 TempItem = New PriceItem
                 TempItem.TypeID = CInt(lstPricesView.Items(i).SubItems(0).Text)
                 TempItem.GroupName = GetPriceGroupName(TempItem.TypeID)
+
+                If TempItem.GroupName = "Blueprint" Or TempItem.GroupName.Contains("Reaction") Then
+                    BlueprintORReaction = True
+                Else
+                    BlueprintORReaction = False
+                End If
 
                 ' If the group name exists, then look it up
                 If TempItem.GroupName <> "" Then
@@ -8469,7 +8477,7 @@ ExitForm:
                                 TempItem.SystemID = ""
                             Else
                                 ' Look up the system name
-                                If rsPP.GetString(2) = JitaPerimeter Then
+                                If rsPP.GetString(2) = JitaPerimeter And Not BlueprintORReaction Then
                                     ' System name set below
                                     JitaPerimeterChecked = True
                                 Else
@@ -8484,8 +8492,8 @@ ExitForm:
                     End If
 
                     ' Add the item to the list if not there 
-                    If Not Items.Contains(TempItem) And TempItem.GroupName <> "Blueprint" And Not TempItem.GroupName.Contains("Reaction") Then
-                        If JitaPerimeterChecked Then
+                    If Not Items.Contains(TempItem) Then
+                        If JitaPerimeterChecked And Not BlueprintORReaction Then
                             ' Add Jita first with flag
                             TempItem.JitaPerimeterPrice = True
                             TempItem.SystemID = JitaID
@@ -8500,19 +8508,19 @@ ExitForm:
                             ' Just basic add
                             TempItem.JitaPerimeterPrice = False
                             Items.Add(TempItem)
+                            If BlueprintORReaction Then
+                                ' Put this in the blueprints list and we will look at contracts for prices
+                                ' Add region, Jita/Perimeter won't matter since they are in the same region and we can only query regions for contracts
+                                Call BlueprintItems.Add(TempItem)
+                            End If
                         End If
-                    ElseIf TempItem.GroupName = "Blueprint" Or TempItem.GroupName.Contains("Reaction") Then
-                        ' Put this in the blueprints list and we will look at contracts for prices
-                        ' Jita/Perimeter won't matter since they are in the same region and we can only query regions for contracts
-                        Call BlueprintItems.Add(TempItem)
-                        BPRegionID = TempItem.RegionID ' Will always be the same for all BPCs
                     End If
                 End If
             End If
         Next
 
         ' Load the prices
-        Call LoadPrices(Items, BlueprintItems, BPRegionID)
+        Call LoadPrices(Items, BlueprintItems)
 
 UpdateProgramPrices:
 
@@ -8558,8 +8566,19 @@ ExitSub:
 
     End Function
 
+    Private PriceItemtoFind As String
+    ' Predicate for searching a PriceItem List
+    Private Function FindTypeIDRegion(ByVal Item As PriceItem) As Boolean
+        If Item.GroupName = PriceItemtoFind Then
+            Return True
+        End If
+
+        Return False
+
+    End Function
+
     ' Loads prices from the ITEM_PRICES_CACHE into the ITEM_PRICES table (fuzzworks) or into MARKET_ORDERS for CCP data based on the info selected on the main form 
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem), ByVal BPCRegionID As String)
+    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem))
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
@@ -8567,7 +8586,7 @@ ExitSub:
         Dim SelectedPrice As Double
         Dim MP As New MarketPriceInterface(pnlProgressBar)
         Dim ESIData As New ESI
-        Dim RegionID As String = ""
+        Dim RegionID As String
         Dim PriceRegions As New List(Of String)
         Dim StructurePriceLocations As New List(Of SystemRegion)
         Dim PriceType As String = "" ' Default
@@ -8582,20 +8601,13 @@ ExitSub:
                 Temp.TypeIDs.Add(CStr(SentItems(i).TypeID))
 
                 ' Look up regionID since we can only look up regions in ESI
-                If SentItems(i).SystemID <> "" Then
-                    DBCommand = New SQLiteCommand("SELECT regionID FROM SOLAR_SYSTEMS WHERE solarsystemID = '" & SentItems(i).SystemID & "'", EVEDB.DBREf)
-                    readerPrices = DBCommand.ExecuteReader
-                    readerPrices.Read()
-                    RegionID = CStr(readerPrices.GetInt64(0))
-                    readerPrices.Close()
-                    DBCommand = Nothing
+                If SentItems(i).SystemID <> "" And SentItems(i).SystemID <> "0" Then
                     SystemRegionData.SystemID = SentItems(i).SystemID
-                    SystemRegionData.RegionID = RegionID
+                    SystemRegionData.RegionID = CStr(GetRegionID(CInt(SentItems(i).SystemID)))
                 Else
                     ' for ESI, only one region per update
-                    RegionID = SentItems(i).RegionID
                     SystemRegionData.SystemID = ""
-                    SystemRegionData.RegionID = RegionID
+                    SystemRegionData.RegionID = SentItems(i).RegionID
                 End If
 
                 ' Save for structures later
@@ -8604,16 +8616,16 @@ ExitSub:
                 End If
 
                 ' Set the region
-                Temp.RegionString = RegionID
+                Temp.RegionString = SystemRegionData.RegionID
 
                 ' Save the regionID in the list
-                If Not PriceRegions.Contains(RegionID) Then
-                    PriceRegions.Add(RegionID)
+                If Not PriceRegions.Contains(SystemRegionData.RegionID) Then
+                    PriceRegions.Add(SystemRegionData.RegionID)
                 End If
 
                 ' If not in the main list, add it
                 Dim TempItem As New TypeIDRegion
-                RegiontoFind = RegionID
+                RegiontoFind = SystemRegionData.RegionID
                 TypeIDRegiontoFind = CStr(SentItems(i).TypeID)
                 TempItem = Items.Find(AddressOf FindTypeIDRegion)
                 If IsNothing(TempItem) Then
@@ -8675,7 +8687,15 @@ ExitSub:
         ' Blueprint Copies - if they have the intermediate selected for bpcs,
         ' then update all the data from contracts for all BPCs from the region selected
         If chkBPCs.CheckState = CheckState.Indeterminate Then
-            Call ESIData.UpdatePublicContracts(BPCRegionID, pnlStatus, pnlProgressBar) ' Contracts only available for a region
+            ' Find a blueprint copy to upload and grab it's region 
+            Dim TempItem As PriceItem
+            PriceItemtoFind = "Blueprint"
+            TempItem = SentItems.Find(AddressOf FindTypeIDRegion)
+            If TempItem.RegionID = "" And TempItem.SystemID <> "" Then
+                ' Need to get region id from system
+                TempItem.RegionID = CStr(GetRegionID(TempItem.SystemID))
+            End If
+            Call ESIData.UpdatePublicContracts(TempItem.RegionID, pnlStatus, pnlProgressBar) ' Contracts only available for a region
         End If
 
         ' Working
@@ -13721,6 +13741,8 @@ CheckTechs:
                 gbCalcTextFilter.Enabled = False
                 lstManufacturing.Enabled = False
                 tabCalcFacilities.Enabled = False
+                gbIncludeTaxesFees.Enabled = False
+                gbCalcSellExessItems.Enabled = False
 
                 If Not UserApplicationSettings.DisableSVR Then
 
@@ -14615,6 +14637,8 @@ ExitCalc:
         gbCalcTextFilter.Enabled = True
         lstManufacturing.Enabled = True
         tabCalcFacilities.Enabled = True
+        gbIncludeTaxesFees.Enabled = True
+        gbCalcSellExessItems.Enabled = True
 
         Application.UseWaitCursor = False
         Me.Cursor = Cursors.Default
@@ -16109,10 +16133,6 @@ ExitCalc:
                 If FoundItem IsNot Nothing Then
                     ' We found it, so set the bp to a favorite in all_blueprints
                     SQL = "UPDATE ALL_BLUEPRINTS_FACT SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID)
-                    Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                    ' Assume they want to update owned blueprints too if they own it
-                    SQL = "UPDATE OWNED_BLUEPRINTS SET FAVORITE = 1 WHERE BLUEPRINT_ID = " & CStr(FoundItem.BPID) & " AND USER_ID = " & CStr(SelectedCharacter.ID)
                     Call EVEDB.ExecuteNonQuerySQL(SQL)
 
                 End If

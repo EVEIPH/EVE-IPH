@@ -1597,7 +1597,6 @@ RevertToOldFileVersions:
 
     End Sub
 
-
     Private Sub UpdateESIPublicCacheDatesTable()
         Dim DBCommand As SQLiteCommand
         Dim readerCheck As SQLiteDataReader

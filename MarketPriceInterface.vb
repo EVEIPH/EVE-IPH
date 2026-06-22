@@ -7,11 +7,13 @@ Public Class MarketPriceInterface
     Private PriceHistoryUpdateCount As Integer ' For counting price history updates
     Private PriceOrdersUpdateCount As Integer ' for counting price updates
     Private RefProgressBar As ToolStripProgressBar
+    Private RefLabel As Label
 
     Private TrackingRecords As Boolean
 
-    Public Sub New(ByRef SentPG As ToolStripProgressBar)
+    Public Sub New(ByRef SentPG As ToolStripProgressBar, Optional ByRef SentLabel As Label = Nothing)
         RefProgressBar = SentPG
+        RefLabel = SentLabel
         PriceHistoryUpdateCount = 0
         TrackingRecords = False
     End Sub
@@ -55,7 +57,7 @@ Public Class MarketPriceInterface
                     Thread.Sleep(Interval * 1000)
                 End If
             End If
-            End If
+        End If
 
         ' Build the pairs
         For i = 0 To SentTypeIDs.Count - 1
@@ -180,6 +182,16 @@ Public Class MarketPriceInterface
 
                     ' If our pair sets have more than 1 set, then wait 60 seconds before running again
                     If PairSets.Count > 1 Then
+                        If Not IsNothing(RefLabel) Then
+                            ' Grab the number from the front and add to it
+                            Try
+                                Dim count As Integer = CInt(RefLabel.Text.Substring(0, InStr(RefLabel.Text, " "))) + PairSet.Count
+                                Dim total As Integer = CInt(RefLabel.Text.Substring(InStr(RefLabel.Text, "of") + 1))
+                                SetLabelUpdateText(CStr(count) & " of " & CStr(total))
+                            Catch ex As Exception
+                                Application.DoEvents()
+                            End Try
+                        End If
                         Thread.Sleep(61000)
                     End If
 
@@ -234,6 +246,16 @@ Public Class MarketPriceInterface
                 Case UpdateType.bVisible
                     RefProgressBar.Visible = CBool(value)
             End Select
+        End If
+    End Sub
+
+    Private Delegate Sub CountLabelUpdate(ByVal labeltext As String)
+
+    Private Sub SetLabelUpdateText(ByVal labeltext As String)
+        If RefLabel.InvokeRequired Then
+            RefLabel.Invoke(New CountLabelUpdate(AddressOf SetLabelUpdateText), labeltext)
+        Else
+            RefLabel.Text = labeltext
         End If
     End Sub
 

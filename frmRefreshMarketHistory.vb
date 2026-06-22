@@ -41,7 +41,7 @@ Public Class frmRefreshMarketHistory
             Me.Cursor = Cursors.WaitCursor
 
             ' Get all the items we can build with a blueprint and save them
-            DBCommand = New SQLiteCommand("SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE MARKET_GROUP IS NOT NULL", EVEDB.DBREf)
+            DBCommand = New SQLiteCommand("SELECT ITEM_ID FROM ALL_BLUEPRINTS WHERE ITEM_MARKET_GROUP IS NOT NULL", EVEDB.DBREf)
             rsItems = DBCommand.ExecuteReader
 
             ' Build the list of items
@@ -87,13 +87,12 @@ ExitSub:
     ' For threading the update process in background
     Private Sub UpdateHistory(AllItems As Object)
         Dim Items As List(Of Long) = DirectCast(AllItems, List(Of Long))
-        Dim MH As New MarketPriceInterface(MarketHistoryPG)
+        Dim MH As New MarketPriceInterface(MarketHistoryPG, lblItemsLastUpdated)
 
         ' Set the global flag to prevent other updates during this
         RunningAllHistoryUpdate = True
 
         If MH.UpdateESIPriceHistory(Items, SelectedRegionID, True) Then
-            ' Success
             Application.DoEvents()
         End If
 
@@ -126,7 +125,7 @@ ExitSub:
         End If
 
         ' Get the total items we can update
-        DBCommand = New SQLiteCommand("SELECT COUNT(ITEM_ID) FROM ALL_BLUEPRINTS WHERE MARKET_GROUP IS NOT NULL", EVEDB.DBREf)
+        DBCommand = New SQLiteCommand("SELECT COUNT(ITEM_ID) FROM ALL_BLUEPRINTS WHERE ITEM_MARKET_GROUP IS NOT NULL", EVEDB.DBREf)
         rsData = DBCommand.ExecuteReader
 
         rsData.Read()
@@ -140,6 +139,8 @@ ExitSub:
             lblLastUpdateDate.Text = CStr(CacheDate)
             lblItemsLastUpdated.Text = CStr(RecordCount) & " of " & CStr(TotalRecords)
         End If
+
+        Application.DoEvents()
 
     End Sub
 

@@ -395,85 +395,84 @@ Public Class EVEAssets
 
         ' Look up the location name, first start with stations, then systems
         If LocationID <> 0 Then
-
             ' See if it's a station
-            If LocationID >= MinStationID And LocationID < MaxStationID Then
+            ' If LocationID >= MinStationID And LocationID < MaxStationID Then
+            SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(LocationID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            readerData = DBCommand.ExecuteReader
 
-                SQL = "SELECT STATION_NAME FROM STATIONS WHERE STATION_ID = " & CStr(LocationID)
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerData = DBCommand.ExecuteReader
+            If readerData.Read Then
+                ' Found it
+                LocationName = readerData.GetString(0)
+            End If
+            readerData.Close()
 
-                If readerData.Read Then
-                    ' Found it
-                    LocationName = readerData.GetString(0)
-                Else
-                    ' Unknown
-                    LocationName = UnknownLocation
-                End If
-                readerData.Close()
+            If LocationName = "" Then
+                ' No station/structure name, so check these
+                If LocationID >= 30000000 And LocationID < 40000000 Then ' See if it's a solar system
+                    SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(LocationID)
 
-            ElseIf LocationID >= 30000000 And LocationID < 40000000 Then ' See if it's a solar system
-                SQL = "SELECT solarSystemName FROM SOLAR_SYSTEMS WHERE solarSystemID = " & CStr(LocationID)
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerData = DBCommand.ExecuteReader
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerData = DBCommand.ExecuteReader
+                    If readerData.Read Then
+                        ' Found it
+                        LocationName = readerData.GetString(0)
+                    Else
+                        ' Unknown
+                        LocationName = UnknownLocation
+                    End If
 
-                If readerData.Read Then
-                    ' Found it
-                    LocationName = readerData.GetString(0)
-                Else
-                    ' Unknown
-                    LocationName = UnknownLocation
-                End If
+                    ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
+                    If FlagID = 0 Then
+                        FlagID = -1 * SpaceFlagCode 'negative for base item
+                    End If
 
-                ' See if it has a flag assigned, if 0 then set it to 500 (my own code for space)
-                If FlagID = 0 Then
-                    FlagID = -1 * SpaceFlagCode 'negative for base item
-                End If
-
-                readerData.Close()
-            Else
-                ' See if it's connected to another record, which will have a name look up
-                SQL = "SELECT locationID FROM ASSETS WHERE itemID = " & CStr(LocationID)
-
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerData = DBCommand.ExecuteReader
-                readerData.Read()
-
-                If readerData.HasRows Then
-                    ' Call this function again to get the location name
-                    LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, Container, FlagSortNumber, CharacterTokenData)
                     readerData.Close()
                 Else
-                    ' See if it's a upwell structure that they have access to
-                    Dim FoundLocation As LocationName
-                    ' See if we looked it up first before downloading
-                    LocationIDToFind = LocationID
-                    FoundLocation = LocationNames.Find(AddressOf FindLocation)
+                    ' See if it's connected to another record, which will have a name look up
+                    SQL = "SELECT locationID FROM ASSETS WHERE LocationType <> 'solar_system' AND itemID = " & CStr(LocationID)
+                    SQL &= " AND ID = " & CStr(CharacterTokenData.CharacterID)
 
-                    If FoundLocation IsNot Nothing Then
-                        LocationName = FoundLocation.Name
+                    DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                    readerData = DBCommand.ExecuteReader
+                    readerData.Read()
+
+                    If readerData.HasRows Then
+                        ' Call this function again to get the location name
+                        LocationName = GetAssetLocationAndFlagInfo(readerData.GetInt64(0), FlagID, FlagText, Container, FlagSortNumber, CharacterTokenData)
+                        readerData.Close()
                     Else
-                        ' Get the location name for the location if we don't have it yet
-                        Dim SP As New StructureProcessor
-                        Dim LocationData As StructureProcessor.StructureStationInformation = SP.GetStationInformation(LocationID, CharacterTokenData, True)
+                        ' See if it's a upwell structure that they have access to
+                        Dim FoundLocation As LocationName
+                        ' See if we looked it up first before downloading
+                        LocationIDToFind = LocationID
+                        FoundLocation = LocationNames.Find(AddressOf FindLocation)
 
-                        If LocationData.Name <> "" Then
-                            LocationName = LocationData.Name
+                        If FoundLocation IsNot Nothing Then
+                            LocationName = FoundLocation.Name
+                        Else
+                            ' Get the location name for the location if we don't have it yet
+                            Dim SP As New StructureProcessor
+                            Dim LocationData As StructureProcessor.StructureStationInformation = SP.GetStationInformation(LocationID, CharacterTokenData, True)
+
+                            If LocationData.Name <> "" Then
+                                LocationName = LocationData.Name
+                            End If
+
+                            If LocationName = "" Then
+                                UnknownLocationCounter += 1
+                                ' Not found, so add a counter to it to deliniate unknown locations
+                                LocationName = UnknownLocation & " " & CStr(UnknownLocationCounter)
+                            End If
+
+                            ' Insert location into our list
+                            Dim CN As New LocationName
+                            CN.ID = LocationID
+                            CN.Name = LocationName
+                            LocationNames.Add(CN)
+
                         End If
-
-                        If LocationName = "" Then
-                            UnknownLocationCounter += 1
-                            ' Not found, so add a counter to it to deliniate unknown locations
-                            LocationName = UnknownLocation & " " & CStr(UnknownLocationCounter)
-                        End If
-
-                        ' Insert location into our list
-                        Dim CN As New LocationName
-                        CN.ID = LocationID
-                        CN.Name = LocationName
-                        LocationNames.Add(CN)
-
                     End If
                 End If
             End If

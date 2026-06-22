@@ -122,7 +122,7 @@ Partial Class frmBlueprintList
         '
         'chkBPNPCBPOs
         '
-        Me.chkBPNPCBPOs.Location = New System.Drawing.Point(141, 162)
+        Me.chkBPNPCBPOs.Location = New System.Drawing.Point(141, 164)
         Me.chkBPNPCBPOs.Name = "chkBPNPCBPOs"
         Me.chkBPNPCBPOs.Size = New System.Drawing.Size(81, 17)
         Me.chkBPNPCBPOs.TabIndex = 6
