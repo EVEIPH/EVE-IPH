@@ -215,7 +215,7 @@ Public Class frmSettings
         btnSave.Text = "Save"
     End Sub
 
-    Private Sub chkSaveBPCCostperBP_CheckedChanged(sender As Object, e As EventArgs) Handles chkSaveBPCCostperBP.CheckedChanged
+    Private Sub chkIgnoreBPCCost_CheckedChanged(sender As Object, e As EventArgs) Handles chkIgnoreBPCCost.CheckedChanged
         btnSave.Text = "Save"
     End Sub
 
@@ -321,7 +321,7 @@ Public Class frmSettings
 
                 .SetToolTip(chkAlwaysBuyFuelBlocks, "When selected, IPH will always force buying of fuel blocks as components in Build/Buy calculations")
                 .SetToolTip(chkAlwaysBuyRAMs, "When selected, IPH will always force buying of R.A.M.s as components in Build/Buy calculations")
-                .SetToolTip(chkSaveBPCCostperBP, "When selected and users check BPC Cost on the BP Tab and then Save BP, IPH will save the option to include the BPC cost only for this blueprint. ")
+                .SetToolTip(chkIgnoreBPCCost, "When selected and IPH will ignore the BPC Cost for invention costs. ")
 
                 .SetToolTip(chkSuggestBuildwhenBPnotOwned, "When selected, IPH will always Build the item if the BP is not owned")
                 .SetToolTip(chkBuildWhenNotEnoughItemsonMarket, "When selected, IPH will build items if suggesting buy components without enough components on market to buy")
@@ -442,7 +442,7 @@ Public Class frmSettings
             chkSaveBPRelicsDecryptors.Checked = .SaveBPRelicsDecryptors
             chkAlwaysBuyFuelBlocks.Checked = .AlwaysBuyFuelBlocks
             chkAlwaysBuyRAMs.Checked = .AlwaysBuyRAMs
-            chkSaveBPCCostperBP.Checked = .SaveBPCCostperBP
+            chkIgnoreBPCCost.Checked = .IgnoreBPCInventionCost
 
             chkDisableSVR.Checked = .DisableSVR
             chkDisableTracking.Checked = .DisableGATracking
@@ -599,7 +599,7 @@ Public Class frmSettings
 
                         ' Need to reload the blueprints for all characters
                         Dim rsChar As SQLiteDataReader
-                        DBCommand = New SQLiteCommand("SELECT CHARACTER_ID, ACCESS_TOKEN, TOKEN_TYPE, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, SCOPES FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand("SELECT CHARACTER_ID, ACCESS_TOKEN, TOKEN_TYPE, ACCESS_TOKEN_EXPIRE_DATE_TIME, REFRESH_TOKEN, SCOPES FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBRef)
                         rsChar = DBCommand.ExecuteReader
                         While rsChar.Read
                             Dim TempToken As New SavedTokenData
@@ -644,7 +644,7 @@ Public Class frmSettings
 
                 .AlwaysBuyFuelBlocks = chkAlwaysBuyFuelBlocks.Checked
                 .AlwaysBuyRAMs = chkAlwaysBuyRAMs.Checked
-                .SaveBPCCostperBP = chkSaveBPCCostperBP.Checked
+                .IgnoreBPCInventionCost = chkIgnoreBPCCost.Checked
 
                 .AlphaAccount = chkAlphaAccount.Checked
                 .UseActiveSkillLevels = chkUseActiveSkills.Checked

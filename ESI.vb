@@ -9,6 +9,9 @@ Imports System.Security.Cryptography
 Imports Newtonsoft.Json
 Imports System.Security.Policy
 Imports Newtonsoft.Json.Linq
+Imports System.Net.Http
+Imports System.Threading.Tasks
+
 
 Public Module ESIGlobals
     Public ESICharacterSkillsScope As String = "esi-skills.read_skills" ' only required scope to use IPH
@@ -17,9 +20,9 @@ End Module
 Public Class ESI
     Private Const ESIAuthorizeURL As String = "https://login.eveonline.com/v2/oauth/authorize"
     Private Const ESITokenURL As String = "https://login.eveonline.com/v2/oauth/token"
-    Private Const ESIURL As String = "https://esi.evetech.net/latest/"
+    Public ESIURL As String = "https://esi.evetech.net/latest/"
     Private Const ESIStatusURL As String = "https://esi.evetech.net/meta/status/?compatibility_date=2025-11-06"
-    Private Const TranquilityDataSource As String = "?datasource=tranquility"
+    Public TranquilityDataSource As String = "?datasource=tranquility"
 
     Private Const LocalHost As String = "127.0.0.1" ' All calls will redirect to local host.
     Private Const LocalPort As String = "12500" ' Always use this port
@@ -455,7 +458,8 @@ Public Class ESI
     ''' </summary>
     ''' <param name="URL">Full public data URL as a string</param>
     ''' <returns>Byte Array of response or nothing if call fails</returns>
-    Private Function GetPublicData(ByVal URL As String, ByRef CacheDate As Date, Optional BodyData As String = "") As String
+    Public Function GetPublicData(ByVal URL As String, ByRef CacheDate As Date, Optional BodyData As String = "",
+                                  Optional GetSinglePage As Boolean = False, Optional ByRef TotalPages As Integer = 0) As String
         Dim Response As String = ""
         Dim WC As New WebClient
         Dim myWebHeaderCollection As New WebHeaderCollection
@@ -493,7 +497,9 @@ Public Class ESI
                 CacheDate = NoExpiry
             End If
 
-            If Not IsNothing(Pages) Then
+            TotalPages = Pages
+
+            If Not IsNothing(Pages) And Not GetSinglePage Then
                 If Pages > 1 Then
                     Dim TempResponse As String = ""
                     For i = 2 To Pages
@@ -739,7 +745,7 @@ Public Class ESI
 
                 SQL = "SELECT * FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID = " & CStr(CharacterTokenData.CharacterID)
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                 rsCheck = DBCommand.ExecuteReader
 
                 If rsCheck.HasRows Then
@@ -982,7 +988,7 @@ Public Class ESI
                 TempBlueprint.ItemID = BP.item_id
                 TempBlueprint.TypeID = BP.type_id
                 ' Get the typeName for this bp
-                DBCommand = New SQLiteCommand("SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(BP.type_id), EVEDB.DBREf)
+                DBCommand = New SQLiteCommand("SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(BP.type_id), EVEDB.DBRef)
                 rsLookup = DBCommand.ExecuteReader
                 If rsLookup.Read Then
                     TempBlueprint.TypeName = rsLookup.GetString(0)
@@ -1184,7 +1190,7 @@ Public Class ESI
                 ' Load up all the data for the corporation
                 SQL = "SELECT * FROM ESI_CORPORATION_DATA WHERE CORPORATION_ID = " & ID
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                 rsCheck = DBCommand.ExecuteReader
 
                 If rsCheck.Read Then
@@ -1292,7 +1298,7 @@ Public Class ESI
                 SQL = "SELECT DISTINCT STATION_ID FROM STATIONS WHERE REGION_ID =" & item.RegionID & " AND STATION_ID >70000000"
             End If
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
             rsCheck = DBCommand.ExecuteReader
 
             While rsCheck.Read
@@ -1429,7 +1435,7 @@ Public Class ESI
 
         ' First look up the cache date to see if it's time to run the update for the structure
         SQL = "SELECT CACHE_DATE FROM STRUCTURE_MARKET_ORDERS_UPDATE_CACHE WHERE STRUCTURE_ID = " & CStr(QueryInfo.StructureID)
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+        DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
         rsCache = DBCommand.ExecuteReader
         CacheDate = ProcessCacheDate(rsCache)
         rsCache.Close()
@@ -1572,7 +1578,7 @@ Public Class ESI
                     For Each route In StatusItems.Routes
                         ' Look up each entry and if not in there, insert, if there, update
                         SQL = "SELECT 'X' FROM ESI_STATUS_ITEMS WHERE route = '" & route.Path & "'"
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                         rsUpdate = DBCommand.ExecuteReader
                         rsUpdate.Read()
 
@@ -1600,7 +1606,98 @@ Public Class ESI
     ' Gets the ESI file from CCP for the current Market orders (buy and sell) for the region_id and type_id sent
     ' Open transaction will open an SQL transaction here instead of the calling function
     ' Returns boolean if the history was updated or not
-    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
+
+    Public Function UpdateMarketOrders(ByRef MHDB As DBConnection, ByVal RegionID As Long,
+                                       Optional OpenTransaction As Boolean = True,
+                                       Optional IgnoreCacheLookup As Boolean = False) As Boolean
+        Dim MarketOrdersOutput As List(Of ESIMarketOrder)
+        Dim SQL As String
+        Dim rsCache As SQLiteDataReader
+        Dim CacheDate As Date = NoDate
+        Dim PublicData As String = ""
+        Dim DataFound As Boolean = True
+
+        If Not IgnoreCacheLookup Then
+            ' First look up the cache date to see if it's time to run the update
+            SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE REGION_ID = " & CStr(RegionID)
+            DBCommand = New SQLiteCommand(SQL, MHDB.DBRef)
+            rsCache = DBCommand.ExecuteReader
+
+            CacheDate = ProcessCacheDate(rsCache)
+
+            rsCache.Close()
+        Else
+            CacheDate = NoDate
+        End If
+
+        ' If it's later than now, update
+        If CacheDate <= Date.UtcNow Then
+
+            ' Delete any records for this type and region since we have a fresh set to load
+            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE REGION_ID = " & CStr(RegionID))
+
+            ' Get the data from ESI 
+            PublicData = GetPublicData(ESIURL & "markets/" & CStr(RegionID) & "/orders/" & TranquilityDataSource, CacheDate)
+
+            If Not IsNothing(PublicData) Then
+                MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(PublicData)
+
+                For Each item In MarketOrdersOutput
+                    If Not LocationIDs.Contains(item.location_id) Then
+                        LocationIDs.Add(item.location_id)
+                    End If
+                Next
+
+                ' Parse the data
+                If MarketOrdersOutput.Count > 0 Then
+                    Application.DoEvents()
+
+                    ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
+                    For i = 0 To MarketOrdersOutput.Count - 1
+                        With MarketOrdersOutput(i)
+                            Dim StationData As StructureProcessor.StructureStationInformation
+                            Dim OrderDownloadType As String = ""
+                            Dim SP As New StructureProcessor
+
+                            ' Look up data for the station/structure - don't refresh it as we can do that in one call later if not found
+                            StationData = SP.GetStationInformation(.location_id, SelectedCharacter.CharacterTokenData, False)
+
+                            Dim IssueDate As Date = FormatESIDate(.issued)
+
+                            ' Insert all the new records
+                            SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(.order_id) & "," & CStr(.type_id) & ","
+                            SQL &= .location_id & "," & CStr(StationData.RegionID) & "," & CStr(StationData.SystemID) & ",'"
+                            SQL &= CStr(IssueDate) & "'," & .duration & "," & CStr(CInt(.is_buy_order)) & "," & .price & "," & .volume_total & ","
+                            SQL &= .min_volume & "," & .volume_remain & ",'" & .range & "')"
+                            Call MHDB.ExecuteNonQuerySQL(SQL)
+                        End With
+
+                        Application.DoEvents()
+                    Next
+
+                End If
+                DataFound = True
+            Else
+                ' Json file didn't download
+                DataFound = False
+            End If
+
+            ' Set the Cache Date for everything queried 
+            Call MHDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE REGION_ID = " & CStr(RegionID))
+            Call MHDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (NULL," & CStr(RegionID) & "," & "'" & Format(CacheDate, SQLiteDateFormat) & "')")
+
+            Return DataFound
+
+        Else
+            Return False
+        End If
+
+        Return True
+
+    End Function
+
+
+    Public Function UpdateMarketOrdersItems(ByRef MHDB As DBConnection, ByVal TypeID As Long, ByVal RegionID As Long,
                                        Optional OpenTransaction As Boolean = True,
                                        Optional IgnoreCacheLookup As Boolean = False) As Boolean
         Dim MarketOrdersOutput As List(Of ESIMarketOrder)
@@ -1613,7 +1710,7 @@ Public Class ESI
         If Not IgnoreCacheLookup Then
             ' First look up the cache date to see if it's time to run the update
             SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE TYPE_ID = " & CStr(TypeID) & " AND REGION_ID = " & CStr(RegionID)
-            DBCommand = New SQLiteCommand(SQL, MHDB.DBREf)
+            DBCommand = New SQLiteCommand(SQL, MHDB.DBRef)
             rsCache = DBCommand.ExecuteReader
 
             CacheDate = ProcessCacheDate(rsCache)
@@ -2078,210 +2175,226 @@ Public Class ESI
     End Function
 
     ' Downloads all public contracts for the Region ID sent
-    Public Function UpdatePublicContracts(ByVal RegionID As String, Optional ByRef SP As ToolStripStatusLabel = Nothing, Optional ByRef PB As ToolStripProgressBar = Nothing) As Boolean
-        Dim TempPB As ToolStripProgressBar
-        Dim TempLabel As ToolStripStatusLabel
-
+    Public Async Function UpdatePublicContracts(regionID As String, reportUI As Action(Of String, Integer, Integer, Integer)) As Task(Of Boolean)
         Dim PublicData As String
         Dim ContractData As New List(Of ESIContract)
-        Dim CB As New CacheBox
         Dim CacheDate As Date
         Dim SQL As String
-
         Dim Threads As New ThreadingArray
-
-        If IsNothing(SP) Then
-            TempLabel = New ToolStripStatusLabel
-        Else
-            TempLabel = SP
-        End If
-
-        If IsNothing(PB) Then
-            TempPB = New ToolStripProgressBar
-        Else
-            TempPB = PB
-        End If
+        Dim CB As New CacheBox
 
         Try
-            If CB.DataUpdateable(CacheDateType.PublicContracts) Then
+            ' Check cache
+            If Not CB.DataUpdateable(CacheDateType.PublicContracts) Then
+                Return True
+            End If
 
-                TempLabel.Text = "Downloading Public Contracts..."
-                Application.DoEvents()
+            ' Report progress
+            reportUI("Downloading Public Contracts...", 0, 0, 0)
 
-                ' Get all the contracts for the selected region
-                PublicData = GetPublicData(ESIURL & "contracts/public/" & CStr(RegionID) & "/" & TranquilityDataSource, CacheDate)
+            ' Download contracts
+            PublicData = GetPublicData(ESIURL & "contracts/public/" & CStr(regionID) & "/" & TranquilityDataSource, CacheDate)
 
-                If Not IsNothing(PublicData) Then
-                    ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContract))(PublicData)
-
-                    If Not IsNothing(ContractData) Then
-                        If ContractData.Count > 0 Then
-
-                            Call EVEDB.BeginSQLiteTransaction()
-
-                            ' Reset the data
-                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACTS")
-
-                            ' Set the labels and progress bar if needed
-                            TempLabel.Text = "Saving Public Contracts..."
-                            TempPB.Minimum = 0
-                            TempPB.Maximum = ContractData.Count - 1
-                            TempPB.Visible = True
-
-                            ' Save all the contracts
-                            For Each contract In ContractData
-                                If CancelUpdatePrices Then
-                                    Exit For
-                                Else
-                                    Application.DoEvents()
-                                End If
-
-                                ' Insert the new record
-                                With contract
-                                    ' Only add item exchange - auction prices are in the bids esi (if any) and not final, and couriers aren't helpful for prices
-                                    ' Also, only items with 0 reward and greater than 0 price, meaning these are not want_to_buy orders - only sell, which won't give money back (alternately we could look at is_included)
-                                    ' on the items data, but this is the best for now with just the base contract order
-                                    If .contract_type = "item_exchange" And .reward = 0 And .price > 0 Then
-                                        SQL = "INSERT INTO PUBLIC_CONTRACTS VALUES (" & CStr(.contract_id) & "," & CStr(.collateral) & ",'" & FormatESIDate(.date_expired) & "','"
-                                        SQL &= FormatESIDate(.date_issued) & "'," & CStr(.days_to_complete) & "," & CStr(.end_location_id) & "," & CStr(.issuer_corporation_id) & ","
-                                        SQL &= CStr(.issuer_id) & "," & CStr(.price) & "," & CStr(.reward) & "," & CStr(.start_location_id) & ",'" & FormatDBString(.title) & "','"
-                                        SQL &= .contract_type & "'," & CStr(.volume) & "," & CStr(RegionID) & ")"
-
-                                        Call EVEDB.ExecuteNonQuerySQL(SQL)
-                                    End If
-                                End With
-                                Call IncrementToolStripProgressBar(TempPB)
-                            Next
-                            TempPB.Visible = False
-                            TempLabel.Text = ""
-
-                            ' Reset the data
-                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACT_ITEMS")
-
-                            ' Set the label and progress bar
-                            TempLabel.Text = "Saving Public Contract Data..."
-                            TempPB.Minimum = 0
-                            TempPB.Value = 0
-                            TempPB.Visible = True
-                            Application.DoEvents()
-
-                            For Each contract In ContractData
-                                ' Launch each item update as a thread
-                                Dim UPCI As New Thread(AddressOf UpdatePublicContractItems)
-                                UPCI.Start(contract.contract_id)
-
-                                ' Save the thread 
-                                Threads.AddThread(UPCI)
-                                Call IncrementToolStripProgressBar(TempPB)
-                            Next
-
-                            ' Wait until all threads are done
-                            While Not Threads.Complete
-                                Application.DoEvents()
-                            End While
-
-                            ' Make sure all threads are not running
-                            Call Threads.StopAllThreads()
-                            ' Reset the error handler
-                            ESIErrorHandler = New ESIErrorProcessor
-                            TempPB.Visible = False
-                            TempLabel.Text = ""
-
-                            ' Now, clean up all the data and only leave BPC's since I'm only using it for BPCs for now and this will speed up price updates
-                            Call EVEDB.ExecuteNonQuerySQL("DELETE FROM CONTRACT_BPC_PRICES")
-
-                            SQL = "INSERT INTO CONTRACT_BPC_PRICES SELECT TYPE_ID, REGION_ID, PC.CONTRACT_ID, PRICE/SUM(QUANTITY), SUM(QUANTITY) "
-                            SQL &= "FROM PUBLIC_CONTRACTS AS PC, PUBLIC_CONTRACT_ITEMS WHERE PC.CONTRACT_ID = PUBLIC_CONTRACT_ITEMS.CONTRACT_ID "
-                            SQL &= "AND PC.CONTRACT_ID IN (SELECT DISTINCT CONTRACT_ID FROM PUBLIC_CONTRACT_ITEMS WHERE IS_BLUEPRINT_COPY = 1 "
-                            SQL &= "GROUP BY CONTRACT_ID HAVING COUNT(DISTINCT TYPE_ID) = 1) GROUP BY PC.CONTRACT_ID, TYPE_ID, REGION_ID"
-                            Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                            ' Done updating 
-                            Call EVEDB.CommitSQLiteTransaction()
-
-                            ' All set, update cache date before leaving
-                            Call CB.UpdateCacheDate(CacheDateType.PublicContracts, CacheDate)
-
-                            Return True
-
-                        End If
-                    End If
-                End If
-
-                ' Data didn't download
-                TempPB.Visible = False
-                TempLabel.Text = ""
+            If PublicData Is Nothing Then
+                reportUI("Failed to download public contracts.", 0, 0, 0)
                 Return False
             End If
+
+            ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContract))(PublicData)
+
+            If ContractData Is Nothing OrElse ContractData.Count = 0 Then
+                reportUI("No public contracts found.", 0, 0, 0)
+                Return False
+            End If
+
+            ' Begin DB transaction
+            EVEDB.BeginSQLiteTransaction()
+
+            ' Reset contract table
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACTS")
+
+            Dim progress As Integer = 0
+            Dim total As Integer = ContractData.Count
+
+            ' Set the values of the PG
+            reportUI("Saving Public Contracts...", 0, total, 0)
+
+            ' Save contracts
+            For Each contract In ContractData
+
+                If CancelUpdatePrices Then Exit For
+
+                If contract.contract_type = "item_exchange" AndAlso contract.reward = 0 AndAlso contract.price > 0 Then
+
+                    SQL = "INSERT INTO PUBLIC_CONTRACTS VALUES (" &
+                      CStr(contract.contract_id) & "," &
+                      CStr(contract.collateral) & ",'" &
+                      FormatESIDate(contract.date_expired) & "','" &
+                      FormatESIDate(contract.date_issued) & "'," &
+                      CStr(contract.days_to_complete) & "," &
+                      CStr(contract.end_location_id) & "," &
+                      CStr(contract.issuer_corporation_id) & "," &
+                      CStr(contract.issuer_id) & "," &
+                      CStr(contract.price) & "," &
+                      CStr(contract.reward) & "," &
+                      CStr(contract.start_location_id) & ",'" &
+                      FormatDBString(contract.title) & "','" &
+                      contract.contract_type & "'," &
+                      CStr(contract.volume) & "," &
+                      CStr(regionID) & ")"
+
+                    EVEDB.ExecuteNonQuerySQL(SQL)
+                End If
+
+                progress += 1
+                reportUI("Saving Public Contracts...", 0, total, progress)
+                Application.DoEvents()
+            Next
+
+            ' Reset items table
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM PUBLIC_CONTRACT_ITEMS")
+
+            reportUI("Downloading Contract Items...", 0, 100, 100)
+
+            ' Limit concurrency to something safe (8–16 threads) Above 16 is pointless as SQL will limit
+            Dim limiter As New SemaphoreSlim(16)
+
+            Dim tasks As New List(Of Task)
+            progress = 0
+
+            For Each contract In ContractData
+
+                Await limiter.WaitAsync()
+
+                Dim t = Task.Run(Sub()
+                                     Try
+                                         UpdatePublicContractItems(contract.contract_id)
+                                     Finally
+                                         limiter.Release()
+                                     End Try
+                                 End Sub)
+
+                tasks.Add(t)
+
+                progress += 1
+                reportUI("Downloading Contract Items...", 0, total, progress)
+            Next
+
+            ' Wait for all item downloads to finish
+            Await Task.WhenAll(tasks)
+
+            Threads.StopAllThreads()
+
+            ' Build BPC table
+            EVEDB.ExecuteNonQuerySQL("DELETE FROM CONTRACT_BPC_PRICES")
+
+            SQL = "INSERT INTO CONTRACT_BPC_PRICES SELECT TYPE_ID, REGION_ID, PC.CONTRACT_ID, PRICE/SUM(QUANTITY), SUM(QUANTITY) " &
+              "FROM PUBLIC_CONTRACTS AS PC, PUBLIC_CONTRACT_ITEMS WHERE PC.CONTRACT_ID = PUBLIC_CONTRACT_ITEMS.CONTRACT_ID " &
+              "AND PC.CONTRACT_ID IN (SELECT DISTINCT CONTRACT_ID FROM PUBLIC_CONTRACT_ITEMS WHERE IS_BLUEPRINT_COPY = 1 " &
+              "GROUP BY CONTRACT_ID HAVING COUNT(DISTINCT TYPE_ID) = 1) GROUP BY PC.CONTRACT_ID, TYPE_ID, REGION_ID"
+
+            EVEDB.ExecuteNonQuerySQL(SQL)
+
+            ' Commit
+            EVEDB.CommitSQLiteTransaction()
+
+            ' Update cache
+            CB.UpdateCacheDate(CacheDateType.PublicContracts, CacheDate)
+
+            reportUI("Public Contract Update Complete", 0, 100, 100)
 
             Return True
 
         Catch ex As Exception
-            MsgBox("Failed to update public contract data: " & ex.Message, vbInformation, Application.ProductName)
-            Call EVEDB.RollbackSQLiteTransaction()
 
-            TempPB.Visible = False
-            TempLabel.Text = ""
+            EVEDB.RollbackSQLiteTransaction()
+            reportUI("Error updating public contracts: " & ex.Message, 0, 0, 0)
             Return False
 
         End Try
 
     End Function
 
-    ' Downloads all items on the contract ID sent (Public contract)
-    Private Function UpdatePublicContractItems(ByVal SentContractID As Object) As Boolean
+    Public Sub UpdatePublicContractItems(contractID As Long)
 
         Try
-            Dim PublicData As String
-            Dim ContractData As New List(Of ESIContractItem)
-            Dim Threads As New ThreadingArray
-            Dim CB As New CacheBox
-            Dim CacheDate As Date
-            Dim SQL As String
+            Dim url As String = ESIURL & "contracts/public/items/" & contractID & "/" & TranquilityDataSource
+            Dim json As String = GetPublicData(url, Nothing)
 
-            PublicData = GetPublicData(ESIURL & "contracts/public/items/" & CStr(SentContractID) & "/" & TranquilityDataSource, CacheDate)
+            If json Is Nothing Then Exit Sub
 
-            If Not IsNothing(PublicData) Then
-                ContractData = JsonConvert.DeserializeObject(Of List(Of ESIContractItem))(PublicData)
+            Dim items = JsonConvert.DeserializeObject(Of List(Of ESIContractItem))(json)
 
-                If Not IsNothing(ContractData) Then
-                    If ContractData.Count > 0 Then
+            If items Is Nothing Then Exit Sub
 
-                        ' Save all the contract items for this contract
-                        For Each contract In ContractData
-                            If CancelUpdatePrices Then
-                                Exit For
-                            Else
-                                Application.DoEvents()
-                            End If
+            For Each it In items
+                Dim sql As String =
+                "INSERT INTO PUBLIC_CONTRACT_ITEMS (" &
+                "CONTRACT_ID, IS_INCLUDED, ITEM_ID, QUANTITY, RECORD_ID, TYPE_ID, " &
+                "IS_BLUEPRINT_COPY, MATERIAL_EFFICIENCY, TIME_EFFICIENCY, RUNS) VALUES (" &
+                contractID & "," &
+                If(it.is_included, 1, 0) & "," &
+                it.item_id & "," &
+                it.quantity & "," &
+                it.record_id & "," &
+                it.type_id & "," &
+                If(it.is_blueprint_copy, 1, 0) & "," &
+                it.material_efficiency & "," &
+                it.time_efficiency & "," &
+                it.runs & ")"
 
-                            ' Insert the new record
-                            With contract
-                                SQL = "INSERT INTO PUBLIC_CONTRACT_ITEMS VALUES (" & CStr(SentContractID) & "," & CStr(.is_included) & "," & CStr(.item_id) & ","
-                                SQL &= CStr(.quantity) & "," & CStr(.record_id) & "," & CStr(.type_id) & "," & CStr(.is_blueprint_copy) & "," & CStr(.material_efficiency) & ","
-                                SQL &= CStr(.time_efficiency) & "," & CStr(.runs) & ")"
 
-                                Call EVEDB.ExecuteNonQuerySQL(SQL)
-
-                            End With
-                        Next
-
-                        ' Done
-                        Return True
-
-                    End If
-                End If
-            End If
-
-            Return False
+                EVEDB.ExecuteNonQuerySQL(sql)
+            Next
 
         Catch ex As Exception
-            ' Ignore errors
-            Return False
+            ' Log or ignore — do not crash threading
+            Application.DoEvents()
         End Try
 
-    End Function
+    End Sub
 
+
+    Private Async Function DownloadContractItems(contractId As Long) As Task
+        Dim url = $"https://esi.evetech.net/latest/contracts/public/items/{contractId}/?datasource=tranquility"
+
+        Using client As New HttpClient()
+            client.DefaultRequestHeaders.Add("User-Agent", "EVE IPH")
+
+            Using stream = Await client.GetStreamAsync(url)
+                Using sr As New StreamReader(stream)
+                    Using reader As New JsonTextReader(sr)
+
+                        reader.SupportMultipleContent = False
+                        Dim serializer As New JsonSerializer()
+
+                        Await reader.ReadAsync() ' Start array
+
+                        While Await reader.ReadAsync()
+                            If reader.TokenType = JsonToken.StartObject Then
+
+                                Dim item = serializer.Deserialize(Of ESIContractItem)(reader)
+
+                                Dim SQL As String =
+                                "INSERT INTO PUBLIC_CONTRACT_ITEMS " &
+                                "(contract_id, type_id, quantity, is_blueprint_copy) VALUES (" &
+                                $"{contractId}, " &
+                                $"{item.type_id}, " &
+                                $"{item.quantity}, " &
+                                $"{If(item.is_blueprint_copy, 1, 0)})"
+
+                                EVEDB.ExecuteNonQuerySQL(SQL)
+
+                            ElseIf reader.TokenType = JsonToken.EndArray Then
+                                Exit While
+                            End If
+                        End While
+
+                    End Using
+                End Using
+            End Using
+        End Using
+    End Function
 
 #End Region
 

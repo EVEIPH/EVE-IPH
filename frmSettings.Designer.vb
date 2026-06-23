@@ -49,7 +49,7 @@ Partial Class frmSettings
         Me.chkBrokerFactionStanding = New System.Windows.Forms.CheckBox()
         Me.btnReset = New System.Windows.Forms.Button()
         Me.gbBuildBuySettings = New System.Windows.Forms.GroupBox()
-        Me.chkSaveBPCCostperBP = New System.Windows.Forms.CheckBox()
+        Me.chkIgnoreBPCCost = New System.Windows.Forms.CheckBox()
         Me.chkBuildWhenNotEnoughItemsonMarket = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyRAMs = New System.Windows.Forms.CheckBox()
         Me.chkAlwaysBuyFuelBlocks = New System.Windows.Forms.CheckBox()
@@ -354,7 +354,7 @@ Partial Class frmSettings
         '
         'gbBuildBuySettings
         '
-        Me.gbBuildBuySettings.Controls.Add(Me.chkSaveBPCCostperBP)
+        Me.gbBuildBuySettings.Controls.Add(Me.chkIgnoreBPCCost)
         Me.gbBuildBuySettings.Controls.Add(Me.chkBuildWhenNotEnoughItemsonMarket)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyRAMs)
         Me.gbBuildBuySettings.Controls.Add(Me.chkAlwaysBuyFuelBlocks)
@@ -368,16 +368,15 @@ Partial Class frmSettings
         Me.gbBuildBuySettings.TabStop = False
         Me.gbBuildBuySettings.Text = "Build Settings:"
         '
-        'chkSaveBPCCostperBP
+        'chkIgnoreBPCCost
         '
-        Me.chkSaveBPCCostperBP.AutoSize = True
-        Me.chkSaveBPCCostperBP.Location = New System.Drawing.Point(9, 138)
-        Me.chkSaveBPCCostperBP.Name = "chkSaveBPCCostperBP"
-        Me.chkSaveBPCCostperBP.Size = New System.Drawing.Size(111, 17)
-        Me.chkSaveBPCCostperBP.TabIndex = 42
-        Me.chkSaveBPCCostperBP.Text = "future setting here"
-        Me.chkSaveBPCCostperBP.UseVisualStyleBackColor = True
-        Me.chkSaveBPCCostperBP.Visible = False
+        Me.chkIgnoreBPCCost.AutoSize = True
+        Me.chkIgnoreBPCCost.Location = New System.Drawing.Point(9, 138)
+        Me.chkIgnoreBPCCost.Name = "chkIgnoreBPCCost"
+        Me.chkIgnoreBPCCost.Size = New System.Drawing.Size(151, 17)
+        Me.chkIgnoreBPCCost.TabIndex = 42
+        Me.chkIgnoreBPCCost.Text = "Ignore Invention BPC Cost"
+        Me.chkIgnoreBPCCost.UseVisualStyleBackColor = True
         '
         'chkBuildWhenNotEnoughItemsonMarket
         '
@@ -958,5 +957,5 @@ Partial Class frmSettings
     Friend WithEvents btnOpenRates As Button
     Friend WithEvents gbAdjustRates As GroupBox
     Friend WithEvents lblEditRates As Label
-    Friend WithEvents chkSaveBPCCostperBP As CheckBox
+    Friend WithEvents chkIgnoreBPCCost As CheckBox
 End Class

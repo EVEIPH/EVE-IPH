@@ -49,7 +49,7 @@ Public Class DBConnection
         GC.Collect()
     End Sub
 
-    Public Function DBREf() As SQLiteConnection
+    Public Function DBRef() As SQLiteConnection
         Return DB
     End Function
 

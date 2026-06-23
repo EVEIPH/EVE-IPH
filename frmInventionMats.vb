@@ -43,8 +43,8 @@
     Public Sub RefreshInventionMatsGrid()
         Dim MatList As ListViewItem
         Dim Quantity As Long
-        Dim MatCost As Double
-        Dim TotalCost As Double ' For summing up all the costs
+        Dim MatCost As Double = 0
+        Dim TotalCost As Double = 0 ' For summing up all the costs
 
         If Not IsNothing(MaterialList.GetMaterialList) Then
             If MaterialList.GetMaterialList.Count > 0 Then
@@ -64,33 +64,33 @@
                 For i = 0 To MaterialList.GetMaterialList.Count - 1
                     Application.DoEvents()
                     MatList = New ListViewItem(CStr(MaterialList.GetMaterialList(i).GetMaterialTypeID))
-                    MatCost = GetItemPrice(MaterialList.GetMaterialList(i).GetMaterialTypeID)
                     Quantity = CLng(MaterialList.GetMaterialList(i).GetQuantity)
+
+                    ' build list
                     MatList.SubItems.Add(MaterialList.GetMaterialList(i).GetMaterialName)
-                    MatList.SubItems.Add(FormatNumber(MatCost, 2))
-                    MatList.SubItems.Add(FormatNumber(MatCost * Quantity, 2))
-                    MatList.SubItems.Add(FormatNumber(Quantity, 0))
-                    TotalCost += MatCost
+                    MatList.SubItems.Add(FormatNumber(MaterialList.GetMaterialList(i).GetCostPerItem, 2))
+                    MatList.SubItems.Add(FormatNumber(MaterialList.GetMaterialList(i).GetTotalCost, 2))
+                    MatList.SubItems.Add(FormatNumber(MaterialList.GetMaterialList(i).GetQuantity, 0))
+
+                    MatCost += MaterialList.GetMaterialList(i).GetCostPerItem
+                    TotalCost += MaterialList.GetMaterialList(i).GetTotalCost
                     Call lstInventionMats.Items.Add(MatList)
                 Next
 
-                ' Add the total cost
-                MatList = New ListViewItem("Total " & ListType & " Cost")
-                ' Color this last line grey
-                MatList.BackColor = Color.WhiteSmoke
-                MatList.SubItems.Add("")
-                MatList.SubItems.Add(FormatNumber(TotalCost, 2)) ' Put in the Total Cost column
-                MatList.SubItems.Add(FormatNumber(TotalInventedRuns, 0))
-
+                ' Set the total cost line
                 If ListType.Contains("Invention") Then
-                    ' Finally add the cost per bp
-                    MatList = New ListViewItem("Total Invention Cost for " & CStr(UserRuns) & " Runs")
-                    ' Color this last line grey
-                    MatList.BackColor = Color.LightGray
-                    MatList.SubItems.Add("")
-                    MatList.SubItems.Add(FormatNumber(TotalCost / TotalInventedRuns * UserRuns, 2))
-                    MatList.SubItems.Add(FormatNumber(UserRuns, 0))
+                    MatList = New ListViewItem("Invention")
+                    MatList.SubItems.Add("Total Invention Materials Cost")
+                Else
+                    ' Add the total cost
+                    MatList = New ListViewItem("Materials")
+                    MatList.SubItems.Add("Total Materials Cost")
                 End If
+
+                ' Color this last line grey
+                MatList.BackColor = Color.LightGray
+                MatList.SubItems.Add(FormatNumber(MatCost, 2))
+                MatList.SubItems.Add(FormatNumber(TotalCost, 2))
 
                 Call lstInventionMats.Items.Add(MatList)
                 Call lstInventionMats.EndUpdate()

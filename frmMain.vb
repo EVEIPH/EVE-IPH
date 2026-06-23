@@ -2,6 +2,7 @@
 Imports System.Data.SQLite
 Imports System.Globalization
 Imports System.Threading
+Imports System.Threading.Tasks
 Imports System.IO
 Imports System.Net
 
@@ -2167,7 +2168,7 @@ Public Class frmMain
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
-                frmInventMats.MatType = "T2 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "Invention Materials needed for " & CStr(SelectedBlueprint.GetUserRuns) & " Successful T2 BPC"
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
@@ -2193,7 +2194,7 @@ Public Class frmMain
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T2 Then
-                frmInventMats.MatType = "T2 Copy Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "Copy Materials needed for " & CStr(SelectedBlueprint.GetUserRuns) & " Successful T2 BPC"
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
@@ -2218,7 +2219,7 @@ Public Class frmMain
 
         If Not IsNothing(SelectedBlueprint) Then
             If SelectedBlueprint.GetTechLevel = BPTechLevel.T3 Then
-                frmInventMats.MatType = "T3 Invention Materials needed for enough successful BPCs for " & CStr(SelectedBlueprint.GetUserRuns)
+                frmInventMats.MatType = "Invention Materials needed for " & CStr(SelectedBlueprint.GetUserRuns) & " Successful T3 BPC"
                 If SelectedBlueprint.GetUserRuns = 1 Then
                     frmInventMats.MatType = frmInventMats.MatType & " Run"
                 Else
@@ -3640,6 +3641,12 @@ Public Class frmMain
                 Call BPTabFacility.SetIgnoreInvention(False, ProductionType.T3Invention, True)
             End If
 
+        End If
+    End Sub
+
+    Private Sub chkBPIgnoreBPCInventionCosts_CheckedChanged(sender As Object, e As EventArgs)
+        If Not FirstLoad Then
+            Call RefreshBP()
         End If
     End Sub
 
@@ -5636,6 +5643,7 @@ Public Class frmMain
             Call SetInventionEnabled("T" & CStr(BPTech), True) ' First enable then let the ignore invention check override if needed
             If BPTech = 2 And Not FromCheck Then
                 CheckBPIgnoreInventionValue = UserBPTabSettings.IgnoreInvention
+
             End If
         End If
 
@@ -8388,7 +8396,7 @@ ExitForm:
     End Sub
 
     ' Checks the user entry and then sends the type ids and regions to the cache update
-    Private Sub btnImportPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDownloadPrices.Click
+    Private Async Sub btnImportPrices_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnDownloadPrices.Click
         Dim RegionSelected As Boolean
         Dim SystemSelected As Boolean
         Dim readerSystems As SQLiteDataReader
@@ -8501,7 +8509,7 @@ ExitForm:
                 SQL = "SELECT regionID FROM REGIONS "
                 SQL &= "WHERE regionName = '" & cmbPriceRegions.Text & "'"
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                 readerSystems = DBCommand.ExecuteReader
                 If readerSystems.Read Then
                     SearchRegion = CStr(readerSystems.GetValue(0))
@@ -8523,7 +8531,7 @@ ExitForm:
                 SQL = "SELECT solarSystemID, REGIONS.regionID FROM SOLAR_SYSTEMS, REGIONS "
                 SQL &= "WHERE REGIONS.regionID = SOLAR_SYSTEMS.regionID AND solarSystemName = '" & SearchSystem & "'"
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                 readerSystems = DBCommand.ExecuteReader
                 If readerSystems.Read Then
                     SearchSystem = CStr(readerSystems.GetValue(0))
@@ -8578,7 +8586,7 @@ ExitForm:
                             SQL &= "ORDER BY ID"
                         End If
 
-                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                        DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                         rsPP = DBCommand.ExecuteReader
 
                         If rsPP.Read Then
@@ -8632,7 +8640,7 @@ ExitForm:
         Next
 
         ' Load the prices
-        Call LoadPrices(Items, BlueprintItems)
+        Await LoadPrices(Items, BlueprintItems)
 
 UpdateProgramPrices:
 
@@ -8690,7 +8698,8 @@ ExitSub:
     End Function
 
     ' Loads prices from the ITEM_PRICES_CACHE into the ITEM_PRICES table (fuzzworks) or into MARKET_ORDERS for CCP data based on the info selected on the main form 
-    Private Sub LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem))
+    Private Async Function LoadPrices(ByVal SentItems As List(Of PriceItem), ByVal BPItems As List(Of PriceItem)) As Task
+        Await Task.Yield() ' prevents BC42356 warning
         Dim readerPrices As SQLiteDataReader
         Dim SQL As String = ""
         Dim i As Integer
@@ -8698,7 +8707,10 @@ ExitSub:
         Dim SelectedPrice As Double
         Dim MP As New MarketPriceInterface(pnlProgressBar)
         Dim ESIData As New ESI
-        Dim RegionID As String
+        Dim RegionIDs As New List(Of String)
+        Dim TempRegion As String
+        Dim RegionID As String = ""
+
         Dim PriceRegions As New List(Of String)
         Dim StructurePriceLocations As New List(Of SystemRegion)
         Dim PriceType As String = "" ' Default
@@ -8706,61 +8718,32 @@ ExitSub:
 
         ' Use CCP Data
         If rbtnPriceSourceCCPData.Checked Then
-            ' Loop through each item and set it's pair for query
+            ' Get the list of regions we need to download for price profiles
             For i = 0 To SentItems.Count - 1
-                Dim Temp As New TypeIDRegion
-                Dim SystemRegionData As New SystemRegion
-                Temp.TypeIDs.Add(CStr(SentItems(i).TypeID))
-
                 ' Look up regionID since we can only look up regions in ESI
                 If SentItems(i).SystemID <> "" And SentItems(i).SystemID <> "0" Then
-                    SystemRegionData.SystemID = SentItems(i).SystemID
-                    SystemRegionData.RegionID = CStr(GetRegionID(CInt(SentItems(i).SystemID)))
+                    TempRegion = CStr(GetRegionID(CInt(SentItems(i).SystemID)))
                 Else
                     ' for ESI, only one region per update
-                    SystemRegionData.SystemID = ""
-                    SystemRegionData.RegionID = SentItems(i).RegionID
+                    TempRegion = SentItems(i).RegionID
                 End If
-
-                ' Save for structures later
-                If Not StructurePriceLocations.Contains(SystemRegionData) Then
-                    StructurePriceLocations.Add(SystemRegionData)
-                End If
-
-                ' Set the region
-                Temp.RegionString = SystemRegionData.RegionID
-
-                ' Save the regionID in the list
-                If Not PriceRegions.Contains(SystemRegionData.RegionID) Then
-                    PriceRegions.Add(SystemRegionData.RegionID)
-                End If
-
-                ' If not in the main list, add it
-                Dim TempItem As New TypeIDRegion
-                RegiontoFind = SystemRegionData.RegionID
-                TypeIDRegiontoFind = CStr(SentItems(i).TypeID)
-                TempItem = Items.Find(AddressOf FindTypeIDRegion)
-                If IsNothing(TempItem) Then
-                    Items.Add(Temp)
+                ' add it
+                If Not RegionIDs.Contains(TempRegion) Then
+                    RegionIDs.Add(TempRegion)
                 End If
             Next
 
             pnlStatus.Text = "Downloading Station Prices..."
 
-            ' Update the ESI prices cache
-            If Not MP.UpdateESIMarketOrders(Items) Then
-                ' Update Failed, don't reload everything
-                Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
-                pnlStatus.Text = ""
-                Exit Sub
-            End If
-
-            If CancelThreading Then
-                ' They had a ton of errors
-                Call MsgBox("You had an excessive amount of errors while attempting to update station orders and the process was canceled. Please try again later.", vbCritical, Application.ProductName)
-                CancelThreading = False
-                Exit Sub
-            End If
+            ' Update the ESI prices cache for each region we have
+            For Each ID In RegionIDs
+                If Not MP.UpdateESIMarketOrders(ID) Then
+                    ' Update Failed, don't reload everything
+                    Call MsgBox("Some prices did not update from stations. Please try again.", vbInformation, Application.ProductName)
+                    pnlStatus.Text = ""
+                    Exit Function
+                End If
+            Next
 
             pnlStatus.Text = ""
             Application.DoEvents()
@@ -8776,23 +8759,23 @@ ExitSub:
                     ' Update Failed, don't reload everything
                     Call MsgBox("Some prices did not update from public structures. Please try again.", vbInformation, Application.ProductName)
                     pnlStatus.Text = ""
-                    Exit Sub
+                    Exit Function
                 End If
 
                 If CancelThreading Then
                     ' They had a ton of errors
                     Call MsgBox("You had an excessive amount of errors while attempting to update structure orders and the process was canceled. Please try again later.", vbCritical, Application.ProductName)
                     CancelThreading = False
-                    Exit Sub
+                    Exit Function
                 End If
 
                 pnlStatus.Text = ""
             End If
         Else
-            ' Update the cache with EVE Marketer or Fuzzworks selected
+            ' Update the cache with Fuzzworks selected
             If Not UpdatePricesCache(SentItems) Then
                 ' Update Failed, don't reload everything
-                Exit Sub
+                Exit Function
             End If
         End If
 
@@ -8807,7 +8790,26 @@ ExitSub:
                 ' Need to get region id from system
                 TempItem.RegionID = CStr(GetRegionID(TempItem.SystemID))
             End If
-            Call ESIData.UpdatePublicContracts(TempItem.RegionID, pnlStatus, pnlProgressBar) ' Contracts only available for a region
+
+            ' Load contracts for the region, use the helper UI to update progress
+            Dim ok As Boolean = Await ESIData.UpdatePublicContracts(TempItem.RegionID,
+            Sub(msg As String, min As Integer, max As Integer, val As Integer)
+                UI(Sub()
+                       pnlStatus.Text = msg
+                       pnlProgressBar.Minimum = min
+                       pnlProgressBar.Maximum = max
+
+                       val = Math.Max(min, Math.Min(max, val))
+                       pnlProgressBar.Value = val
+
+                       pnlProgressBar.Visible = True
+                   End Sub)
+            End Sub)
+
+            If Not ok Then
+                pnlStatus.Text = ""
+                Exit Function
+            End If
         End If
 
         ' Working
@@ -8980,7 +8982,7 @@ ExitSub:
 
             End If
 
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
             readerPrices = DBCommand.ExecuteReader
 
             Dim DownloadedPrice As Double
@@ -9057,7 +9059,7 @@ ExitSub:
 
                 SQL &= " FROM CONTRACT_BPC_PRICES WHERE TYPE_ID = " & CStr(BPID.TypeID) & " AND REGION_ID = " & BPID.RegionID
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+                DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
                 readerPrices = DBCommand.ExecuteReader
 
                 ' Grab the first record, which will be the latest one, if no record just leave what is already in item prices
@@ -9097,7 +9099,17 @@ LocalCancelUpdatePrices:
             EVEDB.RollbackSQLiteTransaction()
         End If
 
+    End Function
+
+    ' This guarantees that any UI update runs on the UI thread
+    Private Sub UI(action As Action)
+        If Me.InvokeRequired Then
+            Me.Invoke(action)
+        Else
+            action()
+        End If
     End Sub
+
 
     Private Function CalcSplit(TypeID As Integer, RegionID As String, SystemID As String) As String
         Dim SQL As String = ""
@@ -21879,6 +21891,10 @@ ProcExit:
 
     Private Sub txtMineOverrideLaserRange_GotFocus(sender As Object, e As EventArgs) Handles txtMineOverrideLaserRange.GotFocus
         txtMineOverrideLaserRange.SelectAll()
+    End Sub
+
+    Private Sub lblBPInventionCost_Click(sender As Object, e As EventArgs) Handles lblBPInventionCost.Click
+
     End Sub
 
 #End Region

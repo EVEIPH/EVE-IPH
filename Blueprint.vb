@@ -2327,22 +2327,24 @@ SkipProcessing:
             readerCost.Close()
 
         ElseIf TechLevel = BPTechLevel.T2 Then
-            SQL = "SELECT typeName, PRICE FROM INVENTORY_TYPES "
-            SQL &= "LEFT OUTER JOIN ITEM_PRICES ON typeID = ITEM_ID "
-            SQL &= "WHERE typeID = " & CStr(InventionBPCTypeID)
-
-            DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
+            SQL = "SELECT typeName FROM INVENTORY_TYPES WHERE typeID = " & CStr(InventionBPCTypeID)
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
             readerBP = DBCommand.ExecuteReader()
             readerBP.Read()
 
             If Not IsNothing(readerBP.GetValue(0)) Then
-                Dim Price As Double = 0
-                If Not IsNothing(readerBP.GetValue(1)) Then
-                    Price = readerBP.GetDouble(1)
+                Dim TempMat As New Material(InventionBPCTypeID, readerBP.GetString(0) & " Copy", "Blueprint", 1, 0.1, 0, "", "")
+                Dim Price As Double = TempMat.GetCostPerItem
+
+                If BPUserSettings.IgnoreBPCInventionCost Then
+                    TempMat.SetCostPerItem(0)
+                    TempMat.SetTotalCost(0)
+                    Price = 0
                 End If
-                ' Add the T2 blueprint and cost
-                Dim TempMat = New Material(InventionBPCTypeID, readerBP.GetString(0) & " Copy", "Blueprint", 1, 0.1, Price, "", "")
-                SingleInventionMats.InsertMaterial(TempMat)
+
+                ' Add the T2 invention blueprint and cost will update automatically
+                SingleInventionMats.InsertMaterial(TempMat, Price)
+
             End If
             readerBP.Close()
         End If
@@ -2450,13 +2452,25 @@ SkipProcessing:
 
             ' Update the invention mats to reflect the number of invention runs we will do and save into the final list
             For i = 0 To SingleInventionMats.GetMaterialList.Count - 1
-                SingleInventionMats.GetMaterialList(i).SetQuantity(SingleInventionMats.GetMaterialList(i).GetQuantity * NumInventionJobs)
+                SingleInventionMats.GetMaterialList(i).SetQuantity(CInt(SingleInventionMats.GetMaterialList(i).GetQuantity * NumInventionJobs))
             Next
 
             ' Now insert all the materials in a new list to get the correct cost (kind of a hack, need a better process - no automatic way to update the total price in a material list)
             For i = 0 To SingleInventionMats.GetMaterialList.Count - 1
                 InventionMaterials.InsertMaterial(SingleInventionMats.GetMaterialList(i))
             Next
+
+            ' Reset price if they want to ignore BPC costs
+            If BPUserSettings.IgnoreBPCInventionCost Then
+                For Each mat In InventionMaterials.GetMaterialList
+                    If mat.GroupName = "Blueprint" Then
+                        Dim Cost As Double = mat.GetTotalCost
+                        mat.SetCostPerItem(0)
+                        mat.SetTotalCost(0)
+                        InventionMaterials.ResetTotalValue(InventionMaterials.GetTotalMaterialsCost - Cost)
+                    End If
+                Next
+            End If
 
         End If
 

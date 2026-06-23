@@ -216,6 +216,10 @@ Public Class Material
         Return CostPerItem
     End Function
 
+    Public Sub SetCostPerItem(ByVal SentCost As Double)
+        CostPerItem = SentCost
+    End Sub
+
     Public Function GetTotalVolume() As Double
         Return TotalMatVolume
     End Function

@@ -1,5 +1,6 @@
 ﻿Imports System.Data.SQLite
 Imports System.Threading
+Imports Newtonsoft.Json
 
 Public Class MarketPriceInterface
 
@@ -285,8 +286,180 @@ Public Class MarketPriceInterface
 
     End Sub
 
+    Public Function GetMarketOrdersPageCount(ByVal PriceRegionID As String) As Integer
+        Dim ESIData As New ESI
+        Dim TotalPages As Integer = 0
+
+        ' Get total number of pages first
+        Call ESIData.GetPublicData(ESIData.ESIURL & "markets/" & PriceRegionID & "/orders/" & ESIData.TranquilityDataSource & "&page=1", Nothing, "", True, TotalPages)
+
+        Return TotalPages
+
+    End Function
+
     ' Uses ESI to update market prices from CCP
-    Public Function UpdateESIMarketOrders(ByVal CacheItems As List(Of TypeIDRegion)) As Boolean
+    Public Function UpdateESIMarketOrders(ByVal PriceRegionID As String) As Boolean
+        Dim ReturnValue As Boolean = True
+        Dim RegionIDList As New List(Of String)
+        Dim SP As New StructureProcessor
+
+        CancelUpdatePrices = False
+
+        Dim PricesUpdated As Boolean = False
+
+        Try
+            Dim ESIData As New ESI
+            Dim MarketOrdersOutput As List(Of ESIMarketOrder)
+            Dim SQL As String
+            Dim rsCache As SQLiteDataReader
+            Dim CacheDate As Date = NoDate
+            Dim PublicData As String = ""
+            Dim DataFound As Boolean = True
+            Dim TotalPages As Integer
+
+            ' Open a transaction
+            Call EVEDB.BeginSQLiteTransaction()
+
+            ' First look up the cache date to see if it's time to run the update ** TODO update table to remove typeid
+            SQL = "SELECT CACHE_DATE FROM MARKET_ORDERS_UPDATE_CACHE WHERE REGION_ID = " & PriceRegionID
+            DBCommand = New SQLiteCommand(SQL, EVEDB.DBRef)
+            rsCache = DBCommand.ExecuteReader
+            CacheDate = ProcessCacheDate(rsCache)
+            rsCache.Close()
+
+            ' If it's later than now, update
+            If CacheDate <= Date.UtcNow Then
+
+                ' Delete any records for this type and region since we have a fresh set to load
+                Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS WHERE REGION_ID = " & PriceRegionID)
+
+                ' Get total number of pages first
+                TotalPages = GetMarketOrdersPageCount(PriceRegionID)
+
+                ' Init progress bar
+                If Not IsNothing(RefProgressBar) Then
+                    With RefProgressBar.ProgressBar
+                        SetProgressBarData(UpdateType.bVisible, 1)
+                        SetProgressBarData(UpdateType.MinValue, 0)
+                        SetProgressBarData(UpdateType.MaxValue, TotalPages)
+                    End With
+                End If
+
+                ' Load data by pages
+                For i = 1 To TotalPages
+                    ' Pull data by page
+                    PublicData = ESIData.GetPublicData(ESIData.ESIURL & "markets/" & PriceRegionID & "/orders/" & ESIData.TranquilityDataSource & "&page=" & CStr(i), CacheDate, "", True)
+
+                    If Not IsNothing(PublicData) Then
+                        MarketOrdersOutput = JsonConvert.DeserializeObject(Of List(Of ESIMarketOrder))(PublicData)
+
+                        For Each item In MarketOrdersOutput
+                            If Not LocationIDs.Contains(item.location_id) Then
+                                LocationIDs.Add(item.location_id)
+                            End If
+                        Next
+
+                        ' Parse the data
+                        If MarketOrdersOutput.Count > 0 Then
+                            ' Now read through all the output items that are not in the table insert them in MARKET_ORDERS
+                            For j = 0 To MarketOrdersOutput.Count - 1
+                                With MarketOrdersOutput(j)
+                                    Dim StationData As StructureProcessor.StructureStationInformation
+                                    Dim OrderDownloadType As String = ""
+                                    SP = New StructureProcessor
+
+                                    ' Look up data for the station/structure - don't refresh it as we can do that in one call later if not found
+                                    StationData = SP.GetStationInformation(.location_id, SelectedCharacter.CharacterTokenData, False)
+
+                                    Dim IssueDate As Date = ESIData.FormatESIDate(.issued)
+
+                                    ' Insert all the new records
+                                    SQL = "INSERT INTO MARKET_ORDERS VALUES (" & CStr(.order_id) & "," & CStr(.type_id) & ","
+                                    SQL &= .location_id & "," & CStr(StationData.RegionID) & "," & CStr(StationData.SystemID) & ",'"
+                                    SQL &= CStr(IssueDate) & "'," & .duration & "," & CStr(CInt(.is_buy_order)) & "," & .price & "," & .volume_total & ","
+                                    SQL &= .min_volume & "," & .volume_remain & ",'" & .range & "')"
+                                    Call EVEDB.ExecuteNonQuerySQL(SQL)
+                                End With
+
+                                If CancelUpdatePrices Then
+                                    If EVEDB.TransactionActive Then
+                                        ' We Canceled the update so rollback anything
+                                        EVEDB.RollbackSQLiteTransaction()
+                                    End If
+                                    Return False
+                                End If
+                                Application.DoEvents()
+                            Next
+
+                        End If
+                        DataFound = True
+                    Else
+                        ' Json file didn't download
+                        DataFound = False
+                    End If
+                    Call IncrementToolStripProgressBar(i)
+                Next
+
+                ' Set the Cache Date for everything queried 
+                Call EVEDB.ExecuteNonQuerySQL("DELETE FROM MARKET_ORDERS_UPDATE_CACHE WHERE REGION_ID = " & PriceRegionID)
+                Call EVEDB.ExecuteNonQuerySQL("INSERT INTO MARKET_ORDERS_UPDATE_CACHE VALUES (NULL," & PriceRegionID & "," & "'" & Format(CacheDate, SQLiteDateFormat) & "')")
+
+                ' Update any location data on structures we imported without region or system ID
+                Dim UpdateIDs As New List(Of Long)
+                Dim rsUpdate As SQLiteDataReader
+                DBCommand = New SQLiteCommand("SELECT DISTINCT LOCATION_ID FROM MARKET_ORDERS WHERE REGION_ID = 0", EVEDB.DBRef)
+                rsUpdate = DBCommand.ExecuteReader
+
+                While rsUpdate.Read
+                    UpdateIDs.Add(rsUpdate.GetInt64(0))
+                End While
+
+                rsUpdate.Close()
+
+                ' Now with this list, run the structures update
+                SP = New StructureProcessor
+                Dim TempRegionID As String = ""
+                Call SP.UpdateStructuresData(UpdateIDs, SelectedCharacter.CharacterTokenData, RefProgressBar)
+
+                For Each ID In UpdateIDs
+                    DBCommand = New SQLiteCommand("SELECT REGION_ID, SOLAR_SYSTEM_ID FROM STATIONS WHERE STATION_ID =" & CStr(ID), EVEDB.DBRef)
+                    rsUpdate = DBCommand.ExecuteReader
+
+                    If rsUpdate.Read Then
+                        TempRegionID = CStr(rsUpdate.GetInt64(0))
+                        If TempRegionID = "0" And RegionIDList.Count = 1 Then
+                            ' They only wanted prices from one region and we have an unknown structure, so at least save the region ID we set the query up for
+                            TempRegionID = RegionIDList(0)
+                        End If
+                        Call EVEDB.ExecuteNonQuerySQL(String.Format("UPDATE MARKET_ORDERS SET REGION_ID = {0}, SOLAR_SYSTEM_ID = {1} WHERE LOCATION_ID = {2}", TempRegionID, rsUpdate.GetInt64(1), ID))
+                    End If
+
+                    rsUpdate.Close()
+                Next
+
+                ' Finish updating the DB
+                Call EVEDB.CommitSQLiteTransaction()
+
+                If Not IsNothing(RefProgressBar) Then
+                    RefProgressBar.Visible = False
+                End If
+
+                ReturnValue = True
+
+            End If
+
+        Catch ex As Exception
+            EVEDB.RollbackSQLiteTransaction()
+            Application.DoEvents()
+            ReturnValue = False
+        End Try
+
+        Return ReturnValue
+
+    End Function
+
+    ' Uses ESI to update market prices from CCP
+    Public Function UpdateESIMarketOrdersThreaded(ByVal CacheItems As List(Of TypeIDRegion)) As Boolean
         Dim ReturnValue As Boolean = True
         Dim Pairs As New List(Of ItemRegionPairs)
         Dim Threads As New ThreadingArray
@@ -382,7 +555,7 @@ Public Class MarketPriceInterface
             ' Finally, update any location data on structures we imported without region or system ID
             Dim UpdateIDs As New List(Of Long)
             Dim rsUpdate As SQLiteDataReader
-            DBCommand = New SQLiteCommand("SELECT DISTINCT LOCATION_ID FROM MARKET_ORDERS WHERE REGION_ID = 0", EVEDB.DBREf)
+            DBCommand = New SQLiteCommand("SELECT DISTINCT LOCATION_ID FROM MARKET_ORDERS WHERE REGION_ID = 0", EVEDB.DBRef)
             rsUpdate = DBCommand.ExecuteReader
 
             While rsUpdate.Read
@@ -397,7 +570,7 @@ Public Class MarketPriceInterface
             Call SP.UpdateStructuresData(UpdateIDs, SelectedCharacter.CharacterTokenData, RefProgressBar)
 
             For Each ID In UpdateIDs
-                DBCommand = New SQLiteCommand("SELECT REGION_ID, SOLAR_SYSTEM_ID FROM STATIONS WHERE STATION_ID =" & CStr(ID), EVEDB.DBREf)
+                DBCommand = New SQLiteCommand("SELECT REGION_ID, SOLAR_SYSTEM_ID FROM STATIONS WHERE STATION_ID =" & CStr(ID), EVEDB.DBRef)
                 rsUpdate = DBCommand.ExecuteReader
 
                 If rsUpdate.Read Then
@@ -480,7 +653,7 @@ Public Class MarketPriceInterface
             For i = 0 To Pairs.Count - 1
 
                 ' Update the prices then check limiting if needed 
-                PricesUpdated = ESIData.UpdateMarketOrders(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
+                PricesUpdated = ESIData.UpdateMarketOrdersItems(EVEDB, Pairs(i).ItemID, Pairs(i).RegionID, False, True)
 
                 ' Now that we updated it, for each record, update the total record count for the progressbar on frmMain
                 PriceOrdersUpdateCount += 1
