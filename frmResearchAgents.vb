@@ -1,6 +1,3 @@
-﻿
-Imports System.Data.SQLite
-
 Public Class frmResearchAgents
 
     Private ListColumnClicked As Integer
@@ -27,11 +24,7 @@ Public Class frmResearchAgents
     End Sub
 
     Private Sub frmResearchAgents_Shown(sender As Object, e As System.EventArgs) Handles Me.Shown
-        ' Reload the agents and update from API if necessary
-        Call SelectedCharacter.GetResearchAgents.LoadResearchAgents(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData)
-
-        Call LoadGrid()
-
+        Call RefreshResearchAgentsGrid()
     End Sub
 
     ' Sort columns
@@ -43,81 +36,38 @@ Public Class frmResearchAgents
         Me.Hide()
     End Sub
 
-    Private Sub LoadGrid()
-        Dim lstViewRow As ListViewItem
-        Dim fAccessError As New frmAPIError
+    Private Sub RefreshResearchAgentsGrid()
+        Application.UseWaitCursor = True
+        Call CharacterDataService.RefreshResearchAgents(SelectedCharacter)
+        Call RenderGrid(ResearchAgentsService.BuildViewModel(SelectedCharacter))
+        Application.UseWaitCursor = False
+    End Sub
 
-        Dim readerPriceLookup As SQLiteDataReader
-        Dim SQL As String
-        Dim CurrentValue As Double
-        Dim CurrentNumberofCores As Long
-        Dim TotalValue As Double = 0
+    Private Sub RenderGrid(ByVal viewModel As ResearchAgentsViewModel)
+        Dim lstViewRow As ListViewItem
 
         lstAgents.Items.Clear()
-
-        Application.UseWaitCursor = True
-
         lstAgents.BeginUpdate()
 
-        With SelectedCharacter.GetResearchAgents
-            For i = 0 To .GetResearchAgents.Count - 1
-                ' Get the total value of the datacores if I were to cash them in today - Price minus the DataCoreRedeemCost
-                If .GetResearchAgents(i).Field.Contains("Gallente Starship") Then
-                    SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME ='Datacore - Gallentean Starship Engineering'"
-                ElseIf .GetResearchAgents(i).Field.Contains("Amarr Starship") Then
-                    SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME ='Datacore - Amarian Starship Engineering'"
-                Else
-                    SQL = "SELECT PRICE FROM ITEM_PRICES WHERE ITEM_NAME ='Datacore - " & .GetResearchAgents(i).Field & "'"
-                End If
+        For Each agent In viewModel.Agents
+            lstViewRow = lstAgents.Items.Add(agent.AgentName)
+            lstViewRow.SubItems.Add(agent.Field)
+            lstViewRow.SubItems.Add(FormatNumber(agent.CurrentResearchPoints, 2))
+            lstViewRow.SubItems.Add(FormatNumber(agent.NumberOfCores, 0))
+            lstViewRow.SubItems.Add(FormatNumber(agent.CurrentValue, 2))
+            lstViewRow.SubItems.Add(FormatNumber(agent.ResearchPointsPerDay, 2))
+            lstViewRow.SubItems.Add(CStr(agent.AgentLevel))
+            lstViewRow.SubItems.Add(agent.Location)
+        Next
 
-                DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-                readerPriceLookup = DBCommand.ExecuteReader()
-
-                If readerPriceLookup.Read() Then
-                    ' Get the number of cores we would get, minus the redeem cost from each 
-                    CurrentNumberofCores = CLng(Math.Floor(.GetResearchAgents(i).CurrentRP / 100))
-                    CurrentValue = Math.Floor(.GetResearchAgents(i).CurrentRP / 100) * (readerPriceLookup.GetDouble(0) - DataCoreRedeemCost)
-                Else
-                    CurrentNumberofCores = 0
-                    CurrentValue = 0
-                End If
-
-                ' Load the current data
-                lstViewRow = lstAgents.Items.Add(.GetResearchAgents(i).Agent) ' Agent Name
-                'The remaining columns are subitems  
-                lstViewRow.SubItems.Add(.GetResearchAgents(i).Field) ' Field
-                lstViewRow.SubItems.Add(FormatNumber(.GetResearchAgents(i).CurrentRP, 2)) ' Current RP
-                lstViewRow.SubItems.Add(FormatNumber(CurrentNumberofCores, 0)) ' Current number of cores
-                lstViewRow.SubItems.Add(FormatNumber(CurrentValue, 2)) ' Current Value
-                lstViewRow.SubItems.Add(FormatNumber(.GetResearchAgents(i).RPperDay, 2)) ' RP/Day
-                lstViewRow.SubItems.Add(CStr(.GetResearchAgents(i).AgentLevel)) ' Level
-                lstViewRow.SubItems.Add(.GetResearchAgents(i).Location) ' Location
-                TotalValue = TotalValue + CurrentValue
-            Next
-        End With
-
-        ' Set total isk
-        lblTotalDCValue.Text = FormatNumber(TotalValue, 2) & " ISK"
-
-        ' Make sure the refresh button is enabled
+        lblTotalDCValue.Text = FormatNumber(viewModel.TotalValue, 2) & " ISK"
         btnRefresh.Enabled = True
         lstAgents.EndUpdate()
-        Application.UseWaitCursor = False
-
     End Sub
 
     Private Sub btnRefresh_Click(sender As System.Object, e As System.EventArgs) Handles btnRefresh.Click
-        Application.UseWaitCursor = True
-
-        ' Reload the agents and update from API if necessary
-        Call SelectedCharacter.GetResearchAgents.LoadResearchAgents(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData)
-
-        ' Refresh the data
-        Call LoadGrid()
-
-        Application.UseWaitCursor = False
+        Call RefreshResearchAgentsGrid()
         MsgBox("Records Refreshed", vbInformation, Application.ProductName)
-
     End Sub
 
 End Class

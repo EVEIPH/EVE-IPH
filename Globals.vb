@@ -50,7 +50,7 @@ Public Module Public_Variables
     Public Const XMLUpdateTestFileURL = "https://github.com/EVEIPH/LatestFiles/raw/master/LatestVersionIPH_Test.xml"
 
     Public Const DynamicAppDataPath As String = "EVE IPH"
-    Public Const UserImagePath As String = "EVEIPH Images"
+    Public Const UserImagesFolderName As String = "EVEIPH Images"
     Public Const UpdatePath As String = "EVE IPH Updates"
     Public Const SettingsFolder As String = "Settings" ' For saving all settings
 
@@ -113,6 +113,21 @@ Public Module Public_Variables
     Public frmViewStructures As frmViewSavedStructures = New frmViewSavedStructures
     Public frmRepoPlant As frmReprocessingPlant
     Public frmInventMats As frmInventionMats
+
+    Public ReadOnly Property UserImagePath As String
+        Get
+            Dim executableImagePath As String = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), UserImagesFolderName)
+            Dim dynamicImagePath As String = Path.Combine(DynamicFilePath, UserImagesFolderName)
+
+            If Directory.Exists(executableImagePath) Then
+                Return executableImagePath
+            ElseIf DynamicFilePath <> "" AndAlso Directory.Exists(dynamicImagePath) Then
+                Return dynamicImagePath
+            Else
+                Return executableImagePath
+            End If
+        End Get
+    End Property
 
     ' The only allowed characters for text entry
     Public Const allowedPriceChars As String = "0123456789.,"
@@ -573,41 +588,21 @@ Public Module Public_Variables
 
     ' Loads the character for the program
     Public Sub LoadCharacter(RefreshAssets As Boolean, RefreshBPs As Boolean)
-        On Error GoTo 0
+        Dim selectionState = CharacterSelectionService.LoadCurrentCharacter(RefreshAssets, RefreshBPs)
 
-        ' Try to load the character
-        If Not SelectedCharacter.LoadDefaultCharacter(RefreshBPs, RefreshAssets) Then
-
-            ' Didn't find a default character. Either we don't have one selected or there are no characters in the DB yet
-            Dim CMDCount As New SQLiteCommand("SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> " & CStr(DummyCharacterID), EVEDB.DBREf)
-
-            If CInt(CMDCount.ExecuteScalar()) = 0 Then
-                ' No characters loaded yet so load dummy for all
-                Call SelectedCharacter.LoadDummyCharacter(True)
-            Else
-                ' Have a set of chars, need to set a default, open that form
-                Dim f2 = New frmSetCharacterDefault
-                f2.ShowDialog()
-            End If
+        If selectionState.RequiresDefaultCharacterSelection Then
+            Dim f2 = New frmSetCharacterDefault
+            f2.ShowDialog()
         End If
 
     End Sub
 
     ' Loads a default character from name sent
     Public Sub LoadCharacter(CharacterName As String, Optional PlaySound As Boolean = True)
-
-        ' Load only if a new character
-        If SelectedCharacter.Name <> CharacterName Then
-            ' Update them all to 0 first
-            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = 0")
-            Call EVEDB.ExecuteNonQuerySQL("UPDATE ESI_CHARACTER_DATA SET IS_DEFAULT = " & CStr(DefaultCharacterCode) & " WHERE CHARACTER_NAME = '" & FormatDBString(CharacterName) & "'")
-
-            ' Load the character as default for program and reload additional API data
-            Call SelectedCharacter.LoadDefaultCharacter(UserApplicationSettings.LoadAssetsonStartup, UserApplicationSettings.LoadBPsonStartup)
-            If PlaySound Then
-                Call PlayNotifySound()
-            End If
-        End If
+        Call CharacterSelectionService.SelectCharacterByName(CharacterName,
+                                                             UserApplicationSettings.LoadAssetsonStartup,
+                                                             UserApplicationSettings.LoadBPsonStartup,
+                                                             PlaySound)
 
     End Sub
 

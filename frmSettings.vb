@@ -564,14 +564,12 @@ Public Class frmSettings
                 ' If they didn't have this checked before, refresh assets
                 If SelectedCharacter.ID <> DummyCharacterID Then
                     If UserApplicationSettings.LoadAssetsonStartup = False And chkRefreshAssetsonStartup.Checked Then
-                        Call SelectedCharacter.GetAssets.LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
-                        Call SelectedCharacter.CharacterCorporation.GetAssets.LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
+                        Call CharacterDataService.RefreshAssets(SelectedCharacter, True)
                     End If
 
                     ' Same with blueprints
                     If UserApplicationSettings.LoadBPsonStartup = False And chkRefreshBPsonStartup.Checked Then
-                        Call SelectedCharacter.GetBlueprints.LoadBlueprints(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, True)
-                        Call SelectedCharacter.CharacterCorporation.GetBlueprints.LoadBlueprints(SelectedCharacter.CharacterCorporation.CorporationID, SelectedCharacter.CharacterTokenData, True)
+                        Call CharacterDataService.RefreshBlueprints(SelectedCharacter, True)
                     End If
                 End If
 
@@ -610,7 +608,7 @@ Public Class frmSettings
                                 .TokenExpiration = CDate(rsChar.GetString(3))
                                 .RefreshToken = rsChar.GetString(4)
                                 .Scopes = rsChar.GetString(5)
-                                Call SelectedCharacter.GetBlueprints.LoadBlueprints(.CharacterID, TempToken, True)
+                                Call CharacterDataService.RefreshPersonalBlueprints(.CharacterID, TempToken, True)
                             End With
                         End While
                         rsChar.Close()

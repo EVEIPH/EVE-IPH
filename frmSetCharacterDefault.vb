@@ -19,8 +19,6 @@ Public Class frmSetCharacterDefault
     ' Updates the character list with a default character
     Private Sub btnSelectDefault_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles btnSelectDefault.Click
         Dim SelectedCharacterName As String = ""
-        Dim i As Integer = 0
-        Dim ErrorData As ErrObject = Nothing
 
         If chkListDefaultChar.CheckedItems.Count = 0 Then
             MsgBox("Please select a default character", vbExclamation, Application.ProductName)
@@ -33,7 +31,18 @@ Public Class frmSetCharacterDefault
         Next
 
         Me.Cursor = Cursors.WaitCursor
-        Call SetDefaultCharacter(SelectedCharacterName)
+        If CharacterSelectionService.SelectCharacterByName(SelectedCharacterName,
+                                                           UserApplicationSettings.LoadAssetsonStartup,
+                                                           UserApplicationSettings.LoadBPsonStartup,
+                                                           False) Then
+            If Application.OpenForms().OfType(Of frmMain).Any Then
+                Call frmMain.ResetTabs()
+                Call frmMain.ResetCharacterIDonFacilties()
+            End If
+
+            DefaultCharSelected = True
+            MsgBox(SelectedCharacterName & " selected as Default Character", vbInformation, Application.ProductName)
+        End If
         Me.Cursor = Cursors.Default
         Me.Close()
 
@@ -67,50 +76,32 @@ Public Class frmSetCharacterDefault
 
     ' Update the list with the current loaded characters in the table
     Private Sub UpdateCharacterList()
-        Dim readerCharacters As SQLiteDataReader
-        Dim SQL As String
-        Dim numChars As Long
-        Dim i As Integer = 0
+        Dim selectionState = CharacterSelectionService.GetSelectionState()
 
         ' Load up the grid with characters on this computer
         DefaultCharSelected = False
 
         chkListDefaultChar.Items.Clear()
 
-        SQL = "SELECT COUNT(*) FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> {0}"
+        For Each characterName In selectionState.AvailableCharacters
+            chkListDefaultChar.Items.Add(characterName)
+        Next
 
-        DBCommand = New SQLiteCommand(String.Format(SQL, DummyCharacterID), EVEDB.DBREf)
-        numChars = CLng(DBCommand.ExecuteScalar())
-
-        SQL = "SELECT CHARACTER_NAME, IS_DEFAULT FROM ESI_CHARACTER_DATA WHERE CHARACTER_ID <> {0}"
-
-        DBCommand = New SQLiteCommand(String.Format(SQL, DummyCharacterID), EVEDB.DBREf)
-        readerCharacters = DBCommand.ExecuteReader()
-
-        While readerCharacters.Read()
-            chkListDefaultChar.Items.Add(readerCharacters.GetString(0))
-            ' If there is a default already, check it
-            If CInt(readerCharacters.GetValue(1)) <> 0 Then
-                chkListDefaultChar.SetItemChecked(i, True)
-            End If
-            i += 1
-        End While
+        If selectionState.DefaultCharacterName <> "" Then
+            chkListDefaultChar.SetItemChecked(chkListDefaultChar.Items.IndexOf(selectionState.DefaultCharacterName), True)
+        End If
 
         ' If only one character, then check it
-        If numChars = 1 Then
+        If selectionState.AvailableCharacters.Count = 1 Then
             chkListDefaultChar.SetItemChecked(0, True)
         End If
 
-        If numChars >= 1 Then
+        If selectionState.HasRealCharacters Then
             btnSelectDefault.Enabled = True
         Else
             ' Disable select default button until they load one up
             btnSelectDefault.Enabled = False
         End If
-
-        readerCharacters.Close()
-        readerCharacters = Nothing
-        DBCommand = Nothing
 
     End Sub
 

@@ -1648,9 +1648,7 @@ Public Class frmMain
             Call ResetAssets()
 
             ' Reload the asset variables for the character, which will load nothing but clear the assets out
-            Call SelectedCharacter.GetAssets().LoadAssets(SelectedCharacter.ID, SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
-            Call SelectedCharacter.CharacterCorporation.GetAssets().LoadAssets(SelectedCharacter.CharacterCorporation.CorporationID,
-                                                                               SelectedCharacter.CharacterTokenData, UserApplicationSettings.LoadAssetsonStartup)
+            Call CharacterDataService.RefreshAssets(SelectedCharacter, UserApplicationSettings.LoadAssetsonStartup)
 
             Application.UseWaitCursor = False
             Application.DoEvents()
@@ -1683,149 +1681,34 @@ Public Class frmMain
     End Sub
 
     Public Sub LoadCharacterNamesinMenu()
-        ' Default character set, now set the menu name on the panel
-        mnuCharacter.Text = "Character Loaded: " & SelectedCharacter.Name
-        ' Also, load all characters we have
-        Dim rsCharacters As SQLiteDataReader
-        Dim SQL As String = "SELECT CHARACTER_NAME, CASE WHEN GENDER IS NULL THEN 'male' ELSE GENDER END AS GENDER "
-        SQL &= "FROM ESI_CHARACTER_DATA ORDER BY CHARACTER_NAME"
-        DBCommand = New SQLiteCommand(SQL, EVEDB.DBREf)
-        rsCharacters = DBCommand.ExecuteReader
-
-        Dim Counter As Integer = 0
-
-        ' Reset all 
-        tsCharacter1.Text = ""
-        tsCharacter1.Visible = False
-        tsCharacter2.Text = ""
-        tsCharacter2.Visible = False
-        tsCharacter3.Text = ""
-        tsCharacter3.Visible = False
-        tsCharacter4.Text = ""
-        tsCharacter4.Visible = False
-        tsCharacter5.Text = ""
-        tsCharacter5.Visible = False
-        tsCharacter6.Text = ""
-        tsCharacter6.Visible = False
-        tsCharacter7.Text = ""
-        tsCharacter7.Visible = False
-        tsCharacter8.Text = ""
-        tsCharacter8.Visible = False
-        tsCharacter9.Text = ""
-        tsCharacter9.Visible = False
-        tsCharacter10.Text = ""
-        tsCharacter10.Visible = False
-        tsCharacter11.Text = ""
-        tsCharacter11.Visible = False
-        tsCharacter12.Text = ""
-        tsCharacter12.Visible = False
-        tsCharacter13.Text = ""
-        tsCharacter13.Visible = False
-        tsCharacter14.Text = ""
-        tsCharacter14.Visible = False
-        tsCharacter15.Text = ""
-        tsCharacter15.Visible = False
-        tsCharacter16.Text = ""
-        tsCharacter16.Visible = False
-        tsCharacter17.Text = ""
-        tsCharacter17.Visible = False
-        tsCharacter18.Text = ""
-        tsCharacter18.Visible = False
-        tsCharacter19.Text = ""
-        tsCharacter19.Visible = False
-        tsCharacter20.Text = ""
-        tsCharacter20.Visible = False
-
-        While rsCharacters.Read
-            ' Add all the character names to the list for the number we have - only load 20 characters
-            Select Case Counter
-                Case 0
-                    tsCharacter1.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter1, rsCharacters.GetString(1))
-                    tsCharacter1.Visible = True
-                Case 1
-                    tsCharacter2.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter2, rsCharacters.GetString(1))
-                    tsCharacter2.Visible = True
-                Case 2
-                    tsCharacter3.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter3, rsCharacters.GetString(1))
-                    tsCharacter3.Visible = True
-                Case 3
-                    tsCharacter4.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter4, rsCharacters.GetString(1))
-                    tsCharacter4.Visible = True
-                Case 4
-                    tsCharacter5.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter5, rsCharacters.GetString(1))
-                    tsCharacter5.Visible = True
-                Case 5
-                    tsCharacter6.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter6, rsCharacters.GetString(1))
-                    tsCharacter6.Visible = True
-                Case 6
-                    tsCharacter7.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter7, rsCharacters.GetString(1))
-                    tsCharacter7.Visible = True
-                Case 7
-                    tsCharacter8.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter8, rsCharacters.GetString(1))
-                    tsCharacter8.Visible = True
-                Case 8
-                    tsCharacter9.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter9, rsCharacters.GetString(1))
-                    tsCharacter9.Visible = True
-                Case 9
-                    tsCharacter10.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter10, rsCharacters.GetString(1))
-                    tsCharacter10.Visible = True
-                Case 10
-                    tsCharacter11.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter11, rsCharacters.GetString(1))
-                    tsCharacter11.Visible = True
-                Case 11
-                    tsCharacter12.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter12, rsCharacters.GetString(1))
-                    tsCharacter12.Visible = True
-                Case 12
-                    tsCharacter13.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter13, rsCharacters.GetString(1))
-                    tsCharacter13.Visible = True
-                Case 13
-                    tsCharacter14.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter14, rsCharacters.GetString(1))
-                    tsCharacter14.Visible = True
-                Case 14
-                    tsCharacter15.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter15, rsCharacters.GetString(1))
-                    tsCharacter15.Visible = True
-                Case 15
-                    tsCharacter16.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter16, rsCharacters.GetString(1))
-                    tsCharacter16.Visible = True
-                Case 16
-                    tsCharacter17.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter17, rsCharacters.GetString(1))
-                    tsCharacter17.Visible = True
-                Case 17
-                    tsCharacter18.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter18, rsCharacters.GetString(1))
-                    tsCharacter18.Visible = True
-                Case 18
-                    tsCharacter19.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter19, rsCharacters.GetString(1))
-                    tsCharacter19.Visible = True
-                Case 19
-                    tsCharacter20.Text = rsCharacters.GetString(0)
-                    Call SetCharToolStripImage(tsCharacter20, rsCharacters.GetString(1))
-                    tsCharacter20.Visible = True
-            End Select
-            Counter += 1 ' increment
-        End While
-
-        rsCharacters.Close()
+        Call RenderCharacterMenu(CharacterMenuService.BuildCharacterMenu())
 
     End Sub
+
+    Private Sub RenderCharacterMenu(ByVal menuState As CharacterMenuViewModel)
+        Dim menuItems = GetCharacterMenuItems()
+
+        mnuCharacter.Text = menuState.LoadedCharacterText
+
+        For Each menuItem In menuItems
+            menuItem.Text = ""
+            menuItem.Visible = False
+            menuItem.Image = Nothing
+        Next
+
+        For i = 0 To Math.Min(menuState.Characters.Count, menuItems.Length) - 1
+            menuItems(i).Text = menuState.Characters(i).CharacterName
+            Call SetCharToolStripImage(menuItems(i), menuState.Characters(i).Gender)
+            menuItems(i).Visible = True
+        Next
+    End Sub
+
+    Private Function GetCharacterMenuItems() As ToolStripMenuItem()
+        Return New ToolStripMenuItem() {tsCharacter1, tsCharacter2, tsCharacter3, tsCharacter4, tsCharacter5,
+                                        tsCharacter6, tsCharacter7, tsCharacter8, tsCharacter9, tsCharacter10,
+                                        tsCharacter11, tsCharacter12, tsCharacter13, tsCharacter14, tsCharacter15,
+                                        tsCharacter16, tsCharacter17, tsCharacter18, tsCharacter19, tsCharacter20}
+    End Function
 
     Private Sub SetCharToolStripImage(ByRef TS As ToolStripMenuItem, ByVal Gender As String)
         If Gender = Male Then
@@ -1838,14 +1721,19 @@ Public Class frmMain
 
     Private Sub LoadSelectedCharacter(ToolStripText As String)
         Me.Cursor = Cursors.WaitCursor
-        Call LoadCharacter(ToolStripText, False)
-        Call ResetTabs() ' Reload all tabs
-        ' New character so make sure the facilities reflect that
-        Call LoadFacilities()
-        ' Refresh bp in case the facility was different for that bp
-        Call RefreshBP()
-        Call PlayNotifySound()
-        mnuCharacter.Text = "Character Loaded: " & ToolStripText
+        If CharacterSelectionService.SelectCharacterByName(ToolStripText,
+                                                           UserApplicationSettings.LoadAssetsonStartup,
+                                                           UserApplicationSettings.LoadBPsonStartup,
+                                                           False) Then
+            Call ResetTabs() ' Reload all tabs
+            ' New character so make sure the facilities reflect that
+            Call LoadFacilities()
+            ' Refresh bp in case the facility was different for that bp
+            Call RefreshBP()
+            Call PlayNotifySound()
+            mnuCharacter.Text = "Character Loaded: " & ToolStripText
+        End If
+        Me.Cursor = Cursors.Default
     End Sub
 
     ' Predicate for finding the BuildBuyItem in full list
